@@ -9,20 +9,24 @@ package(default_visibility = ["//visibility:public"])
 
 # Kineto compiler flags
 KINETO_COPTS = [
-    "-fexceptions",
-    "-Wno-deprecated-declarations",
-    "-Wno-unused-function",
-    "-Wno-unused-private-field",
-    "-Wno-unused-variable",
-    "-Wno-unused-parameter",
     "-DKINETO_NAMESPACE=libkineto",
     "-DLIBKINETO_NOROCTRACER",
 ] + select({
     "@xsigma//bazel:enable_cuda": ["-DHAS_CUPTI"],
     "//conditions:default": ["-DLIBKINETO_NOCUPTI"],
 }) + select({
-    "@platforms//os:windows": [],
-    "//conditions:default": ["-w"],  # Suppress warnings for third-party code
+    "@platforms//os:windows": [
+        "/utf-8",  # MSVC: Treat source files as UTF-8
+    ],
+    "//conditions:default": [
+        "-fexceptions",
+        "-Wno-deprecated-declarations",
+        "-Wno-unused-function",
+        "-Wno-unused-private-field",
+        "-Wno-unused-variable",
+        "-Wno-unused-parameter",
+        "-w",  # Suppress warnings for third-party code
+    ],
 })
 
 cc_library(

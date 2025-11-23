@@ -84,11 +84,14 @@ cc_test(
         "_VARIADIC_MAX=10",
         "XSIGMA_HAS_GTEST=1",
     ] + select({
-        "//bazel:enable_cuda": [],
+        "//bazel:enable_cuda": ["XSIGMA_HAS_CUDA=1"],
         "//conditions:default": ["XSIGMA_HAS_CUDA=0"],
     }) + select({
-        "//bazel:enable_hip": [],
+        "//bazel:enable_hip": ["XSIGMA_HAS_HIP=1"],
         "//conditions:default": ["XSIGMA_HAS_HIP=0"],
+    }) + select({
+        "//bazel:enable_kineto": ["XSIGMA_HAS_KINETO=1"],
+        "//conditions:default": ["XSIGMA_HAS_KINETO=0"],
     }),
     includes = ["."],
     linkopts = xsigma_linkopts(),

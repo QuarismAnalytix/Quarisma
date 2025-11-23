@@ -15,52 +15,17 @@ package(default_visibility = ["//visibility:public"])
 # =============================================================================
 
 # Version macros header (equivalent to configure_file for xsigma_version_macros.h.in)
-genrule(
+# Note: These are generated headers that are checked into the repository
+# to avoid cross-platform shell compatibility issues with genrule
+filegroup(
     name = "gen_version_macros",
-    outs = ["xsigma_version_macros.h"],
-    cmd = """
-cat > $@ << 'EOF'
-#ifndef XSIGMA_VERSION_MACROS_H
-#define XSIGMA_VERSION_MACROS_H
-
-#define XSIGMA_MAJOR_VERSION 1
-#define XSIGMA_MINOR_VERSION 0
-#define XSIGMA_BUILD_VERSION 0
-#define XSIGMA_VERSION_FULL "1.0.0"
-
-#endif // XSIGMA_VERSION_MACROS_H
-EOF
-    """,
+    srcs = ["xsigma_version_macros.h"],
 )
 
 # Threading configuration header (equivalent to configure_file for xsigma_threads.h.in)
-genrule(
+filegroup(
     name = "gen_threads_header",
-    outs = ["xsigma_threads.h"],
-    cmd = select({
-        "@platforms//os:windows": """
-cat > $@ << 'EOF'
-#ifndef XSIGMA_THREADS_H
-#define XSIGMA_THREADS_H
-
-#define XSIGMA_USE_WIN32_THREADS 1
-#define XSIGMA_MAX_THREADS 64
-
-#endif // XSIGMA_THREADS_H
-EOF
-        """,
-        "//conditions:default": """
-cat > $@ << 'EOF'
-#ifndef XSIGMA_THREADS_H
-#define XSIGMA_THREADS_H
-
-#define XSIGMA_USE_PTHREADS 1
-#define XSIGMA_MAX_THREADS 64
-
-#endif // XSIGMA_THREADS_H
-EOF
-        """,
-    }),
+    srcs = ["xsigma_threads.h"],
 )
 
 # =============================================================================
@@ -197,18 +162,21 @@ cc_library(
         "//bazel:enable_kineto": glob(["profiler/kineto_*.h", "profiler/native/**/*.h", "profiler/native/**/*.hxx"], allow_empty = True),
         "//conditions:default": [],
     }),
-    copts = xsigma_copts() + select({
-        "@platforms//os:windows": ["/WX"],
-        "//conditions:default": [],
-    }),
+    copts = xsigma_copts(),
     defines = xsigma_defines() + select({
         "//bazel:shared_libs": ["XSIGMA_SHARED_DEFINE", "XSIGMA_BUILDING_DLL"],
         "//conditions:default": ["XSIGMA_STATIC_DEFINE"],
+    }) + select({
+        "//bazel:enable_kineto": ["XSIGMA_HAS_KINETO=1"],
+        "//conditions:default": [],
     }),
     includes = [
         ".",
         "Testing",
-    ],
+    ] + select({
+        "//bazel:enable_kineto": ["profiler/kineto"],
+        "//conditions:default": [],
+    }),
     linkopts = xsigma_linkopts() + select({
         "@platforms//os:windows": [],
         "@platforms//os:macos": ["-framework Security"],

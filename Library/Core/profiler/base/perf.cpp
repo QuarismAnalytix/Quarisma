@@ -1,8 +1,9 @@
+#include "profiler/base/perf.h"
+
 #include <unordered_map>
 #include <unordered_set>
 
 #include "profiler/base/perf-inl.h"
-#include "profiler/base/perf.h"
 #include "util/error.h"
 #include "util/exception.h"
 
@@ -118,7 +119,7 @@ PerfEvent::~PerfEvent() = default;
 
 void PerfEvent::Init() {}
 
-uint64_t PerfEvent::ReadCounter() 
+uint64_t PerfEvent::ReadCounter() const
 {
     return 0;
 }

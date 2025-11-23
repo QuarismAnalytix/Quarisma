@@ -30,8 +30,8 @@ def xsigma_defines():
         "//bazel:enable_cuda": ["XSIGMA_ENABLE_CUDA", "XSIGMA_HAS_CUDA=1"],
         "//conditions:default": ["XSIGMA_HAS_CUDA=0"],
     }) + select({
-        "//bazel:enable_hip": ["XSIGMA_ENABLE_HIP"],
-        "//conditions:default": [],
+        "//bazel:enable_hip": ["XSIGMA_ENABLE_HIP", "XSIGMA_HAS_HIP=1"],
+        "//conditions:default": ["XSIGMA_HAS_HIP=0"],
     }) + select({
         "//bazel:enable_tbb": ["XSIGMA_HAS_TBB"],
         "//conditions:default": [],
@@ -45,8 +45,8 @@ def xsigma_defines():
         "//bazel:enable_magic_enum": ["XSIGMA_ENABLE_MAGICENUM"],
         "//conditions:default": [],
     }) + select({
-        "//bazel:enable_kineto": ["XSIGMA_ENABLE_KINETO", "XSIGMA_HAS_KINETO"],
-        "//conditions:default": ["XSIGMA_ENABLE_KINETO=1"],
+        "//bazel:enable_kineto": ["XSIGMA_ENABLE_KINETO", "XSIGMA_HAS_KINETO=1"],
+        "//conditions:default": ["XSIGMA_HAS_KINETO=0"],
     }) + select({
         "//bazel:enable_native_profiler": ["XSIGMA_ENABLE_NATIVE_PROFILER"],
         "//conditions:default": [],

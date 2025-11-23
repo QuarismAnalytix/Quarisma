@@ -104,15 +104,58 @@ class BazelConfiguration:
         self.logging_backend = "loguru"  # Default: LOGURU (matches CMake)
         self.profiler_backend = "kineto"  # Default: KINETO (matches CMake)
 
+        # Compiler and build tool configuration
+        self.compiler: Optional[str] = None  # Compiler type: "clang", "gcc", "msvc", etc.
+        self.build_tool: Optional[str] = None  # Build tool: "ninja", "xcode", "msvc", etc.
+        self.visual_studio_version: Optional[str] = None  # VS version: "vs17", "vs19", "vs22", "vs26"
+        self.system = platform.system()
+
         self._parse_arguments()
+        self._apply_defaults()
+
+    def _is_visual_studio_arg(self, arg: str) -> bool:
+        """Check if argument matches Visual Studio version pattern (.vsXX.)."""
+        # Match patterns like .vs26., .vs22., .vs19., .vs17.
+        return arg.lower() in ["vs17", "vs19", "vs22", "vs26"]
+
+    def _is_xcode_arg(self, arg: str) -> bool:
+        """Check if argument is xcode."""
+        return arg.lower() == "xcode"
+
+    def _is_ninja_arg(self, arg: str) -> bool:
+        """Check if argument is ninja."""
+        return arg.lower() == "ninja"
+
+    def _is_clang_compiler(self, arg: str) -> bool:
+        """Check if argument is a Clang compiler specification."""
+        return "clang" in arg.lower() and arg.lower() not in ["clang-cl", "clangtidy"]
+
+    def _is_gcc_compiler(self, arg: str) -> bool:
+        """Check if argument is a GCC compiler specification."""
+        return ("gcc" in arg.lower() or "g++" in arg.lower()) and arg.lower() not in ["cppcheck"]
 
     def _parse_arguments(self) -> None:
         """Parse command-line arguments to extract build configuration."""
         for arg in self.args:
             arg_lower = arg.lower()
 
+            # Compiler and build tool detection
+            if self._is_visual_studio_arg(arg):
+                self.visual_studio_version = arg
+                self.build_tool = "msvc"
+                self.compiler = "msvc"
+            elif self._is_xcode_arg(arg):
+                self.build_tool = "xcode"
+                self.compiler = "clang"
+            elif self._is_ninja_arg(arg):
+                self.build_tool = "ninja"
+            elif self._is_clang_compiler(arg):
+                self.compiler = "clang"
+            elif self._is_gcc_compiler(arg):
+                self.compiler = "gcc"
+
             # Build type
-            if arg_lower in ["debug", "release", "relwithdebinfo"]:
+            elif arg_lower in ["debug", "release", "relwithdebinfo"]:
                 self.build_type = arg_lower
                 self.configs.append(arg_lower)
 
@@ -169,6 +212,42 @@ class BazelConfiguration:
             elif arg_lower == "config":
                 self.run_config = True
 
+    def _apply_defaults(self) -> None:
+        """Apply default compiler and build tool settings.
+
+        Default Behavior (All Platforms):
+        - If no Visual Studio or Xcode is detected/specified
+        - If the compiler or build tool is not explicitly defined
+        - Then default to using Ninja + Clang on all platforms
+
+        Windows-Specific Behavior:
+        - If a Visual Studio version is specified (.vs26., .vs22., .vs19., .vs17.)
+        - Then build using the corresponding Visual Studio version
+        """
+        # If Visual Studio is specified on Windows, use it
+        if self.visual_studio_version and self.system == "Windows":
+            print_status(
+                f"Using Visual Studio {self.visual_studio_version.upper()}",
+                "INFO"
+            )
+            return
+
+        # If Xcode is specified on macOS, use it
+        if self.build_tool == "xcode" and self.system == "Darwin":
+            print_status("Using Xcode generator", "INFO")
+            return
+
+        # Default to Ninja + Clang on all platforms
+        if not self.build_tool:
+            self.build_tool = "ninja"
+        if not self.compiler:
+            self.compiler = "clang"
+
+        print_status(
+            f"Using default build configuration: {self.build_tool.upper()} + {self.compiler.upper()}",
+            "INFO"
+        )
+
     def build_bazel_command(self, action: str) -> list[str]:
         """Build the Bazel command with all configurations."""
         bazel_cmd = get_bazel_command()
@@ -176,6 +255,18 @@ class BazelConfiguration:
 
         # Add server management flags to prevent hanging
         # Use --noserver to disable Bazel server (prevents deadlocks on Windows)
+
+        # Add compiler-specific configuration
+        if self.compiler == "clang":
+            cmd.append("--config=clang")
+        elif self.compiler == "gcc":
+            cmd.append("--config=gcc")
+        elif self.compiler == "msvc":
+            cmd.append("--config=msvc")
+
+        # Add build tool specific configuration
+        if self.build_tool == "xcode":
+            cmd.append("--config=xcode")
 
         # Add default logging backend if not explicitly set
         if not any(c.startswith("logging_") for c in self.configs):
@@ -214,6 +305,14 @@ class BazelConfiguration:
         print("\n" + "=" * 80)
         print("XSIGMA BAZEL BUILD CONFIGURATION SUMMARY")
         print("=" * 80)
+
+        # Compiler and build tool
+        print(f"\n{Fore.CYAN}Compiler & Build Tool:{Style.RESET_ALL}")
+        print(f"  Platform:          {self.system}")
+        print(f"  Build Tool:        {self.build_tool.upper() if self.build_tool else 'NINJA (default)'}")
+        print(f"  Compiler:          {self.compiler.upper() if self.compiler else 'CLANG (default)'}")
+        if self.visual_studio_version:
+            print(f"  Visual Studio:     {self.visual_studio_version.upper()}")
 
         # Build type
         print(f"\n{Fore.CYAN}Build Configuration:{Style.RESET_ALL}")
@@ -412,7 +511,7 @@ def print_help() -> None:
     print("\nUsage examples:")
     print("  1. Show configuration (no build):")
     print("     python setup_bazel.py config.release")
-    print("  2. Default debug build:")
+    print("  2. Default debug build (Ninja + Clang):")
     print("     python setup_bazel.py build.test")
     print("  3. Release build with AVX2:")
     print("     python setup_bazel.py build.test.release.avx2")
@@ -426,10 +525,23 @@ def print_help() -> None:
     print("     python setup_bazel.py test")
     print("  8. Clean build:")
     print("     python setup_bazel.py clean.build.test.release")
+    print("  9. Build with Visual Studio 2026 (Windows only):")
+    print("     python setup_bazel.py build.test.release.vs26")
+    print("  10. Build with Xcode (macOS only):")
+    print("      python setup_bazel.py build.test.release.xcode")
     print("\nBuild types:")
     print("  debug         - Debug build (default)")
     print("  release       - Release build with optimizations")
     print("  relwithdebinfo- Release with debug info")
+    print("\nCompiler & Build Tool (Default: Ninja + Clang on all platforms):")
+    print("  ninja         - Ninja build system (default)")
+    print("  xcode         - Xcode generator (macOS only)")
+    print("  vs17          - Visual Studio 2017 (Windows only)")
+    print("  vs19          - Visual Studio 2019 (Windows only)")
+    print("  vs22          - Visual Studio 2022 (Windows only)")
+    print("  vs26          - Visual Studio 2026 (Windows only)")
+    print("  clang         - Clang compiler (default)")
+    print("  gcc           - GCC compiler")
     print("\nC++ Standard:")
     print("  cxx17         - C++17 (default)")
     print("  cxx20         - C++20")
@@ -459,6 +571,9 @@ def print_help() -> None:
     print("  build         - Build the project")
     print("  test          - Run tests")
     print("  clean         - Clean build artifacts")
+    print("\nDefault Behavior:")
+    print("  If no compiler or build tool is specified, defaults to Ninja + Clang")
+    print("  on all platforms (Windows, macOS, Linux).")
     print("\nEquivalent to CMake setup.py:")
     print("  CMake:  python setup.py config.build.test.ninja.clang.release")
     print("  Bazel:  python setup_bazel.py config.build.test.release")
@@ -472,13 +587,13 @@ def main() -> None:
         return
 
     # Check if Bazel is installed
-    if not check_bazel_installed():
+    '''if not check_bazel_installed():
         print_status("Bazel or Bazelisk is not installed!", "ERROR")
         print_status("Install Bazelisk:", "INFO")
         print_status("  macOS:  brew install bazelisk", "INFO")
         print_status("  Linux:  npm install -g @bazel/bazelisk", "INFO")
         print_status("  Or download from: https://github.com/bazelbuild/bazelisk/releases", "INFO")
-        sys.exit(1)
+        sys.exit(1)'''
 
     if len(sys.argv) < 2:
         print_status("No build configuration specified. Use --help for usage information.", "ERROR")

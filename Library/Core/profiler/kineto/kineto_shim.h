@@ -104,8 +104,8 @@ struct ActivityTraceWrapper
 {
     explicit ActivityTraceWrapper(std::unique_ptr<interface_trace_t>&& trace);
     ActivityTraceWrapper() = default;
-    explicit operator bool() const;
-    void     save(const std::string& path);
+    XSIGMA_API explicit operator bool() const;
+    XSIGMA_API void     save(const std::string& path);
 
     const std::unique_ptr<interface_trace_t>& get() { return trace_; }
 
@@ -118,23 +118,23 @@ private:
 
 // TODO: XSigma-specific types commented out
 using ActivitySet = std::set<xsigma::autograd::profiler::ActivityType>;
-void prepareTrace(
+XSIGMA_API void prepareTrace(
     const bool                                        cpuOnly,
     const ActivitySet&                                activities,
     const xsigma::profiler::impl::ExperimentalConfig& config,
     const std::string&                                trace_id = "");
 
-void                 toggleCollectionDynamic(const bool enable);
-void                 startTrace();
-ActivityTraceWrapper stopTrace();
-void                 pushCorrelationId(uint64_t correlation_id);
-void                 pushUserCorrelationId(uint64_t correlation_id);
-void                 popCorrelationId();
-void                 popUserCorrelationId();
-void                 recordThreadInfo();
-bool                 collectivesProfilerExists();
+XSIGMA_API void                 toggleCollectionDynamic(const bool enable);
+XSIGMA_API void                 startTrace();
+XSIGMA_API ActivityTraceWrapper stopTrace();
+XSIGMA_API void                 pushCorrelationId(uint64_t correlation_id);
+XSIGMA_API void                 pushUserCorrelationId(uint64_t correlation_id);
+XSIGMA_API void                 popCorrelationId();
+XSIGMA_API void                 popUserCorrelationId();
+XSIGMA_API void                 recordThreadInfo();
+XSIGMA_API bool                 collectivesProfilerExists();
 
-void logInvariantViolation(
+XSIGMA_API void logInvariantViolation(
     const std::string& assertion,
     const std::string& error,
     const std::string& profile_id,

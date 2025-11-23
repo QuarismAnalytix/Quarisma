@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
+#include "profiler/base/base.h"
 #include "profiler/common/api.h"
 #include "profiler/common/events.h"
-#include "profiler/base/base.h"
 #include "profiler/common/util.h"
 
 namespace xsigma
@@ -42,21 +42,21 @@ struct XSIGMA_VISIBILITY KinetoEvent
     XSIGMA_API uint64_t fwdThreadId() const;
     XSIGMA_API bool     hasShapes() const;
     XSIGMA_API xsigma::array_ref<std::vector<int64_t>> shapes() const;
-    XSIGMA_API bool                                          hasTypes() const;
+    XSIGMA_API bool                                    hasTypes() const;
     XSIGMA_API xsigma::array_ref<std::string> dtypes() const;
-    XSIGMA_API bool                                 hasConcreteInputs() const;
+    XSIGMA_API bool                           hasConcreteInputs() const;
     XSIGMA_API xsigma::array_ref<xsigma::IValue> concreteInputs() const;
-    XSIGMA_API bool                                    hasKwinputs() const;
-    XSIGMA_API bool                                    isHiddenEvent() const;
+    XSIGMA_API bool                              hasKwinputs() const;
+    XSIGMA_API bool                              isHiddenEvent() const;
     XSIGMA_API std::unordered_map<std::string, xsigma::IValue> kwinputs() const;
-    XSIGMA_API uint64_t                                              flops() const;
-    XSIGMA_API int64_t                                               sequenceNr() const;
-    XSIGMA_API bool                                                  hasStack() const;
+    XSIGMA_API uint64_t                                        flops() const;
+    XSIGMA_API int64_t                                         sequenceNr() const;
+    XSIGMA_API bool                                            hasStack() const;
     XSIGMA_API xsigma::array_ref<std::string> stack() const;
-    XSIGMA_API uint8_t                              scope() const;
-    XSIGMA_API bool                                 hasModuleHierarchy() const;
+    XSIGMA_API uint8_t                        scope() const;
+    XSIGMA_API bool                           hasModuleHierarchy() const;
     XSIGMA_API xsigma::array_ref<std::string> moduleHierarchy() const;
-    XSIGMA_API int64_t                              debugHandle() const;
+    XSIGMA_API int64_t                        debugHandle() const;
     XSIGMA_API std::string name() const;
     XSIGMA_API std::string overload_name() const;
     XSIGMA_API xsigma::device_enum deviceType() const;
@@ -70,7 +70,7 @@ struct XSIGMA_VISIBILITY KinetoEvent
     XSIGMA_API uint64_t            linkedCorrelationId() const;
     XSIGMA_API int64_t             deviceResourceId() const;
     XSIGMA_API std::string  backend() const;
-    static XSIGMA_API bool         isPythonFunction() ;
+    static XSIGMA_API bool  isPythonFunction();
     XSIGMA_API int64_t      cudaElapsedUs() const;
     XSIGMA_API int64_t      privateuse1ElapsedUs() const;
     XSIGMA_API void         getPerfEventCounters(xsigma::profiler::perf_counters_t& /*in*/) const;
@@ -110,7 +110,7 @@ struct XSIGMA_VISIBILITY ProfilerResult
 
     const std::vector<experimental_event_t>& event_tree() const { return event_tree_; }
 
-    void save(const std::string& path);
+    XSIGMA_API void save(const std::string& path);
 
 private:
     uint64_t                                                              trace_start_ns_ = 0;
