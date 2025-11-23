@@ -104,7 +104,7 @@ void annotation_stack::push_annotation(std::string_view name)
     int64_t scope_range_id = scope_range_counter.fetch_add(1, std::memory_order_relaxed) + 1;
 
     // Handle overflow (extremely unlikely, but be safe)
-    if XSIGMA_UNLIKELY(scope_range_id == 0)
+    if XSIGMA_UNLIKELY (scope_range_id == 0)
     {
         scope_range_id = scope_range_counter.fetch_add(1, std::memory_order_relaxed) + 1;
     }

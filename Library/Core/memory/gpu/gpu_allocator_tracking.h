@@ -64,12 +64,12 @@ namespace gpu
  */
 enum class gpu_tracking_log_level : int
 {
-    SILENT       = 0,  ///< No logging output
-    ERROR        = 1,  ///< Only log errors and critical CUDA issues
-    WARNING      = 2,  ///< Log warnings, CUDA errors, and critical issues
-    INFO         = 3,  ///< Log general information, warnings, and errors
-    DEBUG_LEVEL  = 4,  ///< Log detailed debugging information including CUDA calls
-    TRACE        = 5   ///< Log all operations with maximum detail including memory transfers
+    SILENT      = 0,  ///< No logging output
+    ERROR       = 1,  ///< Only log errors and critical CUDA issues
+    WARNING     = 2,  ///< Log warnings, CUDA errors, and critical issues
+    INFO        = 3,  ///< Log general information, warnings, and errors
+    DEBUG_LEVEL = 4,  ///< Log detailed debugging information including CUDA calls
+    TRACE       = 5   ///< Log all operations with maximum detail including memory transfers
 };
 
 /**

@@ -12,6 +12,8 @@
 
 #if XSIGMA_HAS_KINETO
 
+#include <ActivityTraceInterface.h>
+
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
@@ -21,8 +23,6 @@
 #include <sstream>
 #include <thread>
 #include <vector>
-
-#include <ActivityTraceInterface.h>
 
 #include "profiler/common/orchestration/observer.h"
 #include "profiler/kineto/kineto_shim.h"
@@ -353,7 +353,7 @@ static void data_transformation_operation(int data_size)
     // Apply transformations: square, normalize, scale
     for (int i = 0; i < data_size; ++i)
     {
-        data[i] = cosh(data[i]) *sinh(data[i]);  // Square
+        data[i] = cosh(data[i]) * sinh(data[i]);  // Square
     }
 
     double max_val = *std::max_element(data.begin(), data.end());
@@ -416,7 +416,7 @@ static void sorting_aggregation_phase(int size)
     }
 
     // Compute variance
-    double mean = static_cast<double>(sum) / size;
+    double mean     = static_cast<double>(sum) / size;
     double variance = 0.0;
     for (int val : data)
     {

@@ -161,8 +161,8 @@ private:
 
     XSIGMA_FORCE_INLINE void getActiveCallbacksImpl();
 
-    void rebuildActiveCallbacks();
-    [[nodiscard]] int  sampleTries(double p) const;
+    void              rebuildActiveCallbacks();
+    [[nodiscard]] int sampleTries(double p) const;
 
     // std::mt19937 is quite large, so all scopes share the same generator.
     std::mt19937* generator_{nullptr};
@@ -187,9 +187,9 @@ private:
     LocalCallbackManager();
 
 public:
-    [[nodiscard]] const RecordFunctionTLS&     getTLS() const;
-    StepCallbacks                getActiveCallbacks(RecordScope scope);
-    std::optional<StepCallbacks> getActiveCallbacksUnlessEmpty(RecordScope scope);
+    [[nodiscard]] const RecordFunctionTLS& getTLS() const;
+    StepCallbacks                          getActiveCallbacks(RecordScope scope);
+    std::optional<StepCallbacks>           getActiveCallbacksUnlessEmpty(RecordScope scope);
 
     void           setTLS(const RecordFunctionTLS& tls);
     void           seed(uint32_t seed);
@@ -207,8 +207,7 @@ private:
         const GlobalCallbackManager::snapshot_t& global_snapshot,
         const RecordFunctionCallback&            callback);
 
-    void rebuild_scope(
-        const GlobalCallbackManager::snapshot_t& global_snapshot, RecordScope scope);
+    void rebuild_scope(const GlobalCallbackManager::snapshot_t& global_snapshot, RecordScope scope);
 
     // Source of truth.
     RecordFunctionTLS registered_callbacks_;
@@ -251,7 +250,7 @@ CallbackHandle GlobalCallbackManager::addCallback(RecordFunctionCallback cb)
 void GlobalCallbackManager::setCallbackEnabled(CallbackHandle handle, bool enabled)
 {
     std::scoped_lock const guard(update_mutex_);
-    auto                        it = findCallback(global_callbacks_, handle);
+    auto                   it = findCallback(global_callbacks_, handle);
     if (it != global_callbacks_.end())
     {
         if (it->enabled_ != enabled)
@@ -719,7 +718,7 @@ std::optional<xsigma::FunctionSchema> RecordFunction::operator_schema() const
 }
 
 // Disabled: FunctionSchema::overload_name() not available in profiler-only build
-const char* RecordFunction::overload_name() 
+const char* RecordFunction::overload_name()
 {
 #if 0
     return std::visit(

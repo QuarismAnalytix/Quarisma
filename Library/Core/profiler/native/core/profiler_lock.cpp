@@ -72,7 +72,7 @@ static_assert(ATOMIC_INT_LOCK_FREE == 2, "Assumed atomic<int> was lock free");
         read_bool_from_env_var("XSIGMA_DISABLE_PROFILING", false, &disabled);
         return disabled;
     }();
-    if XSIGMA_UNLIKELY(tf_profiler_disabled)
+    if XSIGMA_UNLIKELY (tf_profiler_disabled)
     {
         XSIGMA_LOG_ERROR(
             "TensorFlow Profiler is permanently disabled by env var XSIGMA_DISABLE_PROFILING.");

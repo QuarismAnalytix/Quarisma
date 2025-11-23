@@ -469,7 +469,7 @@ void multi_threader::MultipleMethodExecute()
 #endif
 }
 
-int multi_threader::SpawnThread(const xsigmaThreadFunctionType  /*f*/, void* userdata)
+int multi_threader::SpawnThread(const xsigmaThreadFunctionType /*f*/, void* userdata)
 {
     int id;
 
@@ -632,7 +632,8 @@ bool multi_threader::IsThreadActive(int threadId)
 }
 
 //------------------------------------------------------------------------------
-bool multi_threader::ThreadsEqual(xsigmaMultiThreaderIDType  /*t1*/, xsigmaMultiThreaderIDType  /*t2*/)
+bool multi_threader::ThreadsEqual(
+    xsigmaMultiThreaderIDType /*t1*/, xsigmaMultiThreaderIDType /*t2*/)
 {
 #ifdef XSIGMA_HAS_PTHREADS
     return pthread_equal(t1, t2) != 0;

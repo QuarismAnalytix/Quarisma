@@ -101,7 +101,7 @@ std::unique_ptr<allocator_bfc> create_test_bfc_allocator()
  */
 XSIGMATEST(AllocatorBFC, basic_allocation_deallocation)
 {
-    #if XSIGMA_HAS_NATIVE_PROFILER
+#if XSIGMA_HAS_NATIVE_PROFILER
     traceme_recorder::start(3);
     auto allocator = create_test_bfc_allocator();
 
@@ -133,7 +133,7 @@ XSIGMATEST(AllocatorBFC, basic_allocation_deallocation)
         allocator->deallocate_raw(ptr);
     }
     traceme_recorder::stop();
-    #endif
+#endif
     END_TEST();
 }
 
@@ -653,7 +653,7 @@ XSIGMATEST(AllocatorBFC, MemoryTracking)
 // Test comprehensive memory profiling with BFC allocator
 XSIGMATEST(AllocatorBFC, ComprehensiveMemoryProfiling)
 {
-    #if XSIGMA_HAS_NATIVE_PROFILER
+#if XSIGMA_HAS_NATIVE_PROFILER
     auto session = profiler_session_builder()
                        .with_timing(true)
                        .with_memory_tracking(true)
@@ -797,7 +797,7 @@ XSIGMATEST(AllocatorBFC, ComprehensiveMemoryProfiling)
 // Test memory profiling with allocation hotspots identification
 XSIGMATEST(AllocatorBFC, AllocationHotspotsIdentification)
 {
-    #if XSIGMA_HAS_NATIVE_PROFILER
+#if XSIGMA_HAS_NATIVE_PROFILER
     auto session = profiler_session_builder()
                        .with_timing(true)
                        .with_memory_tracking(true)

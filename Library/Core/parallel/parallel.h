@@ -263,7 +263,7 @@ namespace internal
 inline void lazy_init_num_threads()
 {
     thread_local bool init = false;
-    if XSIGMA_UNLIKELY(!init)
+    if XSIGMA_UNLIKELY (!init)
     {
         xsigma::init_num_threads();
         init = true;

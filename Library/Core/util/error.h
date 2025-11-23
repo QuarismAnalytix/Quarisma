@@ -62,4 +62,3 @@ inline std::string str_error(int err_num)
 
 }  // namespace utils
 }  // namespace xsigma
-

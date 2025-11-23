@@ -5,9 +5,8 @@
 #include <set>
 #include <string>
 
-#include "logging/logger.h"
-
 #include "Testing/xsigmaTest.h"
+#include "logging/logger.h"
 #include "profiler/common/api.h"
 #include "profiler/common/record_function.h"
 #include "profiler/kineto/profiler_kineto.h"
@@ -25,17 +24,18 @@ std::string makeTracePath()
 void runSampleWork()
 {
     // Use RECORD_EDGE_SCOPE to create a profiling scope
-    constexpr int64_t kDebugHandle = 42;
+    constexpr int64_t                 kDebugHandle = 42;
     const std::vector<xsigma::IValue> no_inputs{};
-    RECORD_EDGE_SCOPE_WITH_DEBUG_HANDLE_AND_INPUTS("autograd_profiler_sample_work", kDebugHandle, no_inputs);
+    RECORD_EDGE_SCOPE_WITH_DEBUG_HANDLE_AND_INPUTS(
+        "autograd_profiler_sample_work", kDebugHandle, no_inputs);
 
     const auto start_time = std::chrono::steady_clock::now();
 
     double accumulator = 0.;
     for (int i = 0; i < 10000; ++i)
     {
-        double x = static_cast<double>(i/1000.0);
-        accumulator += sinh(x)/x;
+        double x = static_cast<double>(i / 1000.0);
+        accumulator += sinh(x) / x;
     }
 
     if (accumulator == -1)
@@ -44,8 +44,11 @@ void runSampleWork()
     }
 
     const auto end_time = std::chrono::steady_clock::now();
-    const auto start_us = std::chrono::duration_cast<std::chrono::microseconds>(start_time.time_since_epoch()).count();
-    const auto end_us = std::chrono::duration_cast<std::chrono::microseconds>(end_time.time_since_epoch()).count();
+    const auto start_us =
+        std::chrono::duration_cast<std::chrono::microseconds>(start_time.time_since_epoch())
+            .count();
+    const auto end_us =
+        std::chrono::duration_cast<std::chrono::microseconds>(end_time.time_since_epoch()).count();
 
     // Report backend event to Kineto profiler
     xsigma::autograd::profiler::reportBackendEventToActiveKinetoProfiler(

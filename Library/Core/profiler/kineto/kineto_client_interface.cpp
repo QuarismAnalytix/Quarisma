@@ -61,7 +61,7 @@ public:
             /*with_stack=*/withStack_,
             /*with_flops=*/withFlops_,
             /*with_modules=*/withModules_};
-        std::set<ActivityType>                  const activities{ActivityType::CPU};
+        std::set<ActivityType> const            activities{ActivityType::CPU};
         std::unordered_set<xsigma::RecordScope> scopes;
         scopes.insert(xsigma::RecordScope::FUNCTION);
         scopes.insert(xsigma::RecordScope::USER_SCOPE);

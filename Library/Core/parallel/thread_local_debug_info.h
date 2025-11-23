@@ -54,8 +54,8 @@ public:
     static std::shared_ptr<DebugInfoBase> _peek(DebugInfoKind kind);
 
 private:
-    std::shared_ptr<DebugInfoBase>        info_;
-    DebugInfoKind                         kind_;
+    std::shared_ptr<DebugInfoBase>           info_;
+    DebugInfoKind                            kind_;
     std::shared_ptr<thread_local_debug_info> parent_info_;
 
     friend class DebugInfoGuard;
@@ -82,7 +82,7 @@ public:
     DebugInfoGuard& operator=(DebugInfoGuard&&)      = delete;
 
 private:
-    bool                                  active_    = false;
+    bool                                     active_    = false;
     std::shared_ptr<thread_local_debug_info> prev_info_ = nullptr;
 };
 

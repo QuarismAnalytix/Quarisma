@@ -93,7 +93,7 @@ enum ProfilerIValueIdx
     NUM_PROFILER_CFG_IVALUE_IDX  // must be last in list
 };
 }  // namespace
-xsigma::IValue ProfilerConfig::toIValue() 
+xsigma::IValue ProfilerConfig::toIValue()
 {
     //xsigma::impl::GenericList eventIValueList(xsigma::AnyType::get());
     //eventIValueList.reserve(NUM_PROFILER_CFG_IVALUE_IDX);

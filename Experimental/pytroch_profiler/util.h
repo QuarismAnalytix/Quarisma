@@ -19,7 +19,7 @@
 #define SOFT_ASSERT(cond, ...)                              \
     [&]() -> bool                                           \
     {                                                       \
-        if XSIGMA_UNLIKELY(!(cond))                         \
+        if XSIGMA_UNLIKELY (!(cond))                        \
         {                                                   \
             xsigma::profiler::impl::logSoftAssert(          \
                 __func__,                                   \

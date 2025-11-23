@@ -44,12 +44,11 @@ static xsigma::unwind::Mode compute_symbolize_mode()
         {
             return unwind::Mode::fast;
         }
-        
-                    XSIGMA_CHECK(
-                false,
-                "expected {{dladdr, addr2line, fast}} for XSIGMA_SYMBOLIZE_MODE, got {}",
-                envar_c.value());
-       
+
+        XSIGMA_CHECK(
+            false,
+            "expected {{dladdr, addr2line, fast}} for XSIGMA_SYMBOLIZE_MODE, got {}",
+            envar_c.value());
     }
     else
     {

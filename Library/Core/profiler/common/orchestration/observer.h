@@ -167,7 +167,7 @@ struct XSIGMA_VISIBILITY ProfilerConfig
     std::string        trace_id;
 
     // For serialization
-    static XSIGMA_API xsigma::IValue        toIValue() ;
+    static XSIGMA_API xsigma::IValue toIValue();
     XSIGMA_API static ProfilerConfig fromIValue(const xsigma::IValue& profilerConfigIValue);
 };
 

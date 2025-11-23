@@ -1,12 +1,12 @@
 #include "util/env.h"
 
+#include <fmt/format.h>
+
 #include <algorithm>
 #include <cctype>
 #include <cstdint>
-#include <exception>
-#include <fmt/format.h>
-
 #include <cstdlib>
+#include <exception>
 #include <mutex>
 #include <shared_mutex>
 
@@ -151,7 +151,7 @@ bool read_env_int64(const char* name, int64_t default_val, int64_t* value)
         return true;
     }
 
-    std::string str = *env_opt;
+    std::string str   = *env_opt;
     auto        start = str.find_first_not_of(" \t\n\r");
     auto        end   = str.find_last_not_of(" \t\n\r");
     if (start == std::string::npos || end == std::string::npos)
@@ -167,7 +167,7 @@ bool read_env_int64(const char* name, int64_t default_val, int64_t* value)
 
     try
     {
-        size_t pos = 0;
+        size_t        pos = 0;
         int64_t const val = std::stoll(str, &pos);
         if (pos == str.length())
         {

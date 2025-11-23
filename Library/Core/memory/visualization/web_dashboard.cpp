@@ -92,7 +92,7 @@ bool web_dashboard::register_allocator(const std::string& name, Allocator* alloc
 
     std::scoped_lock const lock(allocators_mutex_);
 
-    if (registered_allocators_.find(name) != registered_allocators_.end())//NOLINT
+    if (registered_allocators_.find(name) != registered_allocators_.end())  //NOLINT
     {
         XSIGMA_LOG_WARNING("Allocator already registered: {}", name);
         return false;

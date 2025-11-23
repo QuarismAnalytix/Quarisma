@@ -5,8 +5,8 @@
 #include <utility>
 #include <vector>
 
-#include "profiler/kineto/kineto_shim.h"
 #include "profiler/common/util.h"
+#include "profiler/kineto/kineto_shim.h"
 #include "util/approximate_clock.h"
 #include "util/strong_type.h"
 

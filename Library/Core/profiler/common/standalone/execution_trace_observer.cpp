@@ -531,7 +531,7 @@ static ExecutionTraceObserver::ID getObjectID(ExecutionTraceObserver& ob, const 
     if (iter == ob.objectId.end())
     {
         ExecutionTraceObserver::ID const objectId = ob.getNewID();
-        ob.objectId[t]                      = objectId;
+        ob.objectId[t]                            = objectId;
         return objectId;
     }
 
@@ -795,7 +795,7 @@ static void handleKernelBackendInfo(FunctionCallContext& /*fc*/, const RecordFun
 #endif
 
 // Additional attributes for commounication collectives
-static inline std::string getCommsNodeAttrs(const RecordFunction&  /*fn*/)
+static inline std::string getCommsNodeAttrs(const RecordFunction& /*fn*/)
 {  // NOLINT
     std::vector<std::string> attrs;
 
@@ -938,7 +938,7 @@ static void recordOperatorStart(
 static std::unique_ptr<ObserverContext> onFunctionEnter(const RecordFunction& fn)
 {
     using RunState = ExecutionTraceObserver::RunState;
-    auto *ob        = ObserverManager::get();
+    auto* ob       = ObserverManager::get();
     if (ob != nullptr && ob->getState() == RunState::enabled)
     {
         // record op
@@ -998,14 +998,14 @@ static std::string json_str_escape(const std::string& str)
 static void onFunctionExit(const RecordFunction& fn, ObserverContext* ctx_ptr)
 {
     using RunState = ExecutionTraceObserver::RunState;
-    auto *ob        = ObserverManager::get();
+    auto* ob       = ObserverManager::get();
     if (ob == nullptr || ctx_ptr == nullptr)
     {
         return;
     }
     if (ob->getState() == RunState::enabled)
     {
-        auto *fc_ptr = dynamic_cast<FunctionCallContext*>(ctx_ptr);
+        auto* fc_ptr = dynamic_cast<FunctionCallContext*>(ctx_ptr);
         // XSIGMA_CHECK(fc_ptr != nullptr);
         if (fc_ptr == nullptr)
         {
@@ -1171,7 +1171,7 @@ bool addExecutionTraceObserver(const std::string& output_file_path)
 
 void removeExecutionTraceObserver()
 {
-    auto *ob = ObserverManager::get();
+    auto* ob = ObserverManager::get();
     if (ob != nullptr)
     {
         if (ob->getState() != ExecutionTraceObserver::RunState::disabled)

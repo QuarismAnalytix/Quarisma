@@ -49,7 +49,7 @@ void thread_local_debug_info::_push(DebugInfoKind kind, std::shared_ptr<DebugInf
 }
 
 /* static */
-std::shared_ptr<DebugInfoBase> thread_local_debug_info::_pop(DebugInfoKind  /*kind*/)
+std::shared_ptr<DebugInfoBase> thread_local_debug_info::_pop(DebugInfoKind /*kind*/)
 {
     //XSIGMA_CHECK(//NOLINT
     //    debug_info!=nullptr && debug_info->kind_ == kind, "Expected debug info of type ", (size_t)kind);//NOLINT
@@ -59,7 +59,7 @@ std::shared_ptr<DebugInfoBase> thread_local_debug_info::_pop(DebugInfoKind  /*ki
 }
 
 /* static */
-std::shared_ptr<DebugInfoBase> thread_local_debug_info::_peek(DebugInfoKind  /*kind*/)
+std::shared_ptr<DebugInfoBase> thread_local_debug_info::_peek(DebugInfoKind /*kind*/)
 {
     //XSIGMA_CHECK(
     //    debug_info!=nullptr && debug_info->kind_ == kind, "Expected debug info of type ", (size_t)kind);

@@ -149,12 +149,12 @@ struct alloc_record
  */
 enum class tracking_log_level : int
 {
-    SILENT       = 0,  ///< No logging output
-    ERROR        = 1,  ///< Only log errors and critical issues
-    WARNING      = 2,  ///< Log warnings and errors
-    INFO         = 3,  ///< Log general information, warnings, and errors
-    DEBUG_LEVEL  = 4,  ///< Log detailed debugging information
-    TRACE        = 5   ///< Log all operations with maximum detail
+    SILENT      = 0,  ///< No logging output
+    ERROR       = 1,  ///< Only log errors and critical issues
+    WARNING     = 2,  ///< Log warnings and errors
+    INFO        = 3,  ///< Log general information, warnings, and errors
+    DEBUG_LEVEL = 4,  ///< Log detailed debugging information
+    TRACE       = 5   ///< Log all operations with maximum detail
 };
 
 /**

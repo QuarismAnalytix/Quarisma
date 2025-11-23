@@ -296,7 +296,8 @@ void prepareTrace(
     }
 
     std::set<libkineto::ActivityType> k_activities;
-    bool const has_cpu_activity = activities.count(xsigma::autograd::profiler::ActivityType::CPU) > 0;
+    bool const                        has_cpu_activity =
+        activities.count(xsigma::autograd::profiler::ActivityType::CPU) > 0;
 
     if (has_cpu_activity)
     {
@@ -527,8 +528,9 @@ void addMetadataJson(const std::string& key, const std::string& value)
         XSIGMA_LOG_WARNING("Profiler is not initialized: skipping profiling metadata");
     }
 #else
-    XSIGMA_LOG_WARNING("Adding profiling metadata requires using "
-                       "xsigma.profiler with Kineto support (XSIGMA_HAS_KINETO=1)");
+    XSIGMA_LOG_WARNING(
+        "Adding profiling metadata requires using "
+        "xsigma.profiler with Kineto support (XSIGMA_HAS_KINETO=1)");
 #endif  // XSIGMA_HAS_KINETO
 }
 

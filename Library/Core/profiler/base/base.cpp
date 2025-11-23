@@ -28,19 +28,16 @@ struct DefaultStubs : public ProfilerStubs
         fail();
         return 0.F;
     }
-    void mark(const char* /*name*/) const override { fail(); }
-    void rangePush(const char* /*name*/) const override { fail(); }
-    void rangePop() const override { fail(); }
+    void               mark(const char* /*name*/) const override { fail(); }
+    void               rangePush(const char* /*name*/) const override { fail(); }
+    void               rangePop() const override { fail(); }
     [[nodiscard]] bool enabled() const override { return false; }
-    void onEachDevice(std::function<void(int)> /*op*/) const override { fail(); }
-    void synchronize() const override { fail(); }
+    void               onEachDevice(std::function<void(int)> /*op*/) const override { fail(); }
+    void               synchronize() const override { fail(); }
     ~DefaultStubs() override = default;
 
 private:
-    void fail() const
-    {
-        XSIGMA_CHECK(false, "{} used in profiler but not enabled.", name_);
-    }
+    void fail() const { XSIGMA_CHECK(false, "{} used in profiler but not enabled.", name_); }
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
     const char* const name_;

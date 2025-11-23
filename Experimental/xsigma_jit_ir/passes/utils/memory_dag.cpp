@@ -59,7 +59,7 @@ bool MemoryDAG::mayContainAlias(const Element* a, const Element* b) const
 
 const MemoryLocations& MemoryDAG::getAllContainedMemoryLocations(const Element* elem) const
 {
-    if XSIGMA_UNLIKELY(!elem->cachedAllContainedMemoryLocations_.has_value())
+    if XSIGMA_UNLIKELY (!elem->cachedAllContainedMemoryLocations_.has_value())
     {
         MemoryLocations cache;
         elem->cachedAllContainedMemoryLocations_ = MemoryLocations();
@@ -77,7 +77,7 @@ void MemoryDAG::collectAllContainedMemoryLocations(const Element* elem, MemoryLo
         return;
     }
 
-    if XSIGMA_UNLIKELY(!elem->cachedAllContainedMemoryLocations_.has_value())
+    if XSIGMA_UNLIKELY (!elem->cachedAllContainedMemoryLocations_.has_value())
     {
         MemoryLocations cache;
         collectAllContainedMemoryLocationsImpl(elem, cache);

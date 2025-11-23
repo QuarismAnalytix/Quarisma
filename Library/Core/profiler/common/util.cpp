@@ -121,9 +121,8 @@ std::string getNvtxStr(
         }
         return str;
     }
-    
-            return name;
-   
+
+    return name;
 }
 
 // ----------------------------------------------------------------------------
@@ -366,17 +365,16 @@ std::string strListToStr(const std::vector<std::string>& types)
     {
         return "[]";
     }
-    
-            std::ostringstream oss;
-        std::transform(
-            types.begin(),
-            types.end(),
-            std::ostream_iterator<std::string>(oss, ", "),
-            [](const std::string& s) -> std::string { return "\"" + s + "\""; });
-        auto rc = oss.str();
-        rc.erase(rc.length() - 2);  // remove last ", "
-        return "[" + rc + "]";
-   
+
+    std::ostringstream oss;
+    std::transform(
+        types.begin(),
+        types.end(),
+        std::ostream_iterator<std::string>(oss, ", "),
+        [](const std::string& s) -> std::string { return "\"" + s + "\""; });
+    auto rc = oss.str();
+    rc.erase(rc.length() - 2);  // remove last ", "
+    return "[" + rc + "]";
 }
 #if 0
 // Disabled: IValue methods (isNone, isBool, operator<<) not available in profiler-only build.
@@ -520,23 +518,21 @@ static inline std::string format_list(
                 *std::prev(list.end()));
             return x;
         }
-        
-                    auto x = fmt::format(
-                "[{}, ..., {}]",
-                fmt::join(list.begin(), list.begin() + kTruncatLength - 1, ", "),
-                *std::prev(list.end()));
-            return x;
-       
+
+        auto x = fmt::format(
+            "[{}, ..., {}]",
+            fmt::join(list.begin(), list.begin() + kTruncatLength - 1, ", "),
+            *std::prev(list.end()));
+        return x;
     }
     if (with_escaped_quotes)
     {
         auto x = fmt::format("\"[{}]\"", fmt::join(list.begin(), list.end(), ", "));
         return x;
     }
-    
-            auto x = fmt::format("[{}]", fmt::join(list.begin(), list.end(), ", "));
-        return x;
-   
+
+    auto x = fmt::format("[{}]", fmt::join(list.begin(), list.end(), ", "));
+    return x;
 }
 
 #if 0
@@ -611,9 +607,9 @@ std::pair<bool, std::variant<int, std::vector<int>>> findStartAddrForTensors(
 
 std::unordered_map<std::string, std::string> saveNcclMeta(
     // @lint-ignore CLANGTIDY
-    const xsigma::RecordFunction&  /*fn*/,
+    const xsigma::RecordFunction& /*fn*/,
     // @lint-ignore CLANGTIDY
-    const SaveNcclMetaConfig&  /*config*/)
+    const SaveNcclMetaConfig& /*config*/)
 {
     std::unordered_map<std::string, std::string> map;
 #ifdef USE_DISTRIBUTED
@@ -1198,10 +1194,10 @@ uint64_t computeFlops(
 // value
 int getTensorStartHint(const xsigma::Tensor& t)
 {
-    const auto *const tensor_impl  = t.unsafeGetTensorImpl();
-    uintptr_t  storage_addr = 0;
-    storage_addr            = reinterpret_cast<uintptr_t>(tensor_impl->storage().data());
-    int const last_bits           = static_cast<int>(storage_addr & 0xFFFFF);
+    const auto* const tensor_impl  = t.unsafeGetTensorImpl();
+    uintptr_t         storage_addr = 0;
+    storage_addr                   = reinterpret_cast<uintptr_t>(tensor_impl->storage().data());
+    int const last_bits            = static_cast<int>(storage_addr & 0xFFFFF);
     return last_bits;
 }
 

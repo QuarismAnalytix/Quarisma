@@ -17,8 +17,8 @@
 
 #include "profiler/common/data_flow.h"
 #include "profiler/common/ivalue.h"
-#include "profiler/kineto/kineto_shim.h"
 #include "profiler/common/record_function.h"
+#include "profiler/kineto/kineto_shim.h"
 #include "util/exception.h"
 #include "util/flat_hash.h"
 #include "util/irange.h"
@@ -403,7 +403,7 @@ uint64_t ThreadLocalSubqueue::TorchOpStorage::EventBlock<T, ChunkSize>::correlat
 std::unique_ptr<KinetoObserverContext> ThreadLocalSubqueue::begin_op(
     const xsigma::RecordFunction& fn)
 {
-    const auto *overload_name =
+    const auto* overload_name =
         config_.experimental_config.capture_overload_names ? fn.overload_name() : "";
     auto [event, corr_id] = torch_ops_.op_events_.emplace_back(
         xsigma::profiler::impl::TorchOpBasicFields{
@@ -415,7 +415,7 @@ std::unique_ptr<KinetoObserverContext> ThreadLocalSubqueue::begin_op(
             fn.debugHandle(),
             fn.name(),
             overload_name});
-            
+
     if (config_.report_input_shapes)
     {
         torch_ops_.inputs_outputs_.push(fn.inputs());
@@ -529,11 +529,10 @@ struct StealOrDefault
         {
             return typename T::Iterator::value_type();
         }
-        
-                    auto result = std::move(*it_);
-            ++it_;
-            return result;
-       
+
+        auto result = std::move(*it_);
+        ++it_;
+        return result;
     }
 
     std::reference_wrapper<T> container_;
@@ -544,11 +543,11 @@ struct StealOrDefault
 static constexpr std::string_view profilerStepString = "ProfilerStep#";
 
 void ThreadLocalSubqueue::TorchOpStorage::materialize(
-    std::vector<std::shared_ptr<Result>>&                        /*out*/,
-    std::vector<ProfilerStepInfo>&                               /*step_info*/,
-    const std::function<xsigma::time_t(xsigma::approx_time_t)>&  /*time_converter*/,
-    const uint64_t                                               /*tid*/,
-    const kineto::DeviceAndResource&                             /*kineto_info*/)
+    std::vector<std::shared_ptr<Result>>& /*out*/,
+    std::vector<ProfilerStepInfo>& /*step_info*/,
+    const std::function<xsigma::time_t(xsigma::approx_time_t)>& /*time_converter*/,
+    const uint64_t /*tid*/,
+    const kineto::DeviceAndResource& /*kineto_info*/)
 {
 #if 0
     // Disabled: This loop uses irange and modifies event fields that may not be available
@@ -786,7 +785,7 @@ std::string Result::overload_name() const
     return visit(
         xsigma::overloaded(
             ATTRIBUTE(TorchOp, std::string(e.overload_name_)),
-            [](const auto&  /*e*/) -> std::string { return ""; }));
+            [](const auto& /*e*/) -> std::string { return ""; }));
 }
 
 libkineto::ActivityType Result::kinetoType() const
@@ -879,7 +878,7 @@ RecordQueue::RecordQueue(ProfilerConfig config, std::set<ActivityType> activitie
 
 bool RecordQueue::tracePython() const
 {
-    return config_.with_stack && (activities_.count(ActivityType::CPU) > 0);//NOLINT
+    return config_.with_stack && (activities_.count(ActivityType::CPU) > 0);  //NOLINT
 }
 
 bool RecordQueue::getPythonGcEvents() const
@@ -902,9 +901,9 @@ ThreadLocalSubqueue* RecordQueue::getSubqueue()
         return sub_queue_cache_.ref_;
     }
 
-    const auto                  tid = xsigma::RecordFunction::currentThreadId();
+    const auto             tid = xsigma::RecordFunction::currentThreadId();
     std::scoped_lock const guard(sub_queue_mutex_);
-    auto                        it = sub_queues_.find(tid);
+    auto                   it = sub_queues_.find(tid);
     if (it == sub_queues_.end())
     {
         it = sub_queues_.emplace(tid, std::make_unique<ThreadLocalSubqueue>(tid, config_)).first;
@@ -1025,7 +1024,7 @@ void generateForwardBackwardLinks(
     for (const auto idx : xsigma::irange(cpu_trace->activities.size()))
     {
         const auto& profiler_result = results[idx];
-        auto& activity        = cpu_trace->activities[idx];
+        auto&       activity        = cpu_trace->activities[idx];
 
         // add information about an associated forward op, if a sequence number
         // is available (e.g. during training)
@@ -1080,8 +1079,8 @@ void passEventsToKineto(
         // ends. This way Kineto will extend the event to the end of the trace. This
         // is useful so that we can still have 0 duration events if necessary
         // without extension
-        int64_t     const act_end_time = std::max(e->endTimeNS(), e->start_time_ns_ - 1);
-        std::string name         = e->name();
+        int64_t const act_end_time = std::max(e->endTimeNS(), e->start_time_ns_ - 1);
+        std::string   name         = e->name();
         if (!e->overload_name().empty())
         {
             name = fmt::format("{}.{}", e->name(), e->overload_name());
@@ -1232,7 +1231,7 @@ private:
         }*/
     }
 
-    static bool isHiddenEvent(const itrace_t* activity) 
+    static bool isHiddenEvent(const itrace_t* activity)
     {
         XSIGMA_CHECK(activity != nullptr);
         // Kineto uses "hidden" metadata to mark events that should be hidden.
@@ -1596,7 +1595,7 @@ int64_t adjust_durations_dfs(std::shared_ptr<Result>& r)
     if (SOFT_ASSERT(r != nullptr))
     {
         int64_t const original_duration       = r->endTimeNS() - r->start_time_ns_;
-        int64_t children_total_duration = std::accumulate(
+        int64_t       children_total_duration = std::accumulate(
             r->children_.begin(),
             r->children_.end(),
             0,
@@ -1624,13 +1623,11 @@ int64_t adjust_durations_dfs(std::shared_ptr<Result>& r)
                     }));
             return children_total_duration;
         }
-        
-                    return original_duration;
-       
+
+        return original_duration;
     }
-    
-            return 0;
-   
+
+    return 0;
 }
 
 /**

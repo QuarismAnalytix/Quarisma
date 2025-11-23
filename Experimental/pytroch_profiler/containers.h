@@ -78,12 +78,12 @@ public:
         xsigma::array_ref<T0> src)
     {
         size_t n = src.size();
-        if XSIGMA_UNLIKELY(n == 0)
+        if XSIGMA_UNLIKELY (n == 0)
         {
             return;
         }
         maybe_grow();
-        if XSIGMA_LIKELY(next_ && (next_ + n <= end_))
+        if XSIGMA_LIKELY (next_ && (next_ + n <= end_))
         {
             std::memcpy((void*)next_, (void*)src.begin(), n * sizeof(T0));
             next_ += n;
@@ -190,7 +190,7 @@ public:
 private:
     void maybe_grow()
     {
-        if XSIGMA_UNLIKELY(next_ == end_)
+        if XSIGMA_UNLIKELY (next_ == end_)
         {
             buffer_last_ = buffer_.emplace_after(buffer_last_);
             n_blocks_++;
