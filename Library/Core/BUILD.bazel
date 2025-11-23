@@ -70,19 +70,22 @@ EOF
 # Collect all headers
 filegroup(
     name = "core_hdrs",
-    srcs = glob([
-        "util/*.h",
-        "common/*.h",
-        "logging/*.h",
-        "memory/*.h",
-        "memory/**/*.h",
-        "profiler/*.h",
-        "profiler/**/*.h",
-        "smp/*.h",
-        "smp/**/*.h",
-        "c17/*.h",
-        "parallel/*.h",
-    ]) + [
+    srcs = glob(
+        [
+            "util/*.h",
+            "common/*.h",
+            "logging/*.h",
+            "memory/*.h",
+            "memory/**/*.h",
+            "profiler/*.h",
+            "profiler/**/*.h",
+            "smp/*.h",
+            "smp/**/*.h",
+            "c17/*.h",
+            "parallel/*.h",
+        ],
+        allow_empty = True,
+    ) + [
         ":xsigma_version_macros.h",
         ":xsigma_threads.h",
     ],
@@ -91,17 +94,20 @@ filegroup(
 # Collect all template implementation files
 filegroup(
     name = "core_templates",
-    srcs = glob([
-        "util/*.hxx",
-        "common/*.hxx",
-        "logging/*.hxx",
-        "memory/*.hxx",
-        "memory/**/*.hxx",
-        "profiler/*.hxx",
-        "profiler/**/*.hxx",
-        "smp/*.hxx",
-        "smp/**/*.hxx",
-    ]),
+    srcs = glob(
+        [
+            "util/*.hxx",
+            "common/*.hxx",
+            "logging/*.hxx",
+            "memory/*.hxx",
+            "memory/**/*.hxx",
+            "profiler/*.hxx",
+            "profiler/**/*.hxx",
+            "smp/*.hxx",
+            "smp/**/*.hxx",
+        ],
+        allow_empty = True,
+    ),
 )
 
 # Collect all source files
@@ -137,6 +143,7 @@ filegroup(
             # Exclude logging.cpp for native backend
             "logging/logging.cpp",
         ],
+        allow_empty = True,
     ),
 )
 
@@ -150,33 +157,44 @@ cc_library(
         ":core_srcs",
         ":core_templates",
     ] + select({
-        "//bazel:enable_cuda": glob(["memory/gpu/*.cpp", "memory/cpu/allocator_device.cpp"]),
-        "//bazel:enable_hip": glob(["memory/gpu/*.cpp", "memory/cpu/allocator_device.cpp"]),
+        "//bazel:enable_cuda": glob(["memory/gpu/*.cpp", "memory/cpu/allocator_device.cpp"], allow_empty = True),
+        "//bazel:enable_hip": glob(["memory/gpu/*.cpp", "memory/cpu/allocator_device.cpp"], allow_empty = True),
         "//conditions:default": [],
     }) + select({
-        "//bazel:enable_native_profiler": glob(["profiler/native/**/*.cpp"]),
+        "//bazel:enable_native_profiler": glob(["profiler/native/**/*.cpp"], allow_empty = True),
         "//conditions:default": [],
     }) + select({
-        "//bazel:enable_tbb": glob(["smp/TBB/*.cpp"]),
-        "//conditions:default": glob(["smp/STDThread/*.cpp"]),
+        "//bazel:enable_tbb": glob(["smp/TBB/*.cpp"], allow_empty = True),
+        "//conditions:default": glob(["smp/STDThread/*.cpp"], allow_empty = True),
     }) + select({
-        "//bazel:enable_kineto": glob(["profiler/kineto_*.cpp"]),
+        "//bazel:enable_kineto": glob(
+            [
+                "profiler/kineto_*.cpp",
+                "profiler/kineto/**/*.cpp",
+                "profiler/common/**/*.cpp",
+                "profiler/native/**/*.cpp",
+            ],
+            exclude = [
+                "profiler/common/unwind/**/*.cpp",
+            ],
+            allow_empty = True,
+        ),
         "//conditions:default": [],
     }),
     hdrs = [
         ":core_hdrs",
     ] + select({
-        "//bazel:enable_cuda": glob(["memory/gpu/*.h", "memory/cpu/allocator_device.h"]),
-        "//bazel:enable_hip": glob(["memory/gpu/*.h", "memory/cpu/allocator_device.h"]),
+        "//bazel:enable_cuda": glob(["memory/gpu/*.h", "memory/cpu/allocator_device.h"], allow_empty = True),
+        "//bazel:enable_hip": glob(["memory/gpu/*.h", "memory/cpu/allocator_device.h"], allow_empty = True),
         "//conditions:default": [],
     }) + select({
-        "//bazel:enable_native_profiler": glob(["profiler/native/**/*.h", "profiler/native/**/*.hxx"]),
+        "//bazel:enable_native_profiler": glob(["profiler/native/**/*.h", "profiler/native/**/*.hxx"], allow_empty = True),
         "//conditions:default": [],
     }) + select({
-        "//bazel:enable_tbb": glob(["smp/TBB/*.h", "smp/TBB/*.hxx"]),
-        "//conditions:default": glob(["smp/STDThread/*.h", "smp/STDThread/*.hxx"]),
+        "//bazel:enable_tbb": glob(["smp/TBB/*.h", "smp/TBB/*.hxx"], allow_empty = True),
+        "//conditions:default": glob(["smp/STDThread/*.h", "smp/STDThread/*.hxx"], allow_empty = True),
     }) + select({
-        "//bazel:enable_kineto": glob(["profiler/kineto_*.h"]),
+        "//bazel:enable_kineto": glob(["profiler/kineto_*.h", "profiler/native/**/*.h", "profiler/native/**/*.hxx"], allow_empty = True),
         "//conditions:default": [],
     }),
     copts = xsigma_copts() + select({
@@ -213,10 +231,13 @@ cc_library(
         "//bazel:enable_kineto": ["@kineto//:kineto"],
         "//conditions:default": [],
     }) + select({
-        "//bazel:enable_tbb": ["@tbb//:tbb"],
+        "//bazel:enable_tbb": [
+            "@tbb//:tbb",
+            "@tbb//:tbbmalloc",
+        ],
         "//conditions:default": [],
     }) + select({
-        "//bazel:enable_cuda": ["@local_config_cuda//cuda:cuda"],
+        "//bazel:enable_cuda": ["@local_config_cuda//:cuda"],
         "//conditions:default": [],
     }) + select({
         "//bazel:enable_mkl": ["@mkl//:mkl"],

@@ -83,10 +83,13 @@ cc_test(
         "USE_GTEST",
         "_VARIADIC_MAX=10",
         "XSIGMA_HAS_GTEST=1",
-        "XSIGMA_HAS_CUDA=0",
-        "XSIGMA_HAS_HIP=0",
-        "XSIGMA_HAS_KINETO=0",
-    ],
+    ] + select({
+        "//bazel:enable_cuda": [],
+        "//conditions:default": ["XSIGMA_HAS_CUDA=0"],
+    }) + select({
+        "//bazel:enable_hip": [],
+        "//conditions:default": ["XSIGMA_HAS_HIP=0"],
+    }),
     includes = ["."],
     linkopts = xsigma_linkopts(),
     deps = [

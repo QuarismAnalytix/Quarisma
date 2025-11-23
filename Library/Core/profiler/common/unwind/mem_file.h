@@ -12,7 +12,6 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <xsigma/util/error.h>
 
 #include <cerrno>
 #include <cstdio>
@@ -20,6 +19,7 @@
 
 #include "profiler/common/unwind/lexer.h"
 #include "profiler/common/unwind/unwind_error.h"
+#include "util/error.h"
 
 namespace xsigma::unwind
 {

@@ -1,12 +1,9 @@
 #include <unordered_map>
 #include <unordered_set>
 
-// TODO: Missing XSigma dependency - original include was:
-// #include <xsigma/util/error.h>
-// This is a XSigma-specific header not available in XSigma
-
 #include "profiler/base/perf-inl.h"
 #include "profiler/base/perf.h"
+#include "util/error.h"
 #include "util/exception.h"
 
 namespace xsigma::profiler::impl::linux_perf

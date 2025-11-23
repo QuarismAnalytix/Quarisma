@@ -24,16 +24,16 @@ def xsigma_copts():
 def xsigma_defines():
     """Returns common preprocessor defines for XSigma targets."""
     base_defines = []
-    
+
     # Add feature-specific defines based on build configuration
     return base_defines + select({
-        "//bazel:enable_cuda": ["XSIGMA_ENABLE_CUDA"],
-        "//conditions:default": [],
+        "//bazel:enable_cuda": ["XSIGMA_ENABLE_CUDA", "XSIGMA_HAS_CUDA=1"],
+        "//conditions:default": ["XSIGMA_HAS_CUDA=0"],
     }) + select({
         "//bazel:enable_hip": ["XSIGMA_ENABLE_HIP"],
         "//conditions:default": [],
     }) + select({
-        "//bazel:enable_tbb": ["XSIGMA_ENABLE_TBB"],
+        "//bazel:enable_tbb": ["XSIGMA_HAS_TBB"],
         "//conditions:default": [],
     }) + select({
         "//bazel:enable_mkl": ["XSIGMA_ENABLE_MKL"],
@@ -45,7 +45,7 @@ def xsigma_defines():
         "//bazel:enable_magic_enum": ["XSIGMA_ENABLE_MAGICENUM"],
         "//conditions:default": [],
     }) + select({
-        "//bazel:enable_kineto": ["XSIGMA_ENABLE_KINETO"],
+        "//bazel:enable_kineto": ["XSIGMA_ENABLE_KINETO", "XSIGMA_HAS_KINETO"],
         "//conditions:default": ["XSIGMA_ENABLE_KINETO=1"],
     }) + select({
         "//bazel:enable_native_profiler": ["XSIGMA_ENABLE_NATIVE_PROFILER"],

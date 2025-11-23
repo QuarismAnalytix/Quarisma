@@ -130,7 +130,7 @@ class BazelConfiguration:
                 self.configs.append("lto")
 
             # Optional features
-            elif arg_lower in ["mimalloc", "magic_enum", "tbb", "openmp", "cuda", "hip"]:
+            elif arg_lower in ["mimalloc", "magic_enum", "tbb", "mkl", "openmp", "cuda", "hip"]:
                 self.configs.append(arg_lower)
 
             # Logging backends (with logging_ prefix)

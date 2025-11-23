@@ -1,7 +1,7 @@
 # =============================================================================
 # Kineto Library BUILD Configuration
 # =============================================================================
-# Kineto profiling library (CPU-only build)
+# Kineto profiling library with conditional CUPTI support
 # Equivalent to ThirdParty/kineto/libkineto
 # =============================================================================
 
@@ -16,9 +16,11 @@ KINETO_COPTS = [
     "-Wno-unused-variable",
     "-Wno-unused-parameter",
     "-DKINETO_NAMESPACE=libkineto",
-    "-DLIBKINETO_NOCUPTI",
     "-DLIBKINETO_NOROCTRACER",
 ] + select({
+    "@xsigma//bazel:enable_cuda": ["-DHAS_CUPTI"],
+    "//conditions:default": ["-DLIBKINETO_NOCUPTI"],
+}) + select({
     "@platforms//os:windows": [],
     "//conditions:default": ["-w"],  # Suppress warnings for third-party code
 })
@@ -30,9 +32,17 @@ cc_library(
             "libkineto/src/*.cpp",
         ],
         exclude = [
-            # Exclude CUDA/ROCm specific files
+            # Always exclude ROCm specific files
+            "libkineto/src/RocprofActivityApi.cpp",
+            "libkineto/src/RocprofLogger.cpp",
+            "libkineto/src/RoctracerActivityApi.cpp",
+            "libkineto/src/RoctracerLogger.cpp",
+            "libkineto/src/RocLogger.cpp",
+            # Exclude CUPTI-specific files that will be conditionally included below
+            # Note: CuptiActivityApi.cpp, CuptiActivityProfiler.cpp, ActivityProfilerController.cpp,
+            # and ActivityProfilerProxy.cpp are included in CPU-only builds (get_libkineto_cpu_only_srcs)
+            # They have runtime guards for CUPTI functionality
             "libkineto/src/CuptiActivity.cpp",
-            "libkineto/src/CuptiActivityApi.cpp",
             "libkineto/src/CuptiCallbackApi.cpp",
             "libkineto/src/CuptiEventApi.cpp",
             "libkineto/src/CuptiMetricApi.cpp",
@@ -45,20 +55,48 @@ cc_library(
             "libkineto/src/KernelRegistry.cpp",
             "libkineto/src/WeakSymbols.cpp",
             "libkineto/src/cupti_strings.cpp",
-            "libkineto/src/RocprofActivityApi.cpp",
-            "libkineto/src/RocprofLogger.cpp",
-            "libkineto/src/RoctracerActivityApi.cpp",
-            "libkineto/src/RoctracerLogger.cpp",
-            "libkineto/src/RocLogger.cpp",
             # Exclude plugin files
             "libkineto/src/plugin/**/*.cpp",
         ],
-    ),
-    hdrs = glob([
-        "libkineto/include/*.h",
-        "libkineto/include/**/*.h",
-        "libkineto/src/*.h",
-    ]),
+        allow_empty = True,
+    ) + select({
+        "@xsigma//bazel:enable_cuda": [
+            # Include CUPTI-specific files when CUDA is enabled
+            # These files are part of get_libkineto_cupti_srcs() in libkineto_defs.bzl
+            # Note: CuptiActivityApi.cpp, CuptiActivityProfiler.cpp, and Demangle.cpp
+            # are already included in the glob above (part of CPU-only build)
+            # Note: CuptiActivity.cpp is included as a header (see hdrs below) because
+            # it's meant to be #included by CuptiActivityProfiler.cpp
+            "libkineto/src/CuptiCallbackApi.cpp",
+            "libkineto/src/CuptiEventApi.cpp",
+            "libkineto/src/CuptiMetricApi.cpp",
+            "libkineto/src/CuptiRangeProfiler.cpp",
+            "libkineto/src/CuptiRangeProfilerApi.cpp",
+            "libkineto/src/CuptiRangeProfilerConfig.cpp",
+            "libkineto/src/CuptiNvPerfMetric.cpp",
+            "libkineto/src/EventProfiler.cpp",
+            "libkineto/src/EventProfilerController.cpp",
+            "libkineto/src/KernelRegistry.cpp",
+            "libkineto/src/WeakSymbols.cpp",
+            "libkineto/src/cupti_strings.cpp",
+        ],
+        "//conditions:default": [],
+    }),
+    hdrs = glob(
+        [
+            "libkineto/include/*.h",
+            "libkineto/include/**/*.h",
+            "libkineto/src/*.h",
+        ],
+        allow_empty = True,
+    ) + select({
+        "@xsigma//bazel:enable_cuda": [
+            # CuptiActivity.cpp is included as a header because it's meant to be
+            # #included by CuptiActivityProfiler.cpp (not compiled separately)
+            "libkineto/src/CuptiActivity.cpp",
+        ],
+        "//conditions:default": [],
+    }),
     copts = KINETO_COPTS,
     includes = [
         "libkineto",
@@ -73,6 +111,12 @@ cc_library(
     linkstatic = True,
     deps = [
         "@fmt//:fmt",
-    ],
+    ] + select({
+        "@xsigma//bazel:enable_cuda": [
+            "@local_config_cuda//:cupti",
+            "@local_config_cuda//:cudart",
+        ],
+        "//conditions:default": [],
+    }),
 )
 

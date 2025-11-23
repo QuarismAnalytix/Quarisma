@@ -32,6 +32,18 @@ void busy_wait_for(std::chrono::microseconds duration)
     }
 }
 
+std::unordered_set<xsigma::RecordScope> user_scopes()
+{
+    return {xsigma::RecordScope::USER_SCOPE};
+}
+
+}  // namespace
+
+#if XSIGMA_HAS_KINETO
+
+namespace
+{
+
 xsigma::autograd::profiler::ProfilerConfig make_kineto_config(bool with_stack = false)
 {
     return xsigma::autograd::profiler::ProfilerConfig(
@@ -43,14 +55,7 @@ xsigma::autograd::profiler::ProfilerConfig make_kineto_config(bool with_stack = 
         /*with_modules=*/false);
 }
 
-std::unordered_set<xsigma::RecordScope> user_scopes()
-{
-    return {xsigma::RecordScope::USER_SCOPE};
-}
-
 }  // namespace
-
-#if XSIGMA_HAS_KINETO
 
 namespace
 {

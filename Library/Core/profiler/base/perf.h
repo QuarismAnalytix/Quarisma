@@ -71,7 +71,7 @@ public:
 
     /* Returns PerfCounter values for this event from kernel, on non supported
    * platforms this always returns zero */
-    static uint64_t ReadCounter() ;
+    uint64_t ReadCounter() const;
 
 private:
     /* Name of the event */

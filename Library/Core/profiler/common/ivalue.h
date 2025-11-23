@@ -83,7 +83,7 @@ public:
     template <typename T>
     ComplexHolder(std::complex<T> c)
     {
-        val = convert<decltype(val), std::complex<T>>(c);
+        val = std::complex<double>(c.real(), c.imag());
     }
     ComplexHolder() = default;
     std::complex<double> val;

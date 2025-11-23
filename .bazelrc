@@ -8,6 +8,12 @@
 # =============================================================================
 # Common Build Flags
 # =============================================================================
+
+# Enable WORKSPACE file for compatibility with Bazel 8
+# WORKSPACE is disabled by default in Bazel 8, but we need it for local third-party dependencies
+# This flag enables both MODULE.bazel (Bzlmod) and WORKSPACE to work together
+build --enable_workspace
+
 build --enable_platform_specific_config
 build --cxxopt=-std=c++17
 build --host_cxxopt=-std=c++17
