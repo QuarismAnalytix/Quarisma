@@ -44,7 +44,7 @@ Stats stats()
 #include <elf.h>
 #include <link.h>
 #include <linux/limits.h>
-#include <xsigma/util/flat_hash_map.h>
+#include "util/flat_hash.h"
 
 #include <algorithm>
 #include <climits>

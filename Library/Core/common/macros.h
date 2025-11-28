@@ -320,6 +320,12 @@ using void_t = std::void_t<>;
 #define XSIGMA_UNUSED
 #endif
 
+#if __has_attribute(used)
+#define XSIGMA_USED __attribute__((__used__))
+#else
+#define XSIGMA_USED
+#endif
+
 //----------------------------------------------------------------------------
 // Demangle
 #if defined(__ANDROID__) && (defined(__i386__) || defined(__x86_64__))

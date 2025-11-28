@@ -131,6 +131,11 @@ endif()
 # Set up CUDA libraries using modern imported targets
 set(XSIGMA_CUDA_LIBRARIES CUDA::cudart CUDA::cuda_driver CUDA::cusparse CUDA::curand CUDA::cublas)
 
+# Add nvperf_host if available (required by Kineto for CUPTI range profiler)
+if(TARGET CUDA::nvperf_host)
+  list(APPEND XSIGMA_CUDA_LIBRARIES CUDA::nvperf_host)
+endif()
+
 # Add CUDA libraries to the dependency list
 list(APPEND XSIGMA_DEPENDENCY_LIBS ${XSIGMA_CUDA_LIBRARIES})
 
