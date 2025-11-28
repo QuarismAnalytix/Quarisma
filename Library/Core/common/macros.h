@@ -320,8 +320,17 @@ using void_t = std::void_t<>;
 #define XSIGMA_UNUSED
 #endif
 
+// Check for MSVC first, then Clang/GCC
+#if defined(_MSC_VER)
+// MSVC doesn't support __attribute__((used))
+// Use __pragma(comment(linker, "/include:symbol")) or just leave empty
+#define XSIGMA_USED
+#elif defined(__has_attribute)
 #if __has_attribute(used)
 #define XSIGMA_USED __attribute__((__used__))
+#else
+#define XSIGMA_USED
+#endif
 #else
 #define XSIGMA_USED
 #endif
