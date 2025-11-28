@@ -11,6 +11,10 @@ package(default_visibility = ["//visibility:public"])
 KINETO_COPTS = [
     "-DKINETO_NAMESPACE=libkineto",
     "-DLIBKINETO_NOROCTRACER",
+    # Disable consteval to avoid C++20 compatibility issues with fmt library
+    # The FMT_STRING macro uses consteval functions that have stricter requirements
+    # in C++20, causing compilation errors in kineto's usage of fmt
+    "-DFMT_USE_CONSTEVAL=0",
 ] + select({
     "@xsigma//bazel:enable_cuda": ["-DHAS_CUPTI"],
     "//conditions:default": ["-DLIBKINETO_NOCUPTI"],

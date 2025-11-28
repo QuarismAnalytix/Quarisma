@@ -32,13 +32,16 @@ bazel_skylib_workspace()
 # -----------------------------------------------------------------------------
 # fmt - Modern formatting library (header-only mode)
 # -----------------------------------------------------------------------------
+# Note: Using fmt 9.1.0 instead of 10.x due to C++20 consteval compatibility issues
+# fmt 10.x uses FMT_STRING macro with consteval in its implementation files
+# (format-inl.h) which causes compilation errors with C++20's stricter requirements
 http_archive(
     name = "fmt",
     build_file = "//ThirdParty:fmt.BUILD",
-    sha256 = "78b8c0a72b1c35e4443a7e308df52498252d1cefc2b08c9a97bc9ee6cfe61f8b",
-    strip_prefix = "fmt-10.1.1",
+    sha256 = "5dea48d1fcddc3ec571ce2058e13910a0d4a6bab4cc09a809d8b1dd1c88ae6f2",
+    strip_prefix = "fmt-9.1.0",
     urls = [
-        "https://github.com/fmtlib/fmt/archive/refs/tags/10.1.1.tar.gz",
+        "https://github.com/fmtlib/fmt/archive/refs/tags/9.1.0.tar.gz",
     ],
 )
 

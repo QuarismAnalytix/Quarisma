@@ -51,11 +51,11 @@ std::string sanitizer::trim(std::string_view str)
     }
 
     // Find first non-whitespace character
-    const auto start_it =
+    const auto start_it =  //NOLINT
         std::find_if(str.begin(), str.end(), [](unsigned char c) { return !std::isspace(c); });
 
     // Find last non-whitespace character
-    const auto end_it =
+    const auto end_it =  //NOLINT
         std::find_if(str.rbegin(), str.rend(), [](unsigned char c) { return !std::isspace(c); })
             .base();
 

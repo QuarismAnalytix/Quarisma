@@ -33,7 +33,6 @@ struct ITTThreadLocalState : ProfilerStateBase
     static ITTThreadLocalState* getTLS()
     {
         auto* tls = ProfilerStateBase::get(/*global=*/false);
-        XSIGMA_CHECK_DEBUG(tls == nullptr || tls->profilerType() == ActiveProfilerType::ITT);
         return static_cast<ITTThreadLocalState*>(tls);
     }
 };

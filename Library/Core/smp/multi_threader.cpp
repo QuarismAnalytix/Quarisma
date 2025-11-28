@@ -13,7 +13,7 @@
 // platforms about passing function pointer to an argument expecting an
 // extern "C" function.  Placing the typedef of the function pointer type
 // inside an extern "C" block solves this problem.
-#ifdef XSIGMA_HAS_PTHREADS
+#if XSIGMA_HAS_PTHREADS
 #include <pthread.h>
 #include <unistd.h>
 extern "C"
@@ -79,7 +79,7 @@ int multi_threader::GetGlobalDefaultNumberOfThreads()
     {
         int num = 1;  // default is 1
 
-#ifdef XSIGMA_HAS_PTHREADS
+#if XSIGMA_HAS_PTHREADS
         // Default the number of threads to be the number of available
         // processors if we are using pthreads()
 #ifdef _SC_NPROCESSORS_ONLN
@@ -109,8 +109,8 @@ int multi_threader::GetGlobalDefaultNumberOfThreads()
         }
 #endif
 
-#ifndef XSIGMA_HAS_WIN32_THREADS
-#ifndef XSIGMA_HAS_PTHREADS
+#if !XSIGMA_HAS_WIN32_THREADS
+#if !XSIGMA_HAS_PTHREADS
         // If we are not multithreading, the number of threads should
         // always be 1
         // cppcheck-suppress redundantAssignment
@@ -222,13 +222,13 @@ void multi_threader::SetMultipleMethod(int index, xsigmaThreadFunctionType f, vo
 // Execute the method set as the SingleMethod on NumberOfThreads threads.
 void multi_threader::SingleMethodExecute()
 {
-#ifdef XSIGMA_HAS_WIN32_THREADS
+#if XSIGMA_HAS_WIN32_THREADS
     int    thread_loop;
     DWORD  threadId;
     HANDLE process_id[XSIGMA_MAX_THREADS] = {};  //NOLINT
 #endif
 
-#ifdef XSIGMA_HAS_PTHREADS
+#if XSIGMA_HAS_PTHREADS
     pthread_t process_id[XSIGMA_MAX_THREADS] = {};  //NOLINT
 #endif
     XSIGMA_CHECK(this->SingleMethod, "No single method set!");
@@ -239,7 +239,7 @@ void multi_threader::SingleMethodExecute()
         this->NumberOfThreads = xsigmaMultiThreaderGlobalMaximumNumberOfThreads;
     }
 
-#ifdef XSIGMA_HAS_WIN32_THREADS
+#if XSIGMA_HAS_WIN32_THREADS
     // Using CreateThread on Windows
     //
     // We want to use CreateThread to start this->NumberOfThreads - 1
@@ -283,7 +283,7 @@ void multi_threader::SingleMethodExecute()
     }
 #endif
 
-#ifdef XSIGMA_HAS_PTHREADS
+#if XSIGMA_HAS_PTHREADS
     // Using POSIX threads
     //
     // We want to use pthread_create to start this->NumberOfThreads-1 additional
@@ -346,12 +346,12 @@ void multi_threader::MultipleMethodExecute()
 {
     int thread_loop;
 
-#ifdef XSIGMA_HAS_WIN32_THREADS
+#if XSIGMA_HAS_WIN32_THREADS
     DWORD  threadId;
     HANDLE process_id[XSIGMA_MAX_THREADS] = {};  //NOLINT
 #endif
 
-#ifdef XSIGMA_HAS_PTHREADS
+#if XSIGMA_HAS_PTHREADS
     pthread_t process_id[XSIGMA_MAX_THREADS] = {};  //NOLINT
 #endif
 
@@ -370,7 +370,7 @@ void multi_threader::MultipleMethodExecute()
             thread_loop);
     }
 
-#ifdef XSIGMA_HAS_WIN32_THREADS
+#if XSIGMA_HAS_WIN32_THREADS
     // Using CreateThread on Windows
     //
     // We want to use CreateThread to start this->NumberOfThreads - 1
@@ -415,7 +415,7 @@ void multi_threader::MultipleMethodExecute()
     }
 #endif
 
-#ifdef XSIGMA_HAS_PTHREADS
+#if XSIGMA_HAS_PTHREADS
     // Using POSIX threads
     //
     // We want to use pthread_create to start this->NumberOfThreads - 1
@@ -469,7 +469,7 @@ void multi_threader::MultipleMethodExecute()
 #endif
 }
 
-int multi_threader::SpawnThread(const xsigmaThreadFunctionType /*f*/, void* userdata)
+int multi_threader::SpawnThread(const xsigmaThreadFunctionType f, void* userdata)
 {
     int id;
 
@@ -495,7 +495,7 @@ int multi_threader::SpawnThread(const xsigmaThreadFunctionType /*f*/, void* user
     this->SpawnedThreadInfoArray[id].ActiveFlag      = &this->SpawnedThreadActiveFlag[id];
     this->SpawnedThreadInfoArray[id].ActiveFlagLock  = this->SpawnedThreadActiveFlagLock[id];
 
-#ifdef XSIGMA_HAS_WIN32_THREADS
+#if XSIGMA_HAS_WIN32_THREADS
     // Using CreateThread on Windows
     //
     DWORD threadId;
@@ -504,7 +504,7 @@ int multi_threader::SpawnThread(const xsigmaThreadFunctionType /*f*/, void* user
     XSIGMA_CHECK(this->SpawnedThreadProcessID[id], "Error in thread creation !!!");
 #endif
 
-#ifdef XSIGMA_HAS_PTHREADS
+#if XSIGMA_HAS_PTHREADS
     // Using POSIX threads
     //
     pthread_attr_t attr;
@@ -521,8 +521,8 @@ int multi_threader::SpawnThread(const xsigmaThreadFunctionType /*f*/, void* user
 
 #endif
 
-#ifndef XSIGMA_HAS_WIN32_THREADS
-#ifndef XSIGMA_HAS_PTHREADS
+#if !XSIGMA_HAS_WIN32_THREADS
+#if !XSIGMA_HAS_PTHREADS
     // There is no multi threading, so there is only one thread.
     // This won't work - so give an error message.
     XSIGMA_THROW("Cannot spawn thread in a single threaded environment!");
@@ -570,17 +570,17 @@ void multi_threader::TerminateThread(int threadId)
         this->SpawnedThreadActiveFlag[threadId] = 0;
     }
 
-#ifdef XSIGMA_HAS_WIN32_THREADS
+#if XSIGMA_HAS_WIN32_THREADS
     WaitForSingleObject(this->SpawnedThreadProcessID[threadId], INFINITE);
     CloseHandle(this->SpawnedThreadProcessID[threadId]);
 #endif
 
-#ifdef XSIGMA_HAS_PTHREADS
+#if XSIGMA_HAS_PTHREADS
     pthread_join(this->SpawnedThreadProcessID[threadId], nullptr);
 #endif
 
-#ifndef XSIGMA_HAS_WIN32_THREADS
-#ifndef XSIGMA_HAS_PTHREADS
+#if !XSIGMA_HAS_WIN32_THREADS
+#if !XSIGMA_HAS_PTHREADS
     // There is no multi threading, so there is only one thread.
     // This won't work - so give an error message.
     XSIGMA_THROW("Cannot terminate thread in single threaded environment!");
@@ -594,9 +594,9 @@ void multi_threader::TerminateThread(int threadId)
 //------------------------------------------------------------------------------
 xsigmaMultiThreaderIDType multi_threader::GetCurrentThreadID()
 {
-#ifdef XSIGMA_HAS_PTHREADS
+#if XSIGMA_HAS_PTHREADS
     return pthread_self();
-#elif defined(XSIGMA_HAS_WIN32_THREADS)
+#elif XSIGMA_HAS_WIN32_THREADS
     return GetCurrentThreadId();
 #else
     // No threading implementation.  Assume all callers are in the same
@@ -632,12 +632,11 @@ bool multi_threader::IsThreadActive(int threadId)
 }
 
 //------------------------------------------------------------------------------
-bool multi_threader::ThreadsEqual(
-    xsigmaMultiThreaderIDType /*t1*/, xsigmaMultiThreaderIDType /*t2*/)
+bool multi_threader::ThreadsEqual(xsigmaMultiThreaderIDType t1, xsigmaMultiThreaderIDType t2)
 {
-#ifdef XSIGMA_HAS_PTHREADS
+#if XSIGMA_HAS_PTHREADS
     return pthread_equal(t1, t2) != 0;
-#elif defined(XSIGMA_HAS_WIN32_THREADS)
+#elif XSIGMA_HAS_WIN32_THREADS
     return t1 == t2;
 #else
     // No threading implementation.  Assume all callers are in the same

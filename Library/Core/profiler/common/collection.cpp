@@ -108,10 +108,10 @@ constexpr InputOutputEncoder::IOType tagToIOType(InputOutputEncoder::Tag tag)
 // ----------------------------
 void InputOutputEncoder::push(xsigma::array_ref<const xsigma::IValue> values)
 {
-#if 0
     // Disabled: IValue methods (isTensor, toTensor, isScalar, isTensorList, toTensorList) not available in profiler-only build.
     for (const auto& value : values)
     {
+#if 0
         if (value.isTensor())
         {
             push(value.toTensor());
@@ -135,13 +135,6 @@ void InputOutputEncoder::push(xsigma::array_ref<const xsigma::IValue> values)
             tags_.emplace_back(Tag::TERMINATOR);
         }
         else if (isSupportedScalarList(value))
-#else
-    // Fallback: skip processing values when IValue methods are not available
-    for (const auto& value : values)
-    {
-        (void)value;  // Suppress unused variable warning
-        if (false)
-#endif
         {
             tags_.emplace_back(Tag::ScalarList);
             ivalues_.emplace_back(value);
@@ -150,6 +143,10 @@ void InputOutputEncoder::push(xsigma::array_ref<const xsigma::IValue> values)
         {
             tags_.emplace_back(Tag::Other);
         }
+#else
+        tags_.emplace_back(Tag::Scalar);
+        ivalues_.emplace_back(value);
+#endif
     }
     tags_.emplace_back(Tag::TERMINATOR);
 }
@@ -471,16 +468,9 @@ std::unique_ptr<KinetoObserverContext> ThreadLocalSubqueue::begin_op(
 
     if (config_.state == ProfilerState::KINETO_GPU_FALLBACK)
     {
-        try
-        {
-            out->fallback_ = torch_ops_.device_fallback_.emplace_back();
-            xsigma::profiler::impl::cudaStubs()->record(
-                nullptr, &out->fallback_->device_event_start_, nullptr);
-        }
-        catch (const std::exception& e)
-        {
-            //LOG(WARNING) << "Failed to record CUDA event. " << e.what();
-        }
+        out->fallback_ = torch_ops_.device_fallback_.emplace_back();
+        xsigma::profiler::impl::cudaStubs()->record(
+            nullptr, &out->fallback_->device_event_start_, nullptr);
     }
     else if (config_.state == ProfilerState::KINETO_PRIVATEUSE1_FALLBACK)
     {
@@ -1093,7 +1083,6 @@ void passEventsToKineto(
             e->start_time_ns_,
             act_end_time);
 
-        XSIGMA_CHECK(activity || !kKinetoAvailable);
         if (activity != nullptr)
         {
             addMetadata(activity, indexKey, std::to_string(i));

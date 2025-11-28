@@ -65,7 +65,7 @@ inline int64_t getTimeNs()
 using xsigma::profiler::impl::ActiveProfilerType;
 using xsigma::profiler::impl::EventType;
 using xsigma::profiler::impl::ExtraFields;
-using xsigma::profiler::impl::get_record_concrete_inputs_enabled;
+using xsigma::profiler::impl::get_record_concrete_inputs_enabled;  //NOLINT
 //using xsigma::profiler::impl::ivalueListToStr;
 //using xsigma::profiler::impl::ivalueToStr;
 using xsigma::profiler::impl::op_input_t;
@@ -573,17 +573,9 @@ void onFunctionExit(const xsigma::RecordFunction& fn, xsigma::ObserverContext* c
     }
     if (config.state == ProfilerState::KINETO_GPU_FALLBACK)
     {
-        try
-        {
-            auto* fallback = kineto_ctx_ptr->fallback_;
-            XSIGMA_CHECK(fallback != nullptr);
-            xsigma::profiler::impl::cudaStubs()->record(
-                nullptr, &fallback->device_event_end_, nullptr);
-        }
-        catch (const std::exception& e)
-        {
-            //LOG(WARNING) << "Failed to record CUDA event. " << e.what();
-        }
+        auto* fallback = kineto_ctx_ptr->fallback_;
+        XSIGMA_CHECK(fallback != nullptr);
+        xsigma::profiler::impl::cudaStubs()->record(nullptr, &fallback->device_event_end_, nullptr);
     }
     else if (config.state == ProfilerState::KINETO_PRIVATEUSE1_FALLBACK)
     {
@@ -705,21 +697,17 @@ void prepareProfiler(
      */
         auto is_standard_event = [](const std::string& event) -> bool
         {
-            for (const auto* e : xsigma::profiler::ProfilerPerfEvents)
-            {
-                if (!std::strcmp(event.c_str(), e))
-                {
-                    return true;
-                }
-            }
-            return false;
+            return std::any_of(
+                std::begin(xsigma::profiler::ProfilerPerfEvents),
+                std::end(xsigma::profiler::ProfilerPerfEvents),
+                [&event](const auto* e) { return std::strcmp(event.c_str(), e) == 0; });
         };
 
         for (const auto& e : config.experimental_config.performance_events)
         {
             if (!is_standard_event(e))
             {
-                //XSIGMA_LOG_WARNING("Forwarding a non-standard CPU performance event : ", e);
+                XSIGMA_LOG_WARNING("Forwarding a non-standard CPU performance event : {}", e);
             }
         }
     }
@@ -782,23 +770,23 @@ static void toggleCPUCollectionDynamic(bool enable)
 void toggleCollectionDynamic(
     const bool enable, const std::set<xsigma::profiler::impl::ActivityType>& activities)
 {
-    if (activities.count(xsigma::autograd::profiler::ActivityType::CPU) > 0 &&
-        (activities.count(xsigma::autograd::profiler::ActivityType::CUDA) == 0 ||
-         activities.count(xsigma::autograd::profiler::ActivityType::XPU) == 0))
+    /*if (activities.contains(xsigma::autograd::profiler::ActivityType::CPU) &&
+        (!activities.contains(xsigma::autograd::profiler::ActivityType::CUDA) ||
+         !activities.contains(xsigma::autograd::profiler::ActivityType::XPU)))
     {
         //LOG(WARNING)
         //<< "Toggling CPU activity with GPU activity on may result in traces with GPU events on "
         //  "artibrary tracks";
     }
     else if (
-        (activities.count(xsigma::autograd::profiler::ActivityType::CUDA) > 0 ||
-         activities.count(xsigma::autograd::profiler::ActivityType::XPU) > 0) &&
-        activities.count(xsigma::autograd::profiler::ActivityType::CPU) == 0)
+        (activities.contains(xsigma::autograd::profiler::ActivityType::CUDA) ||
+         activities.contains(xsigma::autograd::profiler::ActivityType::XPU)) &&
+        !activities.contains(xsigma::autograd::profiler::ActivityType::CPU))
     {
         //LOG(WARNING)
         //<< "Toggling GPU activity with CPU activity on may result in traces with incorrect "
         //   "correlation between CPU and GPU events";
-    }
+    }*/
     for (auto act : activities)
     {
         if (act == xsigma::autograd::profiler::ActivityType::CUDA ||
@@ -1150,7 +1138,7 @@ int64_t KinetoEvent::cudaElapsedUs() const
         return (int64_t)xsigma::profiler::impl::cudaStubs()->elapsed(
             &cuda_event_start, &cuda_event_end);
     }
-    catch (std::exception& e)
+    catch (std::exception& e)  //NOLINT
     {
         //LOG(WARNING) << "Failed to measure time between two CUDA events. "
         //<< e.what();

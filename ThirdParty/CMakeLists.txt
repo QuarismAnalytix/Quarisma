@@ -813,7 +813,7 @@ set(KINETO_LIBRARY_TYPE "static" CACHE STRING "")
 # Tell Kineto to use XSigma's fmt library instead of its embedded one
 # This prevents duplicate symbol errors when linking
 # Set FMT_SOURCE_DIR to a marker value that tells Kineto to skip fmt build
-set(FMT_SOURCE_DIR "XSIGMA_EXTERNAL_FMT" CACHE STRING "Use external fmt library" FORCE)
+# set(FMT_SOURCE_DIR "XSIGMA_EXTERNAL_FMT" CACHE STRING "Use external fmt library" FORCE)
 
 message(STATUS "Configuring Kineto dependency:")
 message(STATUS "  KINETO_BUILD_TESTS = ${KINETO_BUILD_TESTS}")

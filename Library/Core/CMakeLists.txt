@@ -1,14 +1,9 @@
 # Core module CMakeLists.txt
 cmake_minimum_required(VERSION 3.16)
 
-# Configure threading
-if(WIN32)
-  set(XSIGMA_USE_WIN32_THREADS ON)
-  set(XSIGMA_MAX_THREADS 64)
-else()
-  set(XSIGMA_USE_PTHREADS ON)
-  set(XSIGMA_MAX_THREADS 64)
-endif()
+# Note: Threading configuration is now handled centrally by Cmake/tools/threads.cmake
+# The variables XSIGMA_USE_PTHREADS, XSIGMA_USE_WIN32_THREADS, and XSIGMA_MAX_THREADS
+# are set by the threads.cmake module and available here for configure_file()
 
 # Configure header files
 configure_file(

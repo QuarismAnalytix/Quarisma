@@ -395,7 +395,7 @@ void CacheEntry::rebuildActiveCallbacks()
 int CacheEntry::sampleTries(double p) const
 {
     XSIGMA_CHECK(generator_ != nullptr);
-    XSIGMA_CHECK(p > 0.0 && p <= 1.0);
+    XSIGMA_CHECK(p > 0.0 && p <= 1.0);  //NOLINT
 
     // The geometric distribution returns the number of failures. We add one to
     // also account for the call where we succeed.

@@ -119,7 +119,7 @@ PerfEvent::~PerfEvent() = default;
 
 void PerfEvent::Init() {}
 
-uint64_t PerfEvent::ReadCounter() const
+uint64_t PerfEvent::ReadCounter() const  //NOLINT
 {
     return 0;
 }

@@ -33,10 +33,9 @@
 #include <mutex>  // for mutex
 
 #include "common/macros.h"
-#include "common/macros.h"   // for XSIGMA_DELETE_COPY
-#include "xsigma_threads.h"  // for XSIGMA_MAX_THREADS, XSIGMA_HAS_PTHREADS
+#include "common/macros.h"  // for XSIGMA_DELETE_COPY
 
-#if defined(XSIGMA_HAS_PTHREADS)
+#if XSIGMA_HAS_PTHREADS
 #include <pthread.h>    // Needed for PTHREAD implementation of mutex
 #include <sys/types.h>  // Needed for unix implementation of pthreads
 #include <unistd.h>     // Needed for unix implementation of pthreads
@@ -49,13 +48,12 @@
 // function is of type void *, and returns nullptr
 // Otherwise the type is void which is correct for WIN32
 
-// Defined in xsigmaThreads.h:
 //   XSIGMA_MAX_THREADS - Maximum number of threads supported
 //   __XSIGMA_THREAD_RETURN_VALUE__ - Return value for thread functions
 //   __XSIGMA_THREAD_RETURN_TYPE__ - Return type for thread functions
 
 // Define platform-specific thread function types and thread ID types
-#ifdef XSIGMA_HAS_PTHREADS
+#if XSIGMA_HAS_PTHREADS
 typedef void* (*xsigmaThreadFunctionType)(void*);  // NOLINT
 typedef pthread_t xsigmaThreadProcessIDType;
 // #define __XSIGMA_THREAD_RETURN_VALUE__  nullptr
@@ -63,7 +61,7 @@ typedef pthread_t xsigmaThreadProcessIDType;
 typedef pthread_t xsigmaMultiThreaderIDType;
 #endif
 
-#ifdef XSIGMA_HAS_WIN32_THREADS
+#if XSIGMA_HAS_WIN32_THREADS
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -90,7 +88,7 @@ using xsigmaMultiThreaderIDType = xsigmaWindowsDWORD;
 #endif
 
 // Fallback definitions for platforms without specific threading support
-#if !defined(XSIGMA_HAS_PTHREADS) && !defined(XSIGMA_HAS_WIN32_THREADS)
+#if !XSIGMA_HAS_PTHREADS && !XSIGMA_HAS_WIN32_THREADS
 using xsigmaThreadFunctionType  = void (*)(void*);
 using xsigmaThreadProcessIDType = int;
 // #define __XSIGMA_THREAD_RETURN_VALUE__

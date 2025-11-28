@@ -290,15 +290,15 @@ inline std::string format_check_msg(
     std::string user_msg = fmt::format(fmt, std::forward<Args>(args)...);
     if (user_msg.empty())
     {
-        return fmt::format("Check failed: {}", cond_str);
+        return fmt::format(FMT_STRING("Check failed: {}"), cond_str);
     }
-    return fmt::format("Check failed: {} - {}", cond_str, user_msg);
+    return fmt::format(FMT_STRING("Check failed: {} - {}"), cond_str, user_msg);
 }
 
 // Overload for no arguments
 inline std::string format_check_msg(const char* cond_str)
 {
-    return fmt::format("Check failed: {}", cond_str);
+    return fmt::format(FMT_STRING("Check failed: {}"), cond_str);
 }
 }  // namespace details
 }  // namespace xsigma

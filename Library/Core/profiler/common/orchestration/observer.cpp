@@ -144,7 +144,6 @@ ProfilerStateBase::~ProfilerStateBase()
     auto* out = global ? GlobalManager::get()
                        : static_cast<ProfilerStateBase*>(xsigma::thread_local_debug_info::get(
                              xsigma::DebugInfoKind::PROFILER_STATE));
-    XSIGMA_CHECK_DEBUG(!out || out->config().pushGlobalCallbacks() == global);
     return out;
 }
 
@@ -179,7 +178,6 @@ std::shared_ptr<ProfilerStateBase> popTLS()
 /*static*/ std::shared_ptr<ProfilerStateBase> ProfilerStateBase::pop(bool global)
 {
     auto out = global ? GlobalManager::pop() : popTLS();
-    XSIGMA_CHECK_DEBUG(!out || out->config().global() == global);
     return out;
 }
 

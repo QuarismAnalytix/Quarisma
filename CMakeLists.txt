@@ -275,6 +275,7 @@ include(utils)
 include(platform)
 include(logging)
 include(compression)
+include(threads)
 
 # Configure optional features
 include(openmp)

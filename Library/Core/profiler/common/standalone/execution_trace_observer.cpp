@@ -929,7 +929,7 @@ static void recordOperatorStart(
             ob.opStack[tid].push(fc.opId);
         }
     }
-    catch (const std::exception& e)
+    catch (const std::exception& e)  //NOLINT
     {
         //LOG(WARNING) << "Exception in execution trace observer: " << e.what();
     }

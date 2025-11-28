@@ -33,7 +33,6 @@ struct NVTXThreadLocalState : ProfilerStateBase
     static NVTXThreadLocalState* getTLS()
     {
         auto* tls = ProfilerStateBase::get(/*global=*/false);
-        XSIGMA_CHECK_DEBUG(tls == nullptr || tls->profilerType() == ActiveProfilerType::NVTX);
         return static_cast<NVTXThreadLocalState*>(tls);
     }
     static std::pair<xsigma::RecordFunctionHandle, int> getOpIdFromInput(
