@@ -18,10 +18,11 @@ option(XSIGMA_ENABLE_EXTERNAL "Use external copies of third party libraries by d
 mark_as_advanced(XSIGMA_ENABLE_EXTERNAL)
 
 
-# Global option to control third-party library type (STATIC, SHARED, or DEFAULT)
+# Global option to control third-party library type (STATIC, SHARED, DEFAULT, or HEADER_ONLY)
 # DEFAULT means respect each library's own settings or BUILD_SHARED_LIBS
-set(XSIGMA_THIRDPARTY_TYPE "DEFAULT" CACHE STRING "Default library type for third-party libraries (STATIC, SHARED, or DEFAULT)")
-set_property(CACHE XSIGMA_THIRDPARTY_TYPE PROPERTY STRINGS "STATIC" "SHARED" "DEFAULT")
+# HEADER_ONLY means the library is header-only (no compilation/linking needed)
+set(XSIGMA_THIRDPARTY_TYPE "DEFAULT" CACHE STRING "Default library type for third-party libraries (STATIC, SHARED, DEFAULT, or HEADER_ONLY)")
+set_property(CACHE XSIGMA_THIRDPARTY_TYPE PROPERTY STRINGS "STATIC" "SHARED" "DEFAULT" "HEADER_ONLY")
 
 # Configure Visual Studio folder structure to match file system
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -370,21 +371,29 @@ endfunction()
 #                                 Example: "kineto/libkineto" for nested structures
 #   EXTERNAL_NAME <name>        - Name to use when searching for external package
 #   CONDITION <variable>        - CMake variable that must be true to add the library
-#   LIBRARY_TYPE <type>         - Type of library: STATIC, SHARED, or DEFAULT
+#   LIBRARY_TYPE <type>         - Type of library: STATIC, SHARED, DEFAULT, or HEADER_ONLY
+#                                 HEADER_ONLY: Creates INTERFACE library target with include dirs
+#                                 Supports ALIASES and XSIGMA_TARGETS for header-only libraries
 #                                 If not specified, uses XSIGMA_THIRDPARTY_TYPE
 #   LIBRARY_TYPE_VAR <var>      - CMake variable name for library-specific control
 #                                 Example: MI_BUILD_STATIC for mimalloc
+#                                 Note: Not applicable for HEADER_ONLY libraries
 #   FILTER_FLAGS <flags...>     - List of compiler/linker flags to filter out
 #                                 Example: "-fno-exceptions" "-Werror"
+#                                 Note: Not applicable for HEADER_ONLY libraries (no compilation)
 #   DISABLE_WARNINGS            - Boolean flag to disable all compiler warnings
 #                                 Adds -w for Clang/GCC and /w for MSVC
+#                                 Note: Not applicable for HEADER_ONLY libraries (no compilation)
 #   EXTRA_FLAGS <flags...>      - List of additional compiler flags to add
 #                                 Example: "-flto=thin" "-march=native"
+#                                 Note: Not applicable for HEADER_ONLY libraries (no compilation)
 #   ALIASES <aliases...>        - List of alias names to create for the library
-#                                 Example: "fmt::fmt" for fmt library
+#                                 Example: "fmt::fmt-header-only" for fmt library
+#                                 Supported for all library types including HEADER_ONLY
 #   XSIGMA_TARGETS <specs...>   - List of XSigma:: namespace target specifications
 #                                 Format: "XSigma::name=target1|target2|..."
-#                                 Example: "XSigma::fmt=fmt::fmt|fmt"
+#                                 Example: "XSigma::fmt=fmt::fmt-header-only|fmt"
+#                                 Supported for all library types including HEADER_ONLY
 #   INCLUDE_DIR <path>          - Include directory path to add to XSIGMA_DEPENDENCY_INCLUDE_DIRS
 #                                 Path is relative to CMAKE_CURRENT_SOURCE_DIR (ThirdParty/)
 #                                 Example: "fmt/include" for fmt library
@@ -432,8 +441,98 @@ function(add_third_party_library name)
         set(TPL_AUTO_ADD_TO_DEPENDENCIES ON)
     endif()
 
+    # SOURCE_DIR defaults to the library name if not specified
+    if(NOT DEFINED TPL_SOURCE_DIR)
+        set(TPL_SOURCE_DIR ${name})
+    endif()
+
     # -------------------------------------------------------------------------
-    # Step 1: Try to find external library first if requested
+    # Step 1: Check if already processed to avoid duplicates
+    # -------------------------------------------------------------------------
+    get_property(XSIGMA_${name}_PROCESSED GLOBAL PROPERTY XSIGMA_${name}_PROCESSED)
+    if(XSIGMA_${name}_PROCESSED)
+        message(STATUS "Third-party library ${name} already processed, skipping")
+        return()
+    endif()
+    set_property(GLOBAL PROPERTY XSIGMA_${name}_PROCESSED TRUE)
+
+    # -------------------------------------------------------------------------
+    # Step 2: Determine library type
+    # -------------------------------------------------------------------------
+    # Priority: LIBRARY_TYPE parameter > XSIGMA_THIRDPARTY_TYPE global > DEFAULT
+    set(lib_type "DEFAULT")
+    if(DEFINED TPL_LIBRARY_TYPE)
+        set(lib_type ${TPL_LIBRARY_TYPE})
+    elseif(NOT XSIGMA_THIRDPARTY_TYPE STREQUAL "DEFAULT")
+        set(lib_type ${XSIGMA_THIRDPARTY_TYPE})
+    endif()
+
+    # -------------------------------------------------------------------------
+    # Step 3: Early handling for HEADER_ONLY libraries
+    # -------------------------------------------------------------------------
+    # Header-only libraries don't need compilation, so we handle them early
+    # and return to avoid unnecessary external library searches or condition checks
+    if(lib_type STREQUAL "HEADER_ONLY")
+        message(STATUS "Processing header-only library ${name}")
+
+        # Verify that INCLUDE_DIR is specified for header-only libraries
+        if(NOT DEFINED TPL_INCLUDE_DIR)
+            message(WARNING "Header-only library ${name} specified but no INCLUDE_DIR provided - skipping")
+            return()
+        endif()
+
+        # Create an INTERFACE library target for the header-only library
+        # This allows it to be used with target_link_libraries() like any other library
+        if(NOT TARGET ${name})
+            add_library(${name} INTERFACE)
+            message(STATUS "Created INTERFACE library target: ${name}")
+        endif()
+
+        # Add include directory to the INTERFACE library
+        # This will be propagated to any target that links against this library
+        target_include_directories(${name} INTERFACE
+            "${CMAKE_CURRENT_SOURCE_DIR}/${TPL_INCLUDE_DIR}"
+        )
+        message(STATUS "Added include directory to ${name}: ${TPL_INCLUDE_DIR}")
+
+        # Create XSigma:: namespace alias for the INTERFACE library
+        if(NOT TARGET XSigma::${name})
+            add_library(XSigma::${name} ALIAS ${name})
+            message(STATUS "Created alias: XSigma::${name} -> ${name}")
+        endif()
+
+        # Add to XSIGMA_DEPENDENCY_LIBS so it can be linked against
+        get_property(_temp_libs GLOBAL PROPERTY _XSIGMA_DEPENDENCY_LIBS)
+        list(APPEND _temp_libs XSigma::${name})
+        set_property(GLOBAL PROPERTY _XSIGMA_DEPENDENCY_LIBS "${_temp_libs}")
+        message(STATUS "Dependency: XSigma::${name} added to XSIGMA_DEPENDENCY_LIBS (header-only)")
+
+        # Add include directory to global include paths for project-wide access
+        get_property(_temp_includes GLOBAL PROPERTY _XSIGMA_DEPENDENCY_INCLUDE_DIRS)
+        list(APPEND _temp_includes "${CMAKE_CURRENT_SOURCE_DIR}/${TPL_INCLUDE_DIR}")
+        set_property(GLOBAL PROPERTY _XSIGMA_DEPENDENCY_INCLUDE_DIRS "${_temp_includes}")
+        message(STATUS "Dependency: ${TPL_INCLUDE_DIR} added to XSIGMA_DEPENDENCY_INCLUDE_DIRS (header-only)")
+
+        # =====================================================================
+        # Create library aliases if requested (supported for HEADER_ONLY)
+        # =====================================================================
+        if(TPL_ALIASES)
+            _create_third_party_aliases(${name} "${TPL_ALIASES}")
+        endif()
+
+        # =====================================================================
+        # Create XSigma:: namespace interface targets if requested (supported for HEADER_ONLY)
+        # =====================================================================
+        if(TPL_XSIGMA_TARGETS)
+            _create_third_party_interface_targets("${TPL_XSIGMA_TARGETS}")
+        endif()
+
+        # Early return - no further processing needed for header-only libraries
+        return()
+    endif()
+
+    # -------------------------------------------------------------------------
+    # Step 4: Try to find external library first if requested
     # -------------------------------------------------------------------------
     if(XSIGMA_ENABLE_EXTERNAL)
         find_package(${TPL_EXTERNAL_NAME} QUIET)
@@ -496,48 +595,22 @@ function(add_third_party_library name)
         endif()
     endif()
 
-   # SOURCE_DIR defaults to the library name if not specified
-    if(NOT DEFINED TPL_SOURCE_DIR)
-        set(TPL_SOURCE_DIR ${name})
-    endif()
-
     # -------------------------------------------------------------------------
-    # Step 2: Check condition (early return pattern)
+    # Step 5: Check condition (early return pattern)
     # -------------------------------------------------------------------------
     if(DEFINED TPL_CONDITION)
         if(NOT ${TPL_CONDITION})
             message(STATUS "Skipping ${name}: condition ${TPL_CONDITION} is not met")
             return()
         endif()
-    endif() 
+    endif()
 
     message("================================================================")
     message("Build from source ${TPL_EXTERNAL_NAME}")
     message("================================================================")
 
     # -------------------------------------------------------------------------
-    # Step 3: Check if already processed to avoid duplicates
-    # -------------------------------------------------------------------------
-    get_property(XSIGMA_${name}_PROCESSED GLOBAL PROPERTY XSIGMA_${name}_PROCESSED)
-    if(XSIGMA_${name}_PROCESSED)
-        message(STATUS "Third-party library ${name} already processed, skipping")
-        return()
-    endif()
-    set_property(GLOBAL PROPERTY XSIGMA_${name}_PROCESSED TRUE)
-
-    # -------------------------------------------------------------------------
-    # Step 4: Determine library type
-    # -------------------------------------------------------------------------
-    # Priority: LIBRARY_TYPE parameter > XSIGMA_THIRDPARTY_TYPE global > DEFAULT
-    set(lib_type "DEFAULT")
-    if(DEFINED TPL_LIBRARY_TYPE)
-        set(lib_type ${TPL_LIBRARY_TYPE})
-    elseif(NOT XSIGMA_THIRDPARTY_TYPE STREQUAL "DEFAULT")
-        set(lib_type ${XSIGMA_THIRDPARTY_TYPE})
-    endif()
-
-    # -------------------------------------------------------------------------
-    # Step 5: Save current state (BUILD_SHARED_LIBS and flags)
+    # Step 6: Save current state (BUILD_SHARED_LIBS and flags)
     # -------------------------------------------------------------------------
     set(_saved_build_shared_libs ${BUILD_SHARED_LIBS})
 
@@ -553,7 +626,7 @@ function(add_third_party_library name)
     endif()
 
     # -------------------------------------------------------------------------
-    # Step 5b: Handle DISABLE_WARNINGS and EXTRA_FLAGS
+    # Step 6b: Handle DISABLE_WARNINGS and EXTRA_FLAGS
     # -------------------------------------------------------------------------
     if(TPL_DISABLE_WARNINGS)
         # Remove all existing warning-related flags
@@ -604,8 +677,9 @@ function(add_third_party_library name)
     endif()
 
     # -------------------------------------------------------------------------
-    # Step 6: Configure library type
+    # Step 7: Configure library type (STATIC or SHARED)
     # -------------------------------------------------------------------------
+    # Note: HEADER_ONLY is handled earlier in Step 3 and returns early
     if(lib_type STREQUAL "STATIC")
         set(BUILD_SHARED_LIBS OFF)
         message(STATUS "Configuring ${name} as STATIC library")
@@ -627,93 +701,93 @@ function(add_third_party_library name)
     endif()
 
     # -------------------------------------------------------------------------
-    # Step 7: Add the third-party library subdirectory
+    # Step 8: Add the third-party library subdirectory
     # -------------------------------------------------------------------------
-    # Support both standard (SOURCE_DIR/CMakeLists.txt) and nested (SOURCE_DIR/subdir/CMakeLists.txt) structures
-    set(lib_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/${TPL_SOURCE_DIR}")
-    set(lib_cmakelists_path "${lib_source_dir}/CMakeLists.txt")
+        # Support both standard (SOURCE_DIR/CMakeLists.txt) and nested (SOURCE_DIR/subdir/CMakeLists.txt) structures
+        set(lib_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/${TPL_SOURCE_DIR}")
+        set(lib_cmakelists_path "${lib_source_dir}/CMakeLists.txt")
 
-    # If CMakeLists.txt doesn't exist at the top level, check if it's in a subdirectory
-    # This handles cases like kineto/libkineto where the actual CMakeLists.txt is nested
-    if(NOT EXISTS "${lib_cmakelists_path}")
-        # Try to find CMakeLists.txt in immediate subdirectories
-        file(GLOB subdirs LIST_DIRECTORIES true "${lib_source_dir}/*")
-        foreach(subdir ${subdirs})
-            if(IS_DIRECTORY "${subdir}")
-                get_filename_component(subdir_name "${subdir}" NAME)
-                set(potential_cmakelists "${subdir}/CMakeLists.txt")
-                if(EXISTS "${potential_cmakelists}")
-                    set(lib_source_dir "${subdir}")
-                    set(lib_cmakelists_path "${potential_cmakelists}")
-                    message(STATUS "Found CMakeLists.txt in nested directory: ${subdir_name}")
-                    break()
+        # If CMakeLists.txt doesn't exist at the top level, check if it's in a subdirectory
+        # This handles cases like kineto/libkineto where the actual CMakeLists.txt is nested
+        if(NOT EXISTS "${lib_cmakelists_path}")
+            # Try to find CMakeLists.txt in immediate subdirectories
+            file(GLOB subdirs LIST_DIRECTORIES true "${lib_source_dir}/*")
+            foreach(subdir ${subdirs})
+                if(IS_DIRECTORY "${subdir}")
+                    get_filename_component(subdir_name "${subdir}" NAME)
+                    set(potential_cmakelists "${subdir}/CMakeLists.txt")
+                    if(EXISTS "${potential_cmakelists}")
+                        set(lib_source_dir "${subdir}")
+                        set(lib_cmakelists_path "${potential_cmakelists}")
+                        message(STATUS "Found CMakeLists.txt in nested directory: ${subdir_name}")
+                        break()
+                    endif()
+                endif()
+            endforeach()
+        endif()
+
+        if(EXISTS "${lib_cmakelists_path}")
+            message(STATUS "Using bundled ${name}")
+
+            # Store the binary directory for later use
+            # Use the library name (not the source path) for the binary directory
+            set(lib_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/${name}_build")
+
+            # Add the library
+            add_subdirectory(${lib_source_dir} ${lib_binary_dir})
+
+            # -------------------------------------------------------------------------
+            # Step 9: Automatically set FOLDER properties for IDE organization
+            # -------------------------------------------------------------------------
+            _set_third_party_folder_properties(${name} "${lib_binary_dir}")
+
+            # -------------------------------------------------------------------------
+            # Step 10: Create library aliases if requested
+            # -------------------------------------------------------------------------
+            if(TPL_ALIASES)
+                _create_third_party_aliases(${name} "${TPL_ALIASES}")
+            endif()
+
+            # -------------------------------------------------------------------------
+            # Step 11: Create XSigma:: namespace interface targets if requested
+            # -------------------------------------------------------------------------
+            if(TPL_XSIGMA_TARGETS)
+                _create_third_party_interface_targets("${TPL_XSIGMA_TARGETS}")
+            endif()
+
+            # -------------------------------------------------------------------------
+            # Step 12: Automatically populate dependency lists
+            # -------------------------------------------------------------------------
+            # This step automatically adds the library to XSIGMA_DEPENDENCY_LIBS and
+            # XSIGMA_DEPENDENCY_INCLUDE_DIRS if requested (default: ON)
+
+            if(TPL_AUTO_ADD_TO_DEPENDENCIES)
+                # Check if the XSigma:: namespace target was created
+                if(TARGET XSigma::${name})
+                    # Add to XSIGMA_DEPENDENCY_LIBS using global property
+                    # We use global properties because PARENT_SCOPE doesn't update the variable
+                    # in the current scope, so subsequent function calls wouldn't see the changes
+                    get_property(_temp_libs GLOBAL PROPERTY _XSIGMA_DEPENDENCY_LIBS)
+                    list(APPEND _temp_libs XSigma::${name})
+                    set_property(GLOBAL PROPERTY _XSIGMA_DEPENDENCY_LIBS "${_temp_libs}")
+                    message(STATUS "Dependency: XSigma::${name} added to XSIGMA_DEPENDENCY_LIBS")
+                endif()
+
+                # Add include directory if specified
+                if(DEFINED TPL_INCLUDE_DIR)
+                    # Add to XSIGMA_DEPENDENCY_INCLUDE_DIRS using global property
+                    get_property(_temp_includes GLOBAL PROPERTY _XSIGMA_DEPENDENCY_INCLUDE_DIRS)
+                    list(APPEND _temp_includes "${CMAKE_CURRENT_SOURCE_DIR}/${TPL_INCLUDE_DIR}")
+                    set_property(GLOBAL PROPERTY _XSIGMA_DEPENDENCY_INCLUDE_DIRS "${_temp_includes}")
+                    message(STATUS "Dependency: ${TPL_INCLUDE_DIR} added to XSIGMA_DEPENDENCY_INCLUDE_DIRS")
                 endif()
             endif()
-        endforeach()
-    endif()
-
-    if(EXISTS "${lib_cmakelists_path}")
-        message(STATUS "Using bundled ${name}")
-
-        # Store the binary directory for later use
-        # Use the library name (not the source path) for the binary directory
-        set(lib_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/${name}_build")
-
-        # Add the library
-        add_subdirectory(${lib_source_dir} ${lib_binary_dir})
-
-        # -------------------------------------------------------------------------
-        # Step 8: Automatically set FOLDER properties for IDE organization
-        # -------------------------------------------------------------------------
-        _set_third_party_folder_properties(${name} "${lib_binary_dir}")
-        
-        # -------------------------------------------------------------------------
-        # Step 9: Create library aliases if requested
-        # -------------------------------------------------------------------------
-        if(TPL_ALIASES)
-            _create_third_party_aliases(${name} "${TPL_ALIASES}")
+        else()
+            message(WARNING "Third-party library ${name} not found in ${CMAKE_CURRENT_SOURCE_DIR}/${TPL_SOURCE_DIR}")
         endif()
-
-        # -------------------------------------------------------------------------
-        # Step 10: Create XSigma:: namespace interface targets if requested
-        # -------------------------------------------------------------------------
-        if(TPL_XSIGMA_TARGETS)
-            _create_third_party_interface_targets("${TPL_XSIGMA_TARGETS}")
-        endif()
-
-        # -------------------------------------------------------------------------
-        # Step 11: Automatically populate dependency lists
-        # -------------------------------------------------------------------------
-        # This step automatically adds the library to XSIGMA_DEPENDENCY_LIBS and
-        # XSIGMA_DEPENDENCY_INCLUDE_DIRS if requested (default: ON)
-
-        if(TPL_AUTO_ADD_TO_DEPENDENCIES)
-            # Check if the XSigma:: namespace target was created
-            if(TARGET XSigma::${name})
-                # Add to XSIGMA_DEPENDENCY_LIBS using global property
-                # We use global properties because PARENT_SCOPE doesn't update the variable
-                # in the current scope, so subsequent function calls wouldn't see the changes
-                get_property(_temp_libs GLOBAL PROPERTY _XSIGMA_DEPENDENCY_LIBS)
-                list(APPEND _temp_libs XSigma::${name})
-                set_property(GLOBAL PROPERTY _XSIGMA_DEPENDENCY_LIBS "${_temp_libs}")
-                message(STATUS "Dependency: XSigma::${name} added to XSIGMA_DEPENDENCY_LIBS")
-            endif()
-
-            # Add include directory if specified
-            if(DEFINED TPL_INCLUDE_DIR)
-                # Add to XSIGMA_DEPENDENCY_INCLUDE_DIRS using global property
-                get_property(_temp_includes GLOBAL PROPERTY _XSIGMA_DEPENDENCY_INCLUDE_DIRS)
-                list(APPEND _temp_includes "${CMAKE_CURRENT_SOURCE_DIR}/${TPL_INCLUDE_DIR}")
-                set_property(GLOBAL PROPERTY _XSIGMA_DEPENDENCY_INCLUDE_DIRS "${_temp_includes}")
-                message(STATUS "Dependency: ${TPL_INCLUDE_DIR} added to XSIGMA_DEPENDENCY_INCLUDE_DIRS")
-            endif()
-        endif()
-    else()
-        message(WARNING "Third-party library ${name} not found in ${CMAKE_CURRENT_SOURCE_DIR}/${TPL_SOURCE_DIR}")
-    endif()
 
     # -------------------------------------------------------------------------
-    # Step 12: Restore original state
+    # Step 13: Restore original state
     # -------------------------------------------------------------------------
     # Restore BUILD_SHARED_LIBS
     set(BUILD_SHARED_LIBS ${_saved_build_shared_libs})
@@ -732,25 +806,30 @@ endfunction()
 
 # fmt - Modern formatting library (header-only mode)
 # Using header-only version to avoid shared library issues and ensure compatibility with Kineto
+# Creates INTERFACE library target with XSigma::fmt alias and fmt::fmt-header-only alias
+# for Kineto compatibility (Kineto checks for this target to determine if fmt is available)
 add_third_party_library(fmt
     LIBRARY_TYPE STATIC
-    FILTER_FLAGS "-flto=thin" "-flto=full"
+    ALIASES "fmt::fmt-header-only"
     XSIGMA_TARGETS "XSigma::fmt=fmt::fmt-header-only|fmt::fmt|fmt"
     INCLUDE_DIR "fmt/include"
 )
 
 # cpuinfo - CPU feature detection library (mandatory dependency)
 add_third_party_library(cpuinfo
+    LIBRARY_TYPE STATIC
     FILTER_FLAGS "-flto=thin" "-flto=full"
     XSIGMA_TARGETS "XSigma::cpuinfo=cpuinfo::cpuinfo|cpuinfo"
     INCLUDE_DIR "cpuinfo/include"
 )
 
 # magic_enum - Static reflection for enums in C++
+# Header-only library with INTERFACE target and XSigma::magic_enum alias
+# Note: FILTER_FLAGS, DISABLE_WARNINGS, EXTRA_FLAGS, and LIBRARY_TYPE_VAR are not applicable
+#       (no compilation occurs for header-only libraries)
 add_third_party_library(magic_enum
     CONDITION XSIGMA_ENABLE_MAGICENUM
-    FILTER_FLAGS "-flto=thin" "-flto=full"
-    XSIGMA_TARGETS "XSigma::magic_enum=magic_enum::magic_enum|magic_enum"
+    LIBRARY_TYPE HEADER_ONLY
     INCLUDE_DIR "magic_enum/include"
 )
 
@@ -812,13 +891,14 @@ set(KINETO_LIBRARY_TYPE "static" CACHE STRING "")
 
 # Tell Kineto to use XSigma's fmt library instead of its embedded one
 # This prevents duplicate symbol errors when linking
-# Set FMT_SOURCE_DIR to a marker value that tells Kineto to skip fmt build
-# set(FMT_SOURCE_DIR "XSIGMA_EXTERNAL_FMT" CACHE STRING "Use external fmt library" FORCE)
+# Set FMT_SOURCE_DIR to XSigma's fmt directory so Kineto can build from it
+# This ensures Kineto uses the same fmt version as XSigma
+set(FMT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/fmt" CACHE STRING "Use XSigma's fmt library" FORCE)
 
 message(STATUS "Configuring Kineto dependency:")
 message(STATUS "  KINETO_BUILD_TESTS = ${KINETO_BUILD_TESTS}")
 message(STATUS "  KINETO_LIBRARY_TYPE = ${KINETO_LIBRARY_TYPE}")
-message(STATUS "  FMT_SOURCE_DIR = ${FMT_SOURCE_DIR} (XSIGMA_EXTERNAL_FMT means use external fmt)")
+message(STATUS "  FMT_SOURCE_DIR = ${FMT_SOURCE_DIR} (using XSigma's fmt)")
 
 add_third_party_library(kineto
     CONDITION XSIGMA_ENABLE_KINETO

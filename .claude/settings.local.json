@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python setup.py:*)",
+      "Bash(dumpbin:*)",
+      "Bash(./CoreCxxTests.exe)",
+      "Bash(echo:*)",
+      "Bash(where:*)",
+      "Bash(powershell -Command \"try { ./CoreCxxTests.exe } catch { echo $_Exception.Message }\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

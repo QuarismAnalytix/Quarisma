@@ -297,25 +297,25 @@ void prepareTrace(
 
     std::set<libkineto::ActivityType> k_activities;
     bool const                        has_cpu_activity =
-        activities.count(xsigma::autograd::profiler::ActivityType::CPU) > 0;//NOLINT
+        activities.count(xsigma::autograd::profiler::ActivityType::CPU) > 0;  //NOLINT
 
     if (has_cpu_activity)
     {
         k_activities.insert(kCpuTypes.begin(), kCpuTypes.end());
     }
-    if (activities.count(xsigma::autograd::profiler::ActivityType::XPU) > 0)//NOLINT
+    if (activities.count(xsigma::autograd::profiler::ActivityType::XPU) > 0)  //NOLINT
     {
         k_activities.insert(kXpuTypes.begin(), kXpuTypes.end());
     }
-    if (activities.count(xsigma::autograd::profiler::ActivityType::MTIA) > 0)//NOLINT
+    if (activities.count(xsigma::autograd::profiler::ActivityType::MTIA) > 0)  //NOLINT
     {
         k_activities.insert(kMtiaTypes.begin(), kMtiaTypes.end());
     }
-    if (activities.count(xsigma::autograd::profiler::ActivityType::HPU) > 0)//NOLINT
+    if (activities.count(xsigma::autograd::profiler::ActivityType::HPU) > 0)  //NOLINT
     {
         k_activities.insert(hpuTypes.begin(), hpuTypes.end());
     }
-    if (activities.count(xsigma::autograd::profiler::ActivityType::CUDA) > 0)//NOLINT
+    if (activities.count(xsigma::autograd::profiler::ActivityType::CUDA) > 0)  //NOLINT
     {
         k_activities.insert(kCudaTypes.begin(), kCudaTypes.end());
         if (config.enable_cuda_sync_events || get_cuda_sync_enabled())
@@ -331,7 +331,7 @@ void prepareTrace(
     {
         k_activities.insert(libkineto::ActivityType::COLLECTIVE_COMM);
     }
-    if (activities.count(xsigma::autograd::profiler::ActivityType::PrivateUse1) > 0)//NOLINT
+    if (activities.count(xsigma::autograd::profiler::ActivityType::PrivateUse1) > 0)  //NOLINT
     {
         k_activities.insert(kPrivateUse1Types.begin(), kPrivateUse1Types.end());
     }

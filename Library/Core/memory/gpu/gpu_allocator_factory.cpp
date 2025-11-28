@@ -189,5 +189,9 @@ gpu_allocator_factory::create_caching_allocator<uint32_t, 64ULL>(const gpu_alloc
 template std::unique_ptr<cuda_caching_allocator_template<uint32_t, 256ULL>>
 gpu_allocator_factory::create_caching_allocator<uint32_t, 256ULL>(const gpu_allocator_config&);
 
+// Additional instantiations for test coverage (int type)
+template std::unique_ptr<cuda_caching_allocator_template<int, 128>>
+gpu_allocator_factory::create_caching_allocator<int, 128>(const gpu_allocator_config&);
+
 }  // namespace gpu
 }  // namespace xsigma

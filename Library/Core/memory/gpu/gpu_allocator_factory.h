@@ -155,7 +155,7 @@ public:
      * @param allocation_lifetime Average lifetime in seconds
      * @return Recommended allocation strategy
      */
-    static gpu_allocation_strategy recommend_strategy(
+    XSIGMA_API static gpu_allocation_strategy recommend_strategy(
         size_t avg_allocation_size, double allocation_frequency, double allocation_lifetime);
 
     /**
@@ -165,7 +165,7 @@ public:
      * @param device_index Device index
      * @return true if device supports strategy
      */
-    static bool validate_device_support(
+    XSIGMA_API static bool validate_device_support(
         gpu_allocation_strategy strategy, device_enum device_type, int device_index);
 
     /**
@@ -173,7 +173,7 @@ public:
      * @param strategy Allocation strategy
      * @return Strategy name string
      */
-    static std::string strategy_name(gpu_allocation_strategy strategy);
+    XSIGMA_API static std::string strategy_name(gpu_allocation_strategy strategy);
 
 private:
     gpu_allocator_factory() = delete;  // Static factory only
