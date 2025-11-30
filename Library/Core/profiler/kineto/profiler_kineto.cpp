@@ -209,9 +209,11 @@ struct AddTensorboardFields : public MetadataBase
     {
         result->visit(*this);
         const auto module_hierarchy = kineto_event.moduleHierarchy();
-        //addMetadata("Module Hierarchy", stacksToStr(module_hierarchy.vec(), "."));
-        //addMetadata("Call stack", stacksToStr(kineto_event.stack().vec(), ";"));
+        addMetadata("Module Hierarchy", xsigma::profiler::impl::stacksToStr(module_hierarchy.vec(), "."));
+        addMetadata("Call stack", xsigma::profiler::impl::stacksToStr(kineto_event.stack().vec(), ";"));
 
+        // Note: PyExtraFieldsBase is not currently available in this build
+        // Uncomment when Python integration is enabled
         /*result->visit_if_base<PyExtraFieldsBase>(
             [&, this](const auto& i) -> void
             {
@@ -229,6 +231,8 @@ struct AddTensorboardFields : public MetadataBase
             });*/
     }
 
+    // Note: PyCall event type is not currently available in this build
+    // Uncomment when Python integration is enabled
     /*void operator()(const ExtraFields<EventType::PyCall>& py_call)
     {
         if (py_call.module_.has_value())
@@ -252,41 +256,45 @@ struct AddGenericMetadata : public MetadataBase
         result->visit(*this);
         if (config->experimental_config.verbose)
         {
-            //result->visit_if_base<PyExtraFieldsBase>(
-            //   [&, this](const auto& i) -> void
-            // { this->addMetadata("Python thread", std::to_string(i.python_tid_)); });
+            // Note: PyExtraFieldsBase is not currently available in this build
+            // Uncomment when Python integration is enabled
+            // result->visit_if_base<PyExtraFieldsBase>(
+            //     [&, this](const auto& i) -> void
+            //     { this->addMetadata("Python thread", std::to_string(i.python_tid_)); });
         }
     }
 
     void operator()(ExtraFields<EventType::TorchOp>& op_event)
     {
-        /*const auto arg_data = parseArgData(op_event.inputs_, op_event.concrete_inputs_);
+        const auto arg_data = parseArgData(op_event.inputs_, op_event.concrete_inputs_);
 
         if (arg_data.hasData)
         {
             if (get_record_concrete_inputs_enabled())
             {
-                addMetadata("Input Dims", variantShapesToStr(arg_data.shapes));
-                addMetadata("Input Strides", variantShapesToStr(arg_data.strides));
+                addMetadata("Input Dims", xsigma::profiler::impl::variantShapesToStr(arg_data.shapes));
+                addMetadata("Input Strides", xsigma::profiler::impl::variantShapesToStr(arg_data.strides));
             }
             else
             {
-                addMetadata("Input Dims", shapesToStr(arg_data.shapesForKinetoEvent));
+                addMetadata("Input Dims", xsigma::profiler::impl::shapesToStr(arg_data.shapesForKinetoEvent));
             }
-            addMetadata("Input type", strListToStr(arg_data.dtypes));
+            addMetadata("Input type", xsigma::profiler::impl::strListToStr(arg_data.dtypes));
             if (!arg_data.concreteInputs.empty())
             {
-                addMetadata("Concrete Inputs", ivalueListToStr(arg_data.concreteInputs));
+                addMetadata("Concrete Inputs", xsigma::profiler::impl::ivalueListToStr(arg_data.concreteInputs));
             }
         }
 
         // Add metadata for kwinputs if exist
-        for (const auto& [key, val] : op_event.kwinputs_)
+        // NOTE: Disabled because IValue is a stub class without the required methods
+        // Uncomment when full IValue implementation is available
+        /*for (const auto& [key, val] : op_event.kwinputs_)
         {
             if (key == "stream" && !val.isInt())
             {
-                //LOG(WARNING) << "Inputted stream is not an int for op: "
-                << op_event.name_ << " skipping";
+                XSIGMA_LOG_WARNING(
+                    "Inputted stream is not an int for op: {} skipping", op_event.name_);
                 continue;
             }
 
@@ -307,10 +315,11 @@ struct AddGenericMetadata : public MetadataBase
 
             if (!isValidType && !isStringList)
             {
-                //LOG(WARNING)
-                << "Inputted kwarg: " << key
-                << " is not an int, double, string, bool, or list of strings for op: "
-                << op_event.name_ << " skipping";
+                XSIGMA_LOG_WARNING(
+                    "Inputted kwarg: {} is not an int, double, string, bool, or list of strings "
+                    "for op: {} skipping",
+                    key,
+                    op_event.name_);
                 continue;
             }
 
@@ -319,23 +328,24 @@ struct AddGenericMetadata : public MetadataBase
                 // For list of strings, use ivalueListToStr
                 auto                        list = val.toListRef();
                 std::vector<xsigma::IValue> stringList(list.begin(), list.end());
-                addMetadata(key, ivalueListToStr(stringList));
+                addMetadata(key, xsigma::profiler::impl::ivalueListToStr(stringList));
             }
             else
             {
                 bool isString = val.isString();
-                addMetadata(key, ivalueToStr(val, isString));
+                addMetadata(key, xsigma::profiler::impl::ivalueToStr(val, isString));
             }
-        }
+        }*/
+
         // Add extra metadata if any
         for (const auto& [key, val] : op_event.extra_meta_)
         {
             addMetadata(key, val);
         }
 
-        if (config_ && !config_->experimental_config.performance_events.empty())
+        if (config_ != nullptr && !config_->experimental_config.performance_events.empty())
         {
-            auto& event_names = config_->experimental_config.performance_events;
+            const auto& event_names = config_->experimental_config.performance_events;
             for (const auto i : xsigma::irange(op_event.perf_event_counters_->size()))
             {
                 addMetadata(event_names[i], std::to_string((*op_event.perf_event_counters_)[i]));
@@ -349,7 +359,7 @@ struct AddGenericMetadata : public MetadataBase
             addMetadata("Fwd thread id", std::to_string(op_event.forward_tid_));
             addMetadata("Sequence number", std::to_string(op_event.sequence_number_));
         }
-        */
+
         addMetadata("Record function id", std::to_string(op_event.record_function_id_));
     }
 

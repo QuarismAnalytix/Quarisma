@@ -6,7 +6,9 @@
       "Bash(./CoreCxxTests.exe)",
       "Bash(echo:*)",
       "Bash(where:*)",
-      "Bash(powershell -Command \"try { ./CoreCxxTests.exe } catch { echo $_Exception.Message }\")"
+      "Bash(powershell -Command \"try { ./CoreCxxTests.exe } catch { echo $_Exception.Message }\")",
+      "Bash(python3 setup.py:*)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []

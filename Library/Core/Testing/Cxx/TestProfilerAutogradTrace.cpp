@@ -42,22 +42,6 @@ void runSampleWork()
     {
         accumulator = 0;
     }
-
-    const auto end_time = std::chrono::steady_clock::now();
-    const auto start_us =
-        std::chrono::duration_cast<std::chrono::microseconds>(start_time.time_since_epoch())
-            .count();
-    const auto end_us =
-        std::chrono::duration_cast<std::chrono::microseconds>(end_time.time_since_epoch()).count();
-
-    // Report backend event to Kineto profiler
-    xsigma::autograd::profiler::reportBackendEventToActiveKinetoProfiler(
-        start_us,
-        end_us,
-        kDebugHandle,
-        xsigma::RecordScope::LITE_INTERPRETER,
-        "autograd_profiler_sample_work",
-        "autograd_trace_test");
 }
 
 #endif  // XSIGMA_HAS_KINETO
