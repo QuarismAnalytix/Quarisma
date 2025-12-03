@@ -9,9 +9,6 @@
 // Feature flags are now defined via CMake compile definitions (XSIGMA_HAS_*)
 // See Cmake/tools/dependencies.cmake for the mapping from XSIGMA_ENABLE_* to XSIGMA_HAS_*
 
-#include "xsigma_threads.h"
-#include "xsigma_version_macros.h"
-
 // NUMA is only enabled on Linux
 #if defined(__linux__) && XSIGMA_HAS_NUMA
 #define XSIGMA_NUMA_ENABLED

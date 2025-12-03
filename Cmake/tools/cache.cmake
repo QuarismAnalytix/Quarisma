@@ -1,5 +1,5 @@
-# ============================================================================= XSigma Build Speed
-# Optimization Configuration Module
+# ============================================================================= 
+# XSigma Build Speed Optimization Configuration Module
 # =============================================================================
 # Enables configurable compiler caching (ccache, sccache, buildcache) and faster linkers for
 # improved build performance. Supports GCC, Clang, and MSVC on Linux, macOS, and Windows.
@@ -55,8 +55,8 @@ message(STATUS "Configuring build speed optimizations with cache type: ${XSIGMA_
 # linking phase. In such cases, it's better to use the default linker. This is a known limitation of
 # LTO with certain linkers.
 
-# ============================================================================ Compiler Cache
-# Configuration
+# ============================================================================ 
+#Compiler Cache Configuration
 # ============================================================================
 #
 # NOTE: Compiler caches are configured globally as compiler launchers because they need to intercept

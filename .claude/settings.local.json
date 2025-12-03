@@ -8,7 +8,12 @@
       "Bash(where:*)",
       "Bash(powershell -Command \"try { ./CoreCxxTests.exe } catch { echo $_Exception.Message }\")",
       "Bash(python3 setup.py:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(./bin/CoreCxxTests:*)",
+      "Bash(DYLD_LIBRARY_PATH=/Users/toufikbellaj/XSigma/build_ninja/lib:$DYLD_LIBRARY_PATH ./bin/CoreCxxTests:*)",
+      "Bash(otool -L:*)",
+      "Bash(/Users/toufikbellaj/miniconda3/bin/ninja:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

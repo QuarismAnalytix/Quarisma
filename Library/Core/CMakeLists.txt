@@ -6,23 +6,9 @@ cmake_minimum_required(VERSION 3.16)
 # are set by the threads.cmake module and available here for configure_file()
 
 # Configure header files
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/xsigma_version_macros.h.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/xsigma_version_macros.h" @ONLY
-)
-
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/xsigma_threads.h.in" "${CMAKE_CURRENT_BINARY_DIR}/xsigma_threads.h"
-  @ONLY
-)
-
 set(xsigma_headers)
 set(xsigma_sources)
 set(xsigma_templates)
-
-list(APPEND xsigma_headers "${CMAKE_CURRENT_BINARY_DIR}/xsigma_version_macros.h"
-     "${CMAKE_CURRENT_BINARY_DIR}/xsigma_threads.h"
-)
 
 file(
   GLOB_RECURSE headers
@@ -174,6 +160,9 @@ set_target_properties(
 
 if(MSVC)
   target_compile_options(Core PRIVATE /WX)
+else()
+  # Force include cstdlib to ensure malloc/free are visible when using fmt library
+  target_compile_options(Core PRIVATE -include cstdlib)
 endif()
 
 # ============================================================================= Include Directories

@@ -44,7 +44,6 @@ Stats stats()
 #include <elf.h>
 #include <link.h>
 #include <linux/limits.h>
-#include "util/flat_hash.h"
 
 #include <algorithm>
 #include <climits>
@@ -57,6 +56,7 @@ Stats stats()
 #include "profiler/common/unwind/fast_symbolizer.h"
 #include "profiler/common/unwind/fde.h"
 #include "profiler/common/unwind/unwinder.h"
+#include "util/flat_hash.h"
 #include "util/irange.h"
 
 extern "C" void unwind_c(std::vector<void*>* result, int64_t rsp, int64_t rbp);

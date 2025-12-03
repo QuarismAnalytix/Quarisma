@@ -23,24 +23,28 @@ std::string makeTracePath()
 
 void runSampleWork()
 {
-    // Use RECORD_EDGE_SCOPE to create a profiling scope
-    constexpr int64_t                 kDebugHandle = 42;
-    const std::vector<xsigma::IValue> no_inputs{};
-    RECORD_EDGE_SCOPE_WITH_DEBUG_HANDLE_AND_INPUTS(
-        "autograd_profiler_sample_work", kDebugHandle, no_inputs);
+    // Use RECORD_USER_SCOPE to create a profiling scope
+    //RECORD_USER_SCOPE("autograd_profiler_sample_work");
 
     const auto start_time = std::chrono::steady_clock::now();
 
-    double accumulator = 0.;
-    for (int i = 0; i < 10000; ++i)
+    auto step_callbacks = xsigma::getStepCallbacksUnlessEmpty(xsigma::RecordScope::FUNCTION);
+    if XSIGMA_UNLIKELY (step_callbacks.has_value())
     {
-        double x = static_cast<double>(i / 1000.0);
-        accumulator += sinh(x) / x;
-    }
+        xsigma::RecordFunction guard(std::move(*step_callbacks));
+        auto f=[](int n){double                  accumulator = 0.;
+        for (int i = 0; i < n; ++i)
+        {
+            double x = static_cast<double>(i / 1000.0);
+            accumulator += sinh(x) / x;
+        }
 
-    if (accumulator == -1)
-    {
-        accumulator = 0;
+        if (accumulator == -1)
+        {
+            accumulator = 0;
+        }};
+        guard.before("test", -1);
+        f(10000);
     }
 }
 
@@ -55,6 +59,9 @@ XSIGMATEST(profiler, autograd_chrome_trace_export)
         xsigma::autograd::profiler::ActivityType::CPU,
     };
 
+    // Enable RecordFunction FIRST before enabling profiler
+    //xsigma::RecordFunctionGuard record_function_guard(/*is_enabled=*/true);
+
     xsigma::autograd::profiler::ProfilerConfig config(
         xsigma::autograd::profiler::ProfilerState::KINETO,
         /*report_input_shapes=*/true,
@@ -63,24 +70,20 @@ XSIGMATEST(profiler, autograd_chrome_trace_export)
         /*with_flops=*/true,
         /*with_modules=*/false);
 
-    // Specify LITE_INTERPRETER scope to capture RECORD_EDGE_SCOPE events
-    const std::unordered_set<xsigma::RecordScope> scopes = {xsigma::RecordScope::LITE_INTERPRETER};
+    // Specify USER_SCOPE to capture RECORD_USER_SCOPE events
+    const std::unordered_set<xsigma::RecordScope> scopes = {xsigma::RecordScope::FUNCTION};
 
     xsigma::autograd::profiler::prepareProfiler(config, activities);
     xsigma::autograd::profiler::enableProfiler(config, activities, scopes);
 
     EXPECT_TRUE(xsigma::hasCallbacks()) << "RecordFunction callbacks not registered for profiler";
 
-    // Enable RecordFunction to allow profiling scopes to work
-    xsigma::RecordFunctionGuard record_function_guard(/*is_enabled=*/true);
+    std::cout << "Callbacks registered: " << xsigma::hasCallbacks() << std::endl;
 
     runSampleWork();
 
     auto result = xsigma::autograd::profiler::disableProfiler();
     EXPECT_NE(result, nullptr);
-    //EXPECT_GT(result->events().size(), 0) << "No profiling events captured";
-    //EXPECT_GT(result->event_tree().size(), 0) << "No events in event tree";
-
     const auto trace_path = makeTracePath();
     result->save(trace_path);
 
@@ -90,7 +93,10 @@ XSIGMATEST(profiler, autograd_chrome_trace_export)
     EXPECT_GT(file_size, 0) << "Trace file is empty";
     trace_input.close();
 
-    std::remove(trace_path.c_str());
+    // Keep the file for inspection - comment out deletion
+    // std::remove(trace_path.c_str());
+    std::cout << "Trace file saved to: " << trace_path << " (size: " << file_size << " bytes)"
+              << std::endl;
 }
 
 #endif  // XSIGMA_HAS_KINETO

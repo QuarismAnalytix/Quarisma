@@ -209,8 +209,10 @@ struct AddTensorboardFields : public MetadataBase
     {
         result->visit(*this);
         const auto module_hierarchy = kineto_event.moduleHierarchy();
-        addMetadata("Module Hierarchy", xsigma::profiler::impl::stacksToStr(module_hierarchy.vec(), "."));
-        addMetadata("Call stack", xsigma::profiler::impl::stacksToStr(kineto_event.stack().vec(), ";"));
+        addMetadata(
+            "Module Hierarchy", xsigma::profiler::impl::stacksToStr(module_hierarchy.vec(), "."));
+        addMetadata(
+            "Call stack", xsigma::profiler::impl::stacksToStr(kineto_event.stack().vec(), ";"));
 
         // Note: PyExtraFieldsBase is not currently available in this build
         // Uncomment when Python integration is enabled
@@ -272,17 +274,23 @@ struct AddGenericMetadata : public MetadataBase
         {
             if (get_record_concrete_inputs_enabled())
             {
-                addMetadata("Input Dims", xsigma::profiler::impl::variantShapesToStr(arg_data.shapes));
-                addMetadata("Input Strides", xsigma::profiler::impl::variantShapesToStr(arg_data.strides));
+                addMetadata(
+                    "Input Dims", xsigma::profiler::impl::variantShapesToStr(arg_data.shapes));
+                addMetadata(
+                    "Input Strides", xsigma::profiler::impl::variantShapesToStr(arg_data.strides));
             }
             else
             {
-                addMetadata("Input Dims", xsigma::profiler::impl::shapesToStr(arg_data.shapesForKinetoEvent));
+                addMetadata(
+                    "Input Dims",
+                    xsigma::profiler::impl::shapesToStr(arg_data.shapesForKinetoEvent));
             }
             addMetadata("Input type", xsigma::profiler::impl::strListToStr(arg_data.dtypes));
             if (!arg_data.concreteInputs.empty())
             {
-                addMetadata("Concrete Inputs", xsigma::profiler::impl::ivalueListToStr(arg_data.concreteInputs));
+                addMetadata(
+                    "Concrete Inputs",
+                    xsigma::profiler::impl::ivalueListToStr(arg_data.concreteInputs));
             }
         }
 

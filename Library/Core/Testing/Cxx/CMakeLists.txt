@@ -133,11 +133,18 @@ if(COMMAND xsigma_set_target_output_directories)
   xsigma_set_target_output_directories(CoreCxxTests)
 endif()
 
-# ============================================================================= BenchmarkSimple
-# Executable (following cpuinfo pattern)
+# ============================================================================= Individual Benchmark
+# Executables
+# =============================================================================
+# Each benchmark is built as a separate executable for:
+# - Parallel compilation (faster builds)
+# - Selective rebuilding (only rebuild changed benchmarks)
+# - Independent execution (run specific benchmarks in isolation)
+# - Better CTest integration (individual test reporting)
 # =============================================================================
 if(XSIGMA_ENABLE_BENCHMARK)
 
+  # Discover all benchmark source files
   file(GLOB_RECURSE bench_sources LIST_DIRECTORIES false
        "${CMAKE_CURRENT_SOURCE_DIR}/Benchmark*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/Benchmark*.cu"
   )
@@ -157,22 +164,68 @@ if(XSIGMA_ENABLE_BENCHMARK)
     set(bench_sources ${filtered_bench_sources})
   endif()
 
-  add_executable(CoreCxxBenchmark ${bench_sources})
+  # Create a separate executable target for each benchmark file
+  foreach(_bench_source IN ITEMS ${bench_sources})
+    # Extract benchmark name from filename (remove .cpp/.cu extension)
+    get_filename_component(bench_name "${_bench_source}" NAME_WE)
 
-  # Link libraries Core library is linked which transitively brings in all centralized dependencies
-  # via XSIGMA_DEPENDENCY_LIBS Link benchmark_main to provide main() function (instead of
-  # BENCHMARK_MAIN() in each file)
-  target_link_libraries(CoreCxxBenchmark PRIVATE XSigma::benchmark XSigma::benchmark_main XSigma::Core)
+    # Create executable target with consistent naming: benchmark_<name>
+    # Example: BenchmarkSMP.cpp -> benchmark_smp
+    string(REPLACE "Benchmark" "" bench_suffix "${bench_name}")
+    string(TOLOWER "${bench_suffix}" bench_suffix_lower)
+    set(target_name "benchmark_${bench_suffix_lower}")
 
-  # Set target properties
-  set_target_properties(CoreCxxBenchmark PROPERTIES FOLDER "Benchmarks")
+    # Create the executable
+    add_executable(${target_name} "${_bench_source}")
 
-  # Apply XSigma output directory configuration
-  if(COMMAND xsigma_set_target_output_directories)
-    xsigma_set_target_output_directories(CoreCxxBenchmark)
-  endif()
+    # Link libraries
+    # - XSigma::benchmark: Google Benchmark library
+    # - XSigma::benchmark_main: Provides main() function
+    # - XSigma::Core: Core library with all dependencies
+    target_link_libraries(${target_name} PRIVATE
+      XSigma::benchmark
+      XSigma::benchmark_main
+      XSigma::Core
+    )
 
-  message(STATUS "✓ BenchmarkSimple executable configured")
+    # Set target properties
+    set_target_properties(${target_name} PROPERTIES
+      FOLDER "Benchmarks"
+      OUTPUT_NAME "${target_name}"
+    )
+
+    # Apply XSigma output directory configuration
+    # This ensures benchmarks are placed in ${XSIGMA_BINARY_DIR}/bin
+    if(COMMAND xsigma_set_target_output_directories)
+      xsigma_set_target_output_directories(${target_name})
+    else()
+      # Fallback: use standard output directories
+      set_target_properties(${target_name} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+      )
+    endif()
+
+    # Register with CTest for integrated test execution
+    # This allows running benchmarks via: ctest -R benchmark_
+    # Or specific benchmark: ctest -R benchmark_smp
+    add_test(
+      NAME ${target_name}
+      COMMAND ${target_name} --benchmark_min_time=0.01s
+      WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+    )
+
+    # Set test properties
+    set_tests_properties(${target_name} PROPERTIES
+      TIMEOUT 600  # 10 minutes timeout for benchmarks
+      LABELS "Benchmark;Performance;Core"
+    )
+
+    message(STATUS "✓ Benchmark target configured: ${target_name} (from ${bench_name}.cpp)")
+  endforeach()
+
+  # Report total number of benchmarks configured
+  list(LENGTH bench_sources bench_count)
+  message(STATUS "✓ Individual benchmark executables configured (${bench_count} total)")
 endif()
 
 # ============================================================================= ProfileParallelBackends

@@ -49,11 +49,11 @@ static xsigma::unwind::Mode compute_symbolize_mode()
             false,
             "expected {{dladdr, addr2line, fast}} for XSIGMA_SYMBOLIZE_MODE, got {}",
             envar_c.value());
+        // Unreachable: XSIGMA_CHECK will throw/abort on failure
+        return unwind::Mode::dladdr;
     }
-    else
-    {
-        return compute_disable_addr2line() ? unwind::Mode::dladdr : unwind::Mode::addr2line;
-    }
+
+    return compute_disable_addr2line() ? unwind::Mode::dladdr : unwind::Mode::addr2line;
 }
 
 unwind::Mode get_symbolize_mode()

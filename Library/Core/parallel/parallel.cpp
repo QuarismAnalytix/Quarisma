@@ -106,7 +106,7 @@
 #include <utility>
 
 #include "logging/logger.h"
-#include "thread_pool.h"
+#include "parallel/thread_pool.h"
 #include "util/env.h"
 
 #if XSIGMA_HAS_MKL
