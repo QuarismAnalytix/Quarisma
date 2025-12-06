@@ -1,3 +1,4 @@
+// NOLINTBEGIN(modernize-use-nodiscard,modernize-use-auto,modernize-return-braced-init-list,readability-qualified-auto,readability-convert-member-functions-to-static,readability-implicit-bool-conversion,readability-else-after-return,misc-const-correctness)
 #include "profiler/common/unwind/unwind.h"
 
 #include "common/macros.h"
@@ -607,3 +608,4 @@ __asm__(
     "jmp unwind_c;\n");
 
 #endif
+// NOLINTEND(modernize-use-nodiscard,modernize-use-auto,modernize-return-braced-init-list,readability-qualified-auto,readability-convert-member-functions-to-static,readability-implicit-bool-conversion,readability-else-after-return,misc-const-correctness)

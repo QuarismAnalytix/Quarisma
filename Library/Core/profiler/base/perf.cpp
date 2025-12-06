@@ -74,10 +74,10 @@ void PerfEvent::Init()
    */
     attr.read_format = PERF_FORMAT_TOTAL_TIME_ENABLED | PERF_FORMAT_TOTAL_TIME_RUNNING;
 
-    pid_t         pid      = getpid();  // this pid
-    int           cpu      = -1;        // all cpus
-    int           group_fd = -1;
-    unsigned long flags    = 0;
+    const pid_t         pid      = getpid();  // this pid
+    const int           cpu      = -1;        // all cpus
+    const int           group_fd = -1;
+    const unsigned long flags    = 0;
 
     fd_ = static_cast<int>(perf_event_open(&attr, pid, cpu, group_fd, flags));
     if (fd_ == -1)
@@ -90,7 +90,7 @@ void PerfEvent::Init()
 uint64_t PerfEvent::ReadCounter() const
 {
     PerfCounter counter{};
-    long        n = read(fd_, &counter, sizeof(PerfCounter));
+    const long  n = read(fd_, &counter, sizeof(PerfCounter));
     XSIGMA_CHECK(
         n == sizeof(counter),
         "Read failed for Perf event fd, event : ",

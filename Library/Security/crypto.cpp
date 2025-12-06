@@ -58,7 +58,7 @@ bool crypto::generate_random_bytes(uint8_t* buffer, size_t size)
 #endif
 
     // Fallback to /dev/urandom
-    int fd = open("/dev/urandom", O_RDONLY);
+    const int fd = open("/dev/urandom", O_RDONLY);
     if (fd < 0)
     {
         return false;
@@ -67,7 +67,7 @@ bool crypto::generate_random_bytes(uint8_t* buffer, size_t size)
     size_t total_read = 0;
     while (total_read < size)
     {
-        ssize_t bytes_read = read(fd, buffer + total_read, size - total_read);
+        const ssize_t bytes_read = read(fd, buffer + total_read, size - total_read);
         if (bytes_read <= 0)
         {
             close(fd);

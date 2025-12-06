@@ -116,13 +116,13 @@ auto parseArgData(
                     dtypes[i]  = std::string();  //;scalarTypeToTypeMeta(t.dtype_).name());
                     strides[i] = t.strides_;
                 },
-                [&](const std::vector<TensorMetadata>& l)
+                [&](const std::vector<TensorMetadata>& tensor_list)
                 {
                     std::vector<std::vector<int64_t>> shape;
-                    shape.reserve(l.size());
+                    shape.reserve(tensor_list.size());
                     std::vector<std::vector<int64_t>> stride;
-                    stride.reserve(l.size());
-                    for (const auto& t : l)
+                    stride.reserve(tensor_list.size());
+                    for (const auto& t : tensor_list)
                     {
                         shape.emplace_back(t.sizes_);
                         stride.emplace_back(t.strides_);

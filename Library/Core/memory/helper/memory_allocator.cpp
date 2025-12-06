@@ -207,7 +207,7 @@ namespace xsigma::gpu::memory_allocator
 #define CUDA_CHECK_RETURN_FALSE(call)                                                   \
     do                                                                                  \
     {                                                                                   \
-        cudaError_t error = call;                                                       \
+        const cudaError_t error = call;                                                 \
         if (error != cudaSuccess)                                                       \
         {                                                                               \
             XSIGMA_LOG_ERROR("CUDA error in {}: {}", #call, cudaGetErrorString(error)); \
@@ -299,8 +299,8 @@ void* allocate(
 
 #elif defined(XSIGMA_CUDA_ALLOC_POOL_ASYNC)
     // Use pool-based asynchronous CUDA Runtime API allocation
-    cudaStream_t  gpu_stream_cuda = static_cast<cudaStream_t>(stream);
-    cudaMemPool_t cuda_pool       = static_cast<cudaMemPool_t>(memory_pool);
+    auto* gpu_stream_cuda = static_cast<cudaStream_t>(stream);
+    auto* cuda_pool       = static_cast<cudaMemPool_t>(memory_pool);
 
     cudaError_t result;
     if (cuda_pool != nullptr)
@@ -457,8 +457,8 @@ void free(
 
 #elif defined(XSIGMA_CUDA_ALLOC_POOL_ASYNC)
     // Use asynchronous CUDA Runtime API deallocation (same for pool and non-pool)
-    cudaStream_t gpu_stream_cuda = static_cast<cudaStream_t>(stream);
-    cudaError_t  result          = cudaFreeAsync(ptr, gpu_stream_cuda);
+    auto*             gpu_stream_cuda = static_cast<cudaStream_t>(stream);
+    const cudaError_t result          = cudaFreeAsync(ptr, gpu_stream_cuda);
     if (result != cudaSuccess)
     {
         XSIGMA_LOG_ERROR(
