@@ -77,6 +77,9 @@ compile_definition(XSIGMA_ENABLE_EXPERIMENTAL)
 # Magic Enum support
 compile_definition(XSIGMA_ENABLE_MAGICENUM)
 
+# Enzyme Automatic Differentiation support
+compile_definition(XSIGMA_ENABLE_ENZYME)
+
 # Exception pointer support (detected by compiler checks in utils.cmake)
 if(XSIGMA_HAS_EXCEPTION_PTR)
   list(APPEND XSIGMA_DEPENDENCY_COMPILE_DEFINITIONS XSIGMA_HAS_EXCEPTION_PTR=1)

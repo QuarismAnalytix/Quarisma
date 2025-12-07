@@ -625,6 +625,7 @@ class XsigmaFlags:
             "spell",
             "fix",
             "cache_type",
+            "enzyme",
         ]
         self.__description = [
             # Valid CMake options
@@ -655,6 +656,7 @@ class XsigmaFlags:
             "enable clang-tidy fix-errors and fix options",
             "compiler cache type: none, ccache, sccache, or buildcache",
             "profiler.<kineto|native|itt>: select profiler backend",
+            "enable Enzyme automatic differentiation support",
         ]
 
     def __build_cmake_flag(self):
@@ -688,6 +690,7 @@ class XsigmaFlags:
             "spell": "XSIGMA_ENABLE_SPELL",
             "fix": "XSIGMA_ENABLE_FIX",
             "cache_type": "XSIGMA_CACHE_TYPE",
+            "enzyme": "XSIGMA_ENABLE_ENZYME",
             # Non-CMake flags (for internal use, not passed to CMake)
             "mkl_threading": "MKL_THREADING",
             "mkl_link": "MKL_LINK",
@@ -712,7 +715,7 @@ class XsigmaFlags:
                 "smp": "STDThread",  # Special case: string value
                 "javasourceversion": 1.8,  # Special case: numeric value
                 "javatargetversion": 1.8,  # Special case: numeric value
-                "cxxstd": "",  # Special case: let CMake decide
+                "cxxstd": "cxx20",  # Special case: let CMake decide
                 # Keep some flags OFF even in "all" mode for safety/compatibility
                 "cuda": self.OFF,  # CUDA requires special hardware
                 "sanitizer": self.OFF,  # Can conflict with other tools

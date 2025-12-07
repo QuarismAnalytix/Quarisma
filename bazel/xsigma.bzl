@@ -23,7 +23,22 @@ def xsigma_copts():
 
 def xsigma_defines():
     """Returns common preprocessor defines for XSigma targets."""
-    base_defines = []
+    base_defines = [
+        # Threading configuration (matches Cmake/tools/threads.cmake)
+        "XSIGMA_MAX_THREADS=64",
+    ]
+
+    # Platform-specific threading defines
+    base_defines += select({
+        "@platforms//os:windows": [
+            "XSIGMA_USE_WIN32_THREADS=1",
+            "XSIGMA_USE_PTHREADS=0",
+        ],
+        "//conditions:default": [
+            "XSIGMA_USE_PTHREADS=1",
+            "XSIGMA_USE_WIN32_THREADS=0",
+        ],
+    })
 
     # Add feature-specific defines based on build configuration
     return base_defines + select({

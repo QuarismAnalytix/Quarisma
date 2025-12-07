@@ -53,6 +53,14 @@ foreach(_test_source IN ITEMS ${test_sources})
     endif()
   endif()
 
+  # When Enzyme is disabled, exclude Enzyme-specific tests
+  if(NOT XSIGMA_ENABLE_ENZYME)
+    if(file_name MATCHES "TestEnzyme")
+      message(STATUS "Excluding Enzyme test (Enzyme disabled): ${file_name}")
+      continue()
+    endif()
+  endif()
+
   list(APPEND TestFiles "${_test_source}")
 endforeach()
 

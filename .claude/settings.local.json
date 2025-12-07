@@ -13,7 +13,19 @@
       "Bash(DYLD_LIBRARY_PATH=/Users/toufikbellaj/XSigma/build_ninja/lib:$DYLD_LIBRARY_PATH ./bin/CoreCxxTests:*)",
       "Bash(otool -L:*)",
       "Bash(/Users/toufikbellaj/miniconda3/bin/ninja:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(python3:*)",
+      "Bash(find:*)",
+      "Bash(bazel test:*)",
+      "Bash(bazel-bin/Library/Core/Testing/Cxx/CoreCxxTests:*)",
+      "Bash(./bazel-bin/Library/Core/Testing/Cxx/CoreCxxTests:*)",
+      "Bash(dmesg:*)",
+      "Bash(pkill:*)",
+      "Bash(bazel build:*)",
+      "Bash(ninja:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

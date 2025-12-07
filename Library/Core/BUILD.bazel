@@ -14,19 +14,8 @@ package(default_visibility = ["//visibility:public"])
 # Generated Configuration Headers
 # =============================================================================
 
-# Version macros header (equivalent to configure_file for xsigma_version_macros.h.in)
-# Note: These are generated headers that are checked into the repository
-# to avoid cross-platform shell compatibility issues with genrule
-filegroup(
-    name = "gen_version_macros",
-    srcs = ["xsigma_version_macros.h"],
-)
-
-# Threading configuration header (equivalent to configure_file for xsigma_threads.h.in)
-filegroup(
-    name = "gen_threads_header",
-    srcs = ["xsigma_threads.h"],
-)
+# Note: xsigma_version_macros.h and xsigma_threads.h have been removed
+# Version and threading configuration is now handled differently
 
 # =============================================================================
 # Source Files
@@ -50,10 +39,7 @@ filegroup(
             "parallel/*.h",
         ],
         allow_empty = True,
-    ) + [
-        ":xsigma_version_macros.h",
-        ":xsigma_threads.h",
-    ],
+    ),
 )
 
 # Collect all template implementation files

@@ -384,7 +384,7 @@ class BazelConfiguration:
         try:
             start_time = time.time()
             subprocess.run(
-                [bazel_cmd, "clean", "--expunge", "--noserver"],
+                [bazel_cmd, "clean", "--expunge"],
                 check=True,
                 timeout=300,  # 5 minute timeout for clean operation
             )

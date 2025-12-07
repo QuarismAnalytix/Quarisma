@@ -1072,6 +1072,18 @@ if(XSIGMA_ENABLE_TBB)
 endif()
 
 # -----------------------------------------------------------------------------
+# Enzyme - Automatic Differentiation (Handled by enzyme.cmake)
+# -----------------------------------------------------------------------------
+# Enzyme is configured by enzyme.cmake (included before ThirdParty subdirectory)
+# which creates XSigma::enzyme interface target. We add it to the dependency list here.
+if(XSIGMA_ENABLE_ENZYME)
+  if(TARGET XSigma::enzyme)
+    list(APPEND XSIGMA_DEPENDENCY_LIBS XSigma::enzyme)
+    message(STATUS "Dependency: XSigma::enzyme added to XSIGMA_DEPENDENCY_LIBS")
+  endif()
+endif()
+
+# -----------------------------------------------------------------------------
 # Propagate dependency lists to parent scope
 # -----------------------------------------------------------------------------
 # Read from global properties (populated by add_third_party_library function)

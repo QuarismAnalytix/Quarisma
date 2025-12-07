@@ -43,12 +43,24 @@ cc_library(
             "/DUSE_WINTHREAD",
             "/D_WIN32_WINNT=0x0A00",
         ],
+        "@platforms//os:macos": [
+            "-DUSE_PTHREAD",
+            "-fPIC",
+            "-D_XOPEN_SOURCE=600",  # Required for ucontext.h on macOS
+            "-D_DARWIN_C_SOURCE",  # Required for MAP_ANON and other BSD extensions on macOS
+            "-faligned-allocation",  # Enable aligned allocation for macOS 10.13+
+            "-mmacosx-version-min=10.13",  # Minimum macOS version for aligned allocation
+        ],
         "//conditions:default": [
             "-DUSE_PTHREAD",
             "-fPIC",
-            "-mwaitpkg",  # Enable WAITPKG instructions (_tpause, _umonitor, _umwait)
-            "-mrtm",      # Enable RTM (Restricted Transactional Memory)
         ],
+    }) + select({
+        "@platforms//cpu:x86_64": [
+            "-mwaitpkg",  # Enable WAITPKG instructions (_tpause, _umonitor, _umwait) - x86_64 only
+            "-mrtm",      # Enable RTM (Restricted Transactional Memory) - x86_64 only
+        ],
+        "//conditions:default": [],
     }),
     linkopts = select({
         "@platforms//os:windows": [],

@@ -127,6 +127,8 @@ build:xcode --cxxopt=-std=c++17
 
 # macOS specific settings
 build:macos --cxxopt=-stdlib=libc++
+build:macos --cxxopt=-faligned-allocation
+build:macos --cxxopt=-mmacosx-version-min=10.13
 build:macos --linkopt=-undefined
 build:macos --linkopt=dynamic_lookup
 
