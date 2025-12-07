@@ -122,7 +122,7 @@
 #include <algorithm>
 
 #include "logging/logger.h"
-#include "smp/Advanced/thread_name.h"
+#include "parallel/thread_name.h"
 #include "util/cpu_info.h"
 
 namespace xsigma
@@ -166,7 +166,7 @@ thread_pool::thread_pool(int pool_size, int numa_node_id, const std::function<vo
         threads_[i] = std::thread(
             [this, i, init_thread]()
             {
-                xsigma::detail::smp::Advanced::set_thread_name("pt_thread_pool");
+                xsigma::detail::parallel::set_thread_name("pt_thread_pool");
                 if (init_thread)
                 {
                     init_thread();

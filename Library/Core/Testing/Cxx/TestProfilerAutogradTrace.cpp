@@ -32,17 +32,20 @@ void runSampleWork()
     if XSIGMA_UNLIKELY (step_callbacks.has_value())
     {
         xsigma::RecordFunction guard(std::move(*step_callbacks));
-        auto f=[](int n){double                  accumulator = 0.;
-        for (int i = 0; i < n; ++i)
+        auto                   f = [](int n)
         {
-            double x = static_cast<double>(i / 1000.0);
-            accumulator += sinh(x) / x;
-        }
+            double accumulator = 0.;
+            for (int i = 0; i < n; ++i)
+            {
+                double x = static_cast<double>(i / 1000.0);
+                accumulator += sinh(x) / x;
+            }
 
-        if (accumulator == -1)
-        {
-            accumulator = 0;
-        }};
+            if (accumulator == -1)
+            {
+                accumulator = 0;
+            }
+        };
         guard.before("test", -1);
         f(10000);
     }

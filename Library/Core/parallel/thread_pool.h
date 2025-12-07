@@ -82,7 +82,7 @@
 
 #include "common/export.h"
 #include "memory/numa.h"
-#include "smp/Advanced/thread_name.h"
+#include "parallel/thread_name.h"
 #include "util/registry.h"
 
 namespace xsigma
@@ -418,7 +418,7 @@ public:
               [numa_node_id]()
               {
                   // Set thread name for debugging/profiling
-                  xsigma::detail::smp::Advanced::set_thread_name("XsigmaTaskThread");
+                  xsigma::detail::parallel::set_thread_name("XsigmaTaskThread");
 
 #if XSIGMA_HAS_NUMA
                   // Bind thread to NUMA node if NUMA support is enabled

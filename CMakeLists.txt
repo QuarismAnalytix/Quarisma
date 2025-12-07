@@ -141,7 +141,7 @@ set(XSIGMA_BUILD_TESTING "ON" CACHE STRING "Build module testing directories")
 set_property(CACHE XSIGMA_BUILD_TESTING PROPERTY STRINGS "ON;OFF;WANT")
 
 # Build Examples Configuration Controls whether example programs are built. When enabled, builds
-# comprehensive examples demonstrating SMP parallel APIs and other features.
+# comprehensive examples demonstrating parallel APIs and other features.
 option(XSIGMA_ENABLE_EXAMPLES "Build example programs" OFF)
 
 # Google Benchmark Support Flag Controls whether Google Benchmark is enabled for performance
@@ -331,9 +331,7 @@ add_subdirectory(Library/Core)
 
 # Add examples if enabled
 if(XSIGMA_ENABLE_EXAMPLES)
-  add_subdirectory(Examples/SMP)
   add_subdirectory(Examples/Profiling)
-  message(STATUS "✓ SMP Examples enabled")
   message(STATUS "✓ Profiling Examples enabled")
 endif()
 

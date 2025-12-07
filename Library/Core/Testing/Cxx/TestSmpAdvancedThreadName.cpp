@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "Testing/xsigmaTest.h"
-#include "smp/Advanced/thread_name.h"
+#include "parallel/thread_name.h"
 
-namespace xsigma::detail::smp::Advanced
+namespace xsigma::detail::parallel
 {
 
 // Test setting and getting thread name
@@ -120,4 +120,4 @@ XSIGMATEST(SmpAdvancedThreadName, name_persistence)
     EXPECT_EQ(name1, name2);
 }
 
-}  // namespace xsigma::detail::smp::Advanced
+}  // namespace xsigma::detail::parallel

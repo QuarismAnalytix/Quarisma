@@ -1,4 +1,4 @@
-#include "parallel/thread_local_debug_info.h"
+#include "profiler/base/thread_local_debug_info.h"
 
 #include <utility>
 

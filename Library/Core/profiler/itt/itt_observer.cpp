@@ -1,7 +1,7 @@
 #include "profiler/itt/itt_observer.h"
 
-#include "parallel/thread_local_debug_info.h"
 #include "profiler/base/base.h"
+#include "profiler/base/thread_local_debug_info.h"
 #include "profiler/common/util.h"
 
 namespace xsigma::profiler::impl

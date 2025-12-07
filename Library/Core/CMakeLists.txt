@@ -18,7 +18,6 @@ file(
   "${CMAKE_CURRENT_SOURCE_DIR}/logging/*.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/memory/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/profiler/*.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/smp/*.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/c17/*.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/parallel/*.h"
   ${xsigma_headers}
@@ -32,7 +31,6 @@ file(
   "${CMAKE_CURRENT_SOURCE_DIR}/logging/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/memory/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/profiler/*.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/smp/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/c17/*.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/parallel/*.cpp"
   ${xsigma_sources}
@@ -61,7 +59,7 @@ file(
   LIST_DIRECTORIES false
   "${CMAKE_CURRENT_SOURCE_DIR}/util/*.hxx" "${CMAKE_CURRENT_SOURCE_DIR}/common/*.hxx"
   "${CMAKE_CURRENT_SOURCE_DIR}/logging/*.hxx" "${CMAKE_CURRENT_SOURCE_DIR}/memory/*.hxx"
-  "${CMAKE_CURRENT_SOURCE_DIR}/smp/*.hxx" ${xsigma_templates}
+  ${xsigma_templates}
 )
 
 # Remove GPU files if neither CUDA nor HIP is enabled
@@ -93,15 +91,15 @@ endif()
 
 if(XSIGMA_ENABLE_TBB)
   # If TBB is enabled, remove STDThread files
-  file(GLOB_RECURSE TBB_FILES smp/STDThread/*.cpp)
+  file(GLOB_RECURSE TBB_FILES parallel/STDThread/*.cpp)
   list(REMOVE_ITEM sources ${TBB_FILES})
-  file(GLOB_RECURSE TBB_HEADER_FILES smp/STDThread/*.h smp/STDThread/*.hxx)
+  file(GLOB_RECURSE TBB_HEADER_FILES parallel/STDThread/*.h parallel/STDThread/*.hxx)
   list(REMOVE_ITEM headers ${TBB_HEADER_FILES})
   list(REMOVE_ITEM templates ${TBB_HEADER_FILES})
 else()
-  file(GLOB_RECURSE TBB_FILES smp/TBB/*.cpp)
+  file(GLOB_RECURSE TBB_FILES parallel/TBB/*.cpp)
   list(REMOVE_ITEM sources ${TBB_FILES})
-  file(GLOB_RECURSE TBB_HEADER_FILES smp/TBB/*.h smp/TBB/*.hxx)
+  file(GLOB_RECURSE TBB_HEADER_FILES parallel/TBB/*.h parallel/TBB/*.hxx)
   list(REMOVE_ITEM headers ${TBB_HEADER_FILES})
   list(REMOVE_ITEM templates ${TBB_HEADER_FILES})
 endif()

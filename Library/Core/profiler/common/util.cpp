@@ -5,7 +5,7 @@
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
-#include "parallel/thread_local_debug_info.h"
+#include "profiler/base/thread_local_debug_info.h"
 #include "profiler/common/collection.h"
 #include "util/array_ref.h"
 #include "util/irange.h"

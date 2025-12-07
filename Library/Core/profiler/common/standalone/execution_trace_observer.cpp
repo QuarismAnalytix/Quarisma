@@ -39,7 +39,7 @@
 // //#include <XSigma/core/TensorBody.h>
 // //#include <XSigma/core/function_schema.h>
 // //#include <XSigma/core/stack.h>
-#include "parallel/thread_local_debug_info.h"
+#include "profiler/base/thread_local_debug_info.h"
 #include "profiler/common/record_function.h"
 #include "profiler/common/standalone/execution_trace_observer.h"
 #include "profiler/common/util.h"

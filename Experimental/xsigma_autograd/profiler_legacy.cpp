@@ -8,9 +8,9 @@
 #include <torch/csrc/jit/runtime/operator.h>
 #include <torch/library.h>
 #include <xsigma/core/Allocator.h>
+#include <xsigma/profiler/base/thread_local_debug_info.h>
 #include <xsigma/util/ApproximateClock.h>
 #include <xsigma/util/irange.h>
-#include <xsigma/util/thread_local_debug_info.h>
 
 #include <fstream>
 #include <iostream>
