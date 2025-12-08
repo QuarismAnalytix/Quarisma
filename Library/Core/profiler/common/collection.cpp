@@ -921,7 +921,7 @@ void RecordQueue::restart()
 
 namespace
 {
-void mark_finished(std::shared_ptr<Result>& r)
+void mark_finished(const std::shared_ptr<Result>& r)
 {
     //XSIGMA_CHECK(!r->finished_, r->name());
     r->finished_ = true;
@@ -993,8 +993,8 @@ void generateForwardBackwardLink(
 #endif  // XSIGMA_HAS_KINETO
 
 void generateForwardBackwardLinks(
-    std::unique_ptr<xsigma::profiler::impl::kineto::trace_t>& cpu_trace,
-    const std::vector<std::shared_ptr<Result>>&               results)
+    const std::unique_ptr<xsigma::profiler::impl::kineto::trace_t>& cpu_trace,
+    const std::vector<std::shared_ptr<Result>>&                     results)
 {
 #ifndef XSIGMA_HAS_KINETO
 }
@@ -1436,6 +1436,8 @@ trace_ptr_t addKinetoEvents(
 
     auto trace = std::make_unique<ActivityTraceWrapper>(stopTrace());
     //XSIGMA_CHECK(trace || !kKinetoAvailable);
+    // TransferEvents constructor has side effects (transfers Kineto events to results)
+    // cppcheck-suppress unreadVariable
     TransferEvents const transfer{results, trace, config};
     return trace;
 }
@@ -1448,7 +1450,7 @@ struct ResultGreater
     }
 };
 
-void set_in_tree_building(std::vector<result_ptr_t>& results, const bool value)
+void set_in_tree_building(const std::vector<result_ptr_t>& results, const bool value)
 {
     for (result_ptr_t const& r : results)
     {

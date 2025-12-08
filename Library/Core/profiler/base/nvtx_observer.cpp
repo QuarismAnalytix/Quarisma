@@ -41,7 +41,7 @@ struct NVTXThreadLocalState : ProfilerStateBase
     void setProducerTensorMap(
         xsigma::TensorImpl* tensor, xsigma::RecordFunctionHandle op_id, int output_nr)
     {
-        producer_tensor_map_[(void*)tensor] =
+        producer_tensor_map_[static_cast<void*>(tensor)] =
             std::pair<xsigma::RecordFunctionHandle, int>{op_id, output_nr};
     }
 
@@ -90,7 +90,8 @@ std::pair<xsigma::RecordFunctionHandle, int> NVTXThreadLocalState::getOpIdFromIn
 
 static std::list<std::pair<xsigma::RecordFunctionHandle, int>> getInputTensorOpIds()
 {
-    std::pair<xsigma::RecordFunctionHandle, int> const      undefined_op_pair(0, -1);
+    // Note: undefined_op_pair was used in commented-out code below
+    // std::pair<xsigma::RecordFunctionHandle, int> const undefined_op_pair(0, -1);
     std::list<std::pair<xsigma::RecordFunctionHandle, int>> input_producer_ops_;
     /*auto state_ptr = NVTXThreadLocalState::getTLS();
     XSIGMA_CHECK(state_ptr, "Expected profiler state set");

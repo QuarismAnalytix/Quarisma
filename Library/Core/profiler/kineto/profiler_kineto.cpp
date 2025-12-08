@@ -165,7 +165,9 @@ auto parseArgData(
 
 struct MetadataBase
 {
-    /* implicit */ MetadataBase(const std::shared_ptr<Result>& result)
+    // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
+    /* implicit */ MetadataBase(
+        const std::shared_ptr<Result>& result)  // cppcheck-suppress noExplicitConstructor
         : kinetoActivity_{result->kineto_activity_}
     {
         if (std::holds_alternative<ExtraFields<EventType::Kineto>>(result->extra_fields_))
@@ -1156,10 +1158,11 @@ int64_t KinetoEvent::cudaElapsedUs() const
         return (int64_t)xsigma::profiler::impl::cudaStubs()->elapsed(
             &cuda_event_start, &cuda_event_end);
     }
-    catch (std::exception& e)  //NOLINT
+    catch (const std::exception& e)  //NOLINT
     {
         //LOG(WARNING) << "Failed to measure time between two CUDA events. "
         //<< e.what();
+        (void)e;  // Suppress unused variable warning
     }
     return -1;
 }
@@ -1172,9 +1175,8 @@ int64_t KinetoEvent::privateuse1ElapsedUs() const
     {
         return -1;
     }
-    return (int64_t)xsigma::profiler::impl::privateuse1Stubs()->elapsed(
-        &privateuse1_event_start, &privateuse1_event_end);
-    return -1;
+    return static_cast<int64_t>(xsigma::profiler::impl::privateuse1Stubs()->elapsed(
+        &privateuse1_event_start, &privateuse1_event_end));
 }
 
 void KinetoEvent::getPerfEventCounters(std::vector<uint64_t>& in) const

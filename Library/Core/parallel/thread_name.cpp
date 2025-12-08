@@ -42,7 +42,7 @@
 #include "common/macros.h"
 
 // Platform-specific includes
-#if defined(_WIN32)
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -81,7 +81,7 @@ void safe_string_copy(char* dest, size_t dest_size, const char* src)
     dest[copy_len] = '\0';
 }
 
-#if defined(_WIN32)
+#ifdef _WIN32
 // Windows implementation using SetThreadDescription/GetThreadDescription
 // These APIs were introduced in Windows 10 1607 (Anniversary Update)
 // We use runtime linking to gracefully handle older Windows versions
@@ -90,7 +90,7 @@ using SetThreadDescriptionFunc = HRESULT(WINAPI*)(HANDLE, PCWSTR);
 using GetThreadDescriptionFunc = HRESULT(WINAPI*)(HANDLE, PWSTR*);
 
 // Lazy-initialized function pointers
-static SetThreadDescriptionFunc get_set_func()
+SetThreadDescriptionFunc get_set_func()
 {
     static const auto func = []() -> SetThreadDescriptionFunc
     {
@@ -102,7 +102,7 @@ static SetThreadDescriptionFunc get_set_func()
     return func;
 }
 
-static GetThreadDescriptionFunc get_get_func()
+GetThreadDescriptionFunc get_get_func()
 {
     static const auto func = []() -> GetThreadDescriptionFunc
     {
@@ -115,7 +115,7 @@ static GetThreadDescriptionFunc get_get_func()
 }
 
 // Convert UTF-8 string to wide string for Windows API
-static std::wstring utf8_to_wide(const std::string& utf8)
+std::wstring utf8_to_wide(const std::string& utf8)
 {
     if (utf8.empty())
     {
@@ -128,12 +128,12 @@ static std::wstring utf8_to_wide(const std::string& utf8)
         return {};
     }
     std::wstring wide(static_cast<size_t>(size), L'\0');
-    MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), static_cast<int>(utf8.size()), &wide[0], size);
+    MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), static_cast<int>(utf8.size()), wide.data(), size);
     return wide;
 }
 
 // Convert wide string to UTF-8 string
-static std::string wide_to_utf8(const std::wstring& wide)
+std::string wide_to_utf8(const std::wstring& wide)
 {
     if (wide.empty())
     {
@@ -147,7 +147,14 @@ static std::string wide_to_utf8(const std::wstring& wide)
     }
     std::string utf8(static_cast<size_t>(size), '\0');
     WideCharToMultiByte(
-        CP_UTF8, 0, wide.c_str(), static_cast<int>(wide.size()), &utf8[0], size, nullptr, nullptr);
+        CP_UTF8,
+        0,
+        wide.c_str(),
+        static_cast<int>(wide.size()),
+        utf8.data(),
+        size,
+        nullptr,
+        nullptr);
     return utf8;
 }
 

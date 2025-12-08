@@ -124,7 +124,7 @@ public:
      * }  // State automatically restored to previous value
      * @endcode
      */
-    XSIGMA_API parallel_guard(bool state);
+    XSIGMA_API explicit parallel_guard(bool state);
 
     /**
      * @brief Destructor restores previous parallel region state.

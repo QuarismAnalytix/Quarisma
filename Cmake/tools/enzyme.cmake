@@ -92,19 +92,36 @@ if(ENZYME_PLUGIN_PATH AND EXISTS "${ENZYME_PLUGIN_PATH}")
   message(STATUS "Using user-specified Enzyme plugin: ${ENZYME_PLUGIN_LIBRARY}")
 else()
   # Search in common locations
-  set(_enzyme_search_paths
-    "/usr/lib"
-    "/usr/local/lib"
-    "/opt/homebrew/lib"
-    "/opt/homebrew/opt/llvm/lib"
-    "$ENV{LLVM_DIR}/lib"
-    "${CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN}/lib"
-  )
+  if(WIN32)
+    # Windows-specific search paths
+    set(_enzyme_search_paths
+      "$ENV{LLVM_DIR}/bin"
+      "$ENV{LLVM_DIR}/lib"
+      "C:/Program Files/LLVM/bin"
+      "C:/Program Files/LLVM/lib"
+      "C:/Program Files (x86)/LLVM/bin"
+      "C:/Program Files (x86)/LLVM/lib"
+    )
+  else()
+    # Unix-like systems (Linux, macOS)
+    set(_enzyme_search_paths
+      "/usr/lib"
+      "/usr/local/lib"
+      "/opt/homebrew/lib"
+      "/opt/homebrew/opt/llvm/lib"
+      "$ENV{LLVM_DIR}/lib"
+      "${CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN}/lib"
+    )
+  endif()
 
   # Try to extract LLVM installation directory from compiler
   get_filename_component(_compiler_dir "${CMAKE_CXX_COMPILER}" DIRECTORY)
   get_filename_component(_llvm_root "${_compiler_dir}" DIRECTORY)
-  list(APPEND _enzyme_search_paths "${_llvm_root}/lib")
+  if(WIN32)
+    list(APPEND _enzyme_search_paths "${_llvm_root}/bin" "${_llvm_root}/lib")
+  else()
+    list(APPEND _enzyme_search_paths "${_llvm_root}/lib")
+  endif()
 
   # Search for Enzyme plugin
   # Extract major version from compiler version (e.g., 21.1.6 -> 21)
@@ -115,24 +132,43 @@ else()
   message(STATUS "  LLVM major version: ${_llvm_major_version}")
   message(STATUS "  Search paths: ${_enzyme_search_paths}")
 
-  # On macOS, the libraries don't have 'lib' prefix and use .dylib extension
-  # Try to find the plugin files directly using file(GLOB ...)
+  # Search for Enzyme plugin files based on platform
+  # - Windows: .dll extension
+  # - macOS: .dylib extension (libraries don't have 'lib' prefix)
+  # - Linux: .so extension
   set(_found_enzyme_files)
   foreach(_search_path ${_enzyme_search_paths})
-    file(GLOB _enzyme_candidates
-      "${_search_path}/ClangEnzyme-${CMAKE_CXX_COMPILER_VERSION}.dylib"
-      "${_search_path}/ClangEnzyme-${_llvm_major_version}.dylib"
-      "${_search_path}/ClangEnzyme.dylib"
-      "${_search_path}/LLVMEnzyme-${CMAKE_CXX_COMPILER_VERSION}.dylib"
-      "${_search_path}/LLVMEnzyme-${_llvm_major_version}.dylib"
-      "${_search_path}/LLVMEnzyme.dylib"
-      "${_search_path}/ClangEnzyme-${CMAKE_CXX_COMPILER_VERSION}.so"
-      "${_search_path}/ClangEnzyme-${_llvm_major_version}.so"
-      "${_search_path}/ClangEnzyme.so"
-      "${_search_path}/LLVMEnzyme-${CMAKE_CXX_COMPILER_VERSION}.so"
-      "${_search_path}/LLVMEnzyme-${_llvm_major_version}.so"
-      "${_search_path}/LLVMEnzyme.so"
-    )
+    if(WIN32)
+      # Windows DLL search patterns
+      file(GLOB _enzyme_candidates
+        "${_search_path}/ClangEnzyme-${CMAKE_CXX_COMPILER_VERSION}.dll"
+        "${_search_path}/ClangEnzyme-${_llvm_major_version}.dll"
+        "${_search_path}/ClangEnzyme.dll"
+        "${_search_path}/LLVMEnzyme-${CMAKE_CXX_COMPILER_VERSION}.dll"
+        "${_search_path}/LLVMEnzyme-${_llvm_major_version}.dll"
+        "${_search_path}/LLVMEnzyme.dll"
+      )
+    elseif(APPLE)
+      # macOS dylib search patterns
+      file(GLOB _enzyme_candidates
+        "${_search_path}/ClangEnzyme-${CMAKE_CXX_COMPILER_VERSION}.dylib"
+        "${_search_path}/ClangEnzyme-${_llvm_major_version}.dylib"
+        "${_search_path}/ClangEnzyme.dylib"
+        "${_search_path}/LLVMEnzyme-${CMAKE_CXX_COMPILER_VERSION}.dylib"
+        "${_search_path}/LLVMEnzyme-${_llvm_major_version}.dylib"
+        "${_search_path}/LLVMEnzyme.dylib"
+      )
+    else()
+      # Linux/Unix .so search patterns
+      file(GLOB _enzyme_candidates
+        "${_search_path}/ClangEnzyme-${CMAKE_CXX_COMPILER_VERSION}.so"
+        "${_search_path}/ClangEnzyme-${_llvm_major_version}.so"
+        "${_search_path}/ClangEnzyme.so"
+        "${_search_path}/LLVMEnzyme-${CMAKE_CXX_COMPILER_VERSION}.so"
+        "${_search_path}/LLVMEnzyme-${_llvm_major_version}.so"
+        "${_search_path}/LLVMEnzyme.so"
+      )
+    endif()
     if(_enzyme_candidates)
       list(APPEND _found_enzyme_files ${_enzyme_candidates})
     endif()
@@ -153,36 +189,69 @@ endif()
 
 # Check if Enzyme was found
 if(NOT ENZYME_PLUGIN_FOUND)
-  message(WARNING
-    "\n"
-    "================================================================================\n"
-    "WARNING: Enzyme plugin library not found\n"
-    "================================================================================\n"
-    "\n"
-    "Enzyme automatic differentiation requires the Enzyme LLVM plugin.\n"
-    "\n"
-    "INSTALLATION METHODS:\n"
-    "\n"
-    "1. Build from source:\n"
-    "   git clone https://github.com/EnzymeAD/Enzyme.git\n"
-    "   cd Enzyme/enzyme\n"
-    "   mkdir build && cd build\n"
-    "   cmake -G Ninja .. \\\n"
-    "     -DLLVM_DIR=/path/to/llvm/lib/cmake/llvm \\\n"
-    "     -DCMAKE_BUILD_TYPE=Release\n"
-    "   ninja\n"
-    "\n"
-    "2. Specify custom path:\n"
-    "   cmake -DENZYME_PLUGIN_PATH=/path/to/ClangEnzyme-*.so ..\n"
-    "\n"
-    "3. macOS (Homebrew):\n"
-    "   brew install enzyme\n"
-    "\n"
-    "For more information: https://enzyme.mit.edu/\n"
-    "\n"
-    "Disabling Enzyme support.\n"
-    "================================================================================\n"
-  )
+  if(WIN32)
+    message(WARNING
+      "\n"
+      "================================================================================\n"
+      "WARNING: Enzyme plugin library not found\n"
+      "================================================================================\n"
+      "\n"
+      "Enzyme automatic differentiation requires the Enzyme LLVM plugin.\n"
+      "\n"
+      "INSTALLATION METHODS FOR WINDOWS:\n"
+      "\n"
+      "1. Build from source:\n"
+      "   git clone https://github.com/EnzymeAD/Enzyme.git\n"
+      "   cd Enzyme\\enzyme\n"
+      "   mkdir build && cd build\n"
+      "   cmake -G Ninja .. ^\n"
+      "     -DLLVM_DIR=\"C:/Program Files/LLVM/lib/cmake/llvm\" ^\n"
+      "     -DCMAKE_BUILD_TYPE=Release ^\n"
+      "     -DCMAKE_C_COMPILER=\"C:/Program Files/LLVM/bin/clang.exe\" ^\n"
+      "     -DCMAKE_CXX_COMPILER=\"C:/Program Files/LLVM/bin/clang++.exe\"\n"
+      "   ninja\n"
+      "   copy LLVMEnzyme-*.dll \"C:\\Program Files\\LLVM\\bin\\\"\n"
+      "\n"
+      "2. Specify custom path:\n"
+      "   cmake -DENZYME_PLUGIN_PATH=\"C:/path/to/LLVMEnzyme-21.dll\" ..\n"
+      "\n"
+      "For more information: https://enzyme.mit.edu/\n"
+      "\n"
+      "Disabling Enzyme support.\n"
+      "================================================================================\n"
+    )
+  else()
+    message(WARNING
+      "\n"
+      "================================================================================\n"
+      "WARNING: Enzyme plugin library not found\n"
+      "================================================================================\n"
+      "\n"
+      "Enzyme automatic differentiation requires the Enzyme LLVM plugin.\n"
+      "\n"
+      "INSTALLATION METHODS:\n"
+      "\n"
+      "1. Build from source:\n"
+      "   git clone https://github.com/EnzymeAD/Enzyme.git\n"
+      "   cd Enzyme/enzyme\n"
+      "   mkdir build && cd build\n"
+      "   cmake -G Ninja .. \\\n"
+      "     -DLLVM_DIR=/path/to/llvm/lib/cmake/llvm \\\n"
+      "     -DCMAKE_BUILD_TYPE=Release\n"
+      "   ninja\n"
+      "\n"
+      "2. Specify custom path:\n"
+      "   cmake -DENZYME_PLUGIN_PATH=/path/to/ClangEnzyme-*.so ..\n"
+      "\n"
+      "3. macOS (Homebrew):\n"
+      "   brew install enzyme\n"
+      "\n"
+      "For more information: https://enzyme.mit.edu/\n"
+      "\n"
+      "Disabling Enzyme support.\n"
+      "================================================================================\n"
+    )
+  endif()
   set(XSIGMA_ENABLE_ENZYME OFF CACHE BOOL "Enable Enzyme automatic differentiation support" FORCE)
   return()
 endif()
