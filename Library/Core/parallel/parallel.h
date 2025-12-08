@@ -76,7 +76,7 @@
  * - Template metaprogramming: Generic parallel_for/reduce work with any callable
  * - Conditional compilation: Backend selection at compile time for zero overhead
  * - Lazy initialization: Thread counts initialized on first use
- * - Registry pattern: Thread pool management via ThreadPoolRegistry
+ * - Singleton pattern: Thread pool management via static locals
  *
  * USAGE EXAMPLE:
  * ==============

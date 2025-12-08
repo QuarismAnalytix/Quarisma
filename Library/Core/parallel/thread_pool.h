@@ -32,7 +32,7 @@
  * ================
  * - Producer-Consumer: Main thread produces tasks, worker threads consume
  * - RAII: Thread pool manages thread lifetime automatically
- * - Registry Pattern: ThreadPoolRegistry manages pool instances
+ * - Singleton Pattern: Thread pools managed as static locals
  * - Virtual Interface: Polymorphic access via task_thread_pool_base
  *
  * SYNCHRONIZATION:
@@ -60,11 +60,10 @@
  *
  * USAGE:
  * ======
- * The thread pool is typically accessed via ThreadPoolRegistry, not directly:
- * @code
- * auto pool = ThreadPoolRegistry()->run("MyPool", device_id, pool_size, true);
- * pool->run([]() { do_work(); });
- * @endcode
+ * The thread pool is used internally by the parallel module and is not directly
+ * exposed to users. It is accessed via static singleton instances in parallel.cpp:
+ * - _get_intraop_pool(): Returns the intra-op parallelism thread pool
+ * - get_interop_pool(): Returns the inter-op parallelism thread pool
  *
  * For the native parallel backend, the thread pool is used internally by
  * invoke_parallel() in parallel.cpp.
@@ -83,7 +82,6 @@
 #include "common/export.h"
 #include "memory/numa.h"
 #include "parallel/thread_name.h"
-#include "util/registry.h"
 
 namespace xsigma
 {
@@ -386,7 +384,7 @@ private:
      * - Optionally binds threads to NUMA nodes for performance
      *
      * This is the primary thread pool type used by the XSigma parallel module
-     * for inter-op parallelism. It is typically accessed via ThreadPoolRegistry.
+     * for inter-op parallelism. It is used internally by parallel.cpp.
      *
      * Thread Safety: Inherits thread safety from thread_pool.
      * Design Pattern: Decorator pattern (adds functionality to thread_pool).
@@ -428,28 +426,5 @@ public:
     {
     }
 };
-
-/**
-     * @brief Registry for managing thread pool instances.
-     *
-     * This registry provides centralized management of thread pool instances.
-     * It allows creating, retrieving, and destroying thread pools by name.
-     *
-     * USAGE:
-     * @code
-     * // Create or retrieve thread pool
-     * auto pool = ThreadPoolRegistry()->Create("MyPool", device_id, pool_size, true);
-     *
-     * // Submit task
-     * pool->run([]() { do_work(); });
-     * @endcode
-     *
-     * Thread Safety: Thread-safe (registry uses internal synchronization).
-     * Design Pattern: Registry pattern for centralized resource management.
-     *
-     * @note The registry manages shared_ptr instances, so pools are automatically
-     *       destroyed when no longer referenced.
-     */
-XSIGMA_DECLARE_SHARED_REGISTRY(ThreadPoolRegistry, task_thread_pool_base, int, int, bool);
 
 }  // namespace xsigma
