@@ -22,7 +22,7 @@
 
 #include "common/export.h"
 
-namespace conductor
+namespace xsigma
 {
 namespace detail
 {
@@ -114,14 +114,14 @@ public:
     /**
    * @brief Returns true for a single proxy thread, false for the others.
    */
-    XSIGMA_API bool get_single_thread() const;
+    XSIGMA_API bool single_thread() const;
 
     /**
    * @brief Returns number of system thread used by the thread pool.
    */
     XSIGMA_API std::size_t thread_count() const noexcept;
 
-    XSIGMA_API static smp_thread_pool& get_instance();
+    XSIGMA_API static smp_thread_pool& instance();
 
 private:
     static void run_job(
@@ -141,7 +141,6 @@ private:
 
 }  // namespace smp
 }  // namespace detail
-}  // namespace conductor
+}  // namespace xsigma
 
 #endif
-/* VTK-HeaderTest-Exclude: smp_thread_pool.h */

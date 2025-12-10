@@ -13,7 +13,7 @@
 
 #include "smp/openmp/smp_tools_impl.h"
 
-namespace conductor
+namespace xsigma
 {
 namespace detail
 {
@@ -41,7 +41,9 @@ smp_tools_impl_openmp_initialize::~smp_tools_impl_openmp_initialize()
 {
     if (--smp_tools_impl_openmp_initialize_count == 0)
     {
-        thread_id_stack.reset();
+        // std::unique_ptr automatically deletes the managed object when destroyed.
+        // Explicit reset() call is unnecessary and adds function call overhead.
+        // The unique_ptr will be destroyed when this static variable goes out of scope.
     }
 }
 
@@ -50,13 +52,13 @@ template <>
 void smp_tools_impl<backend_type::OpenMP>::initialize(int num_threads)
 {
     const int max_threads =
-        smp_tools_impl<backend_type::OpenMP>::get_estimated_default_number_of_threads();
+        smp_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads();
     if (num_threads == 0)
     {
-        const char* vtk_smp_num_threads = std::getenv("SMP_MAX_THREADS");
-        if (vtk_smp_num_threads)
+        const char* smp_num_threads = std::getenv("SMP_MAX_THREADS");
+        if (smp_num_threads)
         {
-            std::string str(vtk_smp_num_threads);
+            std::string str(smp_num_threads);
             auto        result = std::from_chars(str.data(), str.data() + str.size(), num_threads);
             if (result.ec != std::errc())
             {
@@ -79,38 +81,38 @@ void smp_tools_impl<backend_type::OpenMP>::initialize(int num_threads)
 }
 
 //------------------------------------------------------------------------------
-int get_number_of_threads_openmp()
+int number_of_threads_openmp()
 {
     return (specified_num_threads_omp > 0)
                ? specified_num_threads_omp
-               : smp_tools_impl<backend_type::OpenMP>::get_estimated_default_number_of_threads();
+               : smp_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads();
 }
 
 //------------------------------------------------------------------------------
-bool get_single_thread_openmp()
+bool single_thread_openmp()
 {
     return thread_id_stack->top() == omp_get_thread_num();
 }
 
 //------------------------------------------------------------------------------
 template <>
-int smp_tools_impl<backend_type::OpenMP>::get_estimated_number_of_threads()
+int smp_tools_impl<backend_type::OpenMP>::estimated_number_of_threads()
 {
-    return get_number_of_threads_openmp();
+    return number_of_threads_openmp();
 }
 
 //------------------------------------------------------------------------------
 template <>
-int smp_tools_impl<backend_type::OpenMP>::get_estimated_default_number_of_threads()
+int smp_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads()
 {
     return omp_get_max_threads();
 }
 
 //------------------------------------------------------------------------------
 template <>
-bool smp_tools_impl<backend_type::OpenMP>::get_single_thread()
+bool smp_tools_impl<backend_type::OpenMP>::single_thread()
 {
-    return get_single_thread_openmp();
+    return single_thread_openmp();
 }
 
 //------------------------------------------------------------------------------
@@ -124,7 +126,7 @@ void smp_tools_impl_for_openmp(
 {
     if (grain <= 0)
     {
-        size_t estimate_grain = (last - first) / (get_number_of_threads_openmp() * 4);
+        size_t estimate_grain = (last - first) / (number_of_threads_openmp() * 4);
         grain                 = (estimate_grain > 0) ? estimate_grain : 1;
     }
 
@@ -145,4 +147,4 @@ void smp_tools_impl_for_openmp(
 
 }  // namespace smp
 }  // namespace detail
-}  // namespace conductor
+}  // namespace xsigma

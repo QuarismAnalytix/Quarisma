@@ -23,7 +23,7 @@
 #pragma pop_macro("__TBB_NO_IMPLICIT_LINKAGE")
 #endif
 
-namespace conductor
+namespace xsigma
 {
 namespace detail
 {
@@ -57,10 +57,13 @@ smp_tools_impl_tbb_initialize::~smp_tools_impl_tbb_initialize()
 {
     if (--smp_tools_impl_tbb_initialize_count == 0)
     {
-        task_arena.reset();
-        vtk_smp_tools_cs.reset();
-        thread_id_stack.reset();
-        thread_id_stack_lock.reset();
+        // std::unique_ptr automatically deletes the managed objects when destroyed.
+        // Explicit reset() calls are unnecessary and add function call overhead.
+        // The unique_ptrs will be destroyed when these static variables go out of scope.
+        // Removed: task_arena.reset();
+        // Removed: vtk_smp_tools_cs.reset();
+        // Removed: thread_id_stack.reset();
+        // Removed: thread_id_stack_lock.reset();
     }
 }
 
@@ -78,10 +81,10 @@ void smp_tools_impl<backend_type::TBB>::initialize(int num_threads)
 
     if (num_threads == 0)
     {
-        const char* vtk_smp_num_threads = std::getenv("SMP_MAX_THREADS");
-        if (vtk_smp_num_threads)
+        const char* smp_num_threads = std::getenv("SMP_MAX_THREADS");
+        if (smp_num_threads)
         {
-            std::string str(vtk_smp_num_threads);
+            std::string str(smp_num_threads);
             auto        result = std::from_chars(str.data(), str.data() + str.size(), num_threads);
             if (result.ec != std::errc())
             {
@@ -95,7 +98,7 @@ void smp_tools_impl<backend_type::TBB>::initialize(int num_threads)
         }
     }
     if (num_threads > 0 &&
-        num_threads <= smp_tools_impl<backend_type::TBB>::get_estimated_default_number_of_threads())
+        num_threads <= smp_tools_impl<backend_type::TBB>::estimated_default_number_of_threads())
     {
         if (task_arena->is_active())
         {
@@ -110,23 +113,23 @@ void smp_tools_impl<backend_type::TBB>::initialize(int num_threads)
 
 //------------------------------------------------------------------------------
 template <>
-int smp_tools_impl<backend_type::TBB>::get_estimated_number_of_threads()
+int smp_tools_impl<backend_type::TBB>::estimated_number_of_threads()
 {
     return specified_num_threads_tbb > 0
                ? specified_num_threads_tbb
-               : smp_tools_impl<backend_type::TBB>::get_estimated_default_number_of_threads();
+               : smp_tools_impl<backend_type::TBB>::estimated_default_number_of_threads();
 }
 
 //------------------------------------------------------------------------------
 template <>
-int smp_tools_impl<backend_type::TBB>::get_estimated_default_number_of_threads()
+int smp_tools_impl<backend_type::TBB>::estimated_default_number_of_threads()
 {
     return task_arena->max_concurrency();
 }
 
 //------------------------------------------------------------------------------
 template <>
-bool smp_tools_impl<backend_type::TBB>::get_single_thread()
+bool smp_tools_impl<backend_type::TBB>::single_thread()
 {
     return thread_id_stack->top() == tbb::this_task_arena::current_thread_index();
 }
@@ -159,4 +162,4 @@ void smp_tools_impl_for_tbb(
 
 }  // namespace smp
 }  // namespace detail
-}  // namespace conductor
+}  // namespace xsigma

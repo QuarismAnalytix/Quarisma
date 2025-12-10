@@ -4,64 +4,50 @@
 #include "smp_tools.h"
 
 //------------------------------------------------------------------------------
-const char* smp_tools::get_backend()
-{
-    auto& SMPToolsAPI = conductor::detail::smp::smp_tools_api::get_instance();
-    return SMPToolsAPI.get_backend();
-}
-
-//------------------------------------------------------------------------------
-bool smp_tools::set_backend(const char* backend)
-{
-    auto& SMPToolsAPI = conductor::detail::smp::smp_tools_api::get_instance();
-    return SMPToolsAPI.set_backend(backend);
-}
-
-//------------------------------------------------------------------------------
 void smp_tools::initialize(int num_threads)
 {
-    auto& SMPToolsAPI = conductor::detail::smp::smp_tools_api::get_instance();
+    auto& SMPToolsAPI = xsigma::detail::smp::smp_tools_api::instance();
     SMPToolsAPI.initialize(num_threads);
 }
 
 //------------------------------------------------------------------------------
-int smp_tools::get_estimated_number_of_threads()
+int smp_tools::estimated_number_of_threads()
 {
-    auto& SMPToolsAPI = conductor::detail::smp::smp_tools_api::get_instance();
-    return SMPToolsAPI.get_estimated_number_of_threads();
+    auto& SMPToolsAPI = xsigma::detail::smp::smp_tools_api::instance();
+    return SMPToolsAPI.estimated_number_of_threads();
 }
 
 //------------------------------------------------------------------------------
-int smp_tools::get_estimated_default_number_of_threads()
+int smp_tools::estimated_default_number_of_threads()
 {
-    auto& SMPToolsAPI = conductor::detail::smp::smp_tools_api::get_instance();
-    return SMPToolsAPI.get_estimated_default_number_of_threads();
+    auto& SMPToolsAPI = xsigma::detail::smp::smp_tools_api::instance();
+    return SMPToolsAPI.estimated_default_number_of_threads();
 }
 
 //------------------------------------------------------------------------------
 void smp_tools::set_nested_parallelism(bool is_nested)
 {
-    auto& SMPToolsAPI = conductor::detail::smp::smp_tools_api::get_instance();
+    auto& SMPToolsAPI = xsigma::detail::smp::smp_tools_api::instance();
     SMPToolsAPI.set_nested_parallelism(is_nested);
 }
 
 //------------------------------------------------------------------------------
-bool smp_tools::get_nested_parallelism()
+bool smp_tools::nested_parallelism()
 {
-    auto& SMPToolsAPI = conductor::detail::smp::smp_tools_api::get_instance();
-    return SMPToolsAPI.get_nested_parallelism();
+    auto& SMPToolsAPI = xsigma::detail::smp::smp_tools_api::instance();
+    return SMPToolsAPI.nested_parallelism();
 }
 
 //------------------------------------------------------------------------------
 bool smp_tools::is_parallel_scope()
 {
-    auto& SMPToolsAPI = conductor::detail::smp::smp_tools_api::get_instance();
+    auto& SMPToolsAPI = xsigma::detail::smp::smp_tools_api::instance();
     return SMPToolsAPI.is_parallel_scope();
 }
 
 //------------------------------------------------------------------------------
-bool smp_tools::get_single_thread()
+bool smp_tools::single_thread()
 {
-    auto& SMPToolsAPI = conductor::detail::smp::smp_tools_api::get_instance();
-    return SMPToolsAPI.get_single_thread();
+    auto& SMPToolsAPI = xsigma::detail::smp::smp_tools_api::instance();
+    return SMPToolsAPI.single_thread();
 }

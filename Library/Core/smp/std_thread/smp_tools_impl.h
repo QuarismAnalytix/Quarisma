@@ -9,22 +9,21 @@
 
 #include "common/export.h"
 #include "smp/common/smp_tools_impl.h"
-#include "smp/common/smp_tools_internal.h"   // For common conductor smp class
 #include "smp/std_thread/smp_thread_pool.h"  // For smp_thread_pool
 
-namespace conductor
+namespace xsigma
 {
 namespace detail
 {
 namespace smp
 {
 
-int XSIGMA_API get_number_of_threads_stdthread();
+int XSIGMA_API number_of_threads_stdthread();
 
 //--------------------------------------------------------------------------------
 template <>
 template <typename FunctorInternal>
-void smp_tools_impl<backend_type::std_thread>::For(
+void smp_tools_impl<backend_type::std_thread>::parallel_for(
     size_t first, size_t last, size_t grain, FunctorInternal& fi)
 {
     size_t n = last - first;
@@ -33,13 +32,13 @@ void smp_tools_impl<backend_type::std_thread>::For(
         return;
     }
 
-    if (grain >= n || (!m_nested_activated && smp_thread_pool::get_instance().is_parallel_scope()))
+    if (grain >= n || (!m_nested_activated && smp_thread_pool::instance().is_parallel_scope()))
     {
         fi.Execute(first, last);
     }
     else
     {
-        int thread_number = get_number_of_threads_stdthread();
+        int thread_number = number_of_threads_stdthread();
 
         if (grain <= 0)
         {
@@ -47,7 +46,7 @@ void smp_tools_impl<backend_type::std_thread>::For(
             grain                 = (estimate_grain > 0) ? estimate_grain : 1;
         }
 
-        auto proxy = smp_thread_pool::get_instance().allocate_threads(thread_number);
+        auto proxy = smp_thread_pool::instance().allocate_threads(thread_number);
 
         for (size_t from = first; from < last; from += grain)
         {
@@ -65,15 +64,15 @@ XSIGMA_API void smp_tools_impl<backend_type::std_thread>::initialize(int);
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int smp_tools_impl<backend_type::std_thread>::get_estimated_number_of_threads();
+XSIGMA_API int smp_tools_impl<backend_type::std_thread>::estimated_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int smp_tools_impl<backend_type::std_thread>::get_estimated_default_number_of_threads();
+XSIGMA_API int smp_tools_impl<backend_type::std_thread>::estimated_default_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API bool smp_tools_impl<backend_type::std_thread>::get_single_thread();
+XSIGMA_API bool smp_tools_impl<backend_type::std_thread>::single_thread();
 
 //--------------------------------------------------------------------------------
 template <>
@@ -81,6 +80,6 @@ XSIGMA_API bool smp_tools_impl<backend_type::std_thread>::is_parallel_scope();
 
 }  // namespace smp
 }  // namespace detail
-}  // namespace conductor
+}  // namespace xsigma
 
 #endif

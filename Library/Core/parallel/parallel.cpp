@@ -273,6 +273,10 @@ int intraop_default_num_threads()
 
 namespace
 {
+// Thread pool state constants used by Native and TBB backends
+const int NOT_SET  = -1;
+const int CONSUMED = -2;
+
 #if XSIGMA_HAS_OPENMP
 // OpenMP backend state
 // Number of threads set by the user
@@ -311,9 +315,6 @@ void _unset_thread_num()
 {
     thread_num_ = 0;
 }
-
-const int NOT_SET  = -1;
-const int CONSUMED = -2;
 
 // Number of threads set by the user
 // NOT_SET -> positive value -> CONSUMED

@@ -11,7 +11,7 @@
 // Maximum number of backends
 #define SMP_MAX_BACKENDS_NB 3
 
-namespace conductor
+namespace xsigma
 {
 namespace detail
 {
@@ -41,6 +41,6 @@ constexpr backend_type default_backend = backend_type::std_thread;
 
 }  // namespace smp
 }  // namespace detail
-}  // namespace conductor
+}  // namespace xsigma
 
 #endif  // SMP_H

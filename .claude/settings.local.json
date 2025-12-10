@@ -19,7 +19,10 @@
       "Bash(ctest:*)",
       "Bash(cat:*)",
       "Bash(Scripts/python3 setup.py:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(./CoreCxxTests:*)",
+      "Bash(ninja:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

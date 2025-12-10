@@ -6,7 +6,6 @@
 
 #include "common/export.h"
 #include "smp/common/smp_tools_impl.h"
-#include "smp/common/smp_tools_internal.h"  // For common conductor smp class
 
 #ifdef _MSC_VER
 #pragma push_macro("__TBB_NO_IMPLICIT_LINKAGE")
@@ -21,7 +20,7 @@
 #pragma pop_macro("__TBB_NO_IMPLICIT_LINKAGE")
 #endif
 
-namespace conductor
+namespace xsigma
 {
 namespace detail
 {
@@ -116,7 +115,7 @@ void execute_functor_tbb(void* functor, size_t first, size_t last, size_t grain)
 //--------------------------------------------------------------------------------
 template <>
 template <typename FunctorInternal>
-void smp_tools_impl<backend_type::TBB>::For(
+void smp_tools_impl<backend_type::TBB>::parallel_for(
     size_t first, size_t last, size_t grain, FunctorInternal& fi)
 {
     if (!m_nested_activated && m_is_parallel)
@@ -155,18 +154,18 @@ XSIGMA_API smp_tools_impl<backend_type::TBB>::smp_tools_impl();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int smp_tools_impl<backend_type::TBB>::get_estimated_default_number_of_threads();
+XSIGMA_API int smp_tools_impl<backend_type::TBB>::estimated_default_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int smp_tools_impl<backend_type::TBB>::get_estimated_number_of_threads();
+XSIGMA_API int smp_tools_impl<backend_type::TBB>::estimated_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API bool smp_tools_impl<backend_type::TBB>::get_single_thread();
+XSIGMA_API bool smp_tools_impl<backend_type::TBB>::single_thread();
 
 }  // namespace smp
 }  // namespace detail
-}  // namespace conductor
+}  // namespace xsigma
 
 #endif

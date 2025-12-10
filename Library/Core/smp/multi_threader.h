@@ -16,14 +16,14 @@
 
 #include "common/export.h"
 
-#ifndef CONDUCTOR_MAX_THREADS
-#define CONDUCTOR_MAX_THREADS 64
+#ifndef XSIGMA_MAX_THREADS
+#define XSIGMA_MAX_THREADS 64
 #endif
 
 typedef void (*thread_function_type)(void*);
 typedef int thread_process_id_type;
-// #define CONDUCTOR_THREAD_RETURN_VALUE
-// #define CONDUCTOR_THREAD_RETURN_TYPE void
+// #define XSIGMA_THREAD_RETURN_VALUE
+// #define XSIGMA_THREAD_RETURN_TYPE void
 typedef int multi_threader_id_type;
 
 class XSIGMA_VISIBILITY multi_threader
@@ -57,7 +57,7 @@ public:
     ///@{
     /**
    * Get/Set the number of threads to create. It will be clamped to the range
-   * 1 - CONDUCTOR_MAX_THREADS, so the caller of this method should check that the
+   * 1 - XSIGMA_MAX_THREADS, so the caller of this method should check that the
    * requested number of threads was accepted.
    */
     XSIGMA_API void        set_number_of_threads(int num);
@@ -85,7 +85,7 @@ public:
     /**
    * Set/Get the value which is used to initialize the number_of_threads
    * in the constructor.  Initially this default is set to the number of
-   * processors or CONDUCTOR_MAX_THREADS (which ever is less).
+   * processors or XSIGMA_MAX_THREADS (which ever is less).
    */
     XSIGMA_API static void set_global_default_number_of_threads(int val);
     XSIGMA_API static int  get_global_default_number_of_threads();
@@ -125,7 +125,7 @@ public:
 
     /**
    * Create a new thread for the given function. Return a thread id
-   * which is a number between 0 and CONDUCTOR_MAX_THREADS - 1. This id should
+   * which is a number between 0 and XSIGMA_MAX_THREADS - 1. This id should
    * be used to kill the thread at a later time.
    */
     XSIGMA_API int spawn_thread(thread_function_type f, void* data);
@@ -157,24 +157,24 @@ protected:
     int m_number_of_threads;
 
     // An array of thread info containing a thread id
-    // (0, 1, 2, .. CONDUCTOR_MAX_THREADS-1), the thread count, and a pointer
+    // (0, 1, 2, .. XSIGMA_MAX_THREADS-1), the thread count, and a pointer
     // to void so that user data can be passed to each thread
-    thread_info m_thread_info_array[CONDUCTOR_MAX_THREADS];
+    thread_info m_thread_info_array[XSIGMA_MAX_THREADS];
 
     // The methods
     thread_function_type m_single_method;
-    thread_function_type m_multiple_method[CONDUCTOR_MAX_THREADS];
+    thread_function_type m_multiple_method[XSIGMA_MAX_THREADS];
 
     // Storage of MutexFunctions and ints used to control spawned
     // threads and the spawned thread ids
-    int                         m_spawned_thread_active_flag[CONDUCTOR_MAX_THREADS];
-    std::unique_ptr<std::mutex> m_spawned_thread_active_flag_lock[CONDUCTOR_MAX_THREADS];
-    thread_process_id_type      m_spawned_thread_process_id[CONDUCTOR_MAX_THREADS];
-    thread_info                 m_spawned_thread_info_array[CONDUCTOR_MAX_THREADS];
+    int                         m_spawned_thread_active_flag[XSIGMA_MAX_THREADS];
+    std::unique_ptr<std::mutex> m_spawned_thread_active_flag_lock[XSIGMA_MAX_THREADS];
+    thread_process_id_type      m_spawned_thread_process_id[XSIGMA_MAX_THREADS];
+    thread_info                 m_spawned_thread_info_array[XSIGMA_MAX_THREADS];
 
     // Internal storage of the data
     void* m_single_data;
-    void* m_multiple_data[CONDUCTOR_MAX_THREADS];
+    void* m_multiple_data[XSIGMA_MAX_THREADS];
 
 private:
     multi_threader(const multi_threader&) = delete;

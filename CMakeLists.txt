@@ -277,6 +277,9 @@ include(logging)
 include(compression)
 include(threads)
 
+# Configure SMP backend selection (must be before openmp and tbb includes)
+include(smp_backend)
+
 # Configure optional features
 include(openmp)
 include(cuda)

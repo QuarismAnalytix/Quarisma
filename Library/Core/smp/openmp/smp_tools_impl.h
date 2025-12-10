@@ -8,17 +8,16 @@
 
 #include "common/export.h"
 #include "smp/common/smp_tools_impl.h"
-#include "smp/common/smp_tools_internal.h"  // For common conductor smp class
 
-namespace conductor
+namespace xsigma
 {
 namespace detail
 {
 namespace smp
 {
 
-int XSIGMA_API  get_number_of_threads_openmp();
-bool XSIGMA_API get_single_thread_openmp();
+int XSIGMA_API  number_of_threads_openmp();
+bool XSIGMA_API single_thread_openmp();
 void XSIGMA_API smp_tools_impl_for_openmp(
     size_t                   first,
     size_t                   last,
@@ -56,7 +55,7 @@ void execute_functor_openmp(void* functor, size_t from, size_t grain, size_t las
 //--------------------------------------------------------------------------------
 template <>
 template <typename FunctorInternal>
-void smp_tools_impl<backend_type::OpenMP>::For(
+void smp_tools_impl<backend_type::OpenMP>::parallel_for(
     size_t first, size_t last, size_t grain, FunctorInternal& fi)
 {
     size_t n = last - first;
@@ -98,18 +97,18 @@ XSIGMA_API void smp_tools_impl<backend_type::OpenMP>::initialize(int);
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int smp_tools_impl<backend_type::OpenMP>::get_estimated_number_of_threads();
+XSIGMA_API int smp_tools_impl<backend_type::OpenMP>::estimated_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int smp_tools_impl<backend_type::OpenMP>::get_estimated_default_number_of_threads();
+XSIGMA_API int smp_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API bool smp_tools_impl<backend_type::OpenMP>::get_single_thread();
+XSIGMA_API bool smp_tools_impl<backend_type::OpenMP>::single_thread();
 
 }  // namespace smp
 }  // namespace detail
-}  // namespace conductor
+}  // namespace xsigma
 
 #endif

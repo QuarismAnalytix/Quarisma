@@ -10,7 +10,7 @@
 
 #include "smp/smp.h"
 
-namespace conductor
+namespace xsigma
 {
 namespace detail
 {
@@ -20,61 +20,35 @@ namespace smp
 //------------------------------------------------------------------------------
 smp_tools_api::smp_tools_api()
 {
-    this->m_std_thread_backend = std::make_unique<smp_tools_impl<backend_type::std_thread>>();
-
-#if XSIGMA_HAS_TBB
-    this->m_tbb_backend = std::make_unique<smp_tools_impl<backend_type::TBB>>();
-#endif
-#if XSIGMA_HAS_OPENMP
-    this->m_openmp_backend = std::make_unique<smp_tools_impl<backend_type::OpenMP>>();
-#endif
-
-    // Set backend from env if set
-    const char* smp_backend_in_use = std::getenv("SMP_BACKEND_IN_USE");
-    if (smp_backend_in_use)
-    {
-        this->set_backend(smp_backend_in_use);
-    }
-
+    // Single backend instance is created as member variable (no dynamic allocation needed)
     // Set max thread number from env
     this->refresh_number_of_thread();
 }
 
 //------------------------------------------------------------------------------
-// Must NOT be initialized. Default initialization to zero is necessary.
-std::unique_ptr<smp_tools_api> smp_tools_api_instance_as_pointer;
+// Singleton instance
+static smp_tools_api* smp_tools_api_instance = nullptr;
 
 //------------------------------------------------------------------------------
-smp_tools_api& smp_tools_api::get_instance()
+smp_tools_api& smp_tools_api::instance()
 {
-    return *smp_tools_api_instance_as_pointer;
-}
-
-//------------------------------------------------------------------------------
-void smp_tools_api::class_initialize()
-{
-    if (!smp_tools_api_instance_as_pointer)
+    if (!smp_tools_api_instance)
     {
-        smp_tools_api_instance_as_pointer = std::make_unique<smp_tools_api>();
+        smp_tools_api_instance = new smp_tools_api();
     }
-}
-
-//------------------------------------------------------------------------------
-void smp_tools_api::class_finalize()
-{
-    smp_tools_api_instance_as_pointer.reset();
+    return *smp_tools_api_instance;
 }
 
 //------------------------------------------------------------------------------
 backend_type smp_tools_api::get_backend_type()
 {
-    return this->m_activated_backend;
+    return selected_backend_tools;
 }
 
 //------------------------------------------------------------------------------
 const char* smp_tools_api::get_backend()
 {
-    switch (this->m_activated_backend)
+    switch (selected_backend_tools)
     {
     case backend_type::std_thread:
         return "std_thread";
@@ -89,31 +63,31 @@ const char* smp_tools_api::get_backend()
 //------------------------------------------------------------------------------
 bool smp_tools_api::set_backend(const char* type)
 {
+    // Backend is selected at compile-time, so we just verify the requested backend
+    // matches the compile-time selected one
     std::string backend(type);
     std::transform(backend.cbegin(), backend.cend(), backend.begin(), ::toupper);
-    if (backend == "STDTHREAD" && this->m_std_thread_backend)
+
+    const char* current_backend = this->get_backend();
+    std::string current_backend_upper(current_backend);
+    std::transform(
+        current_backend_upper.cbegin(),
+        current_backend_upper.cend(),
+        current_backend_upper.begin(),
+        ::toupper);
+
+    if (backend == "STDTHREAD")
     {
-        this->m_activated_backend = backend_type::std_thread;
+        backend = "STD_THREAD";
     }
-    else if (backend == "TBB" && this->m_tbb_backend)
+
+    if (backend != current_backend_upper)
     {
-        this->m_activated_backend = backend_type::TBB;
-    }
-    else if (backend == "OPENMP" && this->m_openmp_backend)
-    {
-        this->m_activated_backend = backend_type::OpenMP;
-    }
-    else
-    {
-        std::cerr << "WARNING: tried to use a non implemented SMPTools backend \"" << type
-                  << "\"!\n";
-        std::cerr << "The available backends are:"
-                  << (this->m_std_thread_backend ? " \"std_thread\"" : "")
-                  << (this->m_tbb_backend ? " \"TBB\"" : "")
-                  << (this->m_openmp_backend ? " \"OpenMP\"" : "") << "\n";
-        std::cerr << "Using " << this->get_backend() << " instead." << std::endl;
+        std::cerr << "WARNING: Backend selection is compile-time only. Requested \"" << type
+                  << "\" but using \"" << current_backend << "\".\n";
         return false;
     }
+
     this->refresh_number_of_thread();
     return true;
 }
@@ -129,135 +103,45 @@ void smp_tools_api::initialize(int num_threads)
 void smp_tools_api::refresh_number_of_thread()
 {
     const int num_threads = this->m_desired_number_of_thread;
-    switch (this->m_activated_backend)
-    {
-    case backend_type::std_thread:
-        this->m_std_thread_backend->initialize(num_threads);
-        break;
-    case backend_type::TBB:
-        this->m_tbb_backend->initialize(num_threads);
-        break;
-    case backend_type::OpenMP:
-        this->m_openmp_backend->initialize(num_threads);
-        break;
-    }
+    backend_impl_.initialize(num_threads);
 }
 
 //------------------------------------------------------------------------------
-int smp_tools_api::get_estimated_default_number_of_threads()
+int smp_tools_api::estimated_default_number_of_threads()
 {
-    switch (this->m_activated_backend)
-    {
-    case backend_type::std_thread:
-        return this->m_std_thread_backend->get_estimated_default_number_of_threads();
-    case backend_type::TBB:
-        return this->m_tbb_backend->get_estimated_default_number_of_threads();
-    case backend_type::OpenMP:
-        return this->m_openmp_backend->get_estimated_default_number_of_threads();
-    }
-    return 0;
+    return backend_impl_.estimated_default_number_of_threads();
 }
 
 //------------------------------------------------------------------------------
-int smp_tools_api::get_estimated_number_of_threads()
+int smp_tools_api::estimated_number_of_threads()
 {
-    switch (this->m_activated_backend)
-    {
-    case backend_type::std_thread:
-        return this->m_std_thread_backend->get_estimated_number_of_threads();
-    case backend_type::TBB:
-        return this->m_tbb_backend->get_estimated_number_of_threads();
-    case backend_type::OpenMP:
-        return this->m_openmp_backend->get_estimated_number_of_threads();
-    }
-    return 0;
+    return backend_impl_.estimated_number_of_threads();
 }
 
 //------------------------------------------------------------------------------
 void smp_tools_api::set_nested_parallelism(bool is_nested)
 {
-    switch (this->m_activated_backend)
-    {
-    case backend_type::std_thread:
-        this->m_std_thread_backend->set_nested_parallelism(is_nested);
-        break;
-    case backend_type::TBB:
-        this->m_tbb_backend->set_nested_parallelism(is_nested);
-        break;
-    case backend_type::OpenMP:
-        this->m_openmp_backend->set_nested_parallelism(is_nested);
-        break;
-    }
+    backend_impl_.set_nested_parallelism(is_nested);
 }
 
 //------------------------------------------------------------------------------
-bool smp_tools_api::get_nested_parallelism()
+bool smp_tools_api::nested_parallelism()
 {
-    switch (this->m_activated_backend)
-    {
-    case backend_type::std_thread:
-        return this->m_std_thread_backend->get_nested_parallelism();
-    case backend_type::TBB:
-        return this->m_tbb_backend->get_nested_parallelism();
-    case backend_type::OpenMP:
-        return this->m_openmp_backend->get_nested_parallelism();
-    }
-    return false;
+    return backend_impl_.nested_parallelism();
 }
 
 //------------------------------------------------------------------------------
 bool smp_tools_api::is_parallel_scope()
 {
-    switch (this->m_activated_backend)
-    {
-    case backend_type::std_thread:
-        return this->m_std_thread_backend->is_parallel_scope();
-    case backend_type::TBB:
-        return this->m_tbb_backend->is_parallel_scope();
-    case backend_type::OpenMP:
-        return this->m_openmp_backend->is_parallel_scope();
-    }
-    return false;
+    return backend_impl_.is_parallel_scope();
 }
 
 //------------------------------------------------------------------------------
-bool smp_tools_api::get_single_thread()
+bool smp_tools_api::single_thread()
 {
-    switch (this->m_activated_backend)
-    {
-    case backend_type::std_thread:
-        return this->m_std_thread_backend->get_single_thread();
-    case backend_type::TBB:
-        return this->m_tbb_backend->get_single_thread();
-    case backend_type::OpenMP:
-        return this->m_openmp_backend->get_single_thread();
-    default:
-        return false;
-    }
-}
-
-//------------------------------------------------------------------------------
-// Must NOT be initialized. Default initialization to zero is necessary.
-unsigned int smp_tools_api_initialize_count;
-
-//------------------------------------------------------------------------------
-smp_tools_api_initialize::smp_tools_api_initialize()
-{
-    if (++smp_tools_api_initialize_count == 1)
-    {
-        smp_tools_api::class_initialize();
-    }
-}
-
-//------------------------------------------------------------------------------
-smp_tools_api_initialize::~smp_tools_api_initialize()
-{
-    if (--smp_tools_api_initialize_count == 0)
-    {
-        smp_tools_api::class_finalize();
-    }
+    return backend_impl_.single_thread();
 }
 
 }  // namespace smp
 }  // namespace detail
-}  // namespace conductor
+}  // namespace xsigma

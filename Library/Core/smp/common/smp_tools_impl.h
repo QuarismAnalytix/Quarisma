@@ -9,7 +9,7 @@
 #include "common/export.h"
 #include "smp/smp.h"
 
-namespace conductor
+namespace xsigma
 {
 namespace detail
 {
@@ -24,26 +24,26 @@ public:
     void initialize(int num_threads = 0);
 
     //--------------------------------------------------------------------------------
-    int get_estimated_number_of_threads();
+    int estimated_number_of_threads();
 
     //--------------------------------------------------------------------------------
-    static int get_estimated_default_number_of_threads();
+    static int estimated_default_number_of_threads();
 
     //--------------------------------------------------------------------------------
     void set_nested_parallelism(bool is_nested);
 
     //--------------------------------------------------------------------------------
-    bool get_nested_parallelism();
+    bool nested_parallelism();
 
     //--------------------------------------------------------------------------------
     bool is_parallel_scope();
 
     //--------------------------------------------------------------------------------
-    bool get_single_thread();
+    bool single_thread();
 
     //--------------------------------------------------------------------------------
     template <typename FunctorInternal>
-    void For(size_t first, size_t last, size_t grain, FunctorInternal& fi);
+    void parallel_for(size_t first, size_t last, size_t grain, FunctorInternal& fi);
 
     //--------------------------------------------------------------------------------
     smp_tools_impl();
@@ -66,7 +66,7 @@ void smp_tools_impl<Backend>::set_nested_parallelism(bool is_nested)
 }
 
 template <backend_type Backend>
-bool smp_tools_impl<Backend>::get_nested_parallelism()
+bool smp_tools_impl<Backend>::nested_parallelism()
 {
     return m_nested_activated;
 }
@@ -99,7 +99,6 @@ using execute_functor_ptr_type = void (*)(void*, size_t, size_t, size_t);
 
 }  // namespace smp
 }  // namespace detail
-}  // namespace conductor
+}  // namespace xsigma
 
 #endif
-/* VTK-HeaderTest-Exclude: smp_tools_impl.h */
