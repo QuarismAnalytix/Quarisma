@@ -93,7 +93,7 @@ XSIGMATEST(ParallelFor, chunk_distribution)
         [&chunk_count](int64_t /*begin*/, int64_t /*end*/) { chunk_count++; });
 
     // The actual number of chunks depends on the number of threads and backend.
-    // Always require at least one chunk. For OpenMP/native backends the number
+    // Always require at least one chunk. For openmp/native backends the number
     // of chunks is bounded by ceil(total_size/grain_size). TBB may oversubdivide
     // work beyond this bound due to dynamic splitting, so we relax the upper
     // bound in that case.

@@ -24,7 +24,7 @@ XSIGMATEST(SMPComprehensive, get_backend)
 {
     const char* backend = tools::GetBackend();
     EXPECT_NE(backend, nullptr);
-    EXPECT_TRUE(std::string(backend) == "STDThread" || std::string(backend) == "TBB");
+    EXPECT_TRUE(std::string(backend) == "std_thread" || std::string(backend) == "TBB");
 }
 
 // Test 2: Initialize with default threads

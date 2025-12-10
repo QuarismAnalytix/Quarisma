@@ -712,7 +712,7 @@ class XsigmaFlags:
         self.__value.update(
             {
                 "vectorisation": "avx2",  # Special case: string value
-                "smp": "STDThread",  # Special case: string value
+                "smp": "std_thread",  # Special case: string value
                 "javasourceversion": 1.8,  # Special case: numeric value
                 "javatargetversion": 1.8,  # Special case: numeric value
                 "cxxstd": "cxx20",  # Special case: let CMake decide

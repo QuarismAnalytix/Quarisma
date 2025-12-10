@@ -1,0 +1,186 @@
+/**
+ * @class   multi_threader
+ * @brief   A class for performing multithreaded execution
+ *
+ * multi_threader is a class that provides support for multithreaded
+ * execution using pthreads on POSIX systems, or Win32 threads on
+ * Windows.  This class can be used to execute a single
+ * method on multiple threads, or to specify a method per thread.
+ */
+
+#ifndef MULTI_THREADER_H
+#define MULTI_THREADER_H
+
+#include "common/export.h"
+
+#include <mutex> // For std::mutex
+
+#ifndef CONDUCTOR_MAX_THREADS
+#define CONDUCTOR_MAX_THREADS 64
+#endif
+
+typedef void (*thread_function_type)(void*);
+typedef int thread_process_id_type;
+// #define CONDUCTOR_THREAD_RETURN_VALUE
+// #define CONDUCTOR_THREAD_RETURN_TYPE void
+typedef int multi_threader_id_type;
+
+
+class XSIGMA_VISIBILITY multi_threader
+{
+public:
+  static multi_threader* create();
+  virtual ~multi_threader();
+
+  /**
+   * This is the structure that is passed to the thread that is
+   * created from the single_method_execute, multiple_method_execute or
+   * the spawn_thread method. It is passed in as a void *, and it is
+   * up to the method to cast correctly and extract the information.
+   * The thread_id is a number between 0 and number_of_threads-1 that indicates
+   * the id of this thread. The number_of_threads is m_number_of_threads for
+   * threads created from single_method_execute or multiple_method_execute,
+   * and it is 1 for threads created from spawn_thread.
+   * The user_data is the (void *)arg passed into the set_single_method,
+   * set_multiple_method, or spawn_thread method.
+   */
+  class thread_info
+  {
+  public:
+    int thread_id;
+    int number_of_threads;
+    int* active_flag;
+    std::mutex* active_flag_lock;
+    void* user_data;
+  };
+
+  ///@{
+  /**
+   * Get/Set the number of threads to create. It will be clamped to the range
+   * 1 - CONDUCTOR_MAX_THREADS, so the caller of this method should check that the
+   * requested number of threads was accepted.
+   */
+  XSIGMA_API void set_number_of_threads(int num);
+  XSIGMA_API virtual int get_number_of_threads();
+  ///@}
+
+  ///@{
+  /**
+   * Set/Get the maximum number of threads VTK was allocated to support.
+   */
+  XSIGMA_API static int get_global_static_maximum_number_of_threads();
+  ///@}
+
+  ///@{
+  /**
+   * Set/Get the maximum number of threads to use when multithreading.
+   * This limits and overrides any other settings for multithreading.
+   * A value of zero indicates no limit.
+   */
+  XSIGMA_API static void set_global_maximum_number_of_threads(int val);
+  XSIGMA_API static int get_global_maximum_number_of_threads();
+  ///@}
+
+  ///@{
+  /**
+   * Set/Get the value which is used to initialize the number_of_threads
+   * in the constructor.  Initially this default is set to the number of
+   * processors or CONDUCTOR_MAX_THREADS (which ever is less).
+   */
+  XSIGMA_API static void set_global_default_number_of_threads(int val);
+  XSIGMA_API static int get_global_default_number_of_threads();
+  ///@}
+
+  // These methods are excluded from wrapping 1) because the
+  // wrapper gives up on them and 2) because they really shouldn't be
+  // called from a script anyway.
+
+  /**
+   * Execute the single_method (as define by set_single_method) using
+   * m_number_of_threads threads.
+   */
+  XSIGMA_API void single_method_execute();
+
+  /**
+   * Execute the multiple_methods (as define by calling set_multiple_method
+   * for each of the required m_number_of_threads methods) using
+   * m_number_of_threads threads.
+   */
+  XSIGMA_API void multiple_method_execute();
+
+  /**
+   * Set the single_method to f() and the user_data field of the
+   * thread_info that is passed to it will be data.
+   * This method (and all the methods passed to set_multiple_method)
+   * must be of type thread_function_type and must take a single argument of
+   * type void *.
+   */
+  XSIGMA_API void set_single_method(thread_function_type f, void* data);
+
+  /**
+   * Set the multiple_method at the given index to f() and the user_data
+   * field of the thread_info that is passed to it will be data.
+   */
+  XSIGMA_API void set_multiple_method(int index, thread_function_type f, void* data);
+
+  /**
+   * Create a new thread for the given function. Return a thread id
+   * which is a number between 0 and CONDUCTOR_MAX_THREADS - 1. This id should
+   * be used to kill the thread at a later time.
+   */
+  XSIGMA_API int spawn_thread(thread_function_type f, void* data);
+
+  /**
+   * Terminate the thread that was created with a spawn_thread_execute()
+   */
+  XSIGMA_API void terminate_thread(int thread_id);
+
+  /**
+   * Determine if a thread is still active
+   */
+  XSIGMA_API bool is_thread_active(int thread_id);
+
+  /**
+   * Get the thread identifier of the calling thread.
+   */
+  XSIGMA_API static multi_threader_id_type get_current_thread_id();
+
+  /**
+   * Check whether two thread identifiers refer to the same thread.
+   */
+  XSIGMA_API static bool threads_equal(multi_threader_id_type t1, multi_threader_id_type t2);
+
+protected:
+  multi_threader();
+
+  // The number of threads to use
+  int m_number_of_threads;
+
+  // An array of thread info containing a thread id
+  // (0, 1, 2, .. CONDUCTOR_MAX_THREADS-1), the thread count, and a pointer
+  // to void so that user data can be passed to each thread
+  thread_info m_thread_info_array[CONDUCTOR_MAX_THREADS];
+
+  // The methods
+  thread_function_type m_single_method;
+  thread_function_type m_multiple_method[CONDUCTOR_MAX_THREADS];
+
+  // Storage of MutexFunctions and ints used to control spawned
+  // threads and the spawned thread ids
+  int m_spawned_thread_active_flag[CONDUCTOR_MAX_THREADS];
+  std::mutex* m_spawned_thread_active_flag_lock[CONDUCTOR_MAX_THREADS];
+  thread_process_id_type m_spawned_thread_process_id[CONDUCTOR_MAX_THREADS];
+  thread_info m_spawned_thread_info_array[CONDUCTOR_MAX_THREADS];
+
+  // Internal storage of the data
+  void* m_single_data;
+  void* m_multiple_data[CONDUCTOR_MAX_THREADS];
+
+private:
+  multi_threader(const multi_threader&) = delete;
+  void operator=(const multi_threader&) = delete;
+};
+
+using thread_info_struct = multi_threader::thread_info;
+
+#endif

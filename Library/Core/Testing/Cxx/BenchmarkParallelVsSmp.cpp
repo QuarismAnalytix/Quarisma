@@ -19,7 +19,7 @@
  *
  * Backend Combinations:
  * - parallel module: OpenMP backend (if XSIGMA_HAS_OPENMP=1), Native backend
- * - smp module: STDThread backend, TBB backend (if XSIGMA_HAS_TBB=1)
+ * - smp module: std_thread backend, TBB backend (if XSIGMA_HAS_TBB=1)
  *
  * Metrics Measured:
  * - Execution time (wall clock time)
@@ -62,11 +62,11 @@ constexpr int64_t kMediumGrain = 1000;
 constexpr int64_t kLargeGrain  = 10000;
 
 // =============================================================================
-// Sequential Baseline Benchmarks
+// sequential Baseline Benchmarks
 // =============================================================================
 
 /**
- * @brief Sequential baseline for simple memory operations
+ * @brief sequential baseline for simple memory operations
  *
  * Provides baseline performance for comparison with parallel implementations.
  * Measures simple array assignment without parallelization overhead.
@@ -85,7 +85,7 @@ static void BM_Sequential_Simple_Small(benchmark::State& state)
     }
 
     state.SetItemsProcessed(state.iterations() * kSmallSize);
-    state.SetLabel("Sequential-Simple-Small");
+    state.SetLabel("sequential-Simple-Small");
 }
 BENCHMARK(BM_Sequential_Simple_Small);
 
@@ -103,7 +103,7 @@ static void BM_Sequential_Simple_Medium(benchmark::State& state)
     }
 
     state.SetItemsProcessed(state.iterations() * kMediumSize);
-    state.SetLabel("Sequential-Simple-Medium");
+    state.SetLabel("sequential-Simple-Medium");
 }
 BENCHMARK(BM_Sequential_Simple_Medium);
 
@@ -121,12 +121,12 @@ static void BM_Sequential_Simple_Large(benchmark::State& state)
     }
 
     state.SetItemsProcessed(state.iterations() * kLargeSize);
-    state.SetLabel("Sequential-Simple-Large");
+    state.SetLabel("sequential-Simple-Large");
 }
 BENCHMARK(BM_Sequential_Simple_Large);
 
 /**
- * @brief Sequential baseline for compute-intensive operations
+ * @brief sequential baseline for compute-intensive operations
  *
  * Measures performance of polynomial computation without parallelization.
  * Used to calculate speedup and parallel efficiency.
@@ -146,12 +146,12 @@ static void BM_Sequential_Compute_Medium(benchmark::State& state)
     }
 
     state.SetItemsProcessed(state.iterations() * kMediumSize);
-    state.SetLabel("Sequential-Compute-Medium");
+    state.SetLabel("sequential-Compute-Medium");
 }
 BENCHMARK(BM_Sequential_Compute_Medium);
 
 /**
- * @brief Sequential baseline for reduction operations
+ * @brief sequential baseline for reduction operations
  *
  * Measures performance of sum reduction without parallelization.
  */
@@ -168,7 +168,7 @@ static void BM_Sequential_Reduce_Sum_Medium(benchmark::State& state)
     }
 
     state.SetItemsProcessed(state.iterations() * kMediumSize);
-    state.SetLabel("Sequential-Reduce-Sum-Medium");
+    state.SetLabel("sequential-Reduce-Sum-Medium");
 }
 BENCHMARK(BM_Sequential_Reduce_Sum_Medium);
 

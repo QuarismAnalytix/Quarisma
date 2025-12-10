@@ -257,11 +257,11 @@ void benchmark_memory_access_pattern(benchmark::State& state)
         void* ptr = allocator.allocate(size);
         if (ptr != nullptr)
         {
-            // Sequential write pattern
+            // sequential write pattern
             std::memset(ptr, 0xAA, size);
             benchmark::DoNotOptimize(ptr);
 
-            // Sequential read pattern
+            // sequential read pattern
             volatile std::size_t checksum = 0;
             auto*                byte_ptr = static_cast<unsigned char*>(ptr);
             for (std::size_t i = 0; i < size; ++i)
