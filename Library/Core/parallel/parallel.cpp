@@ -749,8 +749,9 @@ void invoke_parallel(
 // These functions manage the inter-op thread pool for both OpenMP and native
 // backends. The native backend uses a separate thread pool for inter-op tasks.
 
-#if !XSIGMA_HAS_OPENMP && !XSIGMA_HAS_TBB
-// Native backend inter-op thread pool state and helper functions
+#if !XSIGMA_HAS_OPENMP
+// Native and TBB backend inter-op thread pool state and helper functions
+// Both backends use a separate thread pool for async operations (inter-op parallelism)
 namespace
 {
 // Number of inter-op threads set by the user;
@@ -770,7 +771,7 @@ xsigma::task_thread_pool_base& get_interop_pool()
 }
 
 }  // namespace
-#endif  // !XSIGMA_HAS_OPENMP && !XSIGMA_HAS_TBB
+#endif  // !XSIGMA_HAS_OPENMP
 
 void set_num_interop_threads(int nthreads)
 {
@@ -832,10 +833,13 @@ void launch_no_thread_state(std::function<void()> fn)
 {
 #if XSIGMA_HAS_OPENMP
     // OpenMP backend - execute inline
+    // Note: OpenMP doesn't support inter-op parallelism, tasks run synchronously
     fn();
 #elif XSIGMA_HAS_TBB
-    // TBB backend - execute inline
-    fn();
+    // TBB backend - use thread pool for async execution
+    // Previously executed inline, but this breaks async_parallel_for which expects
+    // tasks to return immediately, not block until completion
+    get_interop_pool().run(std::move(fn));
 #else
     // Native backend - use thread pool
 #if XSIGMA_HAS_EXPERIMENTAL

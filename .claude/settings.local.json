@@ -11,7 +11,15 @@
       "Bash(wsl --list:*)",
       "Bash(wsl bash -c \"cd /mnt/c/dev/XSigma && pwd && ls -la | head -15\")",
       "Bash(wsl bash:*)",
-      "Bash(python setup.py config.build.cxx20.test.benchmark)"
+      "Bash(python setup.py config.build.cxx20.test.benchmark)",
+      "Bash(cmake --build:*)",
+      "Bash(ninja -n:*)",
+      "Bash(find:*)",
+      "Bash(python3 setup.py:*)",
+      "Bash(ctest:*)",
+      "Bash(cat:*)",
+      "Bash(Scripts/python3 setup.py:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

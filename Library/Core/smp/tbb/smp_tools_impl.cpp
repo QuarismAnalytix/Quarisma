@@ -2,20 +2,22 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "smp/common/smp_tools_impl.h"
-#include "smp/tbb/smp_tools_impl.h"
 
-#include <cstdlib> // For std::getenv()
-#include <mutex>   // For std::mutex
-#include <stack>   // For std::stack
-#include <string>
 #include <charconv>
+#include <cstdlib>  // For std::getenv()
+#include <memory>   // For std::unique_ptr
+#include <mutex>    // For std::mutex
+#include <stack>    // For std::stack
+#include <string>
+
+#include "smp/tbb/smp_tools_impl.h"
 
 #ifdef _MSC_VER
 #pragma push_macro("__TBB_NO_IMPLICIT_LINKAGE")
 #define __TBB_NO_IMPLICIT_LINKAGE 1
 #endif
 
-#include <tbb/task_arena.h> // For tbb:task_arena
+#include <tbb/task_arena.h>  // For tbb:task_arena
 
 #ifdef _MSC_VER
 #pragma pop_macro("__TBB_NO_IMPLICIT_LINKAGE")
@@ -28,11 +30,11 @@ namespace detail
 namespace smp
 {
 
-static tbb::task_arena* task_arena;
-static std::mutex* vtk_smp_tools_cs;
-static std::stack<int>* thread_id_stack;
-static std::mutex* thread_id_stack_lock;
-static int specified_num_threads_tbb; // Default initialized to zero
+static std::unique_ptr<tbb::task_arena> task_arena;
+static std::unique_ptr<std::mutex>      vtk_smp_tools_cs;
+static std::unique_ptr<std::stack<int>> thread_id_stack;
+static std::unique_ptr<std::mutex>      thread_id_stack_lock;
+static int                              specified_num_threads_tbb;  // Default initialized to zero
 
 //------------------------------------------------------------------------------
 // Must NOT be initialized. Default initialization to zero is necessary.
@@ -41,38 +43,30 @@ unsigned int smp_tools_impl_tbb_initialize_count;
 //------------------------------------------------------------------------------
 smp_tools_impl_tbb_initialize::smp_tools_impl_tbb_initialize()
 {
-  if (++smp_tools_impl_tbb_initialize_count == 1)
-  {
-    task_arena = new tbb::task_arena;
-    vtk_smp_tools_cs = new std::mutex;
-    thread_id_stack = new std::stack<int>;
-    thread_id_stack_lock = new std::mutex;
-  }
+    if (++smp_tools_impl_tbb_initialize_count == 1)
+    {
+        task_arena           = std::make_unique<tbb::task_arena>();
+        vtk_smp_tools_cs     = std::make_unique<std::mutex>();
+        thread_id_stack      = std::make_unique<std::stack<int>>();
+        thread_id_stack_lock = std::make_unique<std::mutex>();
+    }
 }
 
 //------------------------------------------------------------------------------
 smp_tools_impl_tbb_initialize::~smp_tools_impl_tbb_initialize()
 {
-  if (--smp_tools_impl_tbb_initialize_count == 0)
-  {
-    delete task_arena;
-    task_arena = nullptr;
-
-    delete vtk_smp_tools_cs;
-    vtk_smp_tools_cs = nullptr;
-
-    delete thread_id_stack;
-    thread_id_stack = nullptr;
-
-    delete thread_id_stack_lock;
-    thread_id_stack_lock = nullptr;
-  }
+    if (--smp_tools_impl_tbb_initialize_count == 0)
+    {
+        task_arena.reset();
+        vtk_smp_tools_cs.reset();
+        thread_id_stack.reset();
+        thread_id_stack_lock.reset();
+    }
 }
 
 //------------------------------------------------------------------------------
 template <>
-smp_tools_impl<backend_type::TBB>::smp_tools_impl()
-  : m_nested_activated(true)
+smp_tools_impl<backend_type::TBB>::smp_tools_impl() : m_nested_activated(true)
 {
 }
 
@@ -80,86 +74,89 @@ smp_tools_impl<backend_type::TBB>::smp_tools_impl()
 template <>
 void smp_tools_impl<backend_type::TBB>::initialize(int num_threads)
 {
-  vtk_smp_tools_cs->lock();
+    vtk_smp_tools_cs->lock();
 
-  if (num_threads == 0)
-  {
-    const char* vtk_smp_num_threads = std::getenv("SMP_MAX_THREADS");
-    if (vtk_smp_num_threads)
+    if (num_threads == 0)
     {
-      std::string str(vtk_smp_num_threads);
-      auto result = std::from_chars(str.data(), str.data() + str.size(), num_threads);
-      if (result.ec != std::errc())
-      {
-        num_threads = 0;
-      }
+        const char* vtk_smp_num_threads = std::getenv("SMP_MAX_THREADS");
+        if (vtk_smp_num_threads)
+        {
+            std::string str(vtk_smp_num_threads);
+            auto        result = std::from_chars(str.data(), str.data() + str.size(), num_threads);
+            if (result.ec != std::errc())
+            {
+                num_threads = 0;
+            }
+        }
+        else if (task_arena->is_active())
+        {
+            task_arena->terminate();
+            specified_num_threads_tbb = 0;
+        }
     }
-    else if (task_arena->is_active())
+    if (num_threads > 0 &&
+        num_threads <= smp_tools_impl<backend_type::TBB>::get_estimated_default_number_of_threads())
     {
-      task_arena->terminate();
-      specified_num_threads_tbb = 0;
+        if (task_arena->is_active())
+        {
+            task_arena->terminate();
+        }
+        task_arena->initialize(num_threads);
+        specified_num_threads_tbb = num_threads;
     }
-  }
-  if (num_threads > 0 &&
-    num_threads <= smp_tools_impl<backend_type::TBB>::get_estimated_default_number_of_threads())
-  {
-    if (task_arena->is_active())
-    {
-      task_arena->terminate();
-    }
-    task_arena->initialize(num_threads);
-    specified_num_threads_tbb = num_threads;
-  }
 
-  vtk_smp_tools_cs->unlock();
+    vtk_smp_tools_cs->unlock();
 }
 
 //------------------------------------------------------------------------------
 template <>
 int smp_tools_impl<backend_type::TBB>::get_estimated_number_of_threads()
 {
-  return specified_num_threads_tbb > 0
-    ? specified_num_threads_tbb
-    : smp_tools_impl<backend_type::TBB>::get_estimated_default_number_of_threads();
+    return specified_num_threads_tbb > 0
+               ? specified_num_threads_tbb
+               : smp_tools_impl<backend_type::TBB>::get_estimated_default_number_of_threads();
 }
 
 //------------------------------------------------------------------------------
 template <>
 int smp_tools_impl<backend_type::TBB>::get_estimated_default_number_of_threads()
 {
-  return task_arena->max_concurrency();
+    return task_arena->max_concurrency();
 }
 
 //------------------------------------------------------------------------------
 template <>
 bool smp_tools_impl<backend_type::TBB>::get_single_thread()
 {
-  return thread_id_stack->top() == tbb::this_task_arena::current_thread_index();
+    return thread_id_stack->top() == tbb::this_task_arena::current_thread_index();
 }
 
 //------------------------------------------------------------------------------
-void smp_tools_impl_for_tbb(size_t first, size_t last, size_t grain,
-  execute_functor_ptr_type functor_executer, void* functor)
+void smp_tools_impl_for_tbb(
+    size_t                   first,
+    size_t                   last,
+    size_t                   grain,
+    execute_functor_ptr_type functor_executer,
+    void*                    functor)
 {
-  thread_id_stack_lock->lock();
-  thread_id_stack->emplace(tbb::this_task_arena::current_thread_index());
-  thread_id_stack_lock->unlock();
+    thread_id_stack_lock->lock();
+    thread_id_stack->emplace(tbb::this_task_arena::current_thread_index());
+    thread_id_stack_lock->unlock();
 
-  if (task_arena->is_active())
-  {
-    task_arena->execute([&] { functor_executer(functor, first, last, grain); });
-  }
-  else
-  {
-    functor_executer(functor, first, last, grain);
-  }
+    if (task_arena->is_active())
+    {
+        task_arena->execute([&] { functor_executer(functor, first, last, grain); });
+    }
+    else
+    {
+        functor_executer(functor, first, last, grain);
+    }
 
-  thread_id_stack_lock->lock();
-  thread_id_stack->pop();
-  thread_id_stack_lock->unlock();
+    thread_id_stack_lock->lock();
+    thread_id_stack->pop();
+    thread_id_stack_lock->unlock();
 }
 
-} // namespace smp
-} // namespace detail
-} // namespace conductor
-
+}  // namespace smp
+}  // namespace detail
+}  // namespace conductor

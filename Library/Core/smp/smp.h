@@ -23,9 +23,9 @@ namespace smp
  */
 enum class backend_type
 {
-  std_thread = 0,
-  TBB = 1,
-  OpenMP = 2
+    std_thread = 0,
+    TBB        = 1,
+    OpenMP     = 2
 };
 
 // Default backend selection
@@ -39,8 +39,8 @@ constexpr backend_type default_backend = backend_type::OpenMP;
 constexpr backend_type default_backend = backend_type::std_thread;
 #endif
 
-} // namespace smp
-} // namespace detail
-} // namespace conductor
+}  // namespace smp
+}  // namespace detail
+}  // namespace conductor
 
-#endif // SMP_H
+#endif  // SMP_H

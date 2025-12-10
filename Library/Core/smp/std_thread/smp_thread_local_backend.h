@@ -23,12 +23,13 @@
 #ifndef STDTHREAD_SMP_THREAD_LOCAL_BACKEND_H
 #define STDTHREAD_SMP_THREAD_LOCAL_BACKEND_H
 
-#include "common/export.h"
-
 #include <atomic>
-#include <cstdint> // For uint_fast32_t
-#include <mutex>   // std::mutex, std::lock_guard
+#include <cstdint>  // For uint_fast32_t
+#include <memory>   // For std::unique_ptr
+#include <mutex>    // std::mutex, std::lock_guard
 #include <thread>
+
+#include "common/export.h"
 
 namespace conductor
 {
@@ -39,138 +40,135 @@ namespace smp
 namespace std_thread
 {
 
-typedef size_t thread_id_type;
+typedef size_t        thread_id_type;
 typedef uint_fast32_t hash_type;
-typedef void* storage_pointer_type;
+typedef void*         storage_pointer_type;
 
 struct XSIGMA_VISIBILITY slot
 {
-  std::atomic<thread_id_type> thread_id;
-  std::mutex mutex;
-  storage_pointer_type storage;
+    std::atomic<thread_id_type> thread_id;
+    std::mutex                  mutex;
+    storage_pointer_type        storage;
 
-  slot();
-  ~slot() = default;
+    slot();
+    ~slot() = default;
 
 private:
-  // not copyable
-  slot(const slot&);
-  void operator=(const slot&);
+    // not copyable
+    slot(const slot&);
+    void operator=(const slot&);
 };
 
 struct XSIGMA_VISIBILITY hash_table_array
 {
-  size_t size, size_lg;
-  std::atomic<size_t> number_of_entries;
-  slot* slots;
-  hash_table_array* prev;
+    size_t                            size, size_lg;
+    std::atomic<size_t>               number_of_entries;
+    std::unique_ptr<slot[]>           slots;
+    std::unique_ptr<hash_table_array> prev;
 
-  explicit hash_table_array(size_t size_lg_param);
-  ~hash_table_array();
+    explicit hash_table_array(size_t size_lg_param);
+    ~hash_table_array();
 
 private:
-  // disallow copying
-  hash_table_array(const hash_table_array&);
-  void operator=(const hash_table_array&);
+    // disallow copying
+    hash_table_array(const hash_table_array&);
+    void operator=(const hash_table_array&);
 };
 
 class XSIGMA_VISIBILITY thread_specific final
 {
 public:
-  explicit thread_specific(unsigned num_threads);
-  ~thread_specific();
+    explicit thread_specific(unsigned num_threads);
+    ~thread_specific();
 
-  XSIGMA_API storage_pointer_type& get_storage();
-  XSIGMA_API size_t get_size() const;
+    XSIGMA_API storage_pointer_type& get_storage();
+    XSIGMA_API size_t                get_size() const;
 
 private:
-  std::atomic<hash_table_array*> m_root;
-  std::atomic<size_t> m_size;
-  std::mutex m_mutex;
+    std::atomic<hash_table_array*>    m_root;        // Non-owning pointer for atomic operations
+    std::unique_ptr<hash_table_array> m_root_owner;  // Actual owner
+    std::atomic<size_t>               m_size;
+    std::mutex                        m_mutex;
 
-  friend class thread_specific_storage_iterator;
+    friend class thread_specific_storage_iterator;
 };
 
 class XSIGMA_VISIBILITY thread_specific_storage_iterator
 {
 public:
-  thread_specific_storage_iterator()
-    : m_thread_specific_storage(nullptr)
-    , m_current_array(nullptr)
-    , m_current_slot(0)
-  {
-  }
-
-  XSIGMA_API void set_thread_specific_storage(thread_specific& thread_specific_obj)
-  {
-    m_thread_specific_storage = &thread_specific_obj;
-  }
-
-  XSIGMA_API void set_to_begin()
-  {
-    m_current_array = m_thread_specific_storage->m_root;
-    m_current_slot = 0;
-    if (!m_current_array->slots->storage)
+    thread_specific_storage_iterator()
+        : m_thread_specific_storage(nullptr), m_current_array(nullptr), m_current_slot(0)
     {
-      this->forward();
     }
-  }
 
-  XSIGMA_API void set_to_end()
-  {
-    m_current_array = nullptr;
-    m_current_slot = 0;
-  }
-
-  XSIGMA_API bool get_initialized() const { return m_thread_specific_storage != nullptr; }
-
-  XSIGMA_API bool get_at_end() const { return m_current_array == nullptr; }
-
-  XSIGMA_API void forward()
-  {
-    while (true)
+    XSIGMA_API void set_thread_specific_storage(thread_specific& thread_specific_obj)
     {
-      if (++m_current_slot >= m_current_array->size)
-      {
-        m_current_array = m_current_array->prev;
-        m_current_slot = 0;
-        if (!m_current_array)
+        m_thread_specific_storage = &thread_specific_obj;
+    }
+
+    XSIGMA_API void set_to_begin()
+    {
+        m_current_array = m_thread_specific_storage->m_root;
+        m_current_slot  = 0;
+        if (!m_current_array->slots[0].storage)
         {
-          break;
+            this->forward();
         }
-      }
-      slot* slot_ptr = m_current_array->slots + m_current_slot;
-      if (slot_ptr->storage)
-      {
-        break;
-      }
     }
-  }
 
-  XSIGMA_API storage_pointer_type& get_storage() const
-  {
-    slot* slot_ptr = m_current_array->slots + m_current_slot;
-    return slot_ptr->storage;
-  }
+    XSIGMA_API void set_to_end()
+    {
+        m_current_array = nullptr;
+        m_current_slot  = 0;
+    }
 
-  XSIGMA_API bool operator==(const thread_specific_storage_iterator& it) const
-  {
-    return (m_thread_specific_storage == it.m_thread_specific_storage) &&
-      (m_current_array == it.m_current_array) && (m_current_slot == it.m_current_slot);
-  }
+    XSIGMA_API bool get_initialized() const { return m_thread_specific_storage != nullptr; }
+
+    XSIGMA_API bool get_at_end() const { return m_current_array == nullptr; }
+
+    XSIGMA_API void forward()
+    {
+        while (true)
+        {
+            if (++m_current_slot >= m_current_array->size)
+            {
+                m_current_array = m_current_array->prev.get();
+                m_current_slot  = 0;
+                if (!m_current_array)
+                {
+                    break;
+                }
+            }
+            slot* slot_ptr = m_current_array->slots.get() + m_current_slot;
+            if (slot_ptr->storage)
+            {
+                break;
+            }
+        }
+    }
+
+    XSIGMA_API storage_pointer_type& get_storage() const
+    {
+        slot* slot_ptr = m_current_array->slots.get() + m_current_slot;
+        return slot_ptr->storage;
+    }
+
+    XSIGMA_API bool operator==(const thread_specific_storage_iterator& it) const
+    {
+        return (m_thread_specific_storage == it.m_thread_specific_storage) &&
+               (m_current_array == it.m_current_array) && (m_current_slot == it.m_current_slot);
+    }
 
 private:
-  thread_specific* m_thread_specific_storage;
-  hash_table_array* m_current_array;
-  size_t m_current_slot;
+    thread_specific*  m_thread_specific_storage;
+    hash_table_array* m_current_array;
+    size_t            m_current_slot;
 };
 
-} // std_thread;
-} // namespace smp
-} // namespace detail
-} // namespace conductor
+}  // namespace std_thread
+}  // namespace smp
+}  // namespace detail
+}  // namespace conductor
 
 #endif
 /* VTK-HeaderTest-Exclude: INCLUDES:CLASSES */
-
-

@@ -111,12 +111,17 @@ double benchmark_xsigma(int64_t N, int64_t grain_size)
     Timer timer;
 
     // XSigma parallel_for
-    xsigma::parallel_for(0, N, grain_size, [&data](int64_t begin, int64_t end) {
-        for (int64_t i = begin; i < end; ++i)
+    xsigma::parallel_for(
+        0,
+        N,
+        grain_size,
+        [&data](int64_t begin, int64_t end)
         {
-            data[i] = compute_expensive(i);
-        }
-    });
+            for (int64_t i = begin; i < end; ++i)
+            {
+                data[i] = compute_expensive(i);
+            }
+        });
 
     double elapsed = timer.elapsed_ms();
 
@@ -197,7 +202,8 @@ double benchmark_tbb(int64_t N, int64_t grain_size)
     // Native TBB parallel_for
     tbb::parallel_for(
         tbb::blocked_range<int64_t>(0, N, grain_size),
-        [&data](const tbb::blocked_range<int64_t>& range) {
+        [&data](const tbb::blocked_range<int64_t>& range)
+        {
             for (int64_t i = range.begin(); i < range.end(); ++i)
             {
                 data[i] = compute_expensive(i);
@@ -223,8 +229,8 @@ double benchmark_tbb(int64_t N, int64_t grain_size)
 void run_benchmark(int64_t N)
 {
     // Compute optimal grain_size
-    int num_threads = xsigma::get_num_threads();
-    int64_t grain_size = std::max<int64_t>(1000, N / (num_threads * 100));
+    int     num_threads = xsigma::get_num_threads();
+    int64_t grain_size  = std::max<int64_t>(1000, N / (num_threads * 100));
 
     std::cout << "\n" << std::string(70, '=') << "\n";
     std::cout << "Benchmark: N = " << N << " elements\n";
@@ -234,11 +240,11 @@ void run_benchmark(int64_t N)
     std::cout << std::string(70, '=') << "\n";
 
     // Run benchmarks
-    double seq_time = benchmark_sequential(N);
+    double seq_time    = benchmark_sequential(N);
     double xsigma_time = benchmark_xsigma(N, grain_size);
 
 #ifdef _OPENMP
-    double omp_time = benchmark_openmp(N);
+    double omp_time     = benchmark_openmp(N);
     double omp_dyn_time = benchmark_openmp_dynamic(N, grain_size);
 #endif
 
@@ -304,22 +310,27 @@ int main()
     std::cout << "Grain Size Tuning (N = 1,000,000)\n";
     std::cout << std::string(70, '=') << "\n";
 
-    const int64_t N = 1'000'000;
+    const int64_t        N           = 1'000'000;
     std::vector<int64_t> grain_sizes = {100, 1'000, 10'000, 100'000};
 
     for (int64_t grain : grain_sizes)
     {
         std::vector<double> data(N);
-        Timer timer;
+        Timer               timer;
 
-        xsigma::parallel_for(0, N, grain, [&data](int64_t begin, int64_t end) {
-            for (int64_t i = begin; i < end; ++i)
+        xsigma::parallel_for(
+            0,
+            N,
+            grain,
+            [&data](int64_t begin, int64_t end)
             {
-                data[i] = compute_expensive(i);
-            }
-        });
+                for (int64_t i = begin; i < end; ++i)
+                {
+                    data[i] = compute_expensive(i);
+                }
+            });
 
-        double elapsed = timer.elapsed_ms();
+        double  elapsed    = timer.elapsed_ms();
         int64_t num_chunks = (N + grain - 1) / grain;
 
         std::cout << "  grain_size = " << std::setw(8) << grain << "  =>  " << std::setw(8)
