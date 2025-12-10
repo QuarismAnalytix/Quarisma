@@ -15,9 +15,9 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
-#include <vector>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <vector>
 
 // Enzyme requires these declarations for AD
 // The __enzyme_autodiff and __enzyme_fwddiff functions are provided by the Enzyme plugin
@@ -138,7 +138,7 @@ TEST(EnzymeAD, ReverseMode_Square)
     std::cout << "  Enzyme Reverse-Mode AD: Square Function\n";
     std::cout << "========================================\n";
 
-    double const x = 3.0;
+    double const x   = 3.0;
     double const f_x = square(x);
 
     std::cout << "Function: f(x) = x²\n";
@@ -153,7 +153,7 @@ TEST(EnzymeAD, ReverseMode_Square)
     double const derivative = __enzyme_autodiff((void*)square, x);
 
     // Expected derivative: f'(x) = 2x = 2 * 3.0 = 6.0
-    double const expected = 2.0 * x;
+    double const expected  = 2.0 * x;
     double const abs_error = std::abs(derivative - expected);
     double const rel_error = expected != 0.0 ? abs_error / std::abs(expected) : abs_error;
 
@@ -164,7 +164,8 @@ TEST(EnzymeAD, ReverseMode_Square)
     std::cout << "Status: " << (abs_error < 1e-10 ? "✓ PASS" : "✗ FAIL") << "\n";
     std::cout << "========================================\n";
 
-    EXPECT_NEAR(derivative, expected, 1e-10) << "Enzyme gradient computation failed for square function";
+    EXPECT_NEAR(derivative, expected, 1e-10)
+        << "Enzyme gradient computation failed for square function";
 }
 
 /**
@@ -176,7 +177,7 @@ TEST(EnzymeAD, ReverseMode_Cubic)
     std::cout << "  Enzyme Reverse-Mode AD: Cubic Function\n";
     std::cout << "========================================\n";
 
-    double const x = 2.0;
+    double const x   = 2.0;
     double const f_x = cubic(x);
 
     std::cout << "Function: f(x) = x³ + 2x² + 3x + 4\n";
@@ -190,7 +191,7 @@ TEST(EnzymeAD, ReverseMode_Cubic)
     double const derivative = __enzyme_autodiff((void*)cubic, x);
 
     // Expected derivative: f'(x) = 3x^2 + 4x + 3 = 3*4 + 4*2 + 3 = 12 + 8 + 3 = 23
-    double const expected = 3.0 * x * x + 4.0 * x + 3.0;
+    double const expected  = 3.0 * x * x + 4.0 * x + 3.0;
     double const abs_error = std::abs(derivative - expected);
     double const rel_error = expected != 0.0 ? abs_error / std::abs(expected) : abs_error;
 
@@ -201,7 +202,8 @@ TEST(EnzymeAD, ReverseMode_Cubic)
     std::cout << "Status: " << (abs_error < 1e-10 ? "✓ PASS" : "✗ FAIL") << "\n";
     std::cout << "========================================\n";
 
-    EXPECT_NEAR(derivative, expected, 1e-10) << "Enzyme gradient computation failed for cubic function";
+    EXPECT_NEAR(derivative, expected, 1e-10)
+        << "Enzyme gradient computation failed for cubic function";
 }
 
 /**
@@ -213,7 +215,7 @@ TEST(EnzymeAD, ReverseMode_Exponential)
     std::cout << "  Enzyme Reverse-Mode AD: Exponential Function\n";
     std::cout << "========================================\n";
 
-    double const x = 1.0;
+    double const x   = 1.0;
     double const f_x = exponential(x);
 
     std::cout << "Function: f(x) = e^x\n";
@@ -227,7 +229,7 @@ TEST(EnzymeAD, ReverseMode_Exponential)
     double const derivative = __enzyme_autodiff((void*)exponential, x);
 
     // Expected derivative: f'(x) = e^x
-    double const expected = std::exp(x);
+    double const expected  = std::exp(x);
     double const abs_error = std::abs(derivative - expected);
     double const rel_error = expected != 0.0 ? abs_error / std::abs(expected) : abs_error;
 
@@ -238,7 +240,8 @@ TEST(EnzymeAD, ReverseMode_Exponential)
     std::cout << "Status: " << (abs_error < 1e-10 ? "✓ PASS" : "✗ FAIL") << "\n";
     std::cout << "========================================\n";
 
-    EXPECT_NEAR(derivative, expected, 1e-10) << "Enzyme gradient computation failed for exponential function";
+    EXPECT_NEAR(derivative, expected, 1e-10)
+        << "Enzyme gradient computation failed for exponential function";
 }
 
 /**
@@ -250,8 +253,8 @@ TEST(EnzymeAD, ReverseMode_Multivariate)
     std::cout << "  Enzyme Reverse-Mode AD: Multivariate Function\n";
     std::cout << "========================================\n";
 
-    double const x = 2.0;
-    double const y = 3.0;
+    double const x    = 2.0;
+    double const y    = 3.0;
     double const f_xy = multivariate(x, y);
 
     std::cout << "Function: f(x,y) = x² + 2xy + y²\n";
@@ -270,14 +273,14 @@ TEST(EnzymeAD, ReverseMode_Multivariate)
 
     // ∂f/∂y: differentiate second argument
     // Note: we swap the order so y is the first (differentiated) parameter
-    auto multivariate_yx = [](double y, double x) { return multivariate(x, y); };
-    double const dy = __enzyme_autodiff((void*)+multivariate_yx, y, x);
+    auto         multivariate_yx = [](double y, double x) { return multivariate(x, y); };
+    double const dy              = __enzyme_autodiff((void*)+multivariate_yx, y, x);
 
     // Expected partial derivatives:
     // ∂f/∂x = 2x + 2y = 2*2 + 2*3 = 4 + 6 = 10
     // ∂f/∂y = 2x + 2y = 2*2 + 2*3 = 4 + 6 = 10
-    double const expected_dx = 2.0 * x + 2.0 * y;
-    double const expected_dy = 2.0 * x + 2.0 * y;
+    double const expected_dx  = 2.0 * x + 2.0 * y;
+    double const expected_dy  = 2.0 * x + 2.0 * y;
     double const abs_error_dx = std::abs(dx - expected_dx);
     double const abs_error_dy = std::abs(dy - expected_dy);
 
@@ -307,8 +310,8 @@ TEST(EnzymeAD, ReverseMode_Rosenbrock)
     std::cout << "  Enzyme Reverse-Mode AD: Rosenbrock Function\n";
     std::cout << "========================================\n";
 
-    double const x = 1.0;
-    double const y = 1.0;
+    double const x    = 1.0;
+    double const y    = 1.0;
     double const f_xy = rosenbrock(x, y);
 
     std::cout << "Function: f(x,y) = (1-x)² + 100(y-x²)²\n";
@@ -325,14 +328,14 @@ TEST(EnzymeAD, ReverseMode_Rosenbrock)
     double const dx = __enzyme_autodiff((void*)rosenbrock_dx, x, y);
 
     // ∂f/∂y: differentiate second argument
-    auto rosenbrock_yx = [](double y, double x) { return rosenbrock(x, y); };
-    double const dy = __enzyme_autodiff((void*)+rosenbrock_yx, y, x);
+    auto         rosenbrock_yx = [](double y, double x) { return rosenbrock(x, y); };
+    double const dy            = __enzyme_autodiff((void*)+rosenbrock_yx, y, x);
 
     // Expected partial derivatives at (1, 1):
     // ∂f/∂x = -2(1-x) - 400x(y-x^2) = -2(0) - 400(1)(0) = 0
     // ∂f/∂y = 200(y-x^2) = 200(0) = 0
-    double const expected_dx = 0.0;
-    double const expected_dy = 0.0;
+    double const expected_dx  = 0.0;
+    double const expected_dy  = 0.0;
     double const abs_error_dx = std::abs(dx - expected_dx);
     double const abs_error_dy = std::abs(dy - expected_dy);
 
@@ -362,8 +365,8 @@ TEST(EnzymeAD, ForwardMode_Square)
     std::cout << "  Enzyme Forward-Mode AD: Square Function\n";
     std::cout << "========================================\n";
 
-    double const x  = 3.0;
-    double const dx = 1.0;  // Directional derivative seed
+    double const x   = 3.0;
+    double const dx  = 1.0;  // Directional derivative seed
     double const f_x = square(x);
 
     std::cout << "Function: f(x) = x²\n";
@@ -379,7 +382,7 @@ TEST(EnzymeAD, ForwardMode_Square)
     double const result = __enzyme_fwddiff((void*)square, x, dx);
 
     // Expected derivative: f'(x) = 2x = 2 * 3.0 = 6.0
-    double const expected = 2.0 * x * dx;
+    double const expected  = 2.0 * x * dx;
     double const abs_error = std::abs(result - expected);
     double const rel_error = expected != 0.0 ? abs_error / std::abs(expected) : abs_error;
 
@@ -402,8 +405,8 @@ TEST(EnzymeAD, ForwardMode_Cubic)
     std::cout << "  Enzyme Forward-Mode AD: Cubic Function\n";
     std::cout << "========================================\n";
 
-    double const x  = 2.0;
-    double const dx = 1.0;
+    double const x   = 2.0;
+    double const dx  = 1.0;
     double const f_x = cubic(x);
 
     std::cout << "Function: f(x) = x³ + 2x² + 3x + 4\n";
@@ -419,7 +422,7 @@ TEST(EnzymeAD, ForwardMode_Cubic)
     double const result = __enzyme_fwddiff((void*)cubic, x, dx);
 
     // Expected derivative: f'(x) = 3x^2 + 4x + 3 = 23
-    double const expected = (3.0 * x * x + 4.0 * x + 3.0) * dx;
+    double const expected  = (3.0 * x * x + 4.0 * x + 3.0) * dx;
     double const abs_error = std::abs(result - expected);
     double const rel_error = expected != 0.0 ? abs_error / std::abs(expected) : abs_error;
 
@@ -454,15 +457,13 @@ TEST(EnzymeAD, NumericalAccuracy)
     for (double x : test_points)
     {
         double const derivative = __enzyme_autodiff((void*)square, x);
-        double const expected = 2.0 * x;
-        double const abs_error = std::abs(derivative - expected);
-        bool const passed = abs_error < 1e-10;
+        double const expected   = 2.0 * x;
+        double const abs_error  = std::abs(derivative - expected);
+        bool const   passed     = abs_error < 1e-10;
 
-        std::cout << std::setw(11) << x << " | "
-                  << std::setw(11) << derivative << " | "
-                  << std::setw(11) << expected << " | "
-                  << std::scientific << std::setw(11) << abs_error << std::fixed << " | "
-                  << (passed ? "✓ PASS" : "✗ FAIL") << "\n";
+        std::cout << std::setw(11) << x << " | " << std::setw(11) << derivative << " | "
+                  << std::setw(11) << expected << " | " << std::scientific << std::setw(11)
+                  << abs_error << std::fixed << " | " << (passed ? "✓ PASS" : "✗ FAIL") << "\n";
 
         EXPECT_NEAR(derivative, expected, 1e-10) << "Accuracy test failed at x = " << x;
     }

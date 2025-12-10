@@ -76,7 +76,7 @@
  * - Template metaprogramming: Generic parallel_for/reduce work with any callable
  * - Conditional compilation: Backend selection at compile time for zero overhead
  * - Lazy initialization: Thread counts initialized on first use
- * - Registry pattern: Thread pool management via ThreadPoolRegistry
+ * - Singleton pattern: Thread pool management via static locals
  *
  * USAGE EXAMPLE:
  * ==============
@@ -108,6 +108,7 @@
 
 #include "common/export.h"
 #include "common/macros.h"
+#include "parallel/async_handle.h"
 #include "parallel/parallel_guard.h"
 #include "util/exception.h"
 #include "util/small_vector.h"
@@ -1087,6 +1088,175 @@ inline scalar_t parallel_reduce(
     xsigma::parallel_guard    guard(true);
     return f(begin, end, ident);
 #endif
+}
+
+// ============================================================================
+// Asynchronous Parallel Algorithms
+// ============================================================================
+
+/**
+ * @brief Asynchronous version of parallel_for
+ *
+ * Launches a parallel for loop that executes asynchronously and returns
+ * immediately with an async_handle. The handle can be used to wait for
+ * completion, check status, and retrieve errors.
+ *
+ * @tparam F Callable type with signature void(int64_t begin, int64_t end)
+ *
+ * @param begin Starting index (inclusive)
+ * @param end Ending index (exclusive)
+ * @param grain_size Minimum elements per chunk
+ * @param f Function to execute on each chunk
+ *
+ * @return async_handle<void> for tracking completion and errors
+ *
+ * Thread Safety: Thread-safe
+ * Backend: All backends (OpenMP, TBB, Native)
+ *
+ * Behavior:
+ * - Returns immediately; work happens asynchronously
+ * - Does NOT check in_parallel_region() (async operations are independent)
+ * - Native backend: Uses inter-op thread pool
+ * - OpenMP/TBB: Creates independent parallel region
+ *
+ * Performance Considerations:
+ * - Overhead: ~10-100 μs per async operation
+ * - Use for operations > 1ms duration
+ * - Limit concurrent async operations to ~2 * num_interop_threads
+ *
+ * Example:
+ * @code
+ * std::vector<int> data(1000000);
+ * auto handle = xsigma::async_parallel_for(0, data.size(), 10000,
+ *     [&data](int64_t begin, int64_t end) {
+ *         for (int64_t i = begin; i < end; ++i) {
+ *             data[i] = expensive_computation(i);
+ *         }
+ *     });
+ *
+ * // Do other work...
+ *
+ * handle.wait();
+ * if (handle.has_error()) {
+ *     XSIGMA_LOG_ERROR("Async operation failed: {}", handle.get_error());
+ * }
+ * @endcode
+ */
+template <class F>
+inline async_handle<void> async_parallel_for(
+    const int64_t begin, const int64_t end, const int64_t grain_size, const F& f)
+{
+    // Create shared state for async operation
+    auto state = std::make_shared<internal::async_state<void>>();
+
+    // Launch async operation using inter-op thread pool
+    launch(
+        [state, begin, end, grain_size, f]()
+        {
+            try
+            {
+                // Execute parallel_for in this thread
+                // It will use the intra-op thread pool for parallelism
+                xsigma::parallel_for(begin, end, grain_size, f);
+
+                // Mark as ready on success
+                state->set_ready();
+            }
+            catch (const std::exception& e)
+            {
+                // Catch any exceptions and convert to error state
+                state->set_error(std::string("Exception in async_parallel_for: ") + e.what());
+            }
+            catch (...)
+            {
+                // Catch unknown exceptions
+                state->set_error("Unknown error in async_parallel_for");
+            }
+        });
+
+    return async_handle<void>(state);
+}
+
+/**
+ * @brief Asynchronous version of parallel_reduce
+ *
+ * Launches a parallel reduction that executes asynchronously and returns
+ * immediately with an async_handle containing the future result.
+ *
+ * @tparam scalar_t Result type
+ * @tparam F Reduction function: scalar_t(int64_t begin, int64_t end, scalar_t identity)
+ * @tparam SF Combine function: scalar_t(scalar_t a, scalar_t b)
+ *
+ * @param begin Starting index (inclusive)
+ * @param end Ending index (exclusive)
+ * @param grain_size Minimum elements per chunk
+ * @param ident Identity element
+ * @param f Reduction function
+ * @param sf Combine function (must be associative)
+ *
+ * @return async_handle<scalar_t> containing the reduction result
+ *
+ * Thread Safety: Thread-safe
+ * Backend: All backends (OpenMP, TBB, Native)
+ *
+ * Example:
+ * @code
+ * std::vector<int> data(10000, 1);
+ * auto handle = xsigma::async_parallel_reduce(
+ *     0, data.size(), 2500, 0,
+ *     [&data](int64_t begin, int64_t end, int identity) {
+ *         int partial_sum = identity;
+ *         for (int64_t i = begin; i < end; ++i) {
+ *             partial_sum += data[i];
+ *         }
+ *         return partial_sum;
+ *     },
+ *     [](int a, int b) { return a + b; }
+ * );
+ *
+ * int sum = handle.get();  // Blocks until ready
+ * if (!handle.has_error()) {
+ *     XSIGMA_LOG_INFO("Sum: {}", sum);
+ * }
+ * @endcode
+ */
+template <class scalar_t, class F, class SF>
+inline async_handle<scalar_t> async_parallel_reduce(
+    const int64_t  begin,
+    const int64_t  end,
+    const int64_t  grain_size,
+    const scalar_t ident,
+    const F&       f,
+    const SF&      sf)
+{
+    // Create shared state for async operation
+    auto state = std::make_shared<internal::async_state<scalar_t>>();
+
+    // Launch async operation
+    launch(
+        [state, begin, end, grain_size, ident, f, sf]()
+        {
+            try
+            {
+                // Execute parallel_reduce in this thread
+                scalar_t result = xsigma::parallel_reduce(begin, end, grain_size, ident, f, sf);
+
+                // Store result and mark as ready
+                state->set_value(std::move(result));
+            }
+            catch (const std::exception& e)
+            {
+                // Catch any exceptions and convert to error state
+                state->set_error(std::string("Exception in async_parallel_reduce: ") + e.what());
+            }
+            catch (...)
+            {
+                // Catch unknown exceptions
+                state->set_error("Unknown error in async_parallel_reduce");
+            }
+        });
+
+    return async_handle<scalar_t>(state);
 }
 
 }  // namespace xsigma

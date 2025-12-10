@@ -106,12 +106,10 @@
  *
  * USAGE:
  * ======
- * The thread pool is typically accessed via ThreadPoolRegistry:
- * @code
- * auto pool = ThreadPoolRegistry()->Create("MyPool", device_id, pool_size, true);
- * pool->run([]() { do_work(); });
- * pool->wait_work_complete();
- * @endcode
+ * The thread pool is used internally by the parallel module via static singleton
+ * instances created in parallel.cpp:
+ * - _get_intraop_pool(): Returns the intra-op parallelism thread pool
+ * - get_interop_pool(): Returns the inter-op parallelism thread pool
  *
  * For the native parallel backend, the thread pool is used internally by
  * invoke_parallel() in parallel.cpp.
@@ -309,5 +307,4 @@ void thread_pool::main_loop(std::size_t index)
     }  // while running_
 }
 
-XSIGMA_DEFINE_SHARED_REGISTRY(ThreadPoolRegistry, task_thread_pool_base, int, int, bool)
 }  // namespace xsigma

@@ -1,5 +1,8 @@
 #include "profiler/common/data_flow.h"
 
+#include <algorithm>
+#include <iterator>
+
 #include "profiler/common/collection.h"
 #include "util/overloaded.h"
 
@@ -215,10 +218,8 @@ void calculateUniqueTensorIDs(std::vector<std::shared_ptr<Result>>& sorted_resul
     xsigma::flat_hash_map<AllocationID, size_t> id_map;
     {
         std::vector<storage_id_pair_t> unique_pairs;
-        for (const auto& i : same_group_set)
-        {
-            unique_pairs.push_back(i);
-        }
+        unique_pairs.reserve(same_group_set.size());
+        std::copy(same_group_set.begin(), same_group_set.end(), std::back_inserter(unique_pairs));
         std::sort(unique_pairs.begin(), unique_pairs.end());
 
         size_t current_id{0};

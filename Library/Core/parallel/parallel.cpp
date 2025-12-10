@@ -346,11 +346,9 @@ int _num_pool_threads(int nthreads)
 
 xsigma::task_thread_pool_base& _get_intraop_pool()
 {
-    static std::shared_ptr<xsigma::task_thread_pool_base> const pool = ThreadPoolRegistry()->run(
-        "XSIGMA",
-        /* device_id */ 0,
-        /* pool_size */ _num_pool_threads(num_intraop_threads.exchange(CONSUMED)),
-        /* create_new */ true);  // create a separate thread pool for intra-op
+    static std::shared_ptr<xsigma::task_thread_pool_base> const pool =
+        std::make_shared<xsigma::thread_pool>(
+            _num_pool_threads(num_intraop_threads.exchange(CONSUMED)));
     return *pool;
 }
 
@@ -766,36 +764,12 @@ std::atomic<int> num_interop_threads{NOT_SET};
 // users should use xsigma::launch and get/set_num_interop_threads interface
 xsigma::task_thread_pool_base& get_interop_pool()
 {
-    static std::shared_ptr<xsigma::task_thread_pool_base> const pool = ThreadPoolRegistry()->run(
-        "XSIGMA",
-        /* device_id */ 0,
-        /* pool_size */ num_interop_threads.exchange(CONSUMED),
-        /* create_new */ true);
+    static std::shared_ptr<xsigma::task_thread_pool_base> const pool =
+        std::make_shared<xsigma::thread_pool>(num_interop_threads.exchange(CONSUMED));
     return *pool;
 }
 
-// Factory function for ThreadPoolRegistry
-std::shared_ptr<xsigma::task_thread_pool_base> create_xsigma_threadpool(
-    int device_id, int pool_size, bool create_new)
-{
-    // For now, the only accepted device id is 0
-    if (device_id != 0)
-    {
-        XSIGMA_LOG_ERROR("Invalid device_id: {}, expected 0", device_id);
-        return nullptr;
-    }
-    // Create new thread pool
-    if (!create_new)
-    {
-        XSIGMA_LOG_ERROR("create_new must be true");
-        return nullptr;
-    }
-    return std::make_shared<xsigma::thread_pool>(pool_size);
-}
-
 }  // namespace
-
-XSIGMA_REGISTER_CREATOR(ThreadPoolRegistry, XSIGMA, create_xsigma_threadpool)
 #endif  // !XSIGMA_HAS_OPENMP && !XSIGMA_HAS_TBB
 
 void set_num_interop_threads(int nthreads)

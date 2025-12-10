@@ -1038,11 +1038,14 @@ void allocator_bfc::DeallocateRawInternal(void* ptr)
     // Find the chunk from the ptr.
     allocator_bfc::ChunkHandle const h = region_manager_.get_handle(ptr);
     XSIGMA_CHECK(h != kInvalidChunkHandle);
-    // Record chunk information before it's freed.
-    Chunk const*  chunk       = ChunkFromHandle(h);
-    void const*   chunk_ptr   = chunk->ptr;
-    int64_t const req_bytes   = chunk->requested_size;
-    int64_t const alloc_bytes = chunk->size;
+
+#if XSIGMA_HAS_NATIVE_PROFILER
+    // Record chunk information before it's freed (only needed for profiling).
+    const Chunk* const chunk       = ChunkFromHandle(h);
+    void const* const  chunk_ptr   = chunk->ptr;
+    int64_t const      req_bytes   = chunk->requested_size;
+    int64_t const      alloc_bytes = chunk->size;
+#endif
 
     MarkFree(h);
 
@@ -1057,9 +1060,9 @@ void allocator_bfc::DeallocateRawInternal(void* ptr)
         InsertFreeChunkIntoBin(TryToCoalesce(h, false));
     }
 
+#if XSIGMA_HAS_NATIVE_PROFILER
     // TraceMe needs to be added after MarkFree and InsertFreeChunkIntoBin for
     // correct aggregation stats (bytes_in_use, fragmentation).
-#if XSIGMA_HAS_NATIVE_PROFILER
     AddTraceMe("MemoryDeallocation", chunk_ptr, req_bytes, alloc_bytes);
 #endif
 

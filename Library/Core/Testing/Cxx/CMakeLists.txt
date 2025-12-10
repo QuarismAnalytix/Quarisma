@@ -113,6 +113,18 @@ add_executable(CoreCxxTests ${TestFiles})
 # Compile definitions
 target_compile_definitions(CoreCxxTests PRIVATE XSIGMA_GOOGLE_TEST USE_GTEST _VARIADIC_MAX=10)
 
+# Workaround for Clang 21.x compiler crash in TestPointer.cpp
+# The crash occurs in the Greedy Register Allocator pass when compiling with -O3 and C++20
+# This is a known Clang bug: https://github.com/llvm/llvm-project/issues/
+# Disable optimization for this specific file to work around the ICE
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_STANDARD GREATER_EQUAL 20)
+  set_source_files_properties(
+    "${CMAKE_CURRENT_SOURCE_DIR}/TestPointer.cpp"
+    PROPERTIES COMPILE_FLAGS "-O1"
+  )
+  message(STATUS "Applied Clang ICE workaround: TestPointer.cpp compiled with -O1")
+endif()
+
 # Link libraries Core library is linked which transitively brings in all centralized dependencies
 # via XSIGMA_DEPENDENCY_LIBS
 target_link_libraries(CoreCxxTests PRIVATE XSigma::gtest XSigma::gtest_main XSigma::Core)
@@ -183,7 +195,8 @@ if(XSIGMA_ENABLE_BENCHMARK)
     endif()
 
     # Exclude legacy SMP benchmarks that reference non-existent files
-    if(file_name MATCHES "BenchmarkSMP")
+    # BenchmarkSMP and BenchmarkParallelVsSmp both reference the legacy smp module
+    if(file_name MATCHES "BenchmarkSMP" OR file_name MATCHES "BenchmarkParallelVsSmp")
       message(STATUS "Excluding legacy SMP benchmark (files being consolidated): ${file_name}")
       continue()
     endif()

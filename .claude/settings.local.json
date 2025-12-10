@@ -5,7 +5,13 @@
       "Bash(dir \"C:\\Program Files\\LLVM\\bin\")",
       "Bash(findstr:*)",
       "Bash(dir \"C:\\Program Files\\LLVM\\lib\")",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(ls:*)",
+      "Bash(clang++:*)",
+      "Bash(wsl --list:*)",
+      "Bash(wsl bash -c \"cd /mnt/c/dev/XSigma && pwd && ls -la | head -15\")",
+      "Bash(wsl bash:*)",
+      "Bash(python setup.py config.build.cxx20.test.benchmark)"
     ],
     "deny": [],
     "ask": []

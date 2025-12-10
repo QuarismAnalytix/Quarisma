@@ -39,7 +39,7 @@ bool crypto::generate_random_bytes(uint8_t* buffer, size_t size)
 
 #ifdef _WIN32
     // Windows: Use BCryptGenRandom
-    NTSTATUS status =
+    const NTSTATUS status =
         BCryptGenRandom(nullptr, buffer, static_cast<ULONG>(size), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
     return status >= 0;
 
