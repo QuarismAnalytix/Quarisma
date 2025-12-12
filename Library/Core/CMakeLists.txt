@@ -20,6 +20,7 @@ file(
     "${CMAKE_CURRENT_SOURCE_DIR}/profiler/*.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/c17/*.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/parallel/*.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/smp/*.h"
   ${xsigma_headers}
 )
 
@@ -33,6 +34,7 @@ file(
     "${CMAKE_CURRENT_SOURCE_DIR}/profiler/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/c17/*.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/parallel/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/smp/*.cpp"
   ${xsigma_sources}
 )
 
@@ -111,6 +113,28 @@ if(NOT XSIGMA_ENABLE_KINETO)
   list(REMOVE_ITEM sources ${KINETO_SOURCE_FILES})
   list(REMOVE_ITEM headers ${KINETO_HEADER_FILES})
   message(STATUS "Kineto disabled: Excluding Kineto source files from build")
+endif()
+
+# Remove TBB SMP files if TBB is not enabled
+# The TBB backend requires TBB headers and libraries, so we must exclude these files
+# when TBB is disabled to avoid compilation errors (missing tbb/blocked_range.h, etc.)
+if(NOT XSIGMA_ENABLE_TBB)
+  file(GLOB_RECURSE TBB_SMP_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/smp/tbb/*.cpp")
+  file(GLOB_RECURSE TBB_SMP_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/smp/tbb/*.h")
+  list(REMOVE_ITEM sources ${TBB_SMP_SOURCE_FILES})
+  list(REMOVE_ITEM headers ${TBB_SMP_HEADER_FILES})
+  message(STATUS "TBB disabled: Excluding TBB SMP source files from build")
+endif()
+
+# Remove OpenMP SMP files if OpenMP is not enabled
+# The OpenMP backend requires OpenMP headers and libraries, so we must exclude these files
+# when OpenMP is disabled to avoid compilation errors (missing omp.h, etc.)
+if(NOT XSIGMA_ENABLE_OPENMP)
+  file(GLOB_RECURSE OPENMP_SMP_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/smp/openmp/*.cpp")
+  file(GLOB_RECURSE OPENMP_SMP_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/smp/openmp/*.h")
+  list(REMOVE_ITEM sources ${OPENMP_SMP_SOURCE_FILES})
+  list(REMOVE_ITEM headers ${OPENMP_SMP_HEADER_FILES})
+  message(STATUS "OpenMP disabled: Excluding OpenMP SMP source files from build")
 endif()
 
 # Create the Core library Respect BUILD_SHARED_LIBS setting for library type

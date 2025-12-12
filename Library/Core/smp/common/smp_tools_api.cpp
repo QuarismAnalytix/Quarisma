@@ -32,7 +32,7 @@ static smp_tools_api* smp_tools_api_instance = nullptr;
 //------------------------------------------------------------------------------
 smp_tools_api& smp_tools_api::instance()
 {
-    if (!smp_tools_api_instance)
+    if (smp_tools_api_instance == nullptr)
     {
         smp_tools_api_instance = new smp_tools_api();
     }
@@ -56,8 +56,9 @@ const char* smp_tools_api::get_backend()
         return "TBB";
     case backend_type::OpenMP:
         return "OpenMP";
+    default:
+        return nullptr;
     }
-    return nullptr;
 }
 
 //------------------------------------------------------------------------------

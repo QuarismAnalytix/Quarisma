@@ -25,6 +25,8 @@ static std::unique_ptr<std::stack<int>> thread_id_stack;
 
 //------------------------------------------------------------------------------
 // Must NOT be initialized. Default initialization to zero is necessary.
+// NOTE: This variable must NOT be static - it needs to be visible across
+// translation units for proper initialization/deinitialization tracking.
 unsigned int smp_tools_impl_openmp_initialize_count;
 
 //------------------------------------------------------------------------------
@@ -56,7 +58,7 @@ void smp_tools_impl<backend_type::OpenMP>::initialize(int num_threads)
     if (num_threads == 0)
     {
         const char* smp_num_threads = std::getenv("SMP_MAX_THREADS");
-        if (smp_num_threads)
+        if (smp_num_threads != nullptr)
         {
             std::string str(smp_num_threads);
             auto        result = std::from_chars(str.data(), str.data() + str.size(), num_threads);
@@ -65,7 +67,7 @@ void smp_tools_impl<backend_type::OpenMP>::initialize(int num_threads)
                 num_threads = 0;
             }
         }
-        else if (specified_num_threads_omp)
+        else if (specified_num_threads_omp != 0)
         {
             specified_num_threads_omp = 0;
             omp_set_num_threads(max_threads);
@@ -124,13 +126,14 @@ void smp_tools_impl_for_openmp(
     void*                    functor,
     bool                     nested_activated)
 {
-    if (grain <= 0)
+    if (grain == 0)
     {
-        size_t estimate_grain = (last - first) / (number_of_threads_openmp() * 4);
-        grain                 = (estimate_grain > 0) ? estimate_grain : 1;
+        const size_t estimate_grain =
+            (last - first) / (static_cast<size_t>(number_of_threads_openmp()) * 4);
+        grain = (estimate_grain > 0) ? estimate_grain : 1;
     }
 
-    omp_set_max_active_levels(nested_activated);
+    omp_set_max_active_levels(static_cast<int>(nested_activated));
 
 #pragma omp single
     thread_id_stack->emplace(omp_get_thread_num());

@@ -44,10 +44,10 @@ public:
     XSIGMA_API static smp_tools_api& instance();
 
     //--------------------------------------------------------------------------------
-    XSIGMA_API backend_type get_backend_type();
+    XSIGMA_API static backend_type get_backend_type();
 
     //--------------------------------------------------------------------------------
-    XSIGMA_API const char* get_backend();
+    XSIGMA_API static const char* get_backend();
 
     //--------------------------------------------------------------------------------
     XSIGMA_API bool set_backend(const char* type);

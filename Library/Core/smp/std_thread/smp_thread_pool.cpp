@@ -214,7 +214,7 @@ void smp_thread_pool::proxy::join()
             auto it = std::find_if(
                 thread_data_ref.m_jobs.begin(),
                 thread_data_ref.m_jobs.end(),
-                [this](thread_job& job) { return job.m_proxy == m_data.get(); });
+                [this](const thread_job& job) { return job.m_proxy == m_data.get(); });
 
             if (it == thread_data_ref.m_jobs.end())
             {
@@ -268,7 +268,7 @@ void smp_thread_pool::proxy::do_job(std::function<void()> job)
         assert(std::this_thread::get_id() == proxy_thread.m_thread->m_system_thread.get_id());
 
         // Add job to queue without notification (will be executed in join())
-        std::unique_lock<std::mutex> lock{proxy_thread.m_thread->m_mutex};
+        const std::unique_lock<std::mutex> lock{proxy_thread.m_thread->m_mutex};
         proxy_thread.m_thread->m_jobs.emplace_back(m_data.get(), std::move(job));
     }
     else
@@ -329,7 +329,7 @@ bool smp_thread_pool::proxy::is_top_level() const noexcept
  */
 smp_thread_pool::smp_thread_pool()
 {
-    const std::size_t thread_count = static_cast<std::size_t>(
+    const auto thread_count = static_cast<std::size_t>(
         smp_tools_impl<backend_type::std_thread>::estimated_default_number_of_threads());
     m_threads.reserve(thread_count);
     for (std::size_t i{}; i < thread_count; ++i)
@@ -359,13 +359,13 @@ smp_thread_pool::~smp_thread_pool()
     m_joining.store(true, std::memory_order_release);
 
     // Wake up all threads so they can see the joining flag
-    for (auto& thread_data_ptr : m_threads)
+    for (const auto& thread_data_ptr : m_threads)
     {
         thread_data_ptr->m_condition_variable.notify_one();
     }
 
     // Wait for all threads to finish
-    for (auto& thread_data_ptr : m_threads)
+    for (const auto& thread_data_ptr : m_threads)
     {
         thread_data_ptr->m_system_thread.join();
     }
@@ -405,7 +405,7 @@ smp_thread_pool::proxy smp_thread_pool::allocate_threads(std::size_t thread_coun
     proxy->m_threads.reserve(thread_count);
 
     thread_data* thread_data_ptr = this->get_caller_thread_data();
-    if (thread_data_ptr)
+    if (thread_data_ptr != nullptr)
     {
         // Nested proxy: allocate from within a parallel region
         proxy->m_parent = thread_data_ptr->m_jobs[thread_data_ptr->m_running_job].m_proxy;
@@ -442,11 +442,11 @@ std::size_t smp_thread_pool::get_thread_id() const noexcept
 {
     auto* thread_data_ptr = this->get_caller_thread_data();
 
-    if (thread_data_ptr)
+    if (thread_data_ptr != nullptr)
     {
         std::unique_lock<std::mutex> lock{thread_data_ptr->m_mutex};
         assert(thread_data_ptr->m_running_job != no_running_job && "Invalid state");
-        auto& proxy_threads =
+        const auto& proxy_threads =
             thread_data_ptr->m_jobs[thread_data_ptr->m_running_job].m_proxy->m_threads;
         lock.unlock();
 
@@ -485,9 +485,9 @@ bool smp_thread_pool::is_parallel_scope() const noexcept
 bool smp_thread_pool::single_thread() const
 {
     auto* thread_data_ptr = get_caller_thread_data();
-    if (thread_data_ptr)
+    if (thread_data_ptr != nullptr)
     {
-        std::lock_guard<std::mutex> lock{thread_data_ptr->m_mutex};
+        const std::scoped_lock lock{thread_data_ptr->m_mutex};
         assert(thread_data_ptr->m_running_job != no_running_job && "Invalid state");
         return thread_data_ptr->m_jobs[thread_data_ptr->m_running_job]
                    .m_proxy->m_threads[0]
@@ -612,7 +612,7 @@ void smp_thread_pool::fill_threads_for_nested_proxy(proxy_data* proxy, std::size
         // Walk up the proxy hierarchy
         for (auto* parent = proxy->m_parent; parent != nullptr; parent = parent->m_parent)
         {
-            for (auto& proxy_thread : parent->m_threads)
+            for (const auto& proxy_thread : parent->m_threads)
             {
                 if (proxy_thread.m_thread == thread_data_ptr)
                 {

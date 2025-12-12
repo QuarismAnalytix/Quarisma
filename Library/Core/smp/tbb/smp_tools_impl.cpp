@@ -38,7 +38,9 @@ static int                              specified_num_threads_tbb;  // Default i
 
 //------------------------------------------------------------------------------
 // Must NOT be initialized. Default initialization to zero is necessary.
-unsigned int smp_tools_impl_tbb_initialize_count;
+// NOTE: This variable must NOT be static - it needs to be visible across
+// translation units for proper initialization/deinitialization tracking.
+static unsigned int smp_tools_impl_tbb_initialize_count;
 
 //------------------------------------------------------------------------------
 smp_tools_impl_tbb_initialize::smp_tools_impl_tbb_initialize()
@@ -82,7 +84,7 @@ void smp_tools_impl<backend_type::TBB>::initialize(int num_threads)
     if (num_threads == 0)
     {
         const char* smp_num_threads = std::getenv("SMP_MAX_THREADS");
-        if (smp_num_threads)
+        if (smp_num_threads != nullptr)
         {
             std::string str(smp_num_threads);
             auto        result = std::from_chars(str.data(), str.data() + str.size(), num_threads);

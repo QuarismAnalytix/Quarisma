@@ -22,7 +22,11 @@
       "Bash(grep:*)",
       "Bash(./CoreCxxTests:*)",
       "Bash(ninja:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(cmake:*)",
+      "Bash(./bin/CoreCxxTests:*)",
+      "Bash(timeout 60 ./bin/CoreCxxTests:*)",
+      "Bash(/Users/toufikbellaj/XSigma/build_ninja/bin/CoreCxxTests:*)"
     ],
     "deny": [],
     "ask": []

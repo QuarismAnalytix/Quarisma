@@ -25,8 +25,8 @@ static int specified_num_threads_std;  // Default initialized to zero
 //------------------------------------------------------------------------------
 int number_of_threads_stdthread()
 {
-    return specified_num_threads_std ? specified_num_threads_std
-                                     : std::thread::hardware_concurrency();
+    return (specified_num_threads_std != 0) ? specified_num_threads_std
+                                            : std::thread::hardware_concurrency();
 }
 
 //------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ void smp_tools_impl<backend_type::std_thread>::initialize(int num_threads)
     if (num_threads == 0)
     {
         const char* smp_num_threads = std::getenv("SMP_MAX_THREADS");
-        if (smp_num_threads)
+        if (smp_num_threads != nullptr)
         {
             std::string str(smp_num_threads);
             auto        result = std::from_chars(str.data(), str.data() + str.size(), num_threads);
@@ -73,9 +73,9 @@ template <>
 int smp_tools_impl<backend_type::std_thread>::estimated_default_number_of_threads()
 {
 #if defined(__EMSCRIPTEN_PTHREADS__) && (XSIGMA_WEBASSEMBLY_SMP_THREAD_POOL_SIZE > 0)
-    int max_threads = XSIGMA_WEBASSEMBLY_SMP_THREAD_POOL_SIZE;
+    const int max_threads = XSIGMA_WEBASSEMBLY_SMP_THREAD_POOL_SIZE;
 #else
-    int max_threads = std::thread::hardware_concurrency();
+    const int max_threads = std::thread::hardware_concurrency();
 #endif
     return max_threads;
 }

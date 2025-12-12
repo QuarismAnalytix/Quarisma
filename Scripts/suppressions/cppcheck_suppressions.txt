@@ -8,6 +8,12 @@
 # Suppress unknown macro warnings
 unknownMacro:XSIGMA_UNLIKELY
 unknownMacro:XSIGMA_LIKELY
+unknownMacro:XSIGMA_CHECK
+unknownMacro:Library/Core/profiler/kineto/kineto_shim.cpp:171
+syntaxError:Library/Core/parallel/parallel.h:267
+syntaxError:Library/Core/profiler/common/record_function.cpp:316
+syntaxError:Library/Core/profiler/native/core/profiler_lock.cpp:75
+syntaxError:Library/Core/profiler/native/cpu/annotation_stack.cpp:107
 
 # Suppress missing include warnings
 missingIncludeSystem:*
@@ -19,3 +25,53 @@ missingInclude:*
 
 # Test helper function - pointer is not modified
 #constParameterPointer:Library/Core/Testing/xsigmaTest.h:234
+
+# Intentional design patterns
+
+# Conversion constructors - explicit keyword not wanted for implicit conversions
+noExplicitConstructor:Library/Core/smp/smp_tools.h
+noExplicitConstructor:Library/Core/smp/std_thread/smp_thread_pool.cpp
+noExplicitConstructor:Library/Core/smp/threaded_callback_queue.h
+noExplicitConstructor:Library/Core/profiler/kineto/profiler_kineto.cpp
+
+# Destructor deletes members - making loop variable const would be misleading
+constVariableReference:Library/Core/smp/multi_threader.cpp:145
+
+# False positive - num is used after reassignment in std::min
+redundantAssignment:Library/Core/smp/multi_threader.cpp:107
+
+# Padding/alignment structs - members intentionally unused
+unusedStructMember:Library/Core/util/small_vector.cpp
+
+# Future use or API compatibility
+unusedStructMember:Library/Core/profiler/common/standalone/execution_trace_observer.cpp:177
+unusedStructMember:Library/Core/profiler/common/standalone/execution_trace_observer.cpp:178
+
+# Intentional state machine condition
+knownConditionTrueFalse:Library/Core/smp/threaded_callback_queue.h:108
+knownConditionTrueFalse:Library/Core/profiler/common/standalone/execution_trace_observer.cpp:851
+
+# Functor may need to modify state - cannot be const
+constVariableReference:Library/Core/smp/threaded_callback_queue.h:584
+
+# Template returns non-const reference - parameter cannot be const
+constParameterReference:Library/Core/smp/threaded_callback_queue.h:513
+
+# Style suggestions - raw loops preferred for clarity in these cases
+useStlAlgorithm:Library/Core/smp/std_thread/smp_thread_pool.cpp:457
+useStlAlgorithm:Library/Core/smp/std_thread/smp_thread_pool.cpp:615
+useStlAlgorithm:Library/Core/smp/threaded_callback_queue.h:671
+
+# Profiler code - const correctness suggestions for imported/adapted code
+constVariableReference:Library/Core/profiler/common/collection.cpp
+constParameterReference:Library/Core/profiler/common/standalone/execution_trace_observer.cpp
+constParameterPointer:Library/Core/profiler/kineto/kineto_shim.cpp
+constVariablePointer:Library/Core/profiler/common/standalone/execution_trace_observer.cpp
+cstyleCast:Library/Core/profiler/common/standalone/execution_trace_observer.cpp
+unreadVariable:Library/Core/profiler/kineto/kineto_shim.cpp
+
+# Portability - localtime vs localtime_r in profiler code
+localtimeCalled:Library/Core/profiler/common/standalone/execution_trace_observer.cpp
+
+# Examples and test code - unused results are acceptable
+unreadVariable:Examples/*

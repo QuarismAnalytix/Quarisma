@@ -15,14 +15,14 @@
 // platforms about passing function pointer to an argument expecting an
 // extern "C" function.  Placing the typedef of the function pointer type
 // inside an extern "C" block solves this problem.
-#if defined(XSIGMA_USE_PTHREADS)
+#if XSIGMA_USE_PTHREADS
 #include <pthread.h>
 extern "C"
 {
-    typedef void* (*extern_c_thread_function_type)(void*);
+    using extern_c_thread_function_type = void* (*)(void*);
 }
 #else
-typedef thread_function_type extern_c_thread_function_type;
+using extern_c_thread_function_type = thread_function_type;
 #endif
 
 #ifdef __APPLE__
@@ -70,7 +70,7 @@ int multi_threader::get_global_default_number_of_threads()
     {
         int num = 1;  // default is 1
 
-#ifdef XSIGMA_USE_PTHREADS
+#if XSIGMA_USE_PTHREADS
         // Default the number of threads to be the number of available
         // processors if we are using pthreads()
 #ifdef _SC_NPROCESSORS_ONLN
@@ -84,8 +84,8 @@ int multi_threader::get_global_default_number_of_threads()
         // Determine the number of CPU cores.
         // hw.logicalcpu takes into account cores/CPUs that are
         // disabled because of power management.
-        size_t dataLen = sizeof(int);  // 'num' is an 'int'
-        int    result  = sysctlbyname("hw.logicalcpu", &num, &dataLen, nullptr, 0);
+        size_t    dataLen = sizeof(int);  // 'num' is an 'int'
+        const int result  = sysctlbyname("hw.logicalcpu", &num, &dataLen, nullptr, 0);
         if (result == -1)
         {
             num = 1;
@@ -94,14 +94,14 @@ int multi_threader::get_global_default_number_of_threads()
 
 #ifdef _WIN32
         {
-            SYSTEM_INFO sysInfo;
-            GetSystemInfo(&sysInfo);
-            num = sysInfo.dwNumberOfProcessors;
+            SYSTEM_INFO sysInfo;                 // NOLINT
+            GetSystemInfo(&sysInfo);             // NOLINT
+            num = sysInfo.dwNumberOfProcessors;  // NOLINT
         }
 #endif
 
-#ifndef XSIGMA_USE_WIN32_THREADS
-#ifndef XSIGMA_USE_PTHREADS
+#if !XSIGMA_USE_WIN32_THREADS
+#if !XSIGMA_USE_PTHREADS
         // If we are not multithreading, the number of threads should
         // always be 1
         num = 1;
@@ -131,17 +131,20 @@ multi_threader::multi_threader()
         m_spawned_thread_active_flag[i]          = 0;
         m_spawned_thread_active_flag_lock[i]     = nullptr;
         m_spawned_thread_info_array[i].thread_id = i;
+        m_spawned_thread_process_id[i]           = thread_process_id_type();
+        m_multiple_data[i]                       = nullptr;
     }
 
     m_single_method     = nullptr;
+    m_single_data       = nullptr;
     m_number_of_threads = multi_threader::get_global_default_number_of_threads();
 }
 
 multi_threader::~multi_threader()
 {
-    for (int i = 0; i < XSIGMA_MAX_THREADS; i++)
+    for (auto& thread_info : m_thread_info_array)
     {
-        delete m_thread_info_array[i].active_flag_lock;
+        delete thread_info.active_flag_lock;
         // std::unique_ptr automatically deletes the managed object when destroyed.
         // Explicit reset() call is unnecessary and adds function call overhead.
         // The unique_ptr will be destroyed when the array element goes out of scope.
@@ -168,14 +171,8 @@ int multi_threader::get_number_of_threads()
 
 void multi_threader::set_number_of_threads(int num)
 {
-    if (num < 1)
-    {
-        num = 1;
-    }
-    if (num > XSIGMA_MAX_THREADS)
-    {
-        num = XSIGMA_MAX_THREADS;
-    }
+    num                 = std::max(num, 1);
+    num                 = std::min(num, XSIGMA_MAX_THREADS);
     m_number_of_threads = num;
 }
 
@@ -199,11 +196,9 @@ void multi_threader::set_multiple_method(int index, thread_function_type f, void
         // Error: Can't set method with index >= number_of_threads
         return;
     }
-    else
-    {
-        m_multiple_method[index] = f;
-        m_multiple_data[index]   = data;
-    }
+
+    m_multiple_method[index] = f;
+    m_multiple_data[index]   = data;
 }
 
 // Execute the method set as the single_method on number_of_threads threads.
@@ -211,29 +206,29 @@ void multi_threader::single_method_execute()
 {
     int thread_loop = 0;
 
-#ifdef XSIGMA_USE_WIN32_THREADS
+#if XSIGMA_USE_WIN32_THREADS
     DWORD  threadId;
     HANDLE process_id[XSIGMA_MAX_THREADS] = {};
 #endif
 
-#ifdef XSIGMA_USE_PTHREADS
-    pthread_t process_id[XSIGMA_MAX_THREADS] = {};
+#if XSIGMA_USE_PTHREADS
+    pthread_t process_id[XSIGMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
 #endif
 
-    if (!m_single_method)
+    if (m_single_method == nullptr)
     {
         // Error: No single method set!
         return;
     }
 
     // obey the global maximum number of threads limit
-    if (g_multi_threader_global_maximum_number_of_threads &&
+    if ((g_multi_threader_global_maximum_number_of_threads != 0) &&
         m_number_of_threads > g_multi_threader_global_maximum_number_of_threads)
     {
         m_number_of_threads = g_multi_threader_global_maximum_number_of_threads;
     }
 
-#ifdef XSIGMA_USE_WIN32_THREADS
+#if XSIGMA_USE_WIN32_THREADS
     // Using CreateThread on Windows
     //
     // We want to use CreateThread to start m_number_of_threads - 1
@@ -247,11 +242,11 @@ void multi_threader::single_method_execute()
     {
         m_thread_info_array[thread_loop].user_data         = m_single_data;
         m_thread_info_array[thread_loop].number_of_threads = m_number_of_threads;
-        process_id[thread_loop]                            = CreateThread(
+        process_id[thread_loop]                            = CreateThread(  // NOLINT
             nullptr,
             0,
             m_single_method,
-            ((void*)(&m_thread_info_array[thread_loop])),
+            static_cast<void*>(&m_thread_info_array[thread_loop]),
             0,
             &threadId);
         if (process_id[thread_loop] == nullptr)
@@ -263,23 +258,23 @@ void multi_threader::single_method_execute()
     // Now, the parent thread calls m_single_method() itself
     m_thread_info_array[0].user_data         = m_single_data;
     m_thread_info_array[0].number_of_threads = m_number_of_threads;
-    m_single_method((void*)(&m_thread_info_array[0]));
+    m_single_method(static_cast<void*>(&m_thread_info_array[0]));
 
     // The parent thread has finished m_single_method() - so now it
     // waits for each of the other processes to exit
     for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
     {
-        WaitForSingleObject(process_id[thread_loop], INFINITE);
+        WaitForSingleObject(process_id[thread_loop], INFINITE);  // NOLINT
     }
 
     // close the threads
     for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
     {
-        CloseHandle(process_id[thread_loop]);
+        CloseHandle(process_id[thread_loop]);  // NOLINT
     }
 #endif
 
-#ifdef XSIGMA_USE_PTHREADS
+#if XSIGMA_USE_PTHREADS
     // Using POSIX threads
     //
     // We want to use pthread_create to start m_number_of_threads-1 additional
@@ -302,11 +297,11 @@ void multi_threader::single_method_execute()
         m_thread_info_array[thread_loop].user_data         = m_single_data;
         m_thread_info_array[thread_loop].number_of_threads = m_number_of_threads;
 
-        int threadError = pthread_create(
+        const int threadError = pthread_create(
             &(process_id[thread_loop]),
             &attr,
             reinterpret_cast<extern_c_thread_function_type>(m_single_method),
-            ((void*)(&m_thread_info_array[thread_loop])));
+            static_cast<void*>(&m_thread_info_array[thread_loop]));
         if (threadError != 0)
         {
             // Error: Unable to create a thread
@@ -316,7 +311,7 @@ void multi_threader::single_method_execute()
     // Now, the parent thread calls m_single_method() itself
     m_thread_info_array[0].user_data         = m_single_data;
     m_thread_info_array[0].number_of_threads = m_number_of_threads;
-    m_single_method((void*)(&m_thread_info_array[0]));
+    m_single_method(static_cast<void*>(&m_thread_info_array[0]));
 
     // The parent thread has finished m_single_method() - so now it
     // waits for each of the other processes to exit
@@ -326,13 +321,13 @@ void multi_threader::single_method_execute()
     }
 #endif
 
-#ifndef XSIGMA_USE_WIN32_THREADS
-#ifndef XSIGMA_USE_PTHREADS
+#if !XSIGMA_USE_WIN32_THREADS
+#if !XSIGMA_USE_PTHREADS
     (void)thread_loop;
     // There is no multi threading, so there is only one thread.
     m_thread_info_array[0].user_data         = m_single_data;
     m_thread_info_array[0].number_of_threads = m_number_of_threads;
-    m_single_method((void*)(&m_thread_info_array[0]));
+    m_single_method(static_cast<void*>(&m_thread_info_array[0]));
 #endif
 #endif
 }
@@ -341,17 +336,17 @@ void multi_threader::multiple_method_execute()
 {
     int thread_loop;
 
-#ifdef XSIGMA_USE_WIN32_THREADS
+#if XSIGMA_USE_WIN32_THREADS
     DWORD  threadId;
     HANDLE process_id[XSIGMA_MAX_THREADS] = {};
 #endif
 
-#ifdef XSIGMA_USE_PTHREADS
-    pthread_t process_id[XSIGMA_MAX_THREADS] = {};
+#if XSIGMA_USE_PTHREADS
+    pthread_t process_id[XSIGMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
 #endif
 
     // obey the global maximum number of threads limit
-    if (g_multi_threader_global_maximum_number_of_threads &&
+    if ((g_multi_threader_global_maximum_number_of_threads != 0) &&
         m_number_of_threads > g_multi_threader_global_maximum_number_of_threads)
     {
         m_number_of_threads = g_multi_threader_global_maximum_number_of_threads;
@@ -366,17 +361,17 @@ void multi_threader::multiple_method_execute()
         }
     }
 
-#ifdef XSIGMA_USE_WIN32_THREADS
+#if XSIGMA_USE_WIN32_THREADS
     // Using CreateThread on Windows
     for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
     {
         m_thread_info_array[thread_loop].user_data         = m_multiple_data[thread_loop];
         m_thread_info_array[thread_loop].number_of_threads = m_number_of_threads;
-        process_id[thread_loop]                            = CreateThread(
+        process_id[thread_loop]                            = CreateThread(  // NOLINT
             nullptr,
             0,
             m_multiple_method[thread_loop],
-            ((void*)(&m_thread_info_array[thread_loop])),
+            static_cast<void*>(&m_thread_info_array[thread_loop]),
             0,
             &threadId);
         if (process_id[thread_loop] == nullptr)
@@ -388,23 +383,23 @@ void multi_threader::multiple_method_execute()
     // Now, the parent thread calls the last method itself
     m_thread_info_array[0].user_data         = m_multiple_data[0];
     m_thread_info_array[0].number_of_threads = m_number_of_threads;
-    (m_multiple_method[0])((void*)(&m_thread_info_array[0]));
+    (m_multiple_method[0])(static_cast<void*>(&m_thread_info_array[0]));
 
     // The parent thread has finished its method - so now it
     // waits for each of the other threads to exit
     for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
     {
-        WaitForSingleObject(process_id[thread_loop], INFINITE);
+        WaitForSingleObject(process_id[thread_loop], INFINITE);  // NOLINT
     }
 
     // close the threads
     for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
     {
-        CloseHandle(process_id[thread_loop]);
+        CloseHandle(process_id[thread_loop]);  // NOLINT
     }
 #endif
 
-#ifdef XSIGMA_USE_PTHREADS
+#if XSIGMA_USE_PTHREADS
     // Using POSIX threads
     pthread_attr_t attr;
 
@@ -421,13 +416,13 @@ void multi_threader::multiple_method_execute()
             &(process_id[thread_loop]),
             &attr,
             reinterpret_cast<extern_c_thread_function_type>(m_multiple_method[thread_loop]),
-            ((void*)(&m_thread_info_array[thread_loop])));
+            static_cast<void*>(&m_thread_info_array[thread_loop]));
     }
 
     // Now, the parent thread calls the last method itself
     m_thread_info_array[0].user_data         = m_multiple_data[0];
     m_thread_info_array[0].number_of_threads = m_number_of_threads;
-    (m_multiple_method[0])((void*)(&m_thread_info_array[0]));
+    (m_multiple_method[0])(static_cast<void*>(&m_thread_info_array[0]));
 
     // The parent thread has finished its method - so now it
     // waits for each of the other processes to exit
@@ -437,12 +432,12 @@ void multi_threader::multiple_method_execute()
     }
 #endif
 
-#ifndef XSIGMA_USE_WIN32_THREADS
-#ifndef XSIGMA_USE_PTHREADS
+#if !XSIGMA_USE_WIN32_THREADS
+#if !XSIGMA_USE_PTHREADS
     // There is no multi threading, so there is only one thread.
     m_thread_info_array[0].user_data         = m_multiple_data[0];
     m_thread_info_array[0].number_of_threads = m_number_of_threads;
-    (m_multiple_method[0])((void*)(&m_thread_info_array[0]));
+    (m_multiple_method[0])(static_cast<void*>(&m_thread_info_array[0]));
 #endif
 #endif
 }
@@ -457,7 +452,7 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
         {
             m_spawned_thread_active_flag_lock[id] = std::make_unique<std::mutex>();
         }
-        std::lock_guard<std::mutex> lockGuard(*m_spawned_thread_active_flag_lock[id]);
+        const std::scoped_lock lockGuard(*m_spawned_thread_active_flag_lock[id]);
         if (m_spawned_thread_active_flag[id] == 0)
         {
             // We've got a usable thread id, so grab it
@@ -475,21 +470,27 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
     m_spawned_thread_info_array[id].user_data         = userdata;
     m_spawned_thread_info_array[id].number_of_threads = 1;
     m_spawned_thread_info_array[id].active_flag       = &m_spawned_thread_active_flag[id];
-    m_spawned_thread_info_array[id].active_flag_lock  = m_spawned_thread_active_flag_lock[id];
+    m_spawned_thread_info_array[id].active_flag_lock  = m_spawned_thread_active_flag_lock[id].get();
 
-#ifdef XSIGMA_USE_WIN32_THREADS
+#if XSIGMA_USE_WIN32_THREADS
     // Using CreateThread on Windows
     //
-    DWORD threadId;
-    m_spawned_thread_process_id[id] =
-        CreateThread(nullptr, 0, f, ((void*)(&m_spawned_thread_info_array[id])), 0, &threadId);
+    DWORD threadId;                    // NOLINT
+    m_spawned_thread_process_id[id] =  // NOLINT
+        CreateThread(
+            nullptr,
+            0,
+            f,
+            static_cast<void*>(&m_spawned_thread_info_array[id]),
+            0,
+            &threadId);  // NOLINT
     if (m_spawned_thread_process_id[id] == nullptr)
     {
         // Error in thread creation !!!
     }
 #endif
 
-#ifdef XSIGMA_USE_PTHREADS
+#if XSIGMA_USE_PTHREADS
     // Using POSIX threads
     //
     pthread_attr_t attr;
@@ -502,12 +503,12 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
         &(m_spawned_thread_process_id[id]),
         &attr,
         reinterpret_cast<extern_c_thread_function_type>(f),
-        ((void*)(&m_spawned_thread_info_array[id])));
+        static_cast<void*>(&m_spawned_thread_info_array[id]));
 
 #endif
 
-#ifndef XSIGMA_USE_WIN32_THREADS
-#ifndef XSIGMA_USE_PTHREADS
+#if !XSIGMA_USE_WIN32_THREADS
+#if !XSIGMA_USE_PTHREADS
     (void)f;
     // There is no multi threading, so there is only one thread.
     // This won't work - so give an error message.
@@ -529,7 +530,7 @@ void multi_threader::terminate_thread(int thread_id)
     }
 
     // If we don't have a lock, then this thread is definitely not active
-    if (!m_spawned_thread_active_flag[thread_id])
+    if (m_spawned_thread_active_flag[thread_id] == 0)
     {
         return;
     }
@@ -537,7 +538,7 @@ void multi_threader::terminate_thread(int thread_id)
     // If we do have a lock, use it and find out the status of the active flag
     int val = 0;
     {
-        std::lock_guard<std::mutex> lockGuard(*m_spawned_thread_active_flag_lock[thread_id]);
+        const std::scoped_lock lockGuard(*m_spawned_thread_active_flag_lock[thread_id]);
         val = m_spawned_thread_active_flag[thread_id];
     }
 
@@ -550,21 +551,21 @@ void multi_threader::terminate_thread(int thread_id)
     // OK - now we know we have an active thread - set the active flag to 0
     // to indicate to the thread that it should terminate itself
     {
-        std::lock_guard<std::mutex> lockGuard(*m_spawned_thread_active_flag_lock[thread_id]);
+        const std::scoped_lock lockGuard(*m_spawned_thread_active_flag_lock[thread_id]);
         m_spawned_thread_active_flag[thread_id] = 0;
     }
 
-#ifdef XSIGMA_USE_WIN32_THREADS
-    WaitForSingleObject(m_spawned_thread_process_id[thread_id], INFINITE);
-    CloseHandle(m_spawned_thread_process_id[thread_id]);
+#if XSIGMA_USE_WIN32_THREADS
+    WaitForSingleObject(m_spawned_thread_process_id[thread_id], INFINITE);  // NOLINT
+    CloseHandle(m_spawned_thread_process_id[thread_id]);                    // NOLINT
 #endif
 
-#ifdef XSIGMA_USE_PTHREADS
+#if XSIGMA_USE_PTHREADS
     pthread_join(m_spawned_thread_process_id[thread_id], nullptr);
 #endif
 
-#ifndef XSIGMA_USE_WIN32_THREADS
-#ifndef XSIGMA_USE_PTHREADS
+#if !XSIGMA_USE_WIN32_THREADS
+#if !XSIGMA_USE_PTHREADS
     // There is no multi threading, so there is only one thread.
     // This won't work - so give an error message.
 #endif
@@ -576,10 +577,10 @@ void multi_threader::terminate_thread(int thread_id)
 //------------------------------------------------------------------------------
 multi_threader_id_type multi_threader::get_current_thread_id()
 {
-#if defined(XSIGMA_USE_PTHREADS)
+#if XSIGMA_USE_PTHREADS
     return pthread_self();
 #elif defined(XSIGMA_USE_WIN32_THREADS)
-    return GetCurrentThreadId();
+    return GetCurrentThreadId();  // NOLINT
 #else
     // No threading implementation.  Assume all callers are in the same
     // thread.
@@ -605,7 +606,7 @@ bool multi_threader::is_thread_active(int thread_id)
     // We have a lock - use it to get the active flag value
     int val = 0;
     {
-        std::lock_guard<std::mutex> lockGuard(*m_spawned_thread_active_flag_lock[thread_id]);
+        const std::scoped_lock lockGuard(*m_spawned_thread_active_flag_lock[thread_id]);
         val = m_spawned_thread_active_flag[thread_id];
     }
 
@@ -616,7 +617,7 @@ bool multi_threader::is_thread_active(int thread_id)
 //------------------------------------------------------------------------------
 bool multi_threader::threads_equal(multi_threader_id_type t1, multi_threader_id_type t2)
 {
-#if defined(XSIGMA_USE_PTHREADS)
+#if XSIGMA_USE_PTHREADS
     return pthread_equal(t1, t2) != 0;
 #elif defined(XSIGMA_USE_WIN32_THREADS)
     return t1 == t2;

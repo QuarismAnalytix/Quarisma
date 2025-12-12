@@ -88,7 +88,10 @@ public:
     class XSIGMA_VISIBILITY shared_future_base
     {
     public:
-        shared_future_base() : m_number_of_prior_shared_futures_remaining(0), m_status(CONSTRUCTING)
+        shared_future_base()
+            : m_number_of_prior_shared_futures_remaining(0),
+              m_invoker_index(0),
+              m_status(CONSTRUCTING)
         {
         }
 

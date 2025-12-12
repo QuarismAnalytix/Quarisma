@@ -21,10 +21,19 @@
 #endif
 
 typedef void (*thread_function_type)(void*);
+
+#ifdef XSIGMA_USE_PTHREADS
+#include <pthread.h>
+typedef pthread_t thread_process_id_type;
+typedef pthread_t multi_threader_id_type;
+#elif defined(XSIGMA_USE_WIN32_THREADS)
+#include <windows.h>
+typedef HANDLE thread_process_id_type;
+typedef DWORD  multi_threader_id_type;
+#else
 typedef int thread_process_id_type;
-// #define XSIGMA_THREAD_RETURN_VALUE
-// #define XSIGMA_THREAD_RETURN_TYPE void
 typedef int multi_threader_id_type;
+#endif
 
 class XSIGMA_VISIBILITY multi_threader
 {

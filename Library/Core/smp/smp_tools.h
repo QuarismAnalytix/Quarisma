@@ -33,9 +33,11 @@ namespace smp
 
 #if XSIGMA_HAS_OPENMP
 // Static storage for OpenMP threadprivate
-// Each thread gets its own copy automatically
-thread_local unsigned char smp_tools_functor_initialized = 0;
-#pragma omp                threadprivate(smp_tools_functor_initialized)
+// Each thread gets its own copy automatically via OpenMP's threadprivate pragma.
+// NOTE: Do NOT use 'thread_local' with OpenMP's threadprivate pragma - they are incompatible.
+// OpenMP's threadprivate pragma provides thread-local storage for OpenMP parallel regions.
+unsigned char smp_tools_functor_initialized = 0;
+#pragma omp   threadprivate(smp_tools_functor_initialized)
 #endif
 
 template <typename T>
@@ -261,7 +263,7 @@ public:
         config() = default;
         config(int max_num_threads) : max_number_of_threads_(max_num_threads) {}
         config(bool nested) : nested_parallelism_(nested) {}
-        config(int max_num_threads, std::string backend_name, bool nested)
+        config(int max_num_threads, const std::string& backend_name, bool nested)
             : max_number_of_threads_(max_num_threads), nested_parallelism_(nested)
         {
         }
