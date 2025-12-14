@@ -1,5 +1,25 @@
-// SPDX-FileCopyrightText: Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * XSigma: High-Performance Quantitative Library
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
+ *
+ * This file is part of XSigma and is licensed under a dual-license model:
+ *
+ *   - Open-source License (GPLv3):
+ *       Free for personal, academic, and research use under the terms of
+ *       the GNU General Public License v3.0 or later.
+ *
+ *   - Commercial License:
+ *       A commercial license is required for proprietary, closed-source,
+ *       or SaaS usage. Contact us to obtain a commercial agreement.
+ *
+ * Contact: licensing@xsigma.co.uk
+ * Website: https://www.xsigma.co.uk
+ *
+ * Portions of this code are based on VTK (Visualization Toolkit):
+ *   Licensed under BSD-3-Clause
+ */
+
 /**
  * @class smp_thread_pool
  * @brief A thread pool implementation using std::thread
@@ -83,7 +103,7 @@ public:
 
         proxy(std::unique_ptr<proxy_data>&& data);
 
-        std::unique_ptr<proxy_data> m_data;
+        std::unique_ptr<proxy_data> data_;
     };
 
     XSIGMA_API smp_thread_pool();
@@ -133,10 +153,10 @@ private:
     void        fill_threads_for_nested_proxy(proxy_data* proxy, std::size_t max_count);
     std::size_t get_next_thread_id() noexcept;
 
-    std::atomic<bool>                         m_initialized{};
-    std::atomic<bool>                         m_joining{};
-    std::vector<std::unique_ptr<thread_data>> m_threads;  // Thread pool, fixed size
-    std::atomic<std::size_t>                  m_next_proxy_thread_id{1};
+    std::atomic<bool>                         initialized_{};
+    std::atomic<bool>                         joining_{};
+    std::vector<std::unique_ptr<thread_data>> threads_;  // Thread pool, fixed size
+    std::atomic<std::size_t>                  next_proxy_thread_id_{1};
 };
 
 }  // namespace smp

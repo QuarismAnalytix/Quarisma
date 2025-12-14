@@ -163,10 +163,10 @@ When multiple feature flags are used, they are concatenated:
 
 | Flag | CMake Variable | Description | Default |
 |------|----------------|-------------|---------|
-| `ccache` | `XSIGMA_CACHE_TYPE` | Use ccache compiler cache | - |
-| `sccache` | `XSIGMA_CACHE_TYPE` | Use sccache distributed cache | - |
-| `buildcache` | `XSIGMA_CACHE_TYPE` | Use buildcache | - |
-| `none` | `XSIGMA_CACHE_TYPE` | Disable caching | - |
+| `ccache` | `XSIGMA_CACHE_BACKEND` | Use ccache compiler cache | - |
+| `sccache` | `XSIGMA_CACHE_BACKEND` | Use sccache distributed cache | - |
+| `buildcache` | `XSIGMA_CACHE_BACKEND` | Use buildcache | - |
+| `none` | `XSIGMA_CACHE_BACKEND` | Disable caching | - |
 
 ### C++ Standard Flags
 

@@ -694,7 +694,7 @@ class XsigmaFlags:
             "cppcheck": "XSIGMA_ENABLE_CPPCHECK",
             "spell": "XSIGMA_ENABLE_SPELL",
             "fix": "XSIGMA_ENABLE_FIX",
-            "cache_type": "XSIGMA_CACHE_TYPE",
+            "cache_type": "XSIGMA_CACHE_BACKEND",
             "enzyme": "XSIGMA_ENABLE_ENZYME",
             "smp_backend": "XSIGMA_SMP_BACKEND",
             # Non-CMake flags (for internal use, not passed to CMake)

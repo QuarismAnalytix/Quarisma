@@ -1,5 +1,26 @@
-// SPDX-FileCopyrightText: Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * XSigma: High-Performance Quantitative Library
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
+ *
+ * This file is part of XSigma and is licensed under a dual-license model:
+ *
+ *   - Open-source License (GPLv3):
+ *       Free for personal, academic, and research use under the terms of
+ *       the GNU General Public License v3.0 or later.
+ *
+ *   - Commercial License:
+ *       A commercial license is required for proprietary, closed-source,
+ *       or SaaS usage. Contact us to obtain a commercial agreement.
+ *
+ * Contact: licensing@xsigma.co.uk
+ * Website: https://www.xsigma.co.uk
+ *
+ * Portions of this code are based on VTK (Visualization Toolkit):
+
+ *   Licensed under BSD-3-Clause
+ */
+
 /**
  * @class threaded_callback_queue
  * @brief simple threaded callback queue
@@ -20,6 +41,7 @@
 #ifndef THREADED_CALLBACK_QUEUE_H
 #define THREADED_CALLBACK_QUEUE_H
 
+#include <algorithm>           // For any_of
 #include <array>               // For array
 #include <atomic>              // For atomic_bool
 #include <cassert>             // For assert
@@ -107,10 +129,7 @@ public:
                 return;
             }
             std::unique_lock<std::mutex> lock(m_mutex);
-            if (m_status != READY)
-            {
-                m_condition_variable.wait(lock, [this] { return m_status == READY; });
-            }
+            m_condition_variable.wait(lock, [this] { return m_status == READY; });
         }
 
         friend class threaded_callback_queue;
@@ -289,7 +308,7 @@ private:
     std::condition_variable                m_condition_variable;
     std::atomic_bool                       m_destroying{false};
     std::atomic_int                        m_number_of_threads;
-    std::vector<std::thread>               m_threads;
+    std::vector<std::thread>               threads_;
     std::unordered_map<std::thread::id, std::shared_ptr<std::atomic_int>> m_thread_id_to_index;
     std::unordered_set<shared_future_base_pointer>                        m_control_futures;
 
@@ -667,14 +686,10 @@ void threaded_callback_queue::handle_dependent_invoker(
 template <class SharedFutureContainerT>
 bool threaded_callback_queue::must_wait(SharedFutureContainerT&& prior_shared_futures)
 {
-    for (const auto& prior : prior_shared_futures)
-    {
-        if (prior->m_status.load(std::memory_order_acquire) != READY)
-        {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(
+        prior_shared_futures.begin(),
+        prior_shared_futures.end(),
+        [](const auto& prior) { return prior->m_status.load(std::memory_order_acquire) != READY; });
 }
 
 //-----------------------------------------------------------------------------
@@ -789,7 +804,7 @@ void threaded_callback_queue::push_control(FT&& f, ArgsT&&... args)
 
     if (!this->must_wait(local_control_futures))
     {
-        if (m_threads.empty())
+        if (threads_.empty())
         {
             invoker_ptr->m_status.store(RUNNING, std::memory_order_relaxed);
             (*invoker_ptr)();

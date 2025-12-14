@@ -1,5 +1,25 @@
-// SPDX-FileCopyrightText: Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * XSigma: High-Performance Quantitative Library
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
+ *
+ * This file is part of XSigma and is licensed under a dual-license model:
+ *
+ *   - Open-source License (GPLv3):
+ *       Free for personal, academic, and research use under the terms of
+ *       the GNU General Public License v3.0 or later.
+ *
+ *   - Commercial License:
+ *       A commercial license is required for proprietary, closed-source,
+ *       or SaaS usage. Contact us to obtain a commercial agreement.
+ *
+ * Contact: licensing@xsigma.co.uk
+ * Website: https://www.xsigma.co.uk
+ *
+ * Portions of this code are based on VTK (Visualization Toolkit):
+
+ *   Licensed under BSD-3-Clause
+ */
 
 #ifndef OPENMP_SMP_TOOLS_IMPL_H
 #define OPENMP_SMP_TOOLS_IMPL_H
@@ -72,22 +92,22 @@ void smp_tools_impl<backend_type::OpenMP>::parallel_for(
     {
         // /!\ This behaviour should be changed if we want more control on nested
         // (e.g only the 2 first nested For are in parallel)
-        bool from_parallel_code = m_is_parallel.exchange(true);
+        bool from_parallel_code = is_parallel_.exchange(true);
 
         smp_tools_impl_for_openmp(
-            first, last, grain, execute_functor_openmp<FunctorInternal>, &fi, m_nested_activated);
+            first, last, grain, execute_functor_openmp<FunctorInternal>, &fi, nested_activated_);
 
-        // Atomic contortion to achieve m_is_parallel &= from_parallel_code.
+        // Atomic contortion to achieve is_parallel_ &= from_parallel_code.
         // This compare&exchange basically boils down to:
-        // if (m_is_parallel == true_flag)
-        //   m_is_parallel = from_parallel_code;
+        // if (is_parallel_ == true_flag)
+        //   is_parallel_ = from_parallel_code;
         // else
-        //   true_flag = m_is_parallel;
-        // Which either leaves m_is_parallel as false or sets it to from_parallel_code (i.e. &=).
+        //   true_flag = is_parallel_;
+        // Which either leaves is_parallel_ as false or sets it to from_parallel_code (i.e. &=).
         // Note that the return value of compare_exchange_weak() is not needed,
         // and that no looping is necessary.
         bool true_flag = true;
-        m_is_parallel.compare_exchange_weak(true_flag, from_parallel_code);
+        is_parallel_.compare_exchange_weak(true_flag, from_parallel_code);
     }
 }
 

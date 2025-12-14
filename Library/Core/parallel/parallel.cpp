@@ -567,7 +567,7 @@ bool in_parallel_region()
 #if XSIGMA_HAS_OPENMP
     // OpenMP implementation
 #ifdef _OPENMP
-    return omp_in_parallel();
+    return omp_in_parallel()!=0;
 #else
     return false;
 #endif

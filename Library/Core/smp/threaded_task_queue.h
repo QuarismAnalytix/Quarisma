@@ -1,5 +1,26 @@
-// SPDX-FileCopyrightText: Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * XSigma: High-Performance Quantitative Library
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
+ *
+ * This file is part of XSigma and is licensed under a dual-license model:
+ *
+ *   - Open-source License (GPLv3):
+ *       Free for personal, academic, and research use under the terms of
+ *       the GNU General Public License v3.0 or later.
+ *
+ *   - Commercial License:
+ *       A commercial license is required for proprietary, closed-source,
+ *       or SaaS usage. Contact us to obtain a commercial agreement.
+ *
+ * Contact: licensing@xsigma.co.uk
+ * Website: https://www.xsigma.co.uk
+ *
+ * Portions of this code are based on VTK (Visualization Toolkit):
+
+ *   Licensed under BSD-3-Clause
+ */
+
 /**
  * @class threaded_task_queue
  * @brief simple threaded task queue
@@ -110,7 +131,7 @@ private:
     std::unique_ptr<threaded_task_queue_internals::task_queue<R>>   m_tasks;
     std::unique_ptr<threaded_task_queue_internals::result_queue<R>> m_results;
     int                                                             m_number_of_threads;
-    std::unique_ptr<std::thread[]>                                  m_threads;
+    std::unique_ptr<std::thread[]>                                  threads_;
 };
 
 template <typename... Args>
@@ -150,7 +171,7 @@ private:
     std::mutex                                                       m_next_result_id_mutex;
     std::atomic<std::uint64_t>                                       m_next_result_id;
     int                                                              m_number_of_threads;
-    std::unique_ptr<std::thread[]>                                   m_threads;
+    std::unique_ptr<std::thread[]>                                   threads_;
 };
 
 // ========== Template Implementation ==========
@@ -310,7 +331,7 @@ threaded_task_queue<R, Args...>::threaded_task_queue(
       m_number_of_threads(
           max_concurrent_tasks <= 0 ? multi_threader::get_global_default_number_of_threads()
                                     : max_concurrent_tasks),
-      m_threads{new std::thread[m_number_of_threads]}
+      threads_{new std::thread[m_number_of_threads]}
 {
     auto f = [this](int thread_id)
     {
@@ -332,7 +353,7 @@ threaded_task_queue<R, Args...>::threaded_task_queue(
 
     for (int cc = 0; cc < m_number_of_threads; ++cc)
     {
-        m_threads[cc] = std::thread(f, cc);
+        threads_[cc] = std::thread(f, cc);
     }
 }
 
@@ -343,7 +364,7 @@ threaded_task_queue<R, Args...>::~threaded_task_queue()
     m_tasks->mark_done();
     for (int cc = 0; cc < m_number_of_threads; ++cc)
     {
-        m_threads[cc].join();
+        threads_[cc].join();
     }
 }
 
@@ -410,7 +431,7 @@ threaded_task_queue<void, Args...>::threaded_task_queue(
       m_number_of_threads(
           max_concurrent_tasks <= 0 ? multi_threader::get_global_default_number_of_threads()
                                     : max_concurrent_tasks),
-      m_threads{new std::thread[m_number_of_threads]}
+      threads_{new std::thread[m_number_of_threads]}
 {
     auto f = [this](int thread_id)
     {
@@ -439,7 +460,7 @@ threaded_task_queue<void, Args...>::threaded_task_queue(
 
     for (int cc = 0; cc < m_number_of_threads; ++cc)
     {
-        m_threads[cc] = std::thread(f, cc);
+        threads_[cc] = std::thread(f, cc);
     }
 }
 
@@ -450,7 +471,7 @@ threaded_task_queue<void, Args...>::~threaded_task_queue()
     m_tasks->mark_done();
     for (int cc = 0; cc < m_number_of_threads; ++cc)
     {
-        m_threads[cc].join();
+        threads_[cc].join();
     }
 }
 

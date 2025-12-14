@@ -26,7 +26,8 @@
       "Bash(cmake:*)",
       "Bash(./bin/CoreCxxTests:*)",
       "Bash(timeout 60 ./bin/CoreCxxTests:*)",
-      "Bash(/Users/toufikbellaj/XSigma/build_ninja/bin/CoreCxxTests:*)"
+      "Bash(/Users/toufikbellaj/XSigma/build_ninja/bin/CoreCxxTests:*)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []

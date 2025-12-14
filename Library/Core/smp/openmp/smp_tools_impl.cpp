@@ -1,5 +1,25 @@
-// SPDX-FileCopyrightText: Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * XSigma: High-Performance Quantitative Library
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
+ *
+ * This file is part of XSigma and is licensed under a dual-license model:
+ *
+ *   - Open-source License (GPLv3):
+ *       Free for personal, academic, and research use under the terms of
+ *       the GNU General Public License v3.0 or later.
+ *
+ *   - Commercial License:
+ *       A commercial license is required for proprietary, closed-source,
+ *       or SaaS usage. Contact us to obtain a commercial agreement.
+ *
+ * Contact: licensing@xsigma.co.uk
+ * Website: https://www.xsigma.co.uk
+ *
+ * Portions of this code are based on VTK (Visualization Toolkit):
+
+ *   Licensed under BSD-3-Clause
+ */
 
 #include "smp/common/smp_tools_impl.h"
 
@@ -27,7 +47,7 @@ static std::unique_ptr<std::stack<int>> thread_id_stack;
 // Must NOT be initialized. Default initialization to zero is necessary.
 // NOTE: This variable must NOT be static - it needs to be visible across
 // translation units for proper initialization/deinitialization tracking.
-unsigned int smp_tools_impl_openmp_initialize_count;
+static unsigned int smp_tools_impl_openmp_initialize_count;
 
 //------------------------------------------------------------------------------
 smp_tools_impl_openmp_initialize::smp_tools_impl_openmp_initialize()

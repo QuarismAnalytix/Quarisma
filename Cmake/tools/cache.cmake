@@ -30,17 +30,17 @@ option(XSIGMA_ENABLE_CACHE "Enable compiler caching and faster linker for faster
 mark_as_advanced(XSIGMA_ENABLE_CACHE)
 
 # Cache Type Configuration Selects which compiler cache to use: none, ccache, sccache, or buildcache
-set(XSIGMA_CACHE_TYPE "none"
+set(XSIGMA_CACHE_BACKEND "none"
     CACHE STRING "Compiler cache type to use. Options: none, ccache, sccache, buildcache"
 )
-set_property(CACHE XSIGMA_CACHE_TYPE PROPERTY STRINGS none ccache sccache buildcache)
-mark_as_advanced(XSIGMA_CACHE_TYPE)
+set_property(CACHE XSIGMA_CACHE_BACKEND PROPERTY STRINGS none ccache sccache buildcache)
+mark_as_advanced(XSIGMA_CACHE_BACKEND)
 
 # Validate cache type
-if(NOT XSIGMA_CACHE_TYPE MATCHES "^(none|ccache|sccache|buildcache)$")
+if(NOT XSIGMA_CACHE_BACKEND MATCHES "^(none|ccache|sccache|buildcache)$")
   message(
     FATAL_ERROR
-      "Invalid XSIGMA_CACHE_TYPE: ${XSIGMA_CACHE_TYPE}. Valid options are: none, ccache, sccache, buildcache"
+      "Invalid XSIGMA_CACHE_BACKEND: ${XSIGMA_CACHE_BACKEND}. Valid options are: none, ccache, sccache, buildcache"
   )
 endif()
 
@@ -49,7 +49,7 @@ if(NOT XSIGMA_ENABLE_CACHE)
   return()
 endif()
 
-message(STATUS "Configuring build speed optimizations with cache type: ${XSIGMA_CACHE_TYPE}")
+message(STATUS "Configuring build speed optimizations with cache type: ${XSIGMA_CACHE_BACKEND}")
 
 # Note: When LTO is enabled, faster linkers (especially gold) may run out of memory during the
 # linking phase. In such cases, it's better to use the default linker. This is a known limitation of
@@ -63,7 +63,7 @@ message(STATUS "Configuring build speed optimizations with cache type: ${XSIGMA_
 # all compilation commands, including those for third-party dependencies. This is safe because
 # caches only cache compilation results and don't affect the actual compilation flags or behavior.
 set(XSIGMA_CACHE_PROGRAM "none")
-if(XSIGMA_CACHE_TYPE STREQUAL "ccache")
+if(XSIGMA_CACHE_BACKEND STREQUAL "ccache")
   find_program(CCACHE_PROGRAM ccache)
   set(XSIGMA_CACHE_PROGRAM ${CCACHE_PROGRAM})
   if(CCACHE_PROGRAM)
@@ -78,7 +78,7 @@ if(XSIGMA_CACHE_TYPE STREQUAL "ccache")
     message(WARNING "ccache not found - compiler caching disabled")
   endif()
 
-elseif(XSIGMA_CACHE_TYPE STREQUAL "sccache")
+elseif(XSIGMA_CACHE_BACKEND STREQUAL "sccache")
   find_program(SCCACHE_PROGRAM sccache)
   set(XSIGMA_CACHE_PROGRAM ${SCCACHE_PROGRAM})
   if(SCCACHE_PROGRAM)
@@ -93,7 +93,7 @@ elseif(XSIGMA_CACHE_TYPE STREQUAL "sccache")
     message(WARNING "sccache not found - compiler caching disabled")
   endif()
 
-elseif(XSIGMA_CACHE_TYPE STREQUAL "buildcache")
+elseif(XSIGMA_CACHE_BACKEND STREQUAL "buildcache")
   find_program(BUILDCACHE_PROGRAM buildcache)
   set(XSIGMA_CACHE_PROGRAM ${BUILDCACHE_PROGRAM})
   if(BUILDCACHE_PROGRAM)
@@ -110,7 +110,7 @@ elseif(XSIGMA_CACHE_TYPE STREQUAL "buildcache")
     message(WARNING "buildcache not found - compiler caching disabled")
   endif()
 
-elseif(XSIGMA_CACHE_TYPE STREQUAL "none")
+elseif(XSIGMA_CACHE_BACKEND STREQUAL "none")
   message(STATUS "No compiler cache selected")
 endif()
 

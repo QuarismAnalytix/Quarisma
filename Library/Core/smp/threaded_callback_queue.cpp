@@ -1,5 +1,25 @@
-// SPDX-FileCopyrightText: Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * XSigma: High-Performance Quantitative Library
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
+ *
+ * This file is part of XSigma and is licensed under a dual-license model:
+ *
+ *   - Open-source License (GPLv3):
+ *       Free for personal, academic, and research use under the terms of
+ *       the GNU General Public License v3.0 or later.
+ *
+ *   - Commercial License:
+ *       A commercial license is required for proprietary, closed-source,
+ *       or SaaS usage. Contact us to obtain a commercial agreement.
+ *
+ * Contact: licensing@xsigma.co.uk
+ * Website: https://www.xsigma.co.uk
+ *
+ * Portions of this code are based on VTK (Visualization Toolkit):
+
+ *   Licensed under BSD-3-Clause
+ */
 
 #include "threaded_callback_queue.h"
 
@@ -114,7 +134,7 @@ void threaded_callback_queue::set_number_of_threads(int number_of_threads)
     this->push_control(
         [this, number_of_threads]()
         {
-            const int size = static_cast<int>(m_threads.size());
+            const int size = static_cast<int>(threads_.size());
 
             const std::scoped_lock destroy_lock(m_destroy_mutex);
             if (m_destroying)
@@ -130,12 +150,12 @@ void threaded_callback_queue::set_number_of_threads(int number_of_threads)
                 m_number_of_threads = number_of_threads;
 
                 std::generate_n(
-                    std::back_inserter(m_threads),
+                    std::back_inserter(threads_),
                     number_of_threads - size,
                     [this]
                     {
                         auto thread_index =
-                            std::make_shared<std::atomic_int>(static_cast<int>(m_threads.size()));
+                            std::make_shared<std::atomic_int>(static_cast<int>(threads_.size()));
                         auto thread = std::thread(thread_worker(this, thread_index));
                         {
                             const std::scoped_lock thread_id_lock(m_thread_id_to_index_mutex);
@@ -153,10 +173,10 @@ void threaded_callback_queue::set_number_of_threads(int number_of_threads)
                     if (thread_index && thread_index >= number_of_threads)
                     {
                         std::atomic_int& thread0_index =
-                            *m_thread_id_to_index.at(m_threads[0].get_id());
+                            *m_thread_id_to_index.at(threads_[0].get_id());
                         lock.unlock();
 
-                        std::swap(m_threads[thread_index], m_threads[0]);
+                        std::swap(threads_[thread_index], threads_[0]);
 
                         const int tmp = thread0_index;
                         thread0_index.exchange(thread_index);
@@ -171,7 +191,7 @@ void threaded_callback_queue::set_number_of_threads(int number_of_threads)
                 m_condition_variable.notify_all();
                 this->sync(m_number_of_threads);
 
-                m_threads.resize(number_of_threads);
+                threads_.resize(number_of_threads);
             }
         });
 }
@@ -180,7 +200,7 @@ void threaded_callback_queue::set_number_of_threads(int number_of_threads)
 void threaded_callback_queue::sync(int start_id)
 {
     std::for_each(
-        m_threads.begin() + start_id, m_threads.end(), [](std::thread& thread) { thread.join(); });
+        threads_.begin() + start_id, threads_.end(), [](std::thread& thread) { thread.join(); });
 }
 
 //-----------------------------------------------------------------------------

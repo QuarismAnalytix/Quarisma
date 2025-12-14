@@ -1,5 +1,25 @@
-// SPDX-FileCopyrightText: Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * XSigma: High-Performance Quantitative Library
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
+ *
+ * This file is part of XSigma and is licensed under a dual-license model:
+ *
+ *   - Open-source License (GPLv3):
+ *       Free for personal, academic, and research use under the terms of
+ *       the GNU General Public License v3.0 or later.
+ *
+ *   - Commercial License:
+ *       A commercial license is required for proprietary, closed-source,
+ *       or SaaS usage. Contact us to obtain a commercial agreement.
+ *
+ * Contact: licensing@xsigma.co.uk
+ * Website: https://www.xsigma.co.uk
+ *
+ * Portions of this code are based on VTK (Visualization Toolkit):
+
+ *   Licensed under BSD-3-Clause
+ */
 
 #include "smp/common/smp_tools_impl.h"
 
@@ -31,7 +51,7 @@ namespace smp
 {
 
 static std::unique_ptr<tbb::task_arena> task_arena;
-static std::unique_ptr<std::mutex>      vtk_smp_tools_cs;
+static std::unique_ptr<std::mutex>      xsigma_smp_tools_cs;
 static std::unique_ptr<std::stack<int>> thread_id_stack;
 static std::unique_ptr<std::mutex>      thread_id_stack_lock;
 static int                              specified_num_threads_tbb;  // Default initialized to zero
@@ -48,30 +68,18 @@ smp_tools_impl_tbb_initialize::smp_tools_impl_tbb_initialize()
     if (++smp_tools_impl_tbb_initialize_count == 1)
     {
         task_arena           = std::make_unique<tbb::task_arena>();
-        vtk_smp_tools_cs     = std::make_unique<std::mutex>();
+        xsigma_smp_tools_cs  = std::make_unique<std::mutex>();
         thread_id_stack      = std::make_unique<std::stack<int>>();
         thread_id_stack_lock = std::make_unique<std::mutex>();
     }
 }
 
 //------------------------------------------------------------------------------
-smp_tools_impl_tbb_initialize::~smp_tools_impl_tbb_initialize()
-{
-    if (--smp_tools_impl_tbb_initialize_count == 0)
-    {
-        // std::unique_ptr automatically deletes the managed objects when destroyed.
-        // Explicit reset() calls are unnecessary and add function call overhead.
-        // The unique_ptrs will be destroyed when these static variables go out of scope.
-        // Removed: task_arena.reset();
-        // Removed: vtk_smp_tools_cs.reset();
-        // Removed: thread_id_stack.reset();
-        // Removed: thread_id_stack_lock.reset();
-    }
-}
+smp_tools_impl_tbb_initialize::~smp_tools_impl_tbb_initialize()=default;
 
 //------------------------------------------------------------------------------
 template <>
-smp_tools_impl<backend_type::TBB>::smp_tools_impl() : m_nested_activated(true)
+smp_tools_impl<backend_type::TBB>::smp_tools_impl() : nested_activated_(true)
 {
 }
 
@@ -79,7 +87,7 @@ smp_tools_impl<backend_type::TBB>::smp_tools_impl() : m_nested_activated(true)
 template <>
 void smp_tools_impl<backend_type::TBB>::initialize(int num_threads)
 {
-    vtk_smp_tools_cs->lock();
+    xsigma_smp_tools_cs->lock();
 
     if (num_threads == 0)
     {
@@ -110,7 +118,7 @@ void smp_tools_impl<backend_type::TBB>::initialize(int num_threads)
         specified_num_threads_tbb = num_threads;
     }
 
-    vtk_smp_tools_cs->unlock();
+    xsigma_smp_tools_cs->unlock();
 }
 
 //------------------------------------------------------------------------------
