@@ -168,22 +168,22 @@ protected:
     // An array of thread info containing a thread id
     // (0, 1, 2, .. XSIGMA_MAX_THREADS-1), the thread count, and a pointer
     // to void so that user data can be passed to each thread
-    thread_info m_thread_info_array[XSIGMA_MAX_THREADS];
+    thread_info thread_info_array_[XSIGMA_MAX_THREADS];
 
     // The methods
     thread_function_type m_single_method;
-    thread_function_type m_multiple_method[XSIGMA_MAX_THREADS];
+    thread_function_type multiple_method_[XSIGMA_MAX_THREADS];
 
     // Storage of MutexFunctions and ints used to control spawned
     // threads and the spawned thread ids
-    int                         m_spawned_thread_active_flag[XSIGMA_MAX_THREADS];
-    std::unique_ptr<std::mutex> m_spawned_thread_active_flag_lock[XSIGMA_MAX_THREADS];
-    thread_process_id_type      m_spawned_thread_process_id[XSIGMA_MAX_THREADS];
-    thread_info                 m_spawned_thread_info_array[XSIGMA_MAX_THREADS];
+    int                         spawned_thread_active_flag_[XSIGMA_MAX_THREADS];
+    std::unique_ptr<std::mutex> spawned_thread_active_flag_lock_[XSIGMA_MAX_THREADS];
+    thread_process_id_type      spawned_thread_process_id_[XSIGMA_MAX_THREADS];
+    thread_info                 spawned_thread_info_array_[XSIGMA_MAX_THREADS];
 
     // Internal storage of the data
     void* m_single_data;
-    void* m_multiple_data[XSIGMA_MAX_THREADS];
+    void* multiple_data_[XSIGMA_MAX_THREADS];
 
 private:
     multi_threader(const multi_threader&) = delete;

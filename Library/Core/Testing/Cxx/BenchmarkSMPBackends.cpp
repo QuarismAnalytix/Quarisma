@@ -136,8 +136,8 @@ inline int64_t compute_heavy_prime_check(int64_t start, int64_t end)
         if (num < 2)
             continue;
 
-        bool is_prime = true;
-        const int64_t limit = static_cast<int64_t>(std::sqrt(static_cast<double>(num))) + 1;
+        bool          is_prime = true;
+        const int64_t limit    = static_cast<int64_t>(std::sqrt(static_cast<double>(num))) + 1;
 
         for (int64_t div = 2; div < limit; ++div)
         {
@@ -167,8 +167,8 @@ inline int64_t compute_heavy_prime_check(int64_t start, int64_t end)
  */
 static void BM_ParallelFor_Integration(benchmark::State& state)
 {
-    const int64_t work_size  = state.range(0);
-    const int64_t grain_size = state.range(1);
+    const int64_t work_size   = state.range(0);
+    const int64_t grain_size  = state.range(1);
     const int     num_threads = state.range(2);
 
     // Set thread count for this benchmark
@@ -186,7 +186,8 @@ static void BM_ParallelFor_Integration(benchmark::State& state)
             grain_size,
             [&result](int64_t begin, int64_t end)
             {
-                double local_sum = benchmark_detail::compute_heavy_numerical_integration(begin, end);
+                double local_sum =
+                    benchmark_detail::compute_heavy_numerical_integration(begin, end);
                 // Atomic accumulation
                 double current = result.load(std::memory_order_relaxed);
                 while (!result.compare_exchange_weak(
@@ -201,10 +202,10 @@ static void BM_ParallelFor_Integration(benchmark::State& state)
         benchmark::DoNotOptimize(result.load(std::memory_order_acquire));
     }
 
-    const double speedup = static_cast<double>(num_threads) /
-                          (state.iterations() > 0 ? state.iterations() : 1.0);
-    state.SetLabel("Threads=" + std::to_string(num_threads) +
-                   " Speedup≈" + std::to_string(speedup));
+    const double speedup =
+        static_cast<double>(num_threads) / (state.iterations() > 0 ? state.iterations() : 1.0);
+    state.SetLabel(
+        "Threads=" + std::to_string(num_threads) + " Speedup≈" + std::to_string(speedup));
     state.SetItemsProcessed(state.iterations() * work_size);
 }
 
@@ -213,8 +214,8 @@ static void BM_ParallelFor_Integration(benchmark::State& state)
  */
 static void BM_ParallelFor_MatrixMult(benchmark::State& state)
 {
-    const int64_t work_size  = state.range(0);
-    const int64_t grain_size = state.range(1);
+    const int64_t work_size   = state.range(0);
+    const int64_t grain_size  = state.range(1);
     const int     num_threads = state.range(2);
 
     set_num_threads(num_threads);
@@ -253,8 +254,8 @@ static void BM_ParallelFor_MatrixMult(benchmark::State& state)
  */
 static void BM_ParallelFor_PrimeCheck(benchmark::State& state)
 {
-    const int64_t work_size  = state.range(0);
-    const int64_t grain_size = state.range(1);
+    const int64_t work_size   = state.range(0);
+    const int64_t grain_size  = state.range(1);
     const int     num_threads = state.range(2);
 
     set_num_threads(num_threads);
@@ -290,14 +291,14 @@ static void BM_ParallelFor_PrimeCheck(benchmark::State& state)
  */
 static void BM_ParallelReduce_Sum(benchmark::State& state)
 {
-    const int64_t work_size  = state.range(0);
-    const int64_t grain_size = state.range(1);
+    const int64_t work_size   = state.range(0);
+    const int64_t grain_size  = state.range(1);
     const int     num_threads = state.range(2);
 
     set_num_threads(num_threads);
 
-    std::vector<double> data(work_size);
-    std::mt19937_64     rng(42);
+    std::vector<double>                    data(work_size);
+    std::mt19937_64                        rng(42);
     std::uniform_real_distribution<double> dist(-1.0, 1.0);
 
     for (auto& val : data)
@@ -334,14 +335,14 @@ static void BM_ParallelReduce_Sum(benchmark::State& state)
  */
 static void BM_ParallelReduce_Max(benchmark::State& state)
 {
-    const int64_t work_size  = state.range(0);
-    const int64_t grain_size = state.range(1);
+    const int64_t work_size   = state.range(0);
+    const int64_t grain_size  = state.range(1);
     const int     num_threads = state.range(2);
 
     set_num_threads(num_threads);
 
-    std::vector<double> data(work_size);
-    std::mt19937_64     rng(42);
+    std::vector<double>                    data(work_size);
+    std::mt19937_64                        rng(42);
     std::uniform_real_distribution<double> dist(-1000.0, 1000.0);
 
     for (auto& val : data)
@@ -382,7 +383,7 @@ static void BM_ParallelReduce_Max(benchmark::State& state)
  */
 static void BM_Overhead_MinimalWork(benchmark::State& state)
 {
-    const int64_t work_size  = state.range(0);
+    const int64_t work_size   = state.range(0);
     const int     num_threads = state.range(1);
 
     set_num_threads(num_threads);
@@ -415,7 +416,7 @@ static void BM_Overhead_MinimalWork(benchmark::State& state)
  */
 static void BM_ThreadScaling_Efficiency(benchmark::State& state)
 {
-    const int64_t work_size  = 100000;
+    const int64_t work_size   = 100000;
     const int     num_threads = state.range(0);
 
     set_num_threads(num_threads);
@@ -450,7 +451,7 @@ static void BM_ThreadScaling_Efficiency(benchmark::State& state)
  */
 static void BM_SMPTools_ParallelFor(benchmark::State& state)
 {
-    const int64_t work_size  = state.range(0);
+    const int64_t work_size   = state.range(0);
     const int     num_threads = state.range(1);
 
     smp_tools::initialize(num_threads);
@@ -466,8 +467,9 @@ static void BM_SMPTools_ParallelFor(benchmark::State& state)
             work_size,
             [&result](int64_t begin, int64_t end)
             {
-                double local_sum = benchmark_detail::compute_heavy_numerical_integration(begin, end);
-                double current   = result.load(std::memory_order_relaxed);
+                double local_sum =
+                    benchmark_detail::compute_heavy_numerical_integration(begin, end);
+                double current = result.load(std::memory_order_relaxed);
                 while (!result.compare_exchange_weak(
                     current,
                     current + local_sum,
@@ -489,10 +491,10 @@ static void BM_SMPTools_ParallelFor(benchmark::State& state)
 
 // Small workload: Test overhead and fine-grained parallelism
 BENCHMARK(BM_ParallelFor_Integration)
-    ->Args({1000, 100, 1})    // Single-threaded baseline
-    ->Args({1000, 100, 2})    // 2 threads
-    ->Args({1000, 100, 4})    // 4 threads
-    ->Args({1000, 100, 8})    // 8 threads
+    ->Args({1000, 100, 1})  // Single-threaded baseline
+    ->Args({1000, 100, 2})  // 2 threads
+    ->Args({1000, 100, 4})  // 4 threads
+    ->Args({1000, 100, 8})  // 8 threads
     ->MinTime(0.5);
 
 // Medium workload: Balanced workload testing
@@ -553,13 +555,7 @@ BENCHMARK(BM_Overhead_MinimalWork)
     ->MinTime(0.5);
 
 // Thread scaling
-BENCHMARK(BM_ThreadScaling_Efficiency)
-    ->Arg(1)
-    ->Arg(2)
-    ->Arg(4)
-    ->Arg(8)
-    ->Arg(16)
-    ->MinTime(1.0);
+BENCHMARK(BM_ThreadScaling_Efficiency)->Arg(1)->Arg(2)->Arg(4)->Arg(8)->Arg(16)->MinTime(1.0);
 
 // SMP Tools API
 BENCHMARK(BM_SMPTools_ParallelFor)

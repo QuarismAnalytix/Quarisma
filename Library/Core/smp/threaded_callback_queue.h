@@ -531,6 +531,7 @@ template <class T>
 struct threaded_callback_queue::invoker_impl::dereference_impl<T, std::true_type>
 {
     using type = typename std::remove_pointer<decltype(*std::declval<T>())>::type;
+    // cppcheck-suppress constParameterReference
     static type& get(T& instance) { return *instance; }
 };
 
@@ -557,7 +558,7 @@ class threaded_callback_queue::invoker_impl::
 public:
     template <class FTT, class ObjectTT, class... ArgsTT>
     invoker_handle(FTT&& f, ObjectTT&& instance, ArgsTT&&... args)
-        : m_function(std::forward<FTT>(f)),
+        : function_(std::forward<FTT>(f)),
           m_instance(std::forward<ObjectTT>(instance)),
           m_args(std::forward<ArgsTT>(args)...)
     {
@@ -573,10 +574,10 @@ private:
     invoke_result<FT> invoke_impl(integer_sequence<Is...>)
     {
         auto& deref = dereference_impl<ObjectT>::get(m_instance);
-        return (deref.*m_function)(static_cast<arg_type<FT, Is>>(std::get<Is>(m_args))...);
+        return (deref.*function_)(static_cast<arg_type<FT, Is>>(std::get<Is>(m_args))...);
     }
 
-    FT                                               m_function;
+    FT                                               function_;
     typename std::decay<ObjectT>::type               m_instance;
     static_cast_args_tuple<args_tuple<FT>, ArgsT...> m_args;
 };
@@ -589,7 +590,7 @@ class threaded_callback_queue::invoker_impl::
 public:
     template <class FTT, class... ArgsTT>
     invoker_handle(FTT&& f, ArgsTT&&... args)
-        : m_function(std::forward<FTT>(f)), m_args(std::forward<ArgsTT>(args)...)
+        : function_(std::forward<FTT>(f)), m_args(std::forward<ArgsTT>(args)...)
     {
     }
 
@@ -602,11 +603,12 @@ private:
     template <std::size_t... Is>
     invoke_result<FT> invoke_impl(integer_sequence<Is...>)
     {
-        auto& f = dereference_impl<FT>::get(m_function);
-        return f(static_cast<arg_type<decltype(f), Is>>(std::get<Is>(m_args))...);
+        // cppcheck-suppress constVariableReference
+        auto& function = dereference_impl<FT>::get(function_);
+        return function(static_cast<arg_type<decltype(function), Is>>(std::get<Is>(m_args))...);
     }
 
-    typename std::decay<FT>::type                                                m_function;
+    typename std::decay<FT>::type                                                function_;
     static_cast_args_tuple<args_tuple<typename dereference<FT>::type>, ArgsT...> m_args;
 };
 

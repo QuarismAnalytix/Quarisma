@@ -75,7 +75,7 @@ smp_tools_impl_tbb_initialize::smp_tools_impl_tbb_initialize()
 }
 
 //------------------------------------------------------------------------------
-smp_tools_impl_tbb_initialize::~smp_tools_impl_tbb_initialize()=default;
+smp_tools_impl_tbb_initialize::~smp_tools_impl_tbb_initialize() = default;
 
 //------------------------------------------------------------------------------
 template <>

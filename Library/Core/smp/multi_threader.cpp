@@ -125,6 +125,7 @@ int multi_threader::get_global_default_number_of_threads()
 #if !XSIGMA_USE_PTHREADS
         // If we are not multithreading, the number of threads should
         // always be 1
+        // cppcheck-suppress redundantAssignment
         num = 1;
 #endif
 #endif
@@ -145,15 +146,15 @@ multi_threader::multi_threader()
 {
     for (int i = 0; i < XSIGMA_MAX_THREADS; i++)
     {
-        m_thread_info_array[i].thread_id         = i;
-        m_thread_info_array[i].active_flag       = nullptr;
-        m_thread_info_array[i].active_flag_lock  = nullptr;
-        m_multiple_method[i]                     = nullptr;
-        m_spawned_thread_active_flag[i]          = 0;
-        m_spawned_thread_active_flag_lock[i]     = nullptr;
-        m_spawned_thread_info_array[i].thread_id = i;
-        m_spawned_thread_process_id[i]           = thread_process_id_type();
-        m_multiple_data[i]                       = nullptr;
+        thread_info_array_[i].thread_id         = i;
+        thread_info_array_[i].active_flag       = nullptr;
+        thread_info_array_[i].active_flag_lock  = nullptr;
+        multiple_method_[i]                     = nullptr;
+        spawned_thread_active_flag_[i]          = 0;
+        spawned_thread_active_flag_lock_[i]     = nullptr;
+        spawned_thread_info_array_[i].thread_id = i;
+        spawned_thread_process_id_[i]           = thread_process_id_type();
+        multiple_data_[i]                       = nullptr;
     }
 
     m_single_method     = nullptr;
@@ -163,13 +164,13 @@ multi_threader::multi_threader()
 
 multi_threader::~multi_threader()
 {
-    for (auto& thread_info : m_thread_info_array)
+    for (auto& thread_info : thread_info_array_)
     {
         delete thread_info.active_flag_lock;
-        // std::unique_ptr automatically deletes the managed object when destroyed.
-        // Explicit reset() call is unnecessary and adds function call overhead.
-        // The unique_ptr will be destroyed when the array element goes out of scope.
-        // Removed: m_spawned_thread_active_flag_lock[i].reset();
+        thread_info.active_flag_lock = nullptr;
+
+        delete thread_info.active_flag;
+        thread_info.active_flag = nullptr;
     }
 }
 
@@ -218,8 +219,8 @@ void multi_threader::set_multiple_method(int index, thread_function_type f, void
         return;
     }
 
-    m_multiple_method[index] = f;
-    m_multiple_data[index]   = data;
+    multiple_method_[index] = f;
+    multiple_data_[index]   = data;
 }
 
 // Execute the method set as the single_method on number_of_threads threads.
@@ -261,13 +262,13 @@ void multi_threader::single_method_execute()
     // of their process ids for use later in the waitid call
     for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
     {
-        m_thread_info_array[thread_loop].user_data         = m_single_data;
-        m_thread_info_array[thread_loop].number_of_threads = m_number_of_threads;
+        thread_info_array_[thread_loop].user_data         = m_single_data;
+        thread_info_array_[thread_loop].number_of_threads = m_number_of_threads;
         process_id[thread_loop]                            = CreateThread(  // NOLINT
             nullptr,
             0,
             m_single_method,
-            static_cast<void*>(&m_thread_info_array[thread_loop]),
+            static_cast<void*>(&thread_info_array_[thread_loop]),
             0,
             &threadId);
         if (process_id[thread_loop] == nullptr)
@@ -277,9 +278,9 @@ void multi_threader::single_method_execute()
     }
 
     // Now, the parent thread calls m_single_method() itself
-    m_thread_info_array[0].user_data         = m_single_data;
-    m_thread_info_array[0].number_of_threads = m_number_of_threads;
-    m_single_method(static_cast<void*>(&m_thread_info_array[0]));
+    thread_info_array_[0].user_data         = m_single_data;
+    thread_info_array_[0].number_of_threads = m_number_of_threads;
+    m_single_method(static_cast<void*>(&thread_info_array_[0]));
 
     // The parent thread has finished m_single_method() - so now it
     // waits for each of the other processes to exit
@@ -315,14 +316,14 @@ void multi_threader::single_method_execute()
 
     for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
     {
-        m_thread_info_array[thread_loop].user_data         = m_single_data;
-        m_thread_info_array[thread_loop].number_of_threads = m_number_of_threads;
+        thread_info_array_[thread_loop].user_data         = m_single_data;
+        thread_info_array_[thread_loop].number_of_threads = m_number_of_threads;
 
         const int threadError = pthread_create(
             &(process_id[thread_loop]),
             &attr,
             reinterpret_cast<extern_c_thread_function_type>(m_single_method),
-            static_cast<void*>(&m_thread_info_array[thread_loop]));
+            static_cast<void*>(&thread_info_array_[thread_loop]));
         if (threadError != 0)
         {
             // Error: Unable to create a thread
@@ -330,9 +331,9 @@ void multi_threader::single_method_execute()
     }
 
     // Now, the parent thread calls m_single_method() itself
-    m_thread_info_array[0].user_data         = m_single_data;
-    m_thread_info_array[0].number_of_threads = m_number_of_threads;
-    m_single_method(static_cast<void*>(&m_thread_info_array[0]));
+    thread_info_array_[0].user_data         = m_single_data;
+    thread_info_array_[0].number_of_threads = m_number_of_threads;
+    m_single_method(static_cast<void*>(&thread_info_array_[0]));
 
     // The parent thread has finished m_single_method() - so now it
     // waits for each of the other processes to exit
@@ -346,9 +347,9 @@ void multi_threader::single_method_execute()
 #if !XSIGMA_USE_PTHREADS
     (void)thread_loop;
     // There is no multi threading, so there is only one thread.
-    m_thread_info_array[0].user_data         = m_single_data;
-    m_thread_info_array[0].number_of_threads = m_number_of_threads;
-    m_single_method(static_cast<void*>(&m_thread_info_array[0]));
+    thread_info_array_[0].user_data         = m_single_data;
+    thread_info_array_[0].number_of_threads = m_number_of_threads;
+    m_single_method(static_cast<void*>(&thread_info_array_[0]));
 #endif
 #endif
 }
@@ -375,7 +376,7 @@ void multi_threader::multiple_method_execute()
 
     for (thread_loop = 0; thread_loop < m_number_of_threads; thread_loop++)
     {
-        if (m_multiple_method[thread_loop] == (thread_function_type) nullptr)
+        if (multiple_method_[thread_loop] == (thread_function_type) nullptr)
         {
             // Error: No multiple method set
             return;
@@ -386,13 +387,13 @@ void multi_threader::multiple_method_execute()
     // Using CreateThread on Windows
     for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
     {
-        m_thread_info_array[thread_loop].user_data         = m_multiple_data[thread_loop];
-        m_thread_info_array[thread_loop].number_of_threads = m_number_of_threads;
+        thread_info_array_[thread_loop].user_data         = multiple_data_[thread_loop];
+        thread_info_array_[thread_loop].number_of_threads = m_number_of_threads;
         process_id[thread_loop]                            = CreateThread(  // NOLINT
             nullptr,
             0,
-            m_multiple_method[thread_loop],
-            static_cast<void*>(&m_thread_info_array[thread_loop]),
+            multiple_method_[thread_loop],
+            static_cast<void*>(&thread_info_array_[thread_loop]),
             0,
             &threadId);
         if (process_id[thread_loop] == nullptr)
@@ -402,9 +403,9 @@ void multi_threader::multiple_method_execute()
     }
 
     // Now, the parent thread calls the last method itself
-    m_thread_info_array[0].user_data         = m_multiple_data[0];
-    m_thread_info_array[0].number_of_threads = m_number_of_threads;
-    (m_multiple_method[0])(static_cast<void*>(&m_thread_info_array[0]));
+    thread_info_array_[0].user_data         = multiple_data_[0];
+    thread_info_array_[0].number_of_threads = m_number_of_threads;
+    (multiple_method_[0])(static_cast<void*>(&thread_info_array_[0]));
 
     // The parent thread has finished its method - so now it
     // waits for each of the other threads to exit
@@ -431,19 +432,19 @@ void multi_threader::multiple_method_execute()
 
     for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
     {
-        m_thread_info_array[thread_loop].user_data         = m_multiple_data[thread_loop];
-        m_thread_info_array[thread_loop].number_of_threads = m_number_of_threads;
+        thread_info_array_[thread_loop].user_data         = multiple_data_[thread_loop];
+        thread_info_array_[thread_loop].number_of_threads = m_number_of_threads;
         pthread_create(
             &(process_id[thread_loop]),
             &attr,
-            reinterpret_cast<extern_c_thread_function_type>(m_multiple_method[thread_loop]),
-            static_cast<void*>(&m_thread_info_array[thread_loop]));
+            reinterpret_cast<extern_c_thread_function_type>(multiple_method_[thread_loop]),
+            static_cast<void*>(&thread_info_array_[thread_loop]));
     }
 
     // Now, the parent thread calls the last method itself
-    m_thread_info_array[0].user_data         = m_multiple_data[0];
-    m_thread_info_array[0].number_of_threads = m_number_of_threads;
-    (m_multiple_method[0])(static_cast<void*>(&m_thread_info_array[0]));
+    thread_info_array_[0].user_data         = multiple_data_[0];
+    thread_info_array_[0].number_of_threads = m_number_of_threads;
+    (multiple_method_[0])(static_cast<void*>(&thread_info_array_[0]));
 
     // The parent thread has finished its method - so now it
     // waits for each of the other processes to exit
@@ -456,9 +457,9 @@ void multi_threader::multiple_method_execute()
 #if !XSIGMA_USE_WIN32_THREADS
 #if !XSIGMA_USE_PTHREADS
     // There is no multi threading, so there is only one thread.
-    m_thread_info_array[0].user_data         = m_multiple_data[0];
-    m_thread_info_array[0].number_of_threads = m_number_of_threads;
-    (m_multiple_method[0])(static_cast<void*>(&m_thread_info_array[0]));
+    thread_info_array_[0].user_data         = multiple_data_[0];
+    thread_info_array_[0].number_of_threads = m_number_of_threads;
+    (multiple_method_[0])(static_cast<void*>(&thread_info_array_[0]));
 #endif
 #endif
 }
@@ -469,15 +470,15 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
 
     for (id = 0; id < XSIGMA_MAX_THREADS; id++)
     {
-        if (!m_spawned_thread_active_flag_lock[id])
+        if (!spawned_thread_active_flag_lock_[id])
         {
-            m_spawned_thread_active_flag_lock[id] = std::make_unique<std::mutex>();
+            spawned_thread_active_flag_lock_[id] = std::make_unique<std::mutex>();
         }
-        const std::scoped_lock lockGuard(*m_spawned_thread_active_flag_lock[id]);
-        if (m_spawned_thread_active_flag[id] == 0)
+        const std::scoped_lock lockGuard(*spawned_thread_active_flag_lock_[id]);
+        if (spawned_thread_active_flag_[id] == 0)
         {
             // We've got a usable thread id, so grab it
-            m_spawned_thread_active_flag[id] = 1;
+            spawned_thread_active_flag_[id] = 1;
             break;
         }
     }
@@ -488,24 +489,24 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
         return -1;
     }
 
-    m_spawned_thread_info_array[id].user_data         = userdata;
-    m_spawned_thread_info_array[id].number_of_threads = 1;
-    m_spawned_thread_info_array[id].active_flag       = &m_spawned_thread_active_flag[id];
-    m_spawned_thread_info_array[id].active_flag_lock  = m_spawned_thread_active_flag_lock[id].get();
+    spawned_thread_info_array_[id].user_data         = userdata;
+    spawned_thread_info_array_[id].number_of_threads = 1;
+    spawned_thread_info_array_[id].active_flag       = &spawned_thread_active_flag_[id];
+    spawned_thread_info_array_[id].active_flag_lock  = spawned_thread_active_flag_lock_[id].get();
 
 #if XSIGMA_USE_WIN32_THREADS
     // Using CreateThread on Windows
     //
-    DWORD threadId;                    // NOLINT
-    m_spawned_thread_process_id[id] =  // NOLINT
+    DWORD threadId;                   // NOLINT
+    spawned_thread_process_id_[id] =  // NOLINT
         CreateThread(
             nullptr,
             0,
             f,
-            static_cast<void*>(&m_spawned_thread_info_array[id]),
+            static_cast<void*>(&spawned_thread_info_array_[id]),
             0,
             &threadId);  // NOLINT
-    if (m_spawned_thread_process_id[id] == nullptr)
+    if (spawned_thread_process_id_[id] == nullptr)
     {
         // Error in thread creation !!!
     }
@@ -521,10 +522,10 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
 #endif
 
     pthread_create(
-        &(m_spawned_thread_process_id[id]),
+        &(spawned_thread_process_id_[id]),
         &attr,
         reinterpret_cast<extern_c_thread_function_type>(f),
-        static_cast<void*>(&m_spawned_thread_info_array[id]));
+        static_cast<void*>(&spawned_thread_info_array_[id]));
 
 #endif
 
@@ -533,7 +534,7 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
     (void)f;
     // There is no multi threading, so there is only one thread.
     // This won't work - so give an error message.
-    m_spawned_thread_active_flag_lock[id].reset();
+    spawned_thread_active_flag_lock_[id].reset();
     id = -1;
 #endif
 #endif
@@ -551,7 +552,7 @@ void multi_threader::terminate_thread(int thread_id)
     }
 
     // If we don't have a lock, then this thread is definitely not active
-    if (m_spawned_thread_active_flag[thread_id] == 0)
+    if (spawned_thread_active_flag_[thread_id] == 0)
     {
         return;
     }
@@ -559,8 +560,8 @@ void multi_threader::terminate_thread(int thread_id)
     // If we do have a lock, use it and find out the status of the active flag
     int val = 0;
     {
-        const std::scoped_lock lockGuard(*m_spawned_thread_active_flag_lock[thread_id]);
-        val = m_spawned_thread_active_flag[thread_id];
+        const std::scoped_lock lockGuard(*spawned_thread_active_flag_lock_[thread_id]);
+        val = spawned_thread_active_flag_[thread_id];
     }
 
     // If the active flag is 0, return since this thread is not active
@@ -572,17 +573,17 @@ void multi_threader::terminate_thread(int thread_id)
     // OK - now we know we have an active thread - set the active flag to 0
     // to indicate to the thread that it should terminate itself
     {
-        const std::scoped_lock lockGuard(*m_spawned_thread_active_flag_lock[thread_id]);
-        m_spawned_thread_active_flag[thread_id] = 0;
+        const std::scoped_lock lockGuard(*spawned_thread_active_flag_lock_[thread_id]);
+        spawned_thread_active_flag_[thread_id] = 0;
     }
 
 #if XSIGMA_USE_WIN32_THREADS
-    WaitForSingleObject(m_spawned_thread_process_id[thread_id], INFINITE);  // NOLINT
-    CloseHandle(m_spawned_thread_process_id[thread_id]);                    // NOLINT
+    WaitForSingleObject(spawned_thread_process_id_[thread_id], INFINITE);  // NOLINT
+    CloseHandle(spawned_thread_process_id_[thread_id]);                    // NOLINT
 #endif
 
 #if XSIGMA_USE_PTHREADS
-    pthread_join(m_spawned_thread_process_id[thread_id], nullptr);
+    pthread_join(spawned_thread_process_id_[thread_id], nullptr);
 #endif
 
 #if !XSIGMA_USE_WIN32_THREADS
@@ -592,7 +593,7 @@ void multi_threader::terminate_thread(int thread_id)
 #endif
 #endif
 
-    m_spawned_thread_active_flag_lock[thread_id].reset();
+    spawned_thread_active_flag_lock_[thread_id].reset();
 }
 
 //------------------------------------------------------------------------------
@@ -619,7 +620,7 @@ bool multi_threader::is_thread_active(int thread_id)
     }
 
     // If we don't have a lock, then this thread is not active
-    if (m_spawned_thread_active_flag_lock[thread_id] == nullptr)
+    if (spawned_thread_active_flag_lock_[thread_id] == nullptr)
     {
         return false;
     }
@@ -627,8 +628,8 @@ bool multi_threader::is_thread_active(int thread_id)
     // We have a lock - use it to get the active flag value
     int val = 0;
     {
-        const std::scoped_lock lockGuard(*m_spawned_thread_active_flag_lock[thread_id]);
-        val = m_spawned_thread_active_flag[thread_id];
+        const std::scoped_lock lockGuard(*spawned_thread_active_flag_lock_[thread_id]);
+        val = spawned_thread_active_flag_[thread_id];
     }
 
     // now return that value

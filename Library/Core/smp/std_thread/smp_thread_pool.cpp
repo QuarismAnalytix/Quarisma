@@ -54,13 +54,13 @@ static constexpr std::size_t no_running_job = (std::numeric_limits<std::size_t>:
 struct smp_thread_pool::thread_job
 {
     thread_job(proxy_data* proxy = nullptr, std::function<void()> function = nullptr)
-        : m_proxy{proxy}, m_function{std::move(function)}
+        : m_proxy{proxy}, function_{std::move(function)}
     {
     }
 
-    proxy_data*           m_proxy{};   ///< Proxy that owns this job
-    std::function<void()> m_function;  ///< The actual work to be performed
-    std::promise<void>    m_promise;   ///< Promise to signal job completion
+    proxy_data*           m_proxy{};  ///< Proxy that owns this job
+    std::function<void()> function_;  ///< The actual work to be performed
+    std::promise<void>    m_promise;  ///< Promise to signal job completion
 };
 
 /**
@@ -108,7 +108,7 @@ struct smp_thread_pool::proxy_data
 {
     smp_thread_pool*               m_pool{};         ///< Owning thread pool
     proxy_data*                    m_parent{};       ///< Parent proxy (for nested scopes)
-    std::vector<proxy_thread_data> threads_;        ///< Allocated physical threads
+    std::vector<proxy_thread_data> threads_;         ///< Allocated physical threads
     std::size_t                    m_next_thread{};  ///< Round-robin index for job distribution
     std::vector<std::future<void>> m_jobs_futures;   ///< Futures for submitted jobs
     std::mutex                     m_mutex;          ///< Protects proxy state
@@ -140,7 +140,7 @@ void smp_thread_pool::run_job(
     // Save the old running job index (for nested job support)
     const auto old_running_job = data.m_running_job;
     data.m_running_job         = job_index;
-    auto function              = std::move(data.m_jobs[data.m_running_job].m_function);
+    auto function              = std::move(data.m_jobs[data.m_running_job].function_);
 
     // Release lock during job execution to allow other threads to proceed
     lock.unlock();
@@ -280,7 +280,7 @@ void smp_thread_pool::proxy::do_job(std::function<void()> job)
 {
     // Round-robin thread selection
     data_->m_next_thread = (data_->m_next_thread + 1) % data_->threads_.size();
-    auto& proxy_thread    = data_->threads_[data_->m_next_thread];
+    auto& proxy_thread   = data_->threads_[data_->m_next_thread];
 
     // Special case: nested proxy submitting to its own thread (thread 0)
     if (!this->is_top_level() && data_->m_next_thread == 0)
@@ -469,14 +469,15 @@ std::size_t smp_thread_pool::get_thread_id() const noexcept
         const auto& proxy_threads =
             thread_data_ptr->m_jobs[thread_data_ptr->m_running_job].m_proxy->threads_;
         lock.unlock();
+        auto it = std::find_if(
+            proxy_threads.begin(),
+            proxy_threads.end(),
+            [thread_data_ptr](const auto& proxy_thread)
+            { return proxy_thread.m_thread == thread_data_ptr; });
 
-        // Find this thread in the current proxy's thread list
-        for (const auto& proxy_thread : proxy_threads)
+        if (it != proxy_threads.end())
         {
-            if (proxy_thread.m_thread == thread_data_ptr)
-            {
-                return proxy_thread.m_id;
-            }
+            return it->m_id;
         }
     }
 
@@ -632,13 +633,11 @@ void smp_thread_pool::fill_threads_for_nested_proxy(proxy_data* proxy, std::size
         // Walk up the proxy hierarchy
         for (auto* parent = proxy->m_parent; parent != nullptr; parent = parent->m_parent)
         {
-            for (const auto& proxy_thread : parent->threads_)
-            {
-                if (proxy_thread.m_thread == thread_data_ptr)
-                {
-                    return false;  // Thread is used by an ancestor
-                }
-            }
+            return std::all_of(
+                parent->threads_.begin(),
+                parent->threads_.end(),
+                [thread_data_ptr](const auto& proxy_thread)
+                { return proxy_thread.m_thread != thread_data_ptr; });
         }
 
         return true;  // Thread is free
