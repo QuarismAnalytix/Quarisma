@@ -71,11 +71,11 @@ const char* smp_tools_api::get_backend()
     switch (selected_backend_tools)
     {
     case backend_type::std_thread:
-        return "std_thread";
+        return "std";
     case backend_type::TBB:
-        return "TBB";
+        return "tbb";
     case backend_type::OpenMP:
-        return "OpenMP";
+        return "openmp";
     default:
         return nullptr;
     }
@@ -84,10 +84,16 @@ const char* smp_tools_api::get_backend()
 //------------------------------------------------------------------------------
 bool smp_tools_api::set_backend(const char* type)
 {
+    // Check for null pointer
+    if (type == nullptr)
+    {
+        return false;
+    }
+
     // Backend is selected at compile-time, so we just verify the requested backend
     // matches the compile-time selected one
     std::string backend(type);
-    std::transform(backend.cbegin(), backend.cend(), backend.begin(), ::toupper);
+    std::transform(backend.cbegin(), backend.cend(), backend.begin(), ::tolower);
 
     const char* current_backend = this->get_backend();
     std::string current_backend_upper(current_backend);
@@ -95,12 +101,7 @@ bool smp_tools_api::set_backend(const char* type)
         current_backend_upper.cbegin(),
         current_backend_upper.cend(),
         current_backend_upper.begin(),
-        ::toupper);
-
-    if (backend == "STDTHREAD")
-    {
-        backend = "STD_THREAD";
-    }
+        ::tolower);
 
     if (backend != current_backend_upper)
     {
@@ -116,14 +117,14 @@ bool smp_tools_api::set_backend(const char* type)
 //------------------------------------------------------------------------------
 void smp_tools_api::initialize(int num_threads)
 {
-    this->m_desired_number_of_thread = num_threads;
+    this->desired_number_of_thread_ = num_threads;
     this->refresh_number_of_thread();
 }
 
 //------------------------------------------------------------------------------
 void smp_tools_api::refresh_number_of_thread()
 {
-    const int num_threads = this->m_desired_number_of_thread;
+    const int num_threads = this->desired_number_of_thread_;
     backend_impl_.initialize(num_threads);
 }
 

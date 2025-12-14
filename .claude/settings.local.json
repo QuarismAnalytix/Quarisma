@@ -27,7 +27,12 @@
       "Bash(./bin/CoreCxxTests:*)",
       "Bash(timeout 60 ./bin/CoreCxxTests:*)",
       "Bash(/Users/toufikbellaj/XSigma/build_ninja/bin/CoreCxxTests:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(./bin/benchmark_parallelbackends:*)",
+      "Bash(/Users/toufikbellaj/XSigma/build_ninja/bin/benchmark_parallelbackends:*)",
+      "Bash(./build_ninja/bin/CoreCxxTests:*)",
+      "Bash(timeout 60 ./build_ninja/bin/CoreCxxTests:*)",
+      "Bash(./build_ninja_smp_tbb/bin/CoreCxxTests:*)"
     ],
     "deny": [],
     "ask": []

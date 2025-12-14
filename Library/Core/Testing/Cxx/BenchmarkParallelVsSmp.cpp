@@ -42,7 +42,7 @@
 #include <vector>
 
 #include "parallel/parallel.h"
-#include "smp/tools.h"
+#include "smp/smp_tools.h"
 
 namespace xsigma
 {
@@ -273,7 +273,7 @@ static void BM_SMP_For_Simple_Small(benchmark::State& state)
 
     for (auto _ : state)
     {
-        tools::For(
+        smp_tools::parallel_for(
             0,
             static_cast<int>(kSmallSize),
             static_cast<int>(kSmallGrain),
@@ -298,7 +298,7 @@ static void BM_SMP_For_Simple_Medium(benchmark::State& state)
 
     for (auto _ : state)
     {
-        tools::For(
+        smp_tools::parallel_for(
             0,
             static_cast<int>(kMediumSize),
             static_cast<int>(kMediumGrain),
@@ -323,7 +323,7 @@ static void BM_SMP_For_Simple_Large(benchmark::State& state)
 
     for (auto _ : state)
     {
-        tools::For(
+        smp_tools::parallel_for(
             0,
             static_cast<int>(kLargeSize),
             static_cast<int>(kLargeGrain),
@@ -446,7 +446,7 @@ static void BM_SMP_For_Compute_Small(benchmark::State& state)
 
     for (auto _ : state)
     {
-        tools::For(
+        smp_tools::parallel_for(
             0,
             static_cast<int>(kSmallSize),
             static_cast<int>(kSmallGrain),
@@ -472,7 +472,7 @@ static void BM_SMP_For_Compute_Medium(benchmark::State& state)
 
     for (auto _ : state)
     {
-        tools::For(
+        smp_tools::parallel_for(
             0,
             static_cast<int>(kMediumSize),
             static_cast<int>(kMediumGrain),
@@ -498,7 +498,7 @@ static void BM_SMP_For_Compute_Large(benchmark::State& state)
 
     for (auto _ : state)
     {
-        tools::For(
+        smp_tools::parallel_for(
             0,
             static_cast<int>(kLargeSize),
             static_cast<int>(kLargeGrain),
@@ -731,7 +731,7 @@ static void BM_SMP_For_Memory_Medium(benchmark::State& state)
 
     for (auto _ : state)
     {
-        tools::For(
+        smp_tools::parallel_for(
             0,
             static_cast<int>(kMediumSize),
             static_cast<int>(kMediumGrain),
@@ -802,11 +802,11 @@ static void BM_SMP_For_ThreadScaling(benchmark::State& state)
     std::vector<double> data(kMediumSize, 0.0);
 
     // Set thread count for this benchmark
-    tools::Initialize(num_threads);
+    smp_tools::initialize(num_threads);
 
     for (auto _ : state)
     {
-        tools::For(
+        smp_tools::parallel_for(
             0,
             static_cast<int>(kMediumSize),
             static_cast<int>(kMediumGrain),
@@ -870,7 +870,7 @@ static void BM_SMP_For_GrainSize(benchmark::State& state)
 
     for (auto _ : state)
     {
-        tools::For(
+        smp_tools::parallel_for(
             0,
             static_cast<int>(kMediumSize),
             grain_size,
@@ -938,7 +938,7 @@ static void BM_SMP_For_Nested(benchmark::State& state)
 
     for (auto _ : state)
     {
-        tools::For(
+        smp_tools::parallel_for(
             0,
             outer_size,
             10,
@@ -1003,7 +1003,7 @@ static void BM_SMP_For_Overhead(benchmark::State& state)
 
     for (auto _ : state)
     {
-        tools::For(
+        smp_tools::parallel_for(
             0,
             static_cast<int>(kMediumSize),
             static_cast<int>(kMediumGrain),

@@ -94,7 +94,7 @@ public:
     XSIGMA_API bool single_thread();
 
     //--------------------------------------------------------------------------------
-    int get_internal_desired_number_of_thread() { return m_desired_number_of_thread; }
+    int get_internal_desired_number_of_thread() { return desired_number_of_thread_; }
 
     //------------------------------------------------------------------------------
     template <typename Config, typename T>
@@ -139,7 +139,7 @@ private:
     smp_tools_api& operator<<(Config const& config)
     {
         this->initialize(config.max_number_of_threads_);
-        this->set_backend(config.backend.c_str());
+        this->set_backend(config.backend_.c_str());
         this->set_nested_parallelism(config.nested_parallelism_);
         return *this;
     }
@@ -147,7 +147,7 @@ private:
     /**
    * Desired number of threads
    */
-    int m_desired_number_of_thread = 0;
+    int desired_number_of_thread_ = 0;
 
     /**
    * Single backend implementation selected at compile-time

@@ -27,7 +27,7 @@
  *
  * This callback queue executes pushed functions and functors on threads whose
  * purpose is to execute those functions.
- * By default, one thread is created by this class, so it is advised to set `m_number_of_threads`.
+ * By default, one thread is created by this class, so it is advised to set `number_of_threads_`.
  * Upon destruction of an instance of this callback queue, remaining unexecuted threads are
  * executed.
  *
@@ -111,9 +111,7 @@ public:
     {
     public:
         shared_future_base()
-            : m_number_of_prior_shared_futures_remaining(0),
-              m_invoker_index(0),
-              m_status(CONSTRUCTING)
+            : number_of_prior_shared_futures_remaining_(0), invoker_index_(0), status_(CONSTRUCTING)
         {
         }
 
@@ -124,12 +122,12 @@ public:
      */
         XSIGMA_API virtual void wait() const
         {
-            if (m_status == READY)
+            if (status_ == READY)
             {
                 return;
             }
-            std::unique_lock<std::mutex> lock(m_mutex);
-            m_condition_variable.wait(lock, [this] { return m_status == READY; });
+            std::unique_lock<std::mutex> lock(mutex_);
+            condition_variable_.wait(lock, [this] { return status_ == READY; });
         }
 
         friend class threaded_callback_queue;
@@ -138,15 +136,15 @@ public:
         /**
      * Exclusive binary mask giving the status of the current invoker sharing this state.
      */
-        std::atomic_int m_status;
+        std::atomic_int status_;
 
         /**
      * List of futures which are depending on us.
      */
-        std::vector<std::shared_ptr<shared_future_base>> m_dependents;
+        std::vector<std::shared_ptr<shared_future_base>> dependents_;
 
-        mutable std::mutex              m_mutex;
-        mutable std::condition_variable m_condition_variable;
+        mutable std::mutex              mutex_;
+        mutable std::condition_variable condition_variable_;
 
     private:
         /**
@@ -157,18 +155,18 @@ public:
         /**
      * Number of futures that need to terminate before we can run.
      */
-        std::atomic_int m_number_of_prior_shared_futures_remaining;
+        std::atomic_int number_of_prior_shared_futures_remaining_;
 
         /**
      * Index that is set by the invoker to this shared state.
      */
-        size_t m_invoker_index;
+        size_t invoker_index_;
 
         /**
      * When set to true, when this invoker becomes ready, whoever picked this invoker must directly
      * run it.
      */
-        bool m_is_high_priority = false;
+        bool is_high_priority_ = false;
 
         shared_future_base(const shared_future_base& other) = delete;
         void operator=(const shared_future_base& other)     = delete;
@@ -200,7 +198,7 @@ public:
         friend class threaded_callback_queue;
 
     private:
-        return_value_wrapper<ReturnT> m_return_value;
+        return_value_wrapper<ReturnT> return_value_;
 
         shared_future(const shared_future<ReturnT>& other)  = delete;
         void operator=(const shared_future<ReturnT>& other) = delete;
@@ -250,7 +248,7 @@ public:
     /**
    * Returns the number of allocated threads.
    */
-    XSIGMA_API int get_number_of_threads() const { return m_number_of_threads; }
+    XSIGMA_API int get_number_of_threads() const { return number_of_threads_; }
 
 private:
     ///@{
@@ -300,17 +298,17 @@ private:
     template <class SharedFutureContainerT>
     static bool must_wait(SharedFutureContainerT&& prior_shared_futures);
 
-    std::deque<shared_future_base_pointer> m_invoker_queue;
-    std::mutex                             m_mutex;
-    std::mutex                             m_control_mutex;
-    std::mutex                             m_destroy_mutex;
-    std::mutex                             m_thread_id_to_index_mutex;
-    std::condition_variable                m_condition_variable;
-    std::atomic_bool                       m_destroying{false};
-    std::atomic_int                        m_number_of_threads;
-    std::vector<std::thread>               threads_;
-    std::unordered_map<std::thread::id, std::shared_ptr<std::atomic_int>> m_thread_id_to_index;
-    std::unordered_set<shared_future_base_pointer>                        m_control_futures;
+    std::deque<shared_future_base_pointer>                                invoker_queue_;
+    std::mutex                                                            mutex_;
+    std::mutex                                                            control_mutex_;
+    std::mutex                                                            destroy_mutex_;
+    std::mutex                                                            thread_id_to_index_mutex_;
+    std::condition_variable                                               condition_variable_;
+    std::atomic_bool                                                      destroying_{false};
+    std::atomic_int                                                       number_of_threads_;
+    std::vector<std::thread>                                              threads_;
+    std::unordered_map<std::thread::id, std::shared_ptr<std::atomic_int>> thread_id_to_index_;
+    std::unordered_set<shared_future_base_pointer>                        control_futures_;
 
     threaded_callback_queue(const threaded_callback_queue&) = delete;
     void operator=(const threaded_callback_queue&)          = delete;
@@ -338,14 +336,14 @@ struct threaded_callback_queue::return_value_wrapper<ReturnT, true /* IsLValueRe
 
     return_value_wrapper() = default;
     return_value_wrapper(ReturnT& value)
-        : m_value(std::unique_ptr<return_value_impl>(new return_value_impl(value)))
+        : value_(std::unique_ptr<return_value_impl>(new return_value_impl(value)))
     {
     }
 
-    ReturnT&       get() { return m_value->get(); }
-    const ReturnT& get() const { return m_value->get(); }
+    ReturnT&       get() { return value_->get(); }
+    const ReturnT& get() const { return value_->get(); }
 
-    std::unique_ptr<return_value_impl> m_value;
+    std::unique_ptr<return_value_impl> value_;
 };
 
 //=============================================================================
@@ -357,14 +355,14 @@ struct threaded_callback_queue::return_value_wrapper<ReturnT, false /* IsLValueR
 
     return_value_wrapper() = default;
     template <class ReturnTT>
-    return_value_wrapper(ReturnTT&& value) : m_value(std::forward<ReturnTT>(value))
+    return_value_wrapper(ReturnTT&& value) : value_(std::forward<ReturnTT>(value))
     {
     }
 
-    ReturnT&       get() { return m_value; }
-    const ReturnT& get() const { return m_value; }
+    ReturnT&       get() { return value_; }
+    const ReturnT& get() const { return value_; }
 
-    ReturnT m_value;
+    ReturnT value_;
 };
 
 //-----------------------------------------------------------------------------
@@ -373,7 +371,7 @@ typename threaded_callback_queue::shared_future<ReturnT>::return_lvalue_ref
 threaded_callback_queue::shared_future<ReturnT>::get()
 {
     this->wait();
-    return m_return_value.get();
+    return return_value_.get();
 }
 
 //-----------------------------------------------------------------------------
@@ -382,7 +380,7 @@ typename threaded_callback_queue::shared_future<ReturnT>::return_const_lvalue_re
 threaded_callback_queue::shared_future<ReturnT>::get() const
 {
     this->wait();
-    return m_return_value.get();
+    return return_value_.get();
 }
 
 //=============================================================================
@@ -428,9 +426,9 @@ struct threaded_callback_queue::invoker_impl
         template <class InvokerT>
         static void invoke(InvokerT&& invoker, shared_future<ReturnT>* future)
         {
-            future->m_return_value = return_value_wrapper<ReturnT>(invoker());
-            future->m_status.store(READY, std::memory_order_release);
-            future->m_condition_variable.notify_all();
+            future->return_value_ = return_value_wrapper<ReturnT>(invoker());
+            future->status_.store(READY, std::memory_order_release);
+            future->condition_variable_.notify_all();
         }
     };
 };
@@ -443,8 +441,8 @@ struct threaded_callback_queue::invoker_impl::invoker_helper<void>
     static void invoke(InvokerT&& invoker, shared_future<void>* future)
     {
         invoker();
-        future->m_status.store(READY, std::memory_order_release);
-        future->m_condition_variable.notify_all();
+        future->status_.store(READY, std::memory_order_release);
+        future->condition_variable_.notify_all();
     }
 };
 
@@ -559,8 +557,8 @@ public:
     template <class FTT, class ObjectTT, class... ArgsTT>
     invoker_handle(FTT&& f, ObjectTT&& instance, ArgsTT&&... args)
         : function_(std::forward<FTT>(f)),
-          m_instance(std::forward<ObjectTT>(instance)),
-          m_args(std::forward<ArgsTT>(args)...)
+          instance_(std::forward<ObjectTT>(instance)),
+          args_(std::forward<ArgsTT>(args)...)
     {
     }
 
@@ -573,13 +571,13 @@ private:
     template <std::size_t... Is>
     invoke_result<FT> invoke_impl(integer_sequence<Is...>)
     {
-        auto& deref = dereference_impl<ObjectT>::get(m_instance);
-        return (deref.*function_)(static_cast<arg_type<FT, Is>>(std::get<Is>(m_args))...);
+        auto& deref = dereference_impl<ObjectT>::get(instance_);
+        return (deref.*function_)(static_cast<arg_type<FT, Is>>(std::get<Is>(args_))...);
     }
 
     FT                                               function_;
-    typename std::decay<ObjectT>::type               m_instance;
-    static_cast_args_tuple<args_tuple<FT>, ArgsT...> m_args;
+    typename std::decay<ObjectT>::type               instance_;
+    static_cast_args_tuple<args_tuple<FT>, ArgsT...> args_;
 };
 
 //=============================================================================
@@ -590,7 +588,7 @@ class threaded_callback_queue::invoker_impl::
 public:
     template <class FTT, class... ArgsTT>
     invoker_handle(FTT&& f, ArgsTT&&... args)
-        : function_(std::forward<FTT>(f)), m_args(std::forward<ArgsTT>(args)...)
+        : function_(std::forward<FTT>(f)), args_(std::forward<ArgsTT>(args)...)
     {
     }
 
@@ -605,11 +603,11 @@ private:
     {
         // cppcheck-suppress constVariableReference
         auto& function = dereference_impl<FT>::get(function_);
-        return function(static_cast<arg_type<decltype(function), Is>>(std::get<Is>(m_args))...);
+        return function(static_cast<arg_type<decltype(function), Is>>(std::get<Is>(args_))...);
     }
 
     typename std::decay<FT>::type                                                function_;
-    static_cast_args_tuple<args_tuple<typename dereference<FT>::type>, ArgsT...> m_args;
+    static_cast_args_tuple<args_tuple<typename dereference<FT>::type>, ArgsT...> args_;
 };
 
 //=============================================================================
@@ -625,22 +623,21 @@ public:
     }
 
     template <class... ArgsTT>
-    invoker(ArgsTT&&... args) : m_impl(std::forward<ArgsTT>(args)...)
+    invoker(ArgsTT&&... args) : impl_(std::forward<ArgsTT>(args)...)
     {
     }
 
     void operator()() override
     {
         assert(
-            this->m_status.load(std::memory_order_relaxed) == RUNNING &&
-            "Status should be RUNNING");
-        invoker_impl::invoker_helper<invoke_result<FT>>::invoke(m_impl, this);
+            this->status_.load(std::memory_order_relaxed) == RUNNING && "Status should be RUNNING");
+        invoker_impl::invoker_helper<invoke_result<FT>>::invoke(impl_, this);
     }
 
     friend class threaded_callback_queue;
 
 private:
-    invoker_impl::invoker_handle<std::is_member_function_pointer<FT>::value, FT, ArgsT...> m_impl;
+    invoker_impl::invoker_handle<std::is_member_function_pointer<FT>::value, FT, ArgsT...> impl_;
 
     invoker(const invoker<FT, ArgsT...>& other)        = delete;
     void operator=(const invoker<FT, ArgsT...>& other) = delete;
@@ -655,30 +652,30 @@ void threaded_callback_queue::handle_dependent_invoker(
     {
         for (const auto& prior : prior_shared_futures)
         {
-            if (prior->m_status.load(std::memory_order_acquire) == READY)
+            if (prior->status_.load(std::memory_order_acquire) == READY)
             {
                 continue;
             }
 
-            std::unique_lock<std::mutex> lock(prior->m_mutex);
-            if (prior->m_status.load(std::memory_order_acquire) != READY)
+            std::unique_lock<std::mutex> lock(prior->mutex_);
+            if (prior->status_.load(std::memory_order_acquire) != READY)
             {
-                prior->m_dependents.emplace_back(invoker);
+                prior->dependents_.emplace_back(invoker);
                 lock.unlock();
-                invoker->m_number_of_prior_shared_futures_remaining.fetch_add(
+                invoker->number_of_prior_shared_futures_remaining_.fetch_add(
                     1, std::memory_order_release);
             }
         }
     }
 
-    std::unique_lock<std::mutex> lock(invoker->m_mutex);
-    if (invoker->m_number_of_prior_shared_futures_remaining)
+    std::unique_lock<std::mutex> lock(invoker->mutex_);
+    if (invoker->number_of_prior_shared_futures_remaining_)
     {
-        invoker->m_status.store(ON_HOLD, std::memory_order_release);
+        invoker->status_.store(ON_HOLD, std::memory_order_release);
     }
     else
     {
-        invoker->m_status.store(RUNNING, std::memory_order_release);
+        invoker->status_.store(RUNNING, std::memory_order_release);
         lock.unlock();
         this->invoke(std::forward<InvokerT>(invoker).get());
     }
@@ -691,7 +688,7 @@ bool threaded_callback_queue::must_wait(SharedFutureContainerT&& prior_shared_fu
     return std::any_of(
         prior_shared_futures.begin(),
         prior_shared_futures.end(),
-        [](const auto& prior) { return prior->m_status.load(std::memory_order_acquire) != READY; });
+        [](const auto& prior) { return prior->status_.load(std::memory_order_acquire) != READY; });
 }
 
 //-----------------------------------------------------------------------------
@@ -703,7 +700,7 @@ void threaded_callback_queue::wait(SharedFutureContainerT&& prior_shared_futures
 
     for (shared_future_base* prior : prior_shared_futures)
     {
-        switch (prior->m_status.load(std::memory_order_acquire))
+        switch (prior->status_.load(std::memory_order_acquire))
         {
         case RUNNING:
         case ON_HOLD:
@@ -724,7 +721,7 @@ void threaded_callback_queue::wait(SharedFutureContainerT&& prior_shared_futures
     auto empty_lambda = [] {};
     auto invoker_ptr  = invoker_pointer<decltype(empty_lambda)>(
         invoker<decltype(empty_lambda)>::create(std::move(empty_lambda)));
-    invoker_ptr->m_is_high_priority = true;
+    invoker_ptr->is_high_priority_ = true;
     this->handle_dependent_invoker(prior_shared_futures_r, invoker_ptr);
     invoker_ptr->wait();
 }
@@ -782,11 +779,11 @@ void threaded_callback_queue::push_control(FT&& f, ArgsT&&... args)
         void operator()(threaded_callback_queue* self, FT&& _f, ArgsT&&... _args)
         {
             _f(std::forward<ArgsT>(_args)...);
-            std::lock_guard<std::mutex> lock(self->m_control_mutex);
-            self->m_control_futures.erase(m_future);
+            std::lock_guard<std::mutex> lock(self->control_mutex_);
+            self->control_futures_.erase(future_);
         }
 
-        shared_future_base_pointer m_future;
+        shared_future_base_pointer future_;
     };
 
     worker w;
@@ -794,13 +791,13 @@ void threaded_callback_queue::push_control(FT&& f, ArgsT&&... args)
     auto invoker_ptr           = invoker_pointer_type(
         invoker<worker, threaded_callback_queue*, FT, ArgsT...>::create(
             w, this, std::forward<FT>(f), std::forward<ArgsT>(args)...));
-    w.m_future = invoker_ptr;
+    w.future_ = invoker_ptr;
 
     auto local_control_futures = [this, &invoker_ptr]
     {
-        std::lock_guard<std::mutex> lock(m_control_mutex);
-        auto                        result = m_control_futures;
-        m_control_futures.emplace(invoker_ptr);
+        std::lock_guard<std::mutex> lock(control_mutex_);
+        auto                        result = control_futures_;
+        control_futures_.emplace(invoker_ptr);
         return result;
     }();
 
@@ -808,25 +805,25 @@ void threaded_callback_queue::push_control(FT&& f, ArgsT&&... args)
     {
         if (threads_.empty())
         {
-            invoker_ptr->m_status.store(RUNNING, std::memory_order_relaxed);
+            invoker_ptr->status_.store(RUNNING, std::memory_order_relaxed);
             (*invoker_ptr)();
             return;
         }
 
         {
-            std::lock_guard<std::mutex> invoker_lock(invoker_ptr->m_mutex);
-            invoker_ptr->m_status.store(ENQUEUED, std::memory_order_release);
+            std::lock_guard<std::mutex> invoker_lock(invoker_ptr->mutex_);
+            invoker_ptr->status_.store(ENQUEUED, std::memory_order_release);
 
-            std::lock_guard<std::mutex> lock(m_mutex);
-            invoker_ptr->m_invoker_index =
-                m_invoker_queue.empty() ? 0 : m_invoker_queue.front()->m_invoker_index - 1;
-            m_invoker_queue.emplace_front(invoker_ptr);
+            std::lock_guard<std::mutex> lock(mutex_);
+            invoker_ptr->invoker_index_ =
+                invoker_queue_.empty() ? 0 : invoker_queue_.front()->invoker_index_ - 1;
+            invoker_queue_.emplace_front(invoker_ptr);
         }
-        m_condition_variable.notify_one();
+        condition_variable_.notify_one();
         return;
     }
 
-    invoker_ptr->m_is_high_priority = true;
+    invoker_ptr->is_high_priority_ = true;
     this->handle_dependent_invoker(local_control_futures, invoker_ptr);
 }
 
@@ -837,16 +834,16 @@ threaded_callback_queue::push(FT&& f, ArgsT&&... args)
 {
     auto invoker_ptr = invoker_pointer<FT, ArgsT...>(
         invoker<FT, ArgsT...>::create(std::forward<FT>(f), std::forward<ArgsT>(args)...));
-    invoker_ptr->m_status.store(ENQUEUED, std::memory_order_release);
+    invoker_ptr->status_.store(ENQUEUED, std::memory_order_release);
 
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        invoker_ptr->m_invoker_index =
-            m_invoker_queue.empty() ? 0 : m_invoker_queue.back()->m_invoker_index + 1;
-        m_invoker_queue.emplace_back(invoker_ptr);
+        std::lock_guard<std::mutex> lock(mutex_);
+        invoker_ptr->invoker_index_ =
+            invoker_queue_.empty() ? 0 : invoker_queue_.back()->invoker_index_ + 1;
+        invoker_queue_.emplace_back(invoker_ptr);
     }
 
-    m_condition_variable.notify_one();
+    condition_variable_.notify_one();
     return invoker_ptr;
 }
 

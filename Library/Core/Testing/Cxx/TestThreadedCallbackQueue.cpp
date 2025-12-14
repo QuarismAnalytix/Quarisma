@@ -36,15 +36,23 @@ XSIGMATEST(ThreadedCallbackQueue, set_get_threads)
     threaded_callback_queue* queue = threaded_callback_queue::create();
 
     queue->set_number_of_threads(4);
-    // Push a dummy task to ensure the control task has been processed
-    auto future1 = queue->push([]() { return 0; });
-    future1->wait();
+    // Push multiple dummy tasks to ensure the control task has been fully processed
+    auto future1a = queue->push([]() { return 0; });
+    auto future1b = queue->push([]() { return 0; });
+    auto future1c = queue->push([]() { return 0; });
+    future1a->wait();
+    future1b->wait();
+    future1c->wait();
     EXPECT_EQ(queue->get_number_of_threads(), 4);
 
     queue->set_number_of_threads(8);
-    // Push a dummy task to ensure the control task has been processed
-    auto future2 = queue->push([]() { return 0; });
-    future2->wait();
+    // Push multiple dummy tasks to ensure the control task has been fully processed
+    auto future2a = queue->push([]() { return 0; });
+    auto future2b = queue->push([]() { return 0; });
+    auto future2c = queue->push([]() { return 0; });
+    future2a->wait();
+    future2b->wait();
+    future2c->wait();
     EXPECT_EQ(queue->get_number_of_threads(), 8);
 
     delete queue;

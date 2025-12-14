@@ -74,17 +74,14 @@ static smp_tools_impl_tbb_initialize smp_tools_impl_tbb_initializer;
 template <typename T>
 class func_call
 {
-    T& m_obj;
+    T& obj_;
 
     void operator=(const func_call&) = delete;
 
 public:
-    void operator()(const tbb::blocked_range<size_t>& r) const
-    {
-        m_obj.Execute(r.begin(), r.end());
-    }
+    void operator()(const tbb::blocked_range<size_t>& r) const { obj_.Execute(r.begin(), r.end()); }
 
-    func_call(T& obj) : m_obj(obj) {}
+    func_call(T& obj) : obj_(obj) {}
 };
 
 //--------------------------------------------------------------------------------

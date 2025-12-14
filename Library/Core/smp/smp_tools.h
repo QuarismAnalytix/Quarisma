@@ -278,18 +278,23 @@ public:
    */
     struct config
     {
-        int  max_number_of_threads_ = 0;
-        bool nested_parallelism_    = false;
+        int         max_number_of_threads_ = 0;
+        std::string backend_               = "std";
+        bool        nested_parallelism_    = false;
 
         config() = default;
         config(int max_num_threads) : max_number_of_threads_(max_num_threads) {}
         config(bool nested) : nested_parallelism_(nested) {}
-        config(int max_num_threads, const std::string& backend_name, bool nested)
-            : max_number_of_threads_(max_num_threads), nested_parallelism_(nested)
+        config(std::string backend) : backend_(std::move(backend)) {}
+        config(int max_num_threads, const std::string& backend, bool nested)
+            : max_number_of_threads_(max_num_threads),
+              backend_(backend),
+              nested_parallelism_(nested)
         {
         }
         config(xsigma::detail::smp::smp_tools_api& API)
             : max_number_of_threads_(API.get_internal_desired_number_of_thread()),
+              backend_(API.get_backend()),
               nested_parallelism_(API.nested_parallelism())
         {
         }

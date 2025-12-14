@@ -127,10 +127,10 @@ private:
     threaded_task_queue(const threaded_task_queue&) = delete;
     void operator=(const threaded_task_queue&)      = delete;
 
-    std::function<R(Args...)>                                       m_worker;
-    std::unique_ptr<threaded_task_queue_internals::task_queue<R>>   m_tasks;
-    std::unique_ptr<threaded_task_queue_internals::result_queue<R>> m_results;
-    int                                                             m_number_of_threads;
+    std::function<R(Args...)>                                       worker_;
+    std::unique_ptr<threaded_task_queue_internals::task_queue<R>>   tasks_;
+    std::unique_ptr<threaded_task_queue_internals::result_queue<R>> results_;
+    int                                                             number_of_threads_;
     std::unique_ptr<std::thread[]>                                  threads_;
 };
 
@@ -165,12 +165,12 @@ private:
     threaded_task_queue(const threaded_task_queue&) = delete;
     void operator=(const threaded_task_queue&)      = delete;
 
-    std::function<void(Args...)>                                     m_worker;
-    std::unique_ptr<threaded_task_queue_internals::task_queue<void>> m_tasks;
-    std::condition_variable                                          m_results_cv;
-    std::mutex                                                       m_next_result_id_mutex;
-    std::atomic<std::uint64_t>                                       m_next_result_id;
-    int                                                              m_number_of_threads;
+    std::function<void(Args...)>                                     worker_;
+    std::unique_ptr<threaded_task_queue_internals::task_queue<void>> tasks_;
+    std::condition_variable                                          results_cv_;
+    std::mutex                                                       next_result_id_mutex_;
+    std::atomic<std::uint64_t>                                       next_result_id_;
+    int                                                              number_of_threads_;
     std::unique_ptr<std::thread[]>                                   threads_;
 };
 
@@ -184,64 +184,64 @@ template <typename R>
 class task_queue
 {
 public:
-    task_queue(int buffer_size) : m_done(false), m_buffer_size(buffer_size), m_next_task_id(0) {}
+    task_queue(int buffer_size) : done_(false), buffer_size_(buffer_size), next_task_id_(0) {}
 
     ~task_queue() = default;
 
     void mark_done()
     {
         {
-            std::lock_guard<std::mutex> lock(m_tasks_mutex);
-            m_done = true;
+            std::lock_guard<std::mutex> lock(tasks_mutex_);
+            done_ = true;
         }
-        m_tasks_cv.notify_all();
+        tasks_cv_.notify_all();
     }
 
-    std::uint64_t get_next_task_id() const { return m_next_task_id; }
+    std::uint64_t get_next_task_id() const { return next_task_id_; }
 
     void push(std::function<R()>&& task)
     {
-        if (m_done)
+        if (done_)
         {
             return;
         }
         else
         {
-            std::lock_guard<std::mutex> lk(m_tasks_mutex);
-            m_tasks.push(std::make_pair(m_next_task_id++, std::move(task)));
-            while (m_buffer_size > 0 && static_cast<int>(m_tasks.size()) > m_buffer_size)
+            std::lock_guard<std::mutex> lk(tasks_mutex_);
+            tasks_.push(std::make_pair(next_task_id_++, std::move(task)));
+            while (buffer_size_ > 0 && static_cast<int>(tasks_.size()) > buffer_size_)
             {
-                m_tasks.pop();
+                tasks_.pop();
             }
         }
-        m_tasks_cv.notify_one();
+        tasks_cv_.notify_one();
     }
 
     bool pop(std::uint64_t& task_id, std::function<R()>& task)
     {
-        std::unique_lock<std::mutex> lk(m_tasks_mutex);
-        m_tasks_cv.wait(lk, [this] { return m_done || !m_tasks.empty(); });
-        if (!m_tasks.empty())
+        std::unique_lock<std::mutex> lk(tasks_mutex_);
+        tasks_cv_.wait(lk, [this] { return done_ || !tasks_.empty(); });
+        if (!tasks_.empty())
         {
-            auto task_pair = m_tasks.front();
-            m_tasks.pop();
+            auto task_pair = tasks_.front();
+            tasks_.pop();
             lk.unlock();
 
             task_id = task_pair.first;
             task    = std::move(task_pair.second);
             return true;
         }
-        assert(m_done);
+        assert(done_);
         return false;
     }
 
 private:
-    std::atomic_bool                                         m_done;
-    int                                                      m_buffer_size;
-    std::atomic<std::uint64_t>                               m_next_task_id;
-    std::queue<std::pair<std::uint64_t, std::function<R()>>> m_tasks;
-    std::mutex                                               m_tasks_mutex;
-    std::condition_variable                                  m_tasks_cv;
+    std::atomic_bool                                         done_;
+    int                                                      buffer_size_;
+    std::atomic<std::uint64_t>                               next_task_id_;
+    std::queue<std::pair<std::uint64_t, std::function<R()>>> tasks_;
+    std::mutex                                               tasks_mutex_;
+    std::condition_variable                                  tasks_cv_;
 };
 
 //=============================================================================
@@ -249,34 +249,34 @@ template <typename R>
 class result_queue
 {
 public:
-    result_queue(bool strict_ordering) : m_next_result_id(0), m_strict_ordering(strict_ordering) {}
+    result_queue(bool strict_ordering) : next_result_id_(0), strict_ordering_(strict_ordering) {}
 
     ~result_queue() = default;
 
-    std::uint64_t get_next_result_id() const { return m_next_result_id; }
+    std::uint64_t get_next_result_id() const { return next_result_id_; }
 
     void push(std::uint64_t task_id, const R&& result)
     {
-        std::unique_lock<std::mutex> lk(m_results_mutex);
-        if (task_id >= m_next_result_id)
+        std::unique_lock<std::mutex> lk(results_mutex_);
+        if (task_id >= next_result_id_)
         {
-            m_results.push(std::make_pair(task_id, std::move(result)));
+            results_.push(std::make_pair(task_id, std::move(result)));
         }
         lk.unlock();
-        m_results_cv.notify_one();
+        results_cv_.notify_one();
     }
 
     bool try_pop(R& result)
     {
-        std::unique_lock<std::mutex> lk(m_results_mutex);
-        if (m_results.empty() || (m_strict_ordering && m_results.top().first != m_next_result_id))
+        std::unique_lock<std::mutex> lk(results_mutex_);
+        if (results_.empty() || (strict_ordering_ && results_.top().first != next_result_id_))
         {
             return false;
         }
 
-        auto result_pair = m_results.top();
-        m_next_result_id = (result_pair.first + 1);
-        m_results.pop();
+        auto result_pair = results_.top();
+        next_result_id_  = (result_pair.first + 1);
+        results_.pop();
         lk.unlock();
 
         result = std::move(result_pair.second);
@@ -285,13 +285,13 @@ public:
 
     bool pop(R& result)
     {
-        std::unique_lock<std::mutex> lk(m_results_mutex);
-        m_results_cv.wait(
+        std::unique_lock<std::mutex> lk(results_mutex_);
+        results_cv_.wait(
             lk,
             [this]
             {
-                return !m_results.empty() &&
-                       (!m_strict_ordering || m_results.top().first == m_next_result_id);
+                return !results_.empty() &&
+                       (!strict_ordering_ || results_.top().first == next_result_id_);
             });
         lk.unlock();
         return this->try_pop(result);
@@ -307,11 +307,11 @@ private:
         std::pair<std::uint64_t, R>,
         std::vector<std::pair<std::uint64_t, R>>,
         comparator<std::pair<std::uint64_t, R>>>
-                               m_results;
-    std::mutex                 m_results_mutex;
-    std::condition_variable    m_results_cv;
-    std::atomic<std::uint64_t> m_next_result_id;
-    bool                       m_strict_ordering;
+                               results_;
+    std::mutex                 results_mutex_;
+    std::condition_variable    results_cv_;
+    std::atomic<std::uint64_t> next_result_id_;
+    bool                       strict_ordering_;
 };
 
 }  // namespace threaded_task_queue_internals
@@ -324,14 +324,14 @@ threaded_task_queue<R, Args...>::threaded_task_queue(
     bool                      strict_ordering,
     int                       buffer_size,
     int                       max_concurrent_tasks)
-    : m_worker(worker),
-      m_tasks(new threaded_task_queue_internals::task_queue<R>(
+    : worker_(worker),
+      tasks_(new threaded_task_queue_internals::task_queue<R>(
           std::max(0, strict_ordering ? 0 : buffer_size))),
-      m_results(new threaded_task_queue_internals::result_queue<R>(strict_ordering)),
-      m_number_of_threads(
+      results_(new threaded_task_queue_internals::result_queue<R>(strict_ordering)),
+      number_of_threads_(
           max_concurrent_tasks <= 0 ? multi_threader::get_global_default_number_of_threads()
                                     : max_concurrent_tasks),
-      threads_{new std::thread[m_number_of_threads]}
+      threads_{new std::thread[number_of_threads_]}
 {
     auto f = [this](int thread_id)
     {
@@ -339,9 +339,9 @@ threaded_task_queue<R, Args...>::threaded_task_queue(
         {
             std::function<R()> task;
             std::uint64_t      task_id;
-            if (m_tasks->pop(task_id, task))
+            if (tasks_->pop(task_id, task))
             {
-                m_results->push(task_id, task());
+                results_->push(task_id, task());
                 continue;
             }
             else
@@ -351,7 +351,7 @@ threaded_task_queue<R, Args...>::threaded_task_queue(
         }
     };
 
-    for (int cc = 0; cc < m_number_of_threads; ++cc)
+    for (int cc = 0; cc < number_of_threads_; ++cc)
     {
         threads_[cc] = std::thread(f, cc);
     }
@@ -361,8 +361,8 @@ threaded_task_queue<R, Args...>::threaded_task_queue(
 template <typename R, typename... Args>
 threaded_task_queue<R, Args...>::~threaded_task_queue()
 {
-    m_tasks->mark_done();
-    for (int cc = 0; cc < m_number_of_threads; ++cc)
+    tasks_->mark_done();
+    for (int cc = 0; cc < number_of_threads_; ++cc)
     {
         threads_[cc].join();
     }
@@ -372,15 +372,15 @@ threaded_task_queue<R, Args...>::~threaded_task_queue()
 template <typename R, typename... Args>
 void threaded_task_queue<R, Args...>::push(Args&&... args)
 {
-    m_tasks->push([this, arguments = std::make_tuple(std::forward<Args>(args)...)]()
-                  { return std::apply(m_worker, arguments); });
+    tasks_->push([this, arguments = std::make_tuple(std::forward<Args>(args)...)]()
+                 { return std::apply(worker_, arguments); });
 }
 
 //-----------------------------------------------------------------------------
 template <typename R, typename... Args>
 bool threaded_task_queue<R, Args...>::try_pop(R& result)
 {
-    return m_results->try_pop(result);
+    return results_->try_pop(result);
 }
 
 //-----------------------------------------------------------------------------
@@ -392,14 +392,14 @@ bool threaded_task_queue<R, Args...>::pop(R& result)
         return false;
     }
 
-    return m_results->pop(result);
+    return results_->pop(result);
 }
 
 //-----------------------------------------------------------------------------
 template <typename R, typename... Args>
 bool threaded_task_queue<R, Args...>::is_empty() const
 {
-    return m_results->get_next_result_id() == m_tasks->get_next_task_id();
+    return results_->get_next_result_id() == tasks_->get_next_task_id();
 }
 
 //-----------------------------------------------------------------------------
@@ -424,14 +424,14 @@ threaded_task_queue<void, Args...>::threaded_task_queue(
     bool                         strict_ordering,
     int                          buffer_size,
     int                          max_concurrent_tasks)
-    : m_worker(worker),
-      m_tasks(new threaded_task_queue_internals::task_queue<void>(
+    : worker_(worker),
+      tasks_(new threaded_task_queue_internals::task_queue<void>(
           std::max(0, strict_ordering ? 0 : buffer_size))),
-      m_next_result_id(0),
-      m_number_of_threads(
+      next_result_id_(0),
+      number_of_threads_(
           max_concurrent_tasks <= 0 ? multi_threader::get_global_default_number_of_threads()
                                     : max_concurrent_tasks),
-      threads_{new std::thread[m_number_of_threads]}
+      threads_{new std::thread[number_of_threads_]}
 {
     auto f = [this](int thread_id)
     {
@@ -439,15 +439,15 @@ threaded_task_queue<void, Args...>::threaded_task_queue(
         {
             std::function<void()> task;
             std::uint64_t         task_id;
-            if (m_tasks->pop(task_id, task))
+            if (tasks_->pop(task_id, task))
             {
                 task();
 
-                std::unique_lock<std::mutex> lk(m_next_result_id_mutex);
-                m_next_result_id =
-                    std::max(static_cast<std::uint64_t>(m_next_result_id), task_id + 1);
+                std::unique_lock<std::mutex> lk(next_result_id_mutex_);
+                next_result_id_ =
+                    std::max(static_cast<std::uint64_t>(next_result_id_), task_id + 1);
                 lk.unlock();
-                m_results_cv.notify_all();
+                results_cv_.notify_all();
                 continue;
             }
             else
@@ -455,10 +455,10 @@ threaded_task_queue<void, Args...>::threaded_task_queue(
                 break;
             }
         }
-        m_results_cv.notify_all();
+        results_cv_.notify_all();
     };
 
-    for (int cc = 0; cc < m_number_of_threads; ++cc)
+    for (int cc = 0; cc < number_of_threads_; ++cc)
     {
         threads_[cc] = std::thread(f, cc);
     }
@@ -468,8 +468,8 @@ threaded_task_queue<void, Args...>::threaded_task_queue(
 template <typename... Args>
 threaded_task_queue<void, Args...>::~threaded_task_queue()
 {
-    m_tasks->mark_done();
-    for (int cc = 0; cc < m_number_of_threads; ++cc)
+    tasks_->mark_done();
+    for (int cc = 0; cc < number_of_threads_; ++cc)
     {
         threads_[cc].join();
     }
@@ -479,15 +479,15 @@ threaded_task_queue<void, Args...>::~threaded_task_queue()
 template <typename... Args>
 void threaded_task_queue<void, Args...>::push(Args&&... args)
 {
-    m_tasks->push([this, arguments = std::make_tuple(std::forward<Args>(args)...)]()
-                  { std::apply(m_worker, arguments); });
+    tasks_->push([this, arguments = std::make_tuple(std::forward<Args>(args)...)]()
+                 { std::apply(worker_, arguments); });
 }
 
 //-----------------------------------------------------------------------------
 template <typename... Args>
 bool threaded_task_queue<void, Args...>::is_empty() const
 {
-    return m_next_result_id == m_tasks->get_next_task_id();
+    return next_result_id_ == tasks_->get_next_task_id();
 }
 
 //-----------------------------------------------------------------------------
@@ -498,8 +498,8 @@ void threaded_task_queue<void, Args...>::flush()
     {
         return;
     }
-    std::unique_lock<std::mutex> lk(m_next_result_id_mutex);
-    m_results_cv.wait(lk, [this] { return this->is_empty(); });
+    std::unique_lock<std::mutex> lk(next_result_id_mutex_);
+    results_cv_.wait(lk, [this] { return this->is_empty(); });
 }
 
 #endif

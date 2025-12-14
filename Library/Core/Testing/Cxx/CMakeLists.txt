@@ -61,16 +61,6 @@ foreach(_test_source IN ITEMS ${test_sources})
     endif()
   endif()
 
-  # Exclude legacy SMP tests that reference non-existent files
-  # These tests are for the old SMP module which is being consolidated into parallel
-  if(file_name MATCHES "TestSMP" OR file_name MATCHES "TestSmp")
-    if(file_name MATCHES "TestSMP\\.cpp" OR file_name MATCHES "TestSMPComprehensive" OR file_name MATCHES "TestSMPEnhanced" OR
-       file_name MATCHES "TestSMPTransformFillSort" OR file_name MATCHES "TestSmpAdvancedParallelThreadPoolNative" OR
-       file_name MATCHES "TestSmpAdvancedThreadPool")
-      message(STATUS "Excluding legacy SMP test (files being consolidated): ${file_name}")
-      continue()
-    endif()
-  endif()
 
   list(APPEND TestFiles "${_test_source}")
 endforeach()
@@ -181,7 +171,6 @@ if(XSIGMA_ENABLE_BENCHMARK)
   )
 
   # Exclude CUDA-related benchmarks when GPU support is disabled
-  # Also exclude legacy SMP benchmarks that reference non-existent files
   set(filtered_bench_sources)
   foreach(_bench_source IN ITEMS ${bench_sources})
     get_filename_component(file_name "${_bench_source}" NAME)
@@ -192,13 +181,6 @@ if(XSIGMA_ENABLE_BENCHMARK)
         message(STATUS "Excluding CUDA benchmark (no GPU support): ${file_name}")
         continue()
       endif()
-    endif()
-
-    # Exclude legacy SMP benchmarks that reference non-existent files
-    # BenchmarkSMP and BenchmarkParallelVsSmp both reference the legacy smp module
-    if(file_name MATCHES "BenchmarkSMP" OR file_name MATCHES "BenchmarkParallelVsSmp")
-      message(STATUS "Excluding legacy SMP benchmark (files being consolidated): ${file_name}")
-      continue()
     endif()
 
     list(APPEND filtered_bench_sources "${_bench_source}")

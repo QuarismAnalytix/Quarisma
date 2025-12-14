@@ -47,7 +47,7 @@ public:
    * the spawn_thread method. It is passed in as a void *, and it is
    * up to the method to cast correctly and extract the information.
    * The thread_id is a number between 0 and number_of_threads-1 that indicates
-   * the id of this thread. The number_of_threads is m_number_of_threads for
+   * the id of this thread. The number_of_threads is number_of_threads_ for
    * threads created from single_method_execute or multiple_method_execute,
    * and it is 1 for threads created from spawn_thread.
    * The user_data is the (void *)arg passed into the set_single_method,
@@ -106,14 +106,14 @@ public:
 
     /**
    * Execute the single_method (as define by set_single_method) using
-   * m_number_of_threads threads.
+   * number_of_threads_ threads.
    */
     XSIGMA_API void single_method_execute();
 
     /**
    * Execute the multiple_methods (as define by calling set_multiple_method
-   * for each of the required m_number_of_threads methods) using
-   * m_number_of_threads threads.
+   * for each of the required number_of_threads_ methods) using
+   * number_of_threads_ threads.
    */
     XSIGMA_API void multiple_method_execute();
 
@@ -163,7 +163,7 @@ protected:
     multi_threader();
 
     // The number of threads to use
-    int m_number_of_threads;
+    int number_of_threads_;
 
     // An array of thread info containing a thread id
     // (0, 1, 2, .. XSIGMA_MAX_THREADS-1), the thread count, and a pointer
@@ -171,7 +171,7 @@ protected:
     thread_info thread_info_array_[XSIGMA_MAX_THREADS];
 
     // The methods
-    thread_function_type m_single_method;
+    thread_function_type single_method_;
     thread_function_type multiple_method_[XSIGMA_MAX_THREADS];
 
     // Storage of MutexFunctions and ints used to control spawned
@@ -182,7 +182,7 @@ protected:
     thread_info                 spawned_thread_info_array_[XSIGMA_MAX_THREADS];
 
     // Internal storage of the data
-    void* m_single_data;
+    void* single_data_;
     void* multiple_data_[XSIGMA_MAX_THREADS];
 
 private:

@@ -157,9 +157,9 @@ multi_threader::multi_threader()
         multiple_data_[i]                       = nullptr;
     }
 
-    m_single_method     = nullptr;
-    m_single_data       = nullptr;
-    m_number_of_threads = multi_threader::get_global_default_number_of_threads();
+    single_method_     = nullptr;
+    single_data_       = nullptr;
+    number_of_threads_ = multi_threader::get_global_default_number_of_threads();
 }
 
 multi_threader::~multi_threader()
@@ -182,7 +182,7 @@ multi_threader* multi_threader::create()
 //------------------------------------------------------------------------------
 int multi_threader::get_number_of_threads()
 {
-    int num = m_number_of_threads;
+    int num = number_of_threads_;
     if (g_multi_threader_global_maximum_number_of_threads > 0 &&
         num > g_multi_threader_global_maximum_number_of_threads)
     {
@@ -193,17 +193,17 @@ int multi_threader::get_number_of_threads()
 
 void multi_threader::set_number_of_threads(int num)
 {
-    num                 = std::max(num, 1);
-    num                 = std::min(num, XSIGMA_MAX_THREADS);
-    m_number_of_threads = num;
+    num                = std::max(num, 1);
+    num                = std::min(num, XSIGMA_MAX_THREADS);
+    number_of_threads_ = num;
 }
 
 // Set the user defined method that will be run on number_of_threads threads
 // when single_method_execute is called.
 void multi_threader::set_single_method(thread_function_type f, void* data)
 {
-    m_single_method = f;
-    m_single_data   = data;
+    single_method_ = f;
+    single_data_   = data;
 }
 
 // Set one of the user defined methods that will be run on number_of_threads
@@ -213,7 +213,7 @@ void multi_threader::set_single_method(thread_function_type f, void* data)
 void multi_threader::set_multiple_method(int index, thread_function_type f, void* data)
 {
     // You can only set the method for 0 through number_of_threads-1
-    if (index >= m_number_of_threads)
+    if (index >= number_of_threads_)
     {
         // Error: Can't set method with index >= number_of_threads
         return;
@@ -237,7 +237,7 @@ void multi_threader::single_method_execute()
     pthread_t process_id[XSIGMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
 #endif
 
-    if (m_single_method == nullptr)
+    if (single_method_ == nullptr)
     {
         // Error: No single method set!
         return;
@@ -245,29 +245,29 @@ void multi_threader::single_method_execute()
 
     // obey the global maximum number of threads limit
     if ((g_multi_threader_global_maximum_number_of_threads != 0) &&
-        m_number_of_threads > g_multi_threader_global_maximum_number_of_threads)
+        number_of_threads_ > g_multi_threader_global_maximum_number_of_threads)
     {
-        m_number_of_threads = g_multi_threader_global_maximum_number_of_threads;
+        number_of_threads_ = g_multi_threader_global_maximum_number_of_threads;
     }
 
 #if XSIGMA_USE_WIN32_THREADS
     // Using CreateThread on Windows
     //
-    // We want to use CreateThread to start m_number_of_threads - 1
-    // additional threads which will be used to call m_single_method().
+    // We want to use CreateThread to start number_of_threads_ - 1
+    // additional threads which will be used to call single_method_().
     // The parent thread will also call this routine.  When it is done,
     // it will wait for all the children to finish.
     //
-    // First, start up the m_number_of_threads-1 processes.  Keep track
+    // First, start up the number_of_threads_-1 processes.  Keep track
     // of their process ids for use later in the waitid call
-    for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
+    for (thread_loop = 1; thread_loop < number_of_threads_; thread_loop++)
     {
-        thread_info_array_[thread_loop].user_data         = m_single_data;
-        thread_info_array_[thread_loop].number_of_threads = m_number_of_threads;
+        thread_info_array_[thread_loop].user_data         = single_data_;
+        thread_info_array_[thread_loop].number_of_threads = number_of_threads_;
         process_id[thread_loop]                            = CreateThread(  // NOLINT
             nullptr,
             0,
-            m_single_method,
+            single_method_,
             static_cast<void*>(&thread_info_array_[thread_loop]),
             0,
             &threadId);
@@ -277,20 +277,20 @@ void multi_threader::single_method_execute()
         }
     }
 
-    // Now, the parent thread calls m_single_method() itself
-    thread_info_array_[0].user_data         = m_single_data;
-    thread_info_array_[0].number_of_threads = m_number_of_threads;
-    m_single_method(static_cast<void*>(&thread_info_array_[0]));
+    // Now, the parent thread calls single_method_() itself
+    thread_info_array_[0].user_data         = single_data_;
+    thread_info_array_[0].number_of_threads = number_of_threads_;
+    single_method_(static_cast<void*>(&thread_info_array_[0]));
 
-    // The parent thread has finished m_single_method() - so now it
+    // The parent thread has finished single_method_() - so now it
     // waits for each of the other processes to exit
-    for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
+    for (thread_loop = 1; thread_loop < number_of_threads_; thread_loop++)
     {
         WaitForSingleObject(process_id[thread_loop], INFINITE);  // NOLINT
     }
 
     // close the threads
-    for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
+    for (thread_loop = 1; thread_loop < number_of_threads_; thread_loop++)
     {
         CloseHandle(process_id[thread_loop]);  // NOLINT
     }
@@ -299,12 +299,12 @@ void multi_threader::single_method_execute()
 #if XSIGMA_USE_PTHREADS
     // Using POSIX threads
     //
-    // We want to use pthread_create to start m_number_of_threads-1 additional
-    // threads which will be used to call m_single_method(). The
+    // We want to use pthread_create to start number_of_threads_-1 additional
+    // threads which will be used to call single_method_(). The
     // parent thread will also call this routine.  When it is done,
     // it will wait for all the children to finish.
     //
-    // First, start up the m_number_of_threads-1 processes.  Keep track
+    // First, start up the number_of_threads_-1 processes.  Keep track
     // of their process ids for use later in the pthread_join call
 
     pthread_attr_t attr;
@@ -314,15 +314,15 @@ void multi_threader::single_method_execute()
     pthread_attr_setscope(&attr, PTHREAD_SCOPE_PROCESS);
 #endif
 
-    for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
+    for (thread_loop = 1; thread_loop < number_of_threads_; thread_loop++)
     {
-        thread_info_array_[thread_loop].user_data         = m_single_data;
-        thread_info_array_[thread_loop].number_of_threads = m_number_of_threads;
+        thread_info_array_[thread_loop].user_data         = single_data_;
+        thread_info_array_[thread_loop].number_of_threads = number_of_threads_;
 
         const int threadError = pthread_create(
             &(process_id[thread_loop]),
             &attr,
-            reinterpret_cast<extern_c_thread_function_type>(m_single_method),
+            reinterpret_cast<extern_c_thread_function_type>(single_method_),
             static_cast<void*>(&thread_info_array_[thread_loop]));
         if (threadError != 0)
         {
@@ -330,14 +330,14 @@ void multi_threader::single_method_execute()
         }
     }
 
-    // Now, the parent thread calls m_single_method() itself
-    thread_info_array_[0].user_data         = m_single_data;
-    thread_info_array_[0].number_of_threads = m_number_of_threads;
-    m_single_method(static_cast<void*>(&thread_info_array_[0]));
+    // Now, the parent thread calls single_method_() itself
+    thread_info_array_[0].user_data         = single_data_;
+    thread_info_array_[0].number_of_threads = number_of_threads_;
+    single_method_(static_cast<void*>(&thread_info_array_[0]));
 
-    // The parent thread has finished m_single_method() - so now it
+    // The parent thread has finished single_method_() - so now it
     // waits for each of the other processes to exit
-    for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
+    for (thread_loop = 1; thread_loop < number_of_threads_; thread_loop++)
     {
         pthread_join(process_id[thread_loop], nullptr);
     }
@@ -347,9 +347,9 @@ void multi_threader::single_method_execute()
 #if !XSIGMA_USE_PTHREADS
     (void)thread_loop;
     // There is no multi threading, so there is only one thread.
-    thread_info_array_[0].user_data         = m_single_data;
-    thread_info_array_[0].number_of_threads = m_number_of_threads;
-    m_single_method(static_cast<void*>(&thread_info_array_[0]));
+    thread_info_array_[0].user_data         = single_data_;
+    thread_info_array_[0].number_of_threads = number_of_threads_;
+    single_method_(static_cast<void*>(&thread_info_array_[0]));
 #endif
 #endif
 }
@@ -369,12 +369,12 @@ void multi_threader::multiple_method_execute()
 
     // obey the global maximum number of threads limit
     if ((g_multi_threader_global_maximum_number_of_threads != 0) &&
-        m_number_of_threads > g_multi_threader_global_maximum_number_of_threads)
+        number_of_threads_ > g_multi_threader_global_maximum_number_of_threads)
     {
-        m_number_of_threads = g_multi_threader_global_maximum_number_of_threads;
+        number_of_threads_ = g_multi_threader_global_maximum_number_of_threads;
     }
 
-    for (thread_loop = 0; thread_loop < m_number_of_threads; thread_loop++)
+    for (thread_loop = 0; thread_loop < number_of_threads_; thread_loop++)
     {
         if (multiple_method_[thread_loop] == (thread_function_type) nullptr)
         {
@@ -385,10 +385,10 @@ void multi_threader::multiple_method_execute()
 
 #if XSIGMA_USE_WIN32_THREADS
     // Using CreateThread on Windows
-    for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
+    for (thread_loop = 1; thread_loop < number_of_threads_; thread_loop++)
     {
         thread_info_array_[thread_loop].user_data         = multiple_data_[thread_loop];
-        thread_info_array_[thread_loop].number_of_threads = m_number_of_threads;
+        thread_info_array_[thread_loop].number_of_threads = number_of_threads_;
         process_id[thread_loop]                            = CreateThread(  // NOLINT
             nullptr,
             0,
@@ -404,18 +404,18 @@ void multi_threader::multiple_method_execute()
 
     // Now, the parent thread calls the last method itself
     thread_info_array_[0].user_data         = multiple_data_[0];
-    thread_info_array_[0].number_of_threads = m_number_of_threads;
+    thread_info_array_[0].number_of_threads = number_of_threads_;
     (multiple_method_[0])(static_cast<void*>(&thread_info_array_[0]));
 
     // The parent thread has finished its method - so now it
     // waits for each of the other threads to exit
-    for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
+    for (thread_loop = 1; thread_loop < number_of_threads_; thread_loop++)
     {
         WaitForSingleObject(process_id[thread_loop], INFINITE);  // NOLINT
     }
 
     // close the threads
-    for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
+    for (thread_loop = 1; thread_loop < number_of_threads_; thread_loop++)
     {
         CloseHandle(process_id[thread_loop]);  // NOLINT
     }
@@ -430,10 +430,10 @@ void multi_threader::multiple_method_execute()
     pthread_attr_setscope(&attr, PTHREAD_SCOPE_PROCESS);
 #endif
 
-    for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
+    for (thread_loop = 1; thread_loop < number_of_threads_; thread_loop++)
     {
         thread_info_array_[thread_loop].user_data         = multiple_data_[thread_loop];
-        thread_info_array_[thread_loop].number_of_threads = m_number_of_threads;
+        thread_info_array_[thread_loop].number_of_threads = number_of_threads_;
         pthread_create(
             &(process_id[thread_loop]),
             &attr,
@@ -443,12 +443,12 @@ void multi_threader::multiple_method_execute()
 
     // Now, the parent thread calls the last method itself
     thread_info_array_[0].user_data         = multiple_data_[0];
-    thread_info_array_[0].number_of_threads = m_number_of_threads;
+    thread_info_array_[0].number_of_threads = number_of_threads_;
     (multiple_method_[0])(static_cast<void*>(&thread_info_array_[0]));
 
     // The parent thread has finished its method - so now it
     // waits for each of the other processes to exit
-    for (thread_loop = 1; thread_loop < m_number_of_threads; thread_loop++)
+    for (thread_loop = 1; thread_loop < number_of_threads_; thread_loop++)
     {
         pthread_join(process_id[thread_loop], nullptr);
     }
@@ -458,7 +458,7 @@ void multi_threader::multiple_method_execute()
 #if !XSIGMA_USE_PTHREADS
     // There is no multi threading, so there is only one thread.
     thread_info_array_[0].user_data         = multiple_data_[0];
-    thread_info_array_[0].number_of_threads = m_number_of_threads;
+    thread_info_array_[0].number_of_threads = number_of_threads_;
     (multiple_method_[0])(static_cast<void*>(&thread_info_array_[0]));
 #endif
 #endif

@@ -30,20 +30,20 @@ class threaded_callback_queue::thread_worker
 {
 public:
     thread_worker(threaded_callback_queue* queue, std::shared_ptr<std::atomic_int>& thread_index)
-        : m_queue(queue), m_thread_index(thread_index)
+        : queue_(queue), thread_index_(thread_index)
     {
     }
 
     thread_worker(thread_worker&& other) noexcept
-        : m_queue(other.m_queue), m_thread_index(std::move(other.m_thread_index))
+        : queue_(other.queue_), thread_index_(std::move(other.thread_index_))
     {
     }
 
     void operator()()
     {
         while (this->pop()) {}
-        const std::scoped_lock lock(m_queue->m_control_mutex);
-        m_queue->m_thread_id_to_index.erase(std::this_thread::get_id());
+        const std::scoped_lock lock(queue_->control_mutex_);
+        queue_->thread_id_to_index_.erase(std::this_thread::get_id());
     }
 
 private:
@@ -52,11 +52,11 @@ private:
    */
     bool pop()
     {
-        std::unique_lock<std::mutex> lock(m_queue->m_mutex);
+        std::unique_lock<std::mutex> lock(queue_->mutex_);
 
         if (this->on_hold())
         {
-            m_queue->m_condition_variable.wait(lock, [this] { return !this->on_hold(); });
+            queue_->condition_variable_.wait(lock, [this] { return !this->on_hold(); });
         }
 
         if (!this->can_continue())
@@ -64,17 +64,17 @@ private:
             return false;
         }
 
-        auto& invoker_queue = m_queue->m_invoker_queue;
+        auto& invoker_queue = queue_->invoker_queue_;
 
         const shared_future_base_pointer invoker = std::move(invoker_queue.front());
         invoker_queue.pop_front();
 
-        invoker->m_status.store(RUNNING, std::memory_order_release);
+        invoker->status_.store(RUNNING, std::memory_order_release);
 
-        m_queue->pop_front_nullptr();
+        queue_->pop_front_nullptr();
         lock.unlock();
 
-        m_queue->invoke(invoker.get());
+        queue_->invoke(invoker.get());
 
         return true;
     }
@@ -84,9 +84,9 @@ private:
    */
     [[nodiscard]] bool on_hold() const
     {
-        return *m_thread_index < m_queue->m_number_of_threads &&
-               !m_queue->m_destroying.load(std::memory_order_acquire) &&
-               m_queue->m_invoker_queue.empty();
+        return *thread_index_ < queue_->number_of_threads_ &&
+               !queue_->destroying_.load(std::memory_order_acquire) &&
+               queue_->invoker_queue_.empty();
     }
 
     /**
@@ -94,11 +94,11 @@ private:
    */
     [[nodiscard]] bool can_continue() const
     {
-        return *m_thread_index < m_queue->m_number_of_threads && !m_queue->m_invoker_queue.empty();
+        return *thread_index_ < queue_->number_of_threads_ && !queue_->invoker_queue_.empty();
     }
 
-    threaded_callback_queue*         m_queue;
-    std::shared_ptr<std::atomic_int> m_thread_index;
+    threaded_callback_queue*         queue_;
+    std::shared_ptr<std::atomic_int> thread_index_;
 };
 
 //-----------------------------------------------------------------------------
@@ -111,14 +111,14 @@ threaded_callback_queue::threaded_callback_queue()
 threaded_callback_queue::~threaded_callback_queue()
 {
     {
-        const std::scoped_lock destroy_lock(m_destroy_mutex);
+        const std::scoped_lock destroy_lock(destroy_mutex_);
         {
-            const std::scoped_lock lock(m_mutex);
-            m_destroying = true;
+            const std::scoped_lock lock(mutex_);
+            destroying_ = true;
         }
     }
 
-    m_condition_variable.notify_all();
+    condition_variable_.notify_all();
     this->sync();
 }
 
@@ -136,8 +136,8 @@ void threaded_callback_queue::set_number_of_threads(int number_of_threads)
         {
             const int size = static_cast<int>(threads_.size());
 
-            const std::scoped_lock destroy_lock(m_destroy_mutex);
-            if (m_destroying)
+            const std::scoped_lock destroy_lock(destroy_mutex_);
+            if (destroying_)
             {
                 return;
             }
@@ -147,7 +147,7 @@ void threaded_callback_queue::set_number_of_threads(int number_of_threads)
             }
             if (size < number_of_threads)
             {
-                m_number_of_threads = number_of_threads;
+                number_of_threads_ = number_of_threads;
 
                 std::generate_n(
                     std::back_inserter(threads_),
@@ -158,8 +158,8 @@ void threaded_callback_queue::set_number_of_threads(int number_of_threads)
                             std::make_shared<std::atomic_int>(static_cast<int>(threads_.size()));
                         auto thread = std::thread(thread_worker(this, thread_index));
                         {
-                            const std::scoped_lock thread_id_lock(m_thread_id_to_index_mutex);
-                            m_thread_id_to_index.emplace(thread.get_id(), thread_index);
+                            const std::scoped_lock thread_id_lock(thread_id_to_index_mutex_);
+                            thread_id_to_index_.emplace(thread.get_id(), thread_index);
                         }
                         return thread;
                     });
@@ -167,13 +167,13 @@ void threaded_callback_queue::set_number_of_threads(int number_of_threads)
             else
             {
                 {
-                    std::unique_lock<std::mutex> lock(m_thread_id_to_index_mutex);
+                    std::unique_lock<std::mutex> lock(thread_id_to_index_mutex_);
                     std::atomic_int&             thread_index =
-                        *m_thread_id_to_index.at(std::this_thread::get_id());
+                        *thread_id_to_index_.at(std::this_thread::get_id());
                     if (thread_index && thread_index >= number_of_threads)
                     {
                         std::atomic_int& thread0_index =
-                            *m_thread_id_to_index.at(threads_[0].get_id());
+                            *thread_id_to_index_.at(threads_[0].get_id());
                         lock.unlock();
 
                         std::swap(threads_[thread_index], threads_[0]);
@@ -185,11 +185,11 @@ void threaded_callback_queue::set_number_of_threads(int number_of_threads)
                 }
 
                 {
-                    const std::scoped_lock lock(m_mutex);
-                    m_number_of_threads = number_of_threads;
+                    const std::scoped_lock lock(mutex_);
+                    number_of_threads_ = number_of_threads;
                 }
-                m_condition_variable.notify_all();
-                this->sync(m_number_of_threads);
+                condition_variable_.notify_all();
+                this->sync(number_of_threads_);
 
                 threads_.resize(number_of_threads);
             }
@@ -206,9 +206,9 @@ void threaded_callback_queue::sync(int start_id)
 //-----------------------------------------------------------------------------
 void threaded_callback_queue::pop_front_nullptr()
 {
-    while (!m_invoker_queue.empty() && !m_invoker_queue.front())
+    while (!invoker_queue_.empty() && !invoker_queue_.front())
     {
-        m_invoker_queue.pop_front();
+        invoker_queue_.pop_front();
     }
 }
 
@@ -224,18 +224,18 @@ void threaded_callback_queue::signal_dependent_shared_futures(shared_future_base
 {
     std::vector<shared_future_base_pointer> invokers_to_launch;
     {
-        const std::scoped_lock lock(invoker->m_mutex);
+        const std::scoped_lock lock(invoker->mutex_);
 
-        for (auto& dependent : invoker->m_dependents)
+        for (auto& dependent : invoker->dependents_)
         {
-            std::unique_lock<std::mutex> dependent_lock(dependent->m_mutex);
-            --dependent->m_number_of_prior_shared_futures_remaining;
-            if (dependent->m_status.load(std::memory_order_acquire) == ON_HOLD &&
-                (dependent->m_number_of_prior_shared_futures_remaining == 0))
+            std::unique_lock<std::mutex> dependent_lock(dependent->mutex_);
+            --dependent->number_of_prior_shared_futures_remaining_;
+            if (dependent->status_.load(std::memory_order_acquire) == ON_HOLD &&
+                (dependent->number_of_prior_shared_futures_remaining_ == 0))
             {
-                if (dependent->m_is_high_priority)
+                if (dependent->is_high_priority_)
                 {
-                    dependent->m_status.store(RUNNING, std::memory_order_release);
+                    dependent->status_.store(RUNNING, std::memory_order_release);
                     dependent_lock.unlock();
                     this->invoke(dependent.get());
                 }
@@ -250,25 +250,25 @@ void threaded_callback_queue::signal_dependent_shared_futures(shared_future_base
 
     if (!invokers_to_launch.empty())
     {
-        const std::scoped_lock lock(m_mutex);
-        size_t index = m_invoker_queue.empty() ? static_cast<size_t>(invokers_to_launch.size())
-                                               : m_invoker_queue.front()->m_invoker_index;
+        const std::scoped_lock lock(mutex_);
+        size_t index = invoker_queue_.empty() ? static_cast<size_t>(invokers_to_launch.size())
+                                              : invoker_queue_.front()->invoker_index_;
         for (shared_future_base_pointer& inv : invokers_to_launch)
         {
             assert(
-                inv->m_status.load(std::memory_order_acquire) == ON_HOLD &&
+                inv->status_.load(std::memory_order_acquire) == ON_HOLD &&
                 "Status should be ON_HOLD");
-            inv->m_invoker_index = --index;
+            inv->invoker_index_ = --index;
 
-            const std::scoped_lock state_lock(inv->m_mutex);
-            inv->m_status.store(ENQUEUED, std::memory_order_release);
-            m_invoker_queue.emplace_front(std::move(inv));
+            const std::scoped_lock state_lock(inv->mutex_);
+            inv->status_.store(ENQUEUED, std::memory_order_release);
+            invoker_queue_.emplace_front(std::move(inv));
         }
     }
 
     for (std::size_t i = 0; i < invokers_to_launch.size(); ++i)
     {
-        m_condition_variable.notify_one();
+        condition_variable_.notify_one();
     }
 }
 
@@ -277,29 +277,28 @@ bool threaded_callback_queue::try_invoke(shared_future_base* invoker)
 {
     if (![this, &invoker]
         {
-            if (invoker->m_status.load(std::memory_order_relaxed) != ENQUEUED)
+            if (invoker->status_.load(std::memory_order_relaxed) != ENQUEUED)
             {
                 return false;
             }
 
-            const std::scoped_lock lock(m_mutex);
+            const std::scoped_lock lock(mutex_);
 
-            if (m_invoker_queue.empty())
+            if (invoker_queue_.empty())
             {
                 return false;
             }
 
-            const std::scoped_lock inv_lock(invoker->m_mutex);
+            const std::scoped_lock inv_lock(invoker->mutex_);
 
-            if (invoker->m_status.load(std::memory_order_acquire) != ENQUEUED)
+            if (invoker->status_.load(std::memory_order_acquire) != ENQUEUED)
             {
                 return false;
             }
 
-            const size_t index =
-                invoker->m_invoker_index - m_invoker_queue.front()->m_invoker_index;
+            const size_t index = invoker->invoker_index_ - invoker_queue_.front()->invoker_index_;
 
-            const shared_future_base_pointer& result = m_invoker_queue[index];
+            const shared_future_base_pointer& result = invoker_queue_[index];
 
             if (result.get() != invoker)
             {
@@ -308,10 +307,10 @@ bool threaded_callback_queue::try_invoke(shared_future_base* invoker)
 
             if (index == 0)
             {
-                m_invoker_queue.pop_front();
+                invoker_queue_.pop_front();
                 this->pop_front_nullptr();
             }
-            invoker->m_status.store(RUNNING, std::memory_order_release);
+            invoker->status_.store(RUNNING, std::memory_order_release);
             return true;
         }())
     {

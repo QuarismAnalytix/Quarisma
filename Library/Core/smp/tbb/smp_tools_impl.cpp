@@ -141,7 +141,22 @@ int smp_tools_impl<backend_type::TBB>::estimated_default_number_of_threads()
 template <>
 bool smp_tools_impl<backend_type::TBB>::single_thread()
 {
-    return thread_id_stack->top() == tbb::this_task_arena::current_thread_index();
+    // Check if we're inside a parallel region
+    // If the stack is empty, we're not in a parallel region
+    thread_id_stack_lock->lock();
+    const bool is_empty = thread_id_stack->empty();
+    thread_id_stack_lock->unlock();
+
+    if (is_empty)
+    {
+        return false;
+    }
+
+    thread_id_stack_lock->lock();
+    const int top_id = thread_id_stack->top();
+    thread_id_stack_lock->unlock();
+
+    return top_id == tbb::this_task_arena::current_thread_index();
 }
 
 //------------------------------------------------------------------------------

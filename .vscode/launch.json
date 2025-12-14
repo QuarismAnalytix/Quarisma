@@ -13,6 +13,17 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build_ninja/bin/CoreCxxTests",
+            "args": ["--gtest_filter=SmpTools.parallel_for_basic"],
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "console": "integratedTerminal",
+            "sourceLanguages": ["cpp"]
+        },
+        {
+            "name": "Debug (WSL)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/build_ninja/bin/CoreCxxTests",
             "args": ["--gtest_filter=profiler.autograd_chrome_trace_export"],
             "cwd": "${workspaceFolder}",
             "stopOnEntry": false,

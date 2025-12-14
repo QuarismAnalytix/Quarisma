@@ -75,11 +75,11 @@ constexpr int kNumIterations = 5;
 std::string get_backend_name()
 {
 #if XSIGMA_HAS_OPENMP
-    return "OpenMP";
+    return "openmp";
 #elif XSIGMA_HAS_TBB
-    return "TBB";
+    return "tbb";
 #else
-    return "Native";
+    return "std";
 #endif
 }
 

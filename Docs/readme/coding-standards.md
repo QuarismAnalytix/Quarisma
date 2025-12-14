@@ -203,6 +203,38 @@ XSigma uses `snake_case` for most identifiers, following the Google C++ Style Gu
 | Enum | `snake_case` | `enum class color_type` | Use `enum class` for type safety |
 | Enum Value | `snake_case` | `color_type::dark_red` | All lowercase |
 
+### Member Variable Naming Convention
+
+**CRITICAL RULE:** All class member variables MUST use `snake_case` naming with a trailing underscore (`_`).
+
+**PROHIBITED:** The `m_` prefix (e.g., `m_count`, `m_value`, `m_data`) is **strictly forbidden** for member variables.
+
+**REQUIRED:** Use `snake_case` with a trailing underscore (e.g., `count_`, `value_`, `data_ptr_`).
+
+**Rationale:** The trailing underscore clearly distinguishes member variables from local variables and function parameters, improving code readability and preventing naming conflicts.
+
+#### Member Variable Examples
+
+❌ **Incorrect - Using m_ prefix:**
+```cpp
+class my_class {
+ private:
+  int m_count;           // WRONG - Do not use m_ prefix
+  std::string m_name;    // WRONG - Do not use m_ prefix
+  DataType* m_data;      // WRONG - Do not use m_ prefix
+};
+```
+
+✅ **Correct - Using trailing underscore:**
+```cpp
+class my_class {
+ private:
+  int count_;            // Correct - snake_case with trailing _
+  std::string name_;     // Correct - snake_case with trailing _
+  DataType* data_;       // Correct - snake_case with trailing _
+};
+```
+
 ### Naming Examples
 
 ```cpp
@@ -210,15 +242,15 @@ XSigma uses `snake_case` for most identifiers, following the Google C++ Style Gu
 class data_processor {
  public:
   void process_data(const std::vector<int>& input_data) {
-    int total_count = 0;
+    int total_count = 0;  // Local variable - no trailing underscore
     for (int value : input_data) {
       total_count += value;
     }
   }
-  
+
  private:
-  int result_;
-  const int kMaxBufferSize = 1024;
+  int result_;                    // Member variable - trailing underscore
+  const int kMaxBufferSize = 1024;  // Constant - kConstantName style
 };
 
 enum class status_type {
@@ -1713,6 +1745,7 @@ std::unique_ptr<my_class> obj = std::make_unique<my_class>();
 - ❌ Using exceptions or `try`/`catch`/`throw`
 - ❌ Violating include path rules (starting with `Core/`)
 - ❌ Mixing naming conventions (e.g., `camelCase` with `snake_case`)
+- ❌ Using `m_` prefix for member variables (e.g., `m_count`, `m_value`) instead of trailing underscore (`count_`, `value_`)
 - ❌ Omitting required macros (`XSIGMA_API`, `XSIGMA_VISIBILITY`)
 - ❌ Submitting untested or low-coverage code (below 98%)
 - ❌ Using raw pointers for ownership

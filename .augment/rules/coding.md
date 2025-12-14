@@ -71,7 +71,39 @@ All code must follow these naming conventions consistently:
 
 **IMPORTANT:** Maintain uniform naming across the entire file. Mixing conventions (e.g., `camelCase` with `snake_case`) is strictly prohibited.
 
-### 2.2 Examples
+### 2.2 Member Variable Naming - Critical Rule
+
+**MANDATORY:** All class member variables MUST use `snake_case` naming with a trailing underscore (`_`).
+
+**PROHIBITED:** The `m_` prefix (e.g., `m_count`, `m_value`, `m_data`) is **strictly forbidden** for member variables.
+
+**REQUIRED:** Use `snake_case` with a trailing underscore (e.g., `count_`, `value_`, `data_ptr_`).
+
+**Rationale:** The trailing underscore clearly distinguishes member variables from local variables and function parameters, improving code readability and preventing naming conflicts. This convention is enforced throughout the entire XSigma codebase and must be followed in all code reviews and automated linting.
+
+❌ **Incorrect - Using m_ prefix:**
+
+```cpp
+class my_class {
+ private:
+  int m_count;           // WRONG - Do not use m_ prefix
+  std::string m_name;    // WRONG - Do not use m_ prefix
+  DataType* m_data;      // WRONG - Do not use m_ prefix
+};
+```
+
+✅ **Correct - Using trailing underscore:**
+
+```cpp
+class my_class {
+ private:
+  int count_;            // Correct - snake_case with trailing _
+  std::string name_;     // Correct - snake_case with trailing _
+  DataType* data_;       // Correct - snake_case with trailing _
+};
+```
+
+### 2.3 Complete Naming Examples
 
 ❌ **Incorrect:**
 
