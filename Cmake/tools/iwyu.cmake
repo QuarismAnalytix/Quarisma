@@ -76,6 +76,8 @@ else()
       "--no_fwd_decls"
       "-Xiwyu"
       "--quoted_includes_first"
+      "-Xiwyu"
+      "--transitive_includes_only"
   )
 
   # Add system root for macOS to help IWYU find system headers

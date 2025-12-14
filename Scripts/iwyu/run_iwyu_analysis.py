@@ -192,6 +192,8 @@ def main():
         "--no_fwd_decls",
         "-Xiwyu",
         "--quoted_includes_first",
+        "-Xiwyu",
+        "--transitive_includes_only"
     ]
 
     if args.mapping_file and os.path.exists(args.mapping_file):
