@@ -449,9 +449,10 @@ ExtraFields<EventType::PyCall>::args_t ValueCache::load<CallType::PyModuleCall>(
     const auto&  cls_and_parameters = cache.cls_and_parameters_.xsigma(key);
     const auto&  cls                = cls_and_parameters.cls_;
     NNModuleInfo info{key, cls, cache.cls_names_.xsigma(cls), cls_and_parameters.parameters_};
-    return {/*frame_state_=*/std::get<CallType::PyCall>(state_).xsigma(*cache.location_),
-            /*module_info_=*/std::move(info),
-            /*optimizer_info_=*/std::nullopt};
+    return {
+        /*frame_state_=*/std::get<CallType::PyCall>(state_).xsigma(*cache.location_),
+        /*module_info_=*/std::move(info),
+        /*optimizer_info_=*/std::nullopt};
 }
 
 template <>
@@ -478,9 +479,8 @@ void ValueCache::store<CallType::PyOptimizerCall>(
                     params.push_back(
                         {toTensorMetadata(param.ptr()),
                          recordIfTensor(py::getattr(param, "grad", py::none())),
-                         unpackTensorMap(
-                             py::cast<py::dict>(self.attr("state"))
-                                 .attr("get")(param, py::dict()))});
+                         unpackTensorMap(py::cast<py::dict>(self.attr("state"))
+                                             .attr("get")(param, py::dict()))});
                 }
             }
         }
@@ -497,11 +497,12 @@ ExtraFields<EventType::PyCall>::args_t ValueCache::load<CallType::PyOptimizerCal
     const auto&   cls_and_parameters = cache.cls_and_parameters_.xsigma(key);
     auto          cls                = cls_and_parameters.cls_;
     OptimizerInfo info{key, cls, cache.cls_names_.xsigma(cls), cls_and_parameters.parameters_};
-    return {/*frame_state_=*/std::get<CallType::PyCall>(state_).xsigma(
-                // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-                cache.location_.value()),
-            /*module_info_=*/std::nullopt,
-            /*optimizer_info_=*/std::move(info)};
+    return {
+        /*frame_state_=*/std::get<CallType::PyCall>(state_).xsigma(
+            // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+            cache.location_.value()),
+        /*module_info_=*/std::nullopt,
+        /*optimizer_info_=*/std::move(info)};
 }
 
 template <>
@@ -1452,9 +1453,8 @@ private:
                     pop(tstack, exit.t_);
                     state.exits_.pop();
                 }
-                out.push_back(
-                    Result::create(
-                        enter.enter_t_, enter.system_tid_, enter.kineto_info_, fields_it->second));
+                out.push_back(Result::create(
+                    enter.enter_t_, enter.system_tid_, enter.kineto_info_, fields_it->second));
 
                 stacks[fields_it->second.python_tid_].push_back(out.back());
             }
@@ -1499,7 +1499,7 @@ private:
     template <EventType E>
     auto& get_state()
     {
-        return std::get<E == EventType::PyCall ? 0 : 1>(state_);
+        return std::get < E == EventType::PyCall ? 0 : 1 > (state_);
     }
 
     xsigma::time_t                                                  end_time_;

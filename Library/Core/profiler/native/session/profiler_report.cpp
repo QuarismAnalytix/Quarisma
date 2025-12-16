@@ -810,8 +810,7 @@ void profiler_report::process_scope_data_recursive(
 {
     std::string const prefix(static_cast<size_t>(indent) * 2, ' ');
     ss << prefix << "- " << scope.name_ << " | duration " << format_double(scope.get_duration_ms())
-       << " ms"
-       << " | thread " << format_thread_id(scope.thread_id_) << " | memory "
+       << " ms" << " | thread " << format_thread_id(scope.thread_id_) << " | memory "
        << format_memory_delta(scope.memory_stats_.delta_since_start_) << "\n";
 
     for (const auto& child : scope.children_)

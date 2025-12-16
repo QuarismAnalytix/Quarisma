@@ -1356,8 +1356,7 @@ void ProcessSliceNode(Node* n, int opset_version)
                 bool                  start_end_step_known = std::all_of(
                     indices.begin(),
                     indices.end(),
-                    [&n](auto i)
-                    {
+                    [&n](auto i) {
                         return (i >= n->inputs().size()) ||
                                ConstantValueMap::HasValue(n->input(i)->debugName());
                     });
@@ -2507,9 +2506,10 @@ void ONNXShapeTypeInference(Node* n, const ParamMap& params_dict, int opset_vers
                 case ::xsigma::onnx::Gather:
                 {
                     auto* schema_registry = onnx::OpSchemaRegistry::Instance();
-                    onnx::ShapeInferenceOptions options{/*check_type_val=*/false,
-                                                        /*strict_mode_val=*/0,
-                                                        /*data_prop_val=*/true};
+                    onnx::ShapeInferenceOptions options{
+                        /*check_type_val=*/false,
+                        /*strict_mode_val=*/0,
+                        /*data_prop_val=*/true};
                     onnx::shape_inference::InferShapes(
                         *model_proto, schema_registry, options, &inferred_shape_data);
                     break;

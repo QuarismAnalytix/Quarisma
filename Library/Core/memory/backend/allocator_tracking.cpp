@@ -752,8 +752,7 @@ std::string allocator_tracking::GenerateReport(bool include_allocations) const
             {
                 const auto& record = records[i];
                 report << "  [" << record.allocation_id << "] " << record.requested_bytes << "/"
-                       << record.alloc_bytes << " bytes, "
-                       << "align=" << record.alignment << ", "
+                       << record.alloc_bytes << " bytes, " << "align=" << record.alignment << ", "
                        << "time=" << record.alloc_duration_us << "μs";
 
                 if (!record.tag.empty())

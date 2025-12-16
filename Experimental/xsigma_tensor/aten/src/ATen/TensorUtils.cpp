@@ -320,8 +320,7 @@ void checkScalarTypes(CheckedFrom c, const TensorArg& t, at::ArrayRef<ScalarType
     if (std::find(l.begin(), l.end(), t->scalar_type()) == l.end())
     {
         std::ostringstream oss;
-        oss << "Expected tensor for " << t << " to have one of the following "
-            << "scalar types: ";
+        oss << "Expected tensor for " << t << " to have one of the following " << "scalar types: ";
         size_t i = 0;
         for (auto ty : l)
         {

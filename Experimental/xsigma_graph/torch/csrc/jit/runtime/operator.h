@@ -150,8 +150,7 @@ public:
         // TODO: some sort of caching mechanism?
         return std::visit(
             xsigma::overloaded(
-                [dk](const C10Operator& op)
-                {
+                [dk](const C10Operator& op) {
                     return Operation([op, dk](Stack& stack)
                                      { op.handle_.callBoxedForDispatchKey(dk, stack); });
                 },

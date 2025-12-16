@@ -197,8 +197,8 @@ public:
 #endif
                   .create()))
     {
-        auto ProcSymbolsGenerator = assertSuccess(
-            DynamicLibrarySearchGenerator::GetForCurrentProcess(
+        auto ProcSymbolsGenerator =
+            assertSuccess(DynamicLibrarySearchGenerator::GetForCurrentProcess(
                 LLJ->getDataLayout().getGlobalPrefix()));
         auto& JD = LLJ->getMainJITDylib();
 #if LLVM_VERSION_MAJOR == 9

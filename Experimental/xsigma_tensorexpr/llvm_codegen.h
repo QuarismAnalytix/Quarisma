@@ -70,7 +70,7 @@ public:
     template <typename T>
     T value(void** args)
     {
-        T (*fp)(void**) = (T (*)(void**))getKernelAddress(callee_.get());
+        T (*fp)(void**) = (T(*)(void**))getKernelAddress(callee_.get());
         T rv            = fp(args);
         return rv;
     }

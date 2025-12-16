@@ -66,7 +66,7 @@ using StorageImplData = strong::
 class WeakTensor
 {
 public:
-    explicit WeakTensor(XSIGMA_UNUSED const xsigma::Tensor&) {};
+    explicit WeakTensor(XSIGMA_UNUSED const xsigma::Tensor&){};
 
     /*: weak_self_(t.getIntrusivePtr()) {}*/
 

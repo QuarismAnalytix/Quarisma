@@ -110,9 +110,8 @@ protected:
     // taken to avoid decrementing this reference count at destruction
     // time. Intended to support MaybeOwnedTraits<Tensor>.
     explicit TensorBase(unsafe_borrow_t /*unused*/, const TensorBase& rhs)
-        : impl_(
-              c10::intrusive_ptr<at::TensorImpl, UndefinedTensorImpl>(
-                  rhs.impl_.get(), c10::raw::DontIncreaseRefcount{}))
+        : impl_(c10::intrusive_ptr<at::TensorImpl, UndefinedTensorImpl>(
+              rhs.impl_.get(), c10::raw::DontIncreaseRefcount{}))
     {
     }
     friend MaybeOwnedTraits<TensorBase>;

@@ -582,8 +582,7 @@ std::thread smp_thread_pool::make_thread()
                                // Wait for work or shutdown signal
                                thread_data_ref.condition_variable_.wait(
                                    lock,
-                                   [this, &thread_data_ref]
-                                   {
+                                   [this, &thread_data_ref] {
                                        return !thread_data_ref.jobs_.empty() ||
                                               joining_.load(std::memory_order_acquire);
                                    });

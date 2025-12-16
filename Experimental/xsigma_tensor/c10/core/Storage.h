@@ -42,9 +42,8 @@ public:
         const SymInt& size_bytes,
         Allocator*    allocator = nullptr,
         bool          resizable = false)
-        : storage_impl_(
-              c10::make_intrusive<StorageImpl>(
-                  StorageImpl::use_byte_size_t(), size_bytes, allocator, resizable))
+        : storage_impl_(c10::make_intrusive<StorageImpl>(
+              StorageImpl::use_byte_size_t(), size_bytes, allocator, resizable))
     {
     }
 
@@ -57,13 +56,12 @@ public:
         at::DataPtr    data_ptr,
         at::Allocator* allocator = nullptr,
         bool           resizable = false)
-        : storage_impl_(
-              c10::make_intrusive<StorageImpl>(
-                  StorageImpl::use_byte_size_t(),
-                  size_bytes,
-                  std::move(data_ptr),
-                  allocator,
-                  resizable))
+        : storage_impl_(c10::make_intrusive<StorageImpl>(
+              StorageImpl::use_byte_size_t(),
+              size_bytes,
+              std::move(data_ptr),
+              allocator,
+              resizable))
     {
     }
 
@@ -76,13 +74,12 @@ public:
         at::DataPtr    data_ptr,
         at::Allocator* allocator = nullptr,
         bool           resizable = false)
-        : storage_impl_(
-              c10::make_intrusive<StorageImpl>(
-                  StorageImpl::use_byte_size_t(),
-                  std::move(size_bytes),
-                  std::move(data_ptr),
-                  allocator,
-                  resizable))
+        : storage_impl_(c10::make_intrusive<StorageImpl>(
+              StorageImpl::use_byte_size_t(),
+              std::move(size_bytes),
+              std::move(data_ptr),
+              allocator,
+              resizable))
     {
     }
 
@@ -101,13 +98,12 @@ public:
     static Storage create_legacy(at::Device device)
     {
         auto allocator = GetAllocator(device.type());
-        return Storage(
-            c10::make_intrusive<StorageImpl>(
-                StorageImpl::use_byte_size_t(),
-                0,
-                allocator->allocate(0),  // materialize a non-default Device.
-                allocator,
-                true));
+        return Storage(c10::make_intrusive<StorageImpl>(
+            StorageImpl::use_byte_size_t(),
+            0,
+            allocator->allocate(0),  // materialize a non-default Device.
+            allocator,
+            true));
     }
 
     // Mimic create_legacy, but without requiring a newly-created StorageImpl.

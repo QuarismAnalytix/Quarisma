@@ -136,11 +136,15 @@ else()
   # - Windows: .dll extension
   # - macOS: .dylib extension (libraries don't have 'lib' prefix)
   # - Linux: .so extension
+  # NOTE: LLDEnzyme is preferred over LLVMEnzyme for better compatibility
   set(_found_enzyme_files)
   foreach(_search_path ${_enzyme_search_paths})
     if(WIN32)
       # Windows DLL search patterns
       file(GLOB _enzyme_candidates
+        "${_search_path}/LLDEnzyme-${CMAKE_CXX_COMPILER_VERSION}.dll"
+        "${_search_path}/LLDEnzyme-${_llvm_major_version}.dll"
+        "${_search_path}/LLDEnzyme.dll"
         "${_search_path}/ClangEnzyme-${CMAKE_CXX_COMPILER_VERSION}.dll"
         "${_search_path}/ClangEnzyme-${_llvm_major_version}.dll"
         "${_search_path}/ClangEnzyme.dll"
@@ -151,6 +155,9 @@ else()
     elseif(APPLE)
       # macOS dylib search patterns
       file(GLOB _enzyme_candidates
+        "${_search_path}/LLDEnzyme-${CMAKE_CXX_COMPILER_VERSION}.dylib"
+        "${_search_path}/LLDEnzyme-${_llvm_major_version}.dylib"
+        "${_search_path}/LLDEnzyme.dylib"
         "${_search_path}/ClangEnzyme-${CMAKE_CXX_COMPILER_VERSION}.dylib"
         "${_search_path}/ClangEnzyme-${_llvm_major_version}.dylib"
         "${_search_path}/ClangEnzyme.dylib"
@@ -160,7 +167,11 @@ else()
       )
     else()
       # Linux/Unix .so search patterns
+      # Prefer LLDEnzyme for better compatibility
       file(GLOB _enzyme_candidates
+        "${_search_path}/LLDEnzyme-${CMAKE_CXX_COMPILER_VERSION}.so"
+        "${_search_path}/LLDEnzyme-${_llvm_major_version}.so"
+        "${_search_path}/LLDEnzyme.so"
         "${_search_path}/ClangEnzyme-${CMAKE_CXX_COMPILER_VERSION}.so"
         "${_search_path}/ClangEnzyme-${_llvm_major_version}.so"
         "${_search_path}/ClangEnzyme.so"
@@ -299,6 +310,10 @@ if(NOT TARGET XSigma::enzyme)
 
   # Add Enzyme compiler flags to the interface
   target_compile_options(XSigma::enzyme INTERFACE ${ENZYME_COMPILE_OPTIONS})
+
+  # Add Enzyme linker flags to the interface
+  # The plugin must be loaded at link time as well to provide the __enzyme_* symbols
+  target_link_options(XSigma::enzyme INTERFACE ${ENZYME_COMPILE_OPTIONS})
 
   # Add Enzyme compile definition
   target_compile_definitions(XSigma::enzyme INTERFACE XSIGMA_HAS_ENZYME=1)

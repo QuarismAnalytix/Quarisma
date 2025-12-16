@@ -27,22 +27,23 @@
 using namespace xsigma;
 
 // ============================================================================
-// Basic flat_hash_map Tests
+// Consolidated Test 1: Basic Map and Set Operations
 // ============================================================================
-
-XSIGMATEST(FlatHash, map_basic_operations)
+// Tests: basic operations, value types, iteration, capacity, edge cases,
+//        copy/move semantics, emplace, aliases, insert operations
+XSIGMATEST(FlatHash, map_and_set_comprehensive)
 {
+    // ===== MAP BASIC OPERATIONS =====
     flat_hash_map<int, std::string> map;
 
     // Test empty map
     EXPECT_TRUE(map.empty());
     EXPECT_EQ(map.size(), 0);
 
-    // Test insert
+    // Test insert via operator[]
     map[1] = "one";
     map[2] = "two";
     map[3] = "three";
-
     EXPECT_FALSE(map.empty());
     EXPECT_EQ(map.size(), 3);
 
@@ -50,7 +51,6 @@ XSIGMATEST(FlatHash, map_basic_operations)
     auto it1 = map.find(1);
     EXPECT_TRUE(it1 != map.end());
     EXPECT_EQ(it1->second, "one");
-
     auto it_not_found = map.find(99);
     EXPECT_TRUE(it_not_found == map.end());
 
@@ -64,15 +64,7 @@ XSIGMATEST(FlatHash, map_basic_operations)
     EXPECT_TRUE(map.empty());
     EXPECT_EQ(map.size(), 0);
 
-    END_TEST();
-}
-
-// ============================================================================
-// Basic flat_hash_set Tests
-// ============================================================================
-
-XSIGMATEST(FlatHash, set_basic_operations)
-{
+    // ===== SET BASIC OPERATIONS =====
     flat_hash_set<int> set;
 
     // Test empty set
@@ -83,16 +75,13 @@ XSIGMATEST(FlatHash, set_basic_operations)
     set.insert(1);
     set.insert(2);
     set.insert(3);
-
     EXPECT_FALSE(set.empty());
     EXPECT_EQ(set.size(), 3);
 
-    // Test find
+    // Test find and contains
     EXPECT_TRUE(set.find(1) != set.end());
     EXPECT_TRUE(set.find(2) != set.end());
     EXPECT_TRUE(set.find(99) == set.end());
-
-    // Test contains
     EXPECT_TRUE(set.contains(1));
     EXPECT_TRUE(set.contains(2));
     EXPECT_FALSE(set.contains(99));
@@ -111,18 +100,7 @@ XSIGMATEST(FlatHash, set_basic_operations)
     set.clear();
     EXPECT_TRUE(set.empty());
 
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, set_value_types)
-{
-    // Test with int
-    flat_hash_set<int> int_set;
-    int_set.insert(1);
-    int_set.insert(2);
-    int_set.insert(3);
-    EXPECT_EQ(int_set.size(), 3);
-
+    // ===== VALUE TYPES =====
     // Test with string
     flat_hash_set<std::string> str_set;
     str_set.insert("hello");
@@ -131,23 +109,14 @@ XSIGMATEST(FlatHash, set_value_types)
     EXPECT_TRUE(str_set.contains("world"));
     EXPECT_FALSE(str_set.contains("foo"));
 
-    END_TEST();
-}
-
-// ============================================================================
-// Iteration Tests
-// ============================================================================
-
-XSIGMATEST(FlatHash, iteration)
-{
-    // Test map iteration
-    flat_hash_map<int, std::string> map;
-    map[1] = "one";
-    map[2] = "two";
-    map[3] = "three";
+    // ===== ITERATION =====
+    flat_hash_map<int, std::string> map2;
+    map2[1] = "one";
+    map2[2] = "two";
+    map2[3] = "three";
 
     int count = 0;
-    for (const auto& pair : map)
+    for (const auto& pair : map2)
     {
         EXPECT_TRUE(pair.first >= 1 && pair.first <= 3);
         count++;
@@ -155,71 +124,49 @@ XSIGMATEST(FlatHash, iteration)
     EXPECT_EQ(count, 3);
 
     // Test set iteration
-    flat_hash_set<int> set;
-    set.insert(1);
-    set.insert(2);
-    set.insert(3);
+    flat_hash_set<int> set2;
+    set2.insert(1);
+    set2.insert(2);
+    set2.insert(3);
 
     count = 0;
-    for (int value : set)
+    for (int value : set2)
     {
         EXPECT_TRUE(value >= 1 && value <= 3);
         count++;
     }
     EXPECT_EQ(count, 3);
 
-    END_TEST();
-}
-
-// ============================================================================
-// Capacity Tests
-// ============================================================================
-
-XSIGMATEST(FlatHash, capacity)
-{
-    flat_hash_map<int, int> map;
+    // ===== CAPACITY =====
+    flat_hash_map<int, int> cap_map;
 
     // Test reserve
-    map.reserve(100);
-    EXPECT_GE(map.bucket_count(), 100);
+    cap_map.reserve(100);
+    EXPECT_GE(cap_map.bucket_count(), 100);
 
     // Insert elements
     for (int i = 0; i < 10; ++i)
     {
-        map[i] = i * 10;
+        cap_map[i] = i * 10;
     }
-    EXPECT_EQ(map.size(), 10);
+    EXPECT_EQ(cap_map.size(), 10);
 
     // Test load factor
-    float load = map.load_factor();
+    float load = cap_map.load_factor();
     EXPECT_GT(load, 0.0f);
-    EXPECT_LE(load, map.max_load_factor());
+    EXPECT_LE(load, cap_map.max_load_factor());
 
-    END_TEST();
-}
-
-// ============================================================================
-// Edge Cases Tests
-// ============================================================================
-
-// ============================================================================
-// Edge Cases Tests
-// ============================================================================
-
-XSIGMATEST(FlatHash, edge_cases)
-{
+    // ===== EDGE CASES =====
     // Test empty map operations
     flat_hash_map<int, int> empty_map;
     EXPECT_TRUE(empty_map.find(1) == empty_map.end());
     EXPECT_EQ(empty_map.erase(1), 0);
 
-    // Test single element
+    // Test single element and overwriting
     flat_hash_map<int, int> single_map;
     single_map[1] = 100;
     EXPECT_EQ(single_map.size(), 1);
     EXPECT_EQ(single_map[1], 100);
-
-    // Test overwriting value
     single_map[1] = 200;
     EXPECT_EQ(single_map.size(), 1);
     EXPECT_EQ(single_map[1], 200);
@@ -230,106 +177,403 @@ XSIGMATEST(FlatHash, edge_cases)
     EXPECT_EQ(empty_set.erase(1), 0);
 
     // Test duplicate handling in set
-    flat_hash_set<int> set;
-    set.insert(1);
-    set.insert(1);
-    set.insert(1);
-    EXPECT_EQ(set.size(), 1);
+    flat_hash_set<int> dup_set;
+    dup_set.insert(1);
+    dup_set.insert(1);
+    dup_set.insert(1);
+    EXPECT_EQ(dup_set.size(), 1);
 
-    END_TEST();
-}
+    // ===== COPY SEMANTICS =====
+    flat_hash_map<int, std::string> map3;
+    map3[1] = "one";
+    map3[2] = "two";
 
-// ============================================================================
-// Copy and Move Semantics Tests
-// ============================================================================
+    flat_hash_map<int, std::string> map4(map3);
+    EXPECT_EQ(map4.size(), 2);
+    EXPECT_EQ(map4[1], "one");
+    EXPECT_EQ(map4[2], "two");
 
-XSIGMATEST(FlatHash, copy_move_semantics)
-{
-    // Test map copy constructor
-    flat_hash_map<int, std::string> map1;
-    map1[1] = "one";
-    map1[2] = "two";
-
-    flat_hash_map<int, std::string> map2(map1);
-    EXPECT_EQ(map2.size(), 2);
-    EXPECT_EQ(map2[1], "one");
-    EXPECT_EQ(map2[2], "two");
+    // Verify independence
+    map3[1] = "ONE";
+    EXPECT_EQ(map4[1], "one");
 
     // Test set copy constructor
-    flat_hash_set<int> set1;
-    set1.insert(1);
-    set1.insert(2);
+    flat_hash_set<int> set3;
+    set3.insert(1);
+    set3.insert(2);
 
-    flat_hash_set<int> set2(set1);
-    EXPECT_EQ(set2.size(), 2);
-    EXPECT_TRUE(set2.contains(1));
-    EXPECT_TRUE(set2.contains(2));
+    flat_hash_set<int> set4(set3);
+    EXPECT_EQ(set4.size(), 2);
+    EXPECT_TRUE(set4.contains(1));
+    EXPECT_TRUE(set4.contains(2));
 
-    END_TEST();
-}
-
-// ============================================================================
-// Emplace Tests
-// ============================================================================
-
-// ============================================================================
-// Emplace Tests
-// ============================================================================
-
-XSIGMATEST(FlatHash, emplace_operations)
-{
-    // Test map emplace
-    flat_hash_map<int, std::string> map;
-    auto                            result1 = map.emplace(1, "one");
+    // ===== EMPLACE OPERATIONS =====
+    flat_hash_map<int, std::string> emplace_map;
+    auto                            result1 = emplace_map.emplace(1, "one");
     EXPECT_TRUE(result1.second);  // Insertion successful
     EXPECT_EQ(result1.first->second, "one");
 
     // Test duplicate emplace
-    auto result2 = map.emplace(1, "ONE");
+    auto result2 = emplace_map.emplace(1, "ONE");
     EXPECT_FALSE(result2.second);             // Insertion failed (duplicate)
     EXPECT_EQ(result2.first->second, "one");  // Original value unchanged
 
     // Test set emplace
-    flat_hash_set<int> set;
-    auto               result3 = set.emplace(42);
+    flat_hash_set<int> emplace_set;
+    auto               result3 = emplace_set.emplace(42);
     EXPECT_TRUE(result3.second);
-
-    auto result4 = set.emplace(42);
+    auto result4 = emplace_set.emplace(42);
     EXPECT_FALSE(result4.second);  // Duplicate
 
+    // ===== XSIGMA ALIASES =====
+    xsigma_map<int, std::string> alias_map;
+    alias_map[1] = "one";
+    alias_map[2] = "two";
+    EXPECT_EQ(alias_map.size(), 2);
+    EXPECT_EQ(alias_map[1], "one");
+
+    xsigma_set<int> alias_set;
+    alias_set.insert(1);
+    alias_set.insert(2);
+    EXPECT_EQ(alias_set.size(), 2);
+    EXPECT_TRUE(alias_set.contains(1));
+
+    // ===== INSERT OPERATIONS =====
+    flat_hash_map<int, std::string> insert_map;
+
+    // Insert const value
+    const std::pair<int, std::string> value(1, "one");
+    auto                              insert_result = insert_map.insert(value);
+    EXPECT_TRUE(insert_result.second);
+    EXPECT_EQ(insert_result.first->first, 1);
+    EXPECT_EQ(insert_result.first->second, "one");
+
+    // Insert rvalue
+    auto rvalue_result = insert_map.insert(std::make_pair(2, "two"));
+    EXPECT_TRUE(rvalue_result.second);
+    EXPECT_EQ(rvalue_result.first->first, 2);
+    EXPECT_EQ(rvalue_result.first->second, "two");
+
+    // Insert duplicate
+    auto dup_result = insert_map.insert({1, "20"});
+    EXPECT_FALSE(dup_result.second);
+    EXPECT_EQ(dup_result.first->second, "one");  // Original value unchanged
+
+    // insert_or_assign and contains
+    flat_hash_map<int, std::string> ioa_map;
+    ioa_map.insert_or_assign(1, std::string("one"));
+    EXPECT_EQ(ioa_map.size(), 1);
+    EXPECT_TRUE(ioa_map.contains(1));
+    EXPECT_EQ(ioa_map.find(1)->second, "one");
+
+    // Assign existing key (value should be updated, size unchanged)
+    ioa_map.insert_or_assign(1, std::string("ONE"));
+    EXPECT_EQ(ioa_map.size(), 1);
+    EXPECT_TRUE(ioa_map.contains(1));
+    EXPECT_EQ(ioa_map.find(1)->second, "ONE");
+
+    // Insert another key via iterator overload
+    ioa_map.insert_or_assign(ioa_map.cbegin(), 2, std::string("two"));
+    EXPECT_EQ(ioa_map.size(), 2);
+    EXPECT_TRUE(ioa_map.contains(2));
+
+    // ===== MAP AT ACCESSORS =====
+    flat_hash_map<int, int> at_map;
+    at_map[10]          = 42;
+    const auto& cat_map = at_map;
+
+    EXPECT_EQ(at_map.at(10), 42);
+    EXPECT_EQ(cat_map.at(10), 42);
+
     END_TEST();
 }
 
 // ============================================================================
-// xsigma_map and xsigma_set Alias Tests
+// Consolidated Test 2: Constructors and Move Semantics
 // ============================================================================
-
-XSIGMATEST(FlatHash, xsigma_aliases)
+// Tests: default constructor, bucket count constructor, initializer list,
+//        move constructor, copy constructor, move assignments
+XSIGMATEST(FlatHash, constructors_and_move_semantics)
 {
-    // Test xsigma_map
-    xsigma_map<int, std::string> map;
-    map[1] = "one";
-    map[2] = "two";
-    EXPECT_EQ(map.size(), 2);
-    EXPECT_EQ(map[1], "one");
+    // ===== DEFAULT CONSTRUCTOR =====
+    flat_hash_map<int, int> default_map;
+    EXPECT_TRUE(default_map.empty());
+    EXPECT_EQ(default_map.size(), 0);
+    EXPECT_EQ(default_map.bucket_count(), 0);
 
-    // Test xsigma_set
-    xsigma_set<int> set;
-    set.insert(1);
-    set.insert(2);
-    EXPECT_EQ(set.size(), 2);
-    EXPECT_TRUE(set.contains(1));
+    // ===== BUCKET COUNT CONSTRUCTOR =====
+    flat_hash_map<int, int> bucket_map(100);
+    EXPECT_TRUE(bucket_map.empty());
+    EXPECT_GE(bucket_map.bucket_count(), 100);
+
+    // ===== BUCKET COUNT WITH HASH AND EQUAL =====
+    std::hash<int>          hash;
+    std::equal_to<int>      equal;
+    flat_hash_map<int, int> hash_map(50, hash, equal);
+    EXPECT_TRUE(hash_map.empty());
+    EXPECT_GE(hash_map.bucket_count(), 50);
+
+    // ===== INITIALIZER LIST CONSTRUCTOR (EMPTY) =====
+    flat_hash_map<int, int> empty_init({});
+    EXPECT_TRUE(empty_init.empty());
+    EXPECT_EQ(empty_init.size(), 0);
+
+    // ===== INITIALIZER LIST CONSTRUCTOR (SMALL) =====
+    flat_hash_map<int, int> small_init({{1, 10}, {2, 20}, {3, 30}});
+    EXPECT_EQ(small_init.size(), 3);
+    EXPECT_EQ(small_init[1], 10);
+    EXPECT_EQ(small_init[2], 20);
+    EXPECT_EQ(small_init[3], 30);
+
+    // ===== INITIALIZER LIST CONSTRUCTOR (LARGE) =====
+    std::vector<std::pair<int, int>> items;
+    for (int i = 0; i < 100; ++i)
+    {
+        items.push_back({i, i * 10});
+    }
+
+    flat_hash_map<int, int> large_init(items.begin(), items.end());
+    EXPECT_EQ(large_init.size(), 100);
+    for (int i = 0; i < 100; ++i)
+    {
+        EXPECT_EQ(large_init[i], i * 10);
+    }
+
+    // ===== MOVE CONSTRUCTOR =====
+    flat_hash_map<int, std::string> move_src;
+    move_src[1] = "one";
+    move_src[2] = "two";
+    move_src[3] = "three";
+
+    flat_hash_map<int, std::string> move_dst(std::move(move_src));
+    EXPECT_EQ(move_dst.size(), 3);
+    EXPECT_EQ(move_dst[1], "one");
+    EXPECT_EQ(move_dst[2], "two");
+    EXPECT_EQ(move_dst[3], "three");
+
+    // ===== COPY CONSTRUCTOR =====
+    flat_hash_map<int, std::string> copy_src;
+    copy_src[1] = "one";
+    copy_src[2] = "two";
+
+    flat_hash_map<int, std::string> copy_dst(copy_src);
+    EXPECT_EQ(copy_dst.size(), 2);
+    EXPECT_EQ(copy_dst[1], "one");
+    EXPECT_EQ(copy_dst[2], "two");
+
+    // Verify independence
+    copy_src[1] = "ONE";
+    EXPECT_EQ(copy_dst[1], "one");
+
+    // ===== MOVE ASSIGNMENT (SELF) =====
+    flat_hash_map<int, int> self_map;
+    self_map[1] = 10;
+    self_map[2] = 20;
+
+    self_map = std::move(self_map);
+    EXPECT_EQ(self_map.size(), 2);
+    EXPECT_EQ(self_map[1], 10);
+    EXPECT_EQ(self_map[2], 20);
+
+    // ===== MOVE ASSIGNMENT (DIFFERENT) =====
+    flat_hash_map<int, int> ma_src;
+    ma_src[1] = 10;
+    ma_src[2] = 20;
+
+    flat_hash_map<int, int> ma_dst;
+    ma_dst[3] = 30;
+
+    ma_dst = std::move(ma_src);
+    EXPECT_EQ(ma_dst.size(), 2);
+    EXPECT_EQ(ma_dst[1], 10);
+    EXPECT_EQ(ma_dst[2], 20);
+    EXPECT_FALSE(ma_dst.contains(3));
+
+    // ===== MOVE ASSIGNMENT (EMPTY TO NONEMPTY) =====
+    flat_hash_map<int, int> empty_src;
+    flat_hash_map<int, int> nonempty_dst;
+    nonempty_dst[1] = 10;
+    nonempty_dst[2] = 20;
+
+    nonempty_dst = std::move(empty_src);
+    EXPECT_TRUE(nonempty_dst.empty());
+    EXPECT_EQ(nonempty_dst.size(), 0);
+
+    // ===== MOVE ASSIGNMENT (NONEMPTY TO EMPTY) =====
+    flat_hash_map<int, int> nonempty_src;
+    nonempty_src[1] = 10;
+    nonempty_src[2] = 20;
+
+    flat_hash_map<int, int> empty_dst;
+    empty_dst = std::move(nonempty_src);
+    EXPECT_EQ(empty_dst.size(), 2);
+    EXPECT_EQ(empty_dst[1], 10);
+    EXPECT_EQ(empty_dst[2], 20);
 
     END_TEST();
 }
 
 // ============================================================================
-// KeyOrValueEquality Tests
+// Consolidated Test 3: Iterators and Erase/Rehash/Swap Operations
 // ============================================================================
-
-XSIGMATEST(FlatHash, key_or_value_equality_constructor)
+// Tests: iterator post-increment, const iterator, erase by iterator/range,
+//        rehash, reserve, equality, swap
+XSIGMATEST(FlatHash, iterators_and_advanced_operations)
 {
-    // Test KeyOrValueEquality with default equal_to
+    // ===== ITERATOR POST-INCREMENT =====
+    flat_hash_map<int, int> iter_map;
+    iter_map[1] = 10;
+    iter_map[2] = 20;
+    iter_map[3] = 30;
+
+    auto it      = iter_map.begin();
+    auto it_copy = it++;
+    EXPECT_EQ(it_copy->first, it_copy->first);
+    EXPECT_NE(it, it_copy);
+
+    // ===== CONST ITERATOR POST-INCREMENT =====
+    auto cit      = iter_map.cbegin();
+    auto cit_copy = cit++;
+    EXPECT_NE(cit, cit_copy);
+
+    // ===== ERASE BY ITERATOR AND RANGE =====
+    flat_hash_map<int, int> erase_map;
+    for (int i = 0; i < 5; ++i)
+    {
+        erase_map[i] = i * 10;
+    }
+    EXPECT_EQ(erase_map.size(), 5);
+
+    // Erase begin iterator
+    auto old_begin = erase_map.begin();
+    erase_map.erase(old_begin);
+    EXPECT_EQ(erase_map.size(), 4);
+
+    // Erase [begin, end) - leave one element
+    auto erase_it = erase_map.begin();
+    ++erase_it;
+    erase_map.erase(erase_it, erase_map.end());
+    EXPECT_EQ(erase_map.size(), 1);
+
+    // ===== REHASH, RESERVE AND LOAD FACTOR =====
+    flat_hash_map<int, int> rehash_map;
+    rehash_map.reserve(8);
+    auto initial_buckets = rehash_map.bucket_count();
+
+    for (int i = 0; i < 16; ++i)
+    {
+        rehash_map[i] = i;
+    }
+    EXPECT_EQ(rehash_map.size(), 16);
+    EXPECT_GE(rehash_map.bucket_count(), initial_buckets);
+    EXPECT_LE(rehash_map.load_factor(), rehash_map.max_load_factor());
+
+    // Rehash up
+    rehash_map.rehash(64);
+    EXPECT_GE(rehash_map.bucket_count(), 64);
+    EXPECT_LE(rehash_map.load_factor(), rehash_map.max_load_factor());
+
+    // ===== MAP EQUALITY AND SWAP =====
+    flat_hash_map<int, int> a;
+    flat_hash_map<int, int> b;
+    for (int i = 0; i < 5; ++i)
+    {
+        a[i] = i;
+        b[i] = i;
+    }
+    EXPECT_TRUE(a == b);
+
+    b[99] = 7;
+    EXPECT_TRUE(a != b);
+
+    a.swap(b);
+    EXPECT_TRUE(a.contains(99));
+    EXPECT_FALSE(b.contains(99));
+
+    // ===== SET EQUALITY AND SWAP =====
+    flat_hash_set<int> s1;
+    flat_hash_set<int> s2;
+    for (int i = 0; i < 5; ++i)
+    {
+        s1.insert(i);
+        s2.insert(i);
+    }
+    EXPECT_TRUE(s1 == s2);
+
+    s2.insert(99);
+    EXPECT_TRUE(s1 != s2);
+
+    s1.swap(s2);
+    EXPECT_TRUE(s1.contains(99));
+    EXPECT_FALSE(s2.contains(99));
+
+    // ===== SWAP POINTERS BASIC =====
+    flat_hash_map<int, int> swap1;
+    swap1[1] = 10;
+    swap1[2] = 20;
+
+    flat_hash_map<int, int> swap2;
+    swap2[3] = 30;
+
+    swap1.swap(swap2);
+    EXPECT_EQ(swap1.size(), 1);
+    EXPECT_EQ(swap1[3], 30);
+    EXPECT_EQ(swap2.size(), 2);
+    EXPECT_EQ(swap2[1], 10);
+    EXPECT_EQ(swap2[2], 20);
+
+    // ===== SWAP POINTERS EMPTY WITH NONEMPTY =====
+    flat_hash_map<int, int> empty_swap;
+    flat_hash_map<int, int> nonempty_swap;
+    nonempty_swap[1] = 10;
+    nonempty_swap[2] = 20;
+
+    empty_swap.swap(nonempty_swap);
+    EXPECT_EQ(empty_swap.size(), 2);
+    EXPECT_EQ(empty_swap[1], 10);
+    EXPECT_TRUE(nonempty_swap.empty());
+
+    // ===== SWAP POINTERS PRESERVES BUCKET COUNT =====
+    flat_hash_map<int, int> bc1(100);
+    bc1[1] = 10;
+
+    flat_hash_map<int, int> bc2(50);
+    bc2[2] = 20;
+
+    uint64_t bucket_count1 = bc1.bucket_count();
+    uint64_t bucket_count2 = bc2.bucket_count();
+
+    bc1.swap(bc2);
+    EXPECT_EQ(bc1.bucket_count(), bucket_count2);
+    EXPECT_EQ(bc2.bucket_count(), bucket_count1);
+
+    // ===== RESET TO EMPTY STATE =====
+    flat_hash_map<int, int> reset_map;
+    reset_map[1] = 10;
+    reset_map[2] = 20;
+    reset_map[3] = 30;
+    EXPECT_EQ(reset_map.size(), 3);
+
+    reset_map.clear();
+    EXPECT_TRUE(reset_map.empty());
+    EXPECT_EQ(reset_map.size(), 0);
+
+    // Test reinsertion after clear
+    reset_map[1] = 20;
+    EXPECT_EQ(reset_map.size(), 1);
+    EXPECT_EQ(reset_map[1], 20);
+
+    END_TEST();
+}
+
+// ============================================================================
+// Consolidated Test 4: Custom Hash and Equality
+// ============================================================================
+// Tests: KeyOrValueEquality, custom hash and equal functions,
+//        power_of_two_hash_policy instantiation
+XSIGMATEST(FlatHash, custom_hash_and_equality)
+{
+    // ===== KEY OR VALUE EQUALITY CONSTRUCTOR =====
     std::equal_to<int>                                                                 eq;
     detailv3::KeyOrValueEquality<int, std::pair<int, std::string>, std::equal_to<int>> equality(eq);
 
@@ -337,14 +581,7 @@ XSIGMATEST(FlatHash, key_or_value_equality_constructor)
     EXPECT_TRUE(equality(1, 1));
     EXPECT_FALSE(equality(1, 2));
 
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, key_or_value_equality_key_comparisons)
-{
-    std::equal_to<int>                                                                 eq;
-    detailv3::KeyOrValueEquality<int, std::pair<int, std::string>, std::equal_to<int>> equality(eq);
-
+    // ===== KEY OR VALUE EQUALITY KEY COMPARISONS =====
     // Test key-to-key comparison
     EXPECT_TRUE(equality(5, 5));
     EXPECT_FALSE(equality(5, 10));
@@ -362,16 +599,7 @@ XSIGMATEST(FlatHash, key_or_value_equality_key_comparisons)
     std::pair<int, std::string> value2(5, "five");
     EXPECT_TRUE(equality(value1, value2));
 
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, key_or_value_equality_pair_comparisons)
-{
-    std::equal_to<int>                                                                 eq;
-    detailv3::KeyOrValueEquality<int, std::pair<int, std::string>, std::equal_to<int>> equality(eq);
-
-    std::pair<int, std::string> value1(5, "five");
-    std::pair<int, std::string> value2(5, "five");
+    // ===== KEY OR VALUE EQUALITY PAIR COMPARISONS =====
     std::pair<int, std::string> value3(10, "ten");
 
     // Test key-to-pair comparison
@@ -390,407 +618,39 @@ XSIGMATEST(FlatHash, key_or_value_equality_pair_comparisons)
     EXPECT_TRUE(equality(value1, value2));
     EXPECT_FALSE(equality(value1, value3));
 
-    END_TEST();
-}
-
-// ============================================================================
-// sherwood_v3_table Constructor Tests
-// ============================================================================
-
-XSIGMATEST(FlatHash, sherwood_v3_table_default_constructor)
-{
-    flat_hash_map<int, int> map;
-    EXPECT_TRUE(map.empty());
-    EXPECT_EQ(map.size(), 0);
-    EXPECT_EQ(map.bucket_count(), 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, sherwood_v3_table_bucket_count_constructor)
-{
-    flat_hash_map<int, int> map(100);
-    EXPECT_TRUE(map.empty());
-    EXPECT_GE(map.bucket_count(), 100);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, sherwood_v3_table_bucket_count_with_hash_equal)
-{
-    std::hash<int>          hash;
-    std::equal_to<int>      equal;
-    flat_hash_map<int, int> map(50, hash, equal);
-
-    EXPECT_TRUE(map.empty());
-    EXPECT_GE(map.bucket_count(), 50);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, sherwood_v3_table_initializer_list_constructor_empty)
-{
-    flat_hash_map<int, int> map({});
-    EXPECT_TRUE(map.empty());
-    EXPECT_EQ(map.size(), 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, sherwood_v3_table_initializer_list_constructor_small)
-{
-    flat_hash_map<int, int> map({{1, 10}, {2, 20}, {3, 30}});
-    EXPECT_EQ(map.size(), 3);
-    EXPECT_EQ(map[1], 10);
-    EXPECT_EQ(map[2], 20);
-    EXPECT_EQ(map[3], 30);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, sherwood_v3_table_initializer_list_constructor_large)
-{
-    std::initializer_list<std::pair<int, int>> init_list;
-    std::vector<std::pair<int, int>>           items;
-    for (int i = 0; i < 100; ++i)
+    // ===== CUSTOM HASH AND EQUAL FUNCTIONS =====
+    // Case-insensitive hash
+    struct ci_hash
     {
-        items.push_back({i, i * 10});
-    }
-
-    flat_hash_map<int, int> map(items.begin(), items.end());
-    EXPECT_EQ(map.size(), 100);
-    for (int i = 0; i < 100; ++i)
-    {
-        EXPECT_EQ(map[i], i * 10);
-    }
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, sherwood_v3_table_move_constructor)
-{
-    flat_hash_map<int, std::string> map1;
-    map1[1] = "one";
-    map1[2] = "two";
-    map1[3] = "three";
-
-    flat_hash_map<int, std::string> map2(std::move(map1));
-
-    EXPECT_EQ(map2.size(), 3);
-    EXPECT_EQ(map2[1], "one");
-    EXPECT_EQ(map2[2], "two");
-    EXPECT_EQ(map2[3], "three");
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, sherwood_v3_table_copy_constructor)
-{
-    flat_hash_map<int, std::string> map1;
-    map1[1] = "one";
-    map1[2] = "two";
-
-    flat_hash_map<int, std::string> map2(map1);
-
-    EXPECT_EQ(map2.size(), 2);
-    EXPECT_EQ(map2[1], "one");
-    EXPECT_EQ(map2[2], "two");
-
-    // Verify independence
-    map1[1] = "ONE";
-    EXPECT_EQ(map2[1], "one");
-
-    END_TEST();
-}
-
-// ============================================================================
-// sherwood_v3_table Move Assignment Tests
-// ============================================================================
-
-XSIGMATEST(FlatHash, sherwood_v3_table_move_assignment_self)
-{
-    flat_hash_map<int, int> map;
-    map[1] = 10;
-    map[2] = 20;
-
-    // Self-assignment should be handled correctly
-    map = std::move(map);
-
-    EXPECT_EQ(map.size(), 2);
-    EXPECT_EQ(map[1], 10);
-    EXPECT_EQ(map[2], 20);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, sherwood_v3_table_move_assignment_different)
-{
-    flat_hash_map<int, int> map1;
-    map1[1] = 10;
-    map1[2] = 20;
-
-    flat_hash_map<int, int> map2;
-    map2[3] = 30;
-
-    map2 = std::move(map1);
-
-    EXPECT_EQ(map2.size(), 2);
-    EXPECT_EQ(map2[1], 10);
-    EXPECT_EQ(map2[2], 20);
-    EXPECT_FALSE(map2.contains(3));
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, sherwood_v3_table_move_assignment_empty_to_nonempty)
-{
-    flat_hash_map<int, int> map1;
-    flat_hash_map<int, int> map2;
-    map2[1] = 10;
-    map2[2] = 20;
-
-    map2 = std::move(map1);
-
-    EXPECT_TRUE(map2.empty());
-    EXPECT_EQ(map2.size(), 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, sherwood_v3_table_move_assignment_nonempty_to_empty)
-{
-    flat_hash_map<int, int> map1;
-    map1[1] = 10;
-    map1[2] = 20;
-
-    flat_hash_map<int, int> map2;
-
-    map2 = std::move(map1);
-
-    EXPECT_EQ(map2.size(), 2);
-    EXPECT_EQ(map2[1], 10);
-    EXPECT_EQ(map2[2], 20);
-
-    END_TEST();
-}
-
-// ============================================================================
-// Iterator Post-Increment Tests
-// ============================================================================
-
-XSIGMATEST(FlatHash, iterator_post_increment)
-{
-    flat_hash_map<int, int> map;
-    map[1] = 10;
-    map[2] = 20;
-    map[3] = 30;
-
-    auto it      = map.begin();
-    auto it_copy = it++;
-
-    // it_copy should point to the same element as the original it
-    EXPECT_EQ(it_copy->first, it_copy->first);
-
-    // it should now point to a different element
-    EXPECT_NE(it, it_copy);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, const_iterator_post_increment)
-{
-    flat_hash_map<int, int> map;
-    map[1] = 10;
-    map[2] = 20;
-
-    auto it      = map.cbegin();
-    auto it_copy = it++;
-
-    EXPECT_NE(it, it_copy);
-
-    END_TEST();
-}
-
-// ============================================================================
-// Insert Operations Tests
-// ============================================================================
-
-XSIGMATEST(FlatHash, insert_const_value)
-{
-    flat_hash_map<int, std::string> map;
-
-    const std::pair<int, std::string> value(1, "one");
-    auto                              result = map.insert(value);
-
-    EXPECT_TRUE(result.second);
-    EXPECT_EQ(result.first->first, 1);
-    EXPECT_EQ(result.first->second, "one");
-    EXPECT_EQ(map.size(), 1);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, map_insert_or_assign_and_contains)
-{
-    flat_hash_map<int, std::string> map;
-
-    // Insert new key
-    auto it_new = map.insert_or_assign(1, std::string("one"));
-    EXPECT_EQ(map.size(), 1);
-    EXPECT_TRUE(map.contains(1));
-    EXPECT_EQ(map.find(1)->second, "one");
-
-    // Assign existing key (value should be updated, size unchanged)
-    auto it_upd = map.insert_or_assign(1, std::string("ONE"));
-    EXPECT_EQ(map.size(), 1);
-    EXPECT_TRUE(map.contains(1));
-    EXPECT_EQ(map.find(1)->second, "ONE");
-
-    // Insert another key via iterator overload
-    auto it2 = map.insert_or_assign(map.cbegin(), 2, std::string("two"));
-    EXPECT_EQ(map.size(), 2);
-    EXPECT_TRUE(map.contains(2));
-    EXPECT_EQ(map.find(2)->second, "two");
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, map_at_accessors)
-{
-    flat_hash_map<int, int> map;
-    map[10]          = 42;
-    const auto& cmap = map;
-
-    // Positive at() on present key
-    EXPECT_EQ(map.at(10), 42);
-    EXPECT_EQ(cmap.at(10), 42);
-
-    END_TEST();
-}
-
-// ============================================================================
-// Erase iterator/range, rehash/reserve, equality, swap
-// ============================================================================
-
-XSIGMATEST(FlatHash, map_erase_by_iterator_and_range)
-{
-    flat_hash_map<int, int> map;
-    for (int i = 0; i < 5; ++i)
-    {
-        map[i] = i * 10;
-    }
-    EXPECT_EQ(map.size(), 5);
-
-    // Erase begin iterator
-    auto old_begin = map.begin();
-    map.erase(old_begin);
-    EXPECT_EQ(map.size(), 4);
-
-    // Erase [begin, end)
-    auto it = map.begin();
-    ++it;  // leave one element
-    map.erase(it, map.end());
-    EXPECT_EQ(map.size(), 1);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, map_rehash_reserve_and_load_factor)
-{
-    flat_hash_map<int, int> map;
-    map.reserve(8);
-    auto initial_buckets = map.bucket_count();
-    for (int i = 0; i < 16; ++i)
-    {
-        map[i] = i;
-    }
-    EXPECT_EQ(map.size(), 16);
-    EXPECT_GE(map.bucket_count(), initial_buckets);
-    EXPECT_LE(map.load_factor(), map.max_load_factor());
-
-    // Rehash up
-    map.rehash(64);
-    EXPECT_GE(map.bucket_count(), 64);
-    EXPECT_LE(map.load_factor(), map.max_load_factor());
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, map_equality_and_swap)
-{
-    flat_hash_map<int, int> a;
-    flat_hash_map<int, int> b;
-    for (int i = 0; i < 5; ++i)
-    {
-        a[i] = i;
-        b[i] = i;
-    }
-    EXPECT_TRUE(a == b);
-    b[99] = 7;
-    EXPECT_TRUE(a != b);
-
-    a.swap(b);
-    EXPECT_TRUE(a.contains(99));
-    EXPECT_FALSE(b.contains(99));
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, set_equality_and_swap)
-{
-    flat_hash_set<int> s1;
-    flat_hash_set<int> s2;
-    for (int i = 0; i < 5; ++i)
-    {
-        s1.insert(i);
-        s2.insert(i);
-    }
-    EXPECT_TRUE(s1 == s2);
-    s2.insert(99);
-    EXPECT_TRUE(s1 != s2);
-
-    s1.swap(s2);
-    EXPECT_TRUE(s1.contains(99));
-    EXPECT_FALSE(s2.contains(99));
-
-    END_TEST();
-}
-
-// ============================================================================
-// Custom hash/equal and alternative hash policy wiring
-// ============================================================================
-
-struct ci_hash
-{
-    size_t operator()(const std::string& s) const noexcept
-    {
-        std::string lower(s);
-        std::transform(
-            lower.begin(),
-            lower.end(),
-            lower.begin(),
-            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-        return std::hash<std::string>{}(lower);
-    }
-};
-struct ci_equal
-{
-    bool operator()(const std::string& a, const std::string& b) const noexcept
-    {
-        if (a.size() != b.size())
-            return false;
-        for (size_t i = 0; i < a.size(); ++i)
+        size_t operator()(const std::string& s) const noexcept
         {
-            if (std::tolower(static_cast<unsigned char>(a[i])) !=
-                std::tolower(static_cast<unsigned char>(b[i])))
-                return false;
+            std::string lower(s);
+            std::transform(
+                lower.begin(),
+                lower.end(),
+                lower.begin(),
+                [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            return std::hash<std::string>{}(lower);
         }
-        return true;
-    }
-};
+    };
 
-XSIGMATEST(FlatHash, map_custom_hash_and_equal)
-{
+    // Case-insensitive equality
+    struct ci_equal
+    {
+        bool operator()(const std::string& a, const std::string& b) const noexcept
+        {
+            if (a.size() != b.size())
+                return false;
+            for (size_t i = 0; i < a.size(); ++i)
+            {
+                if (std::tolower(static_cast<unsigned char>(a[i])) !=
+                    std::tolower(static_cast<unsigned char>(b[i])))
+                    return false;
+            }
+            return true;
+        }
+    };
+
     flat_hash_map<std::string, int, ci_hash, ci_equal> cmap;
     cmap["Hello"] = 1;
     EXPECT_TRUE(cmap.contains("hello"));
@@ -801,688 +661,345 @@ XSIGMATEST(FlatHash, map_custom_hash_and_equal)
     EXPECT_EQ(cmap.size(), 1);
     EXPECT_EQ(cmap.find("hello")->second, 7);
 
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, set_power_of_two_hash_policy_instantiation)
-{
-    // Ensure alternate hash policy alias compiles and works
-    flat_hash_set<int, power_of_two_std_hash<int>> s;
-    s.insert(1);
-    s.insert(2);
-    EXPECT_TRUE(s.contains(1));
-    EXPECT_TRUE(s.contains(2));
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, insert_rvalue)
-{
-    flat_hash_map<int, std::string> map;
-
-    auto result = map.insert(std::make_pair(1, "one"));
-
-    EXPECT_TRUE(result.second);
-    EXPECT_EQ(result.first->first, 1);
-    EXPECT_EQ(result.first->second, "one");
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, insert_duplicate)
-{
-    flat_hash_map<int, int> map;
-
-    auto result1 = map.insert({1, 10});
-    EXPECT_TRUE(result1.second);
-
-    auto result2 = map.insert({1, 20});
-    EXPECT_FALSE(result2.second);
-    EXPECT_EQ(result2.first->second, 10);  // Original value unchanged
+    // ===== POWER OF TWO HASH POLICY INSTANTIATION =====
+    flat_hash_set<int, power_of_two_std_hash<int>> pow2_set;
+    pow2_set.insert(1);
+    pow2_set.insert(2);
+    EXPECT_TRUE(pow2_set.contains(1));
+    EXPECT_TRUE(pow2_set.contains(2));
 
     END_TEST();
 }
 
 // ============================================================================
-// Swap Pointers Tests
+// Consolidated Test 5: Prime Number Hash Policy
 // ============================================================================
-
-XSIGMATEST(FlatHash, swap_pointers_basic)
+// Tests: all prime_number_hash_policy methods including index_for_hash,
+//        next_size_over, reset, keep_in_range, commit, edge cases
+XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
 {
-    flat_hash_map<int, int> map1;
-    map1[1] = 10;
-    map1[2] = 20;
+    // ===== INDEX FOR HASH =====
+    xsigma::prime_number_hash_policy policy1;
 
-    flat_hash_map<int, int> map2;
-    map2[3] = 30;
-
-    map1.swap(map2);
-
-    EXPECT_EQ(map1.size(), 1);
-    EXPECT_EQ(map1[3], 30);
-
-    EXPECT_EQ(map2.size(), 2);
-    EXPECT_EQ(map2[1], 10);
-    EXPECT_EQ(map2[2], 20);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, swap_pointers_empty_with_nonempty)
-{
-    flat_hash_map<int, int> map1;
-    flat_hash_map<int, int> map2;
-    map2[1] = 10;
-    map2[2] = 20;
-
-    map1.swap(map2);
-
-    EXPECT_EQ(map1.size(), 2);
-    EXPECT_EQ(map1[1], 10);
-
-    EXPECT_TRUE(map2.empty());
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, swap_pointers_preserves_bucket_count)
-{
-    flat_hash_map<int, int> map1(100);
-    map1[1] = 10;
-
-    flat_hash_map<int, int> map2(50);
-    map2[2] = 20;
-
-    uint64_t bucket_count1 = map1.bucket_count();
-    uint64_t bucket_count2 = map2.bucket_count();
-
-    map1.swap(map2);
-
-    EXPECT_EQ(map1.bucket_count(), bucket_count2);
-    EXPECT_EQ(map2.bucket_count(), bucket_count1);
-
-    END_TEST();
-}
-
-// ============================================================================
-// Reset to Empty State Tests
-// ============================================================================
-
-XSIGMATEST(FlatHash, reset_to_empty_state_clears_data)
-{
-    flat_hash_map<int, int> map;
-    map[1] = 10;
-    map[2] = 20;
-    map[3] = 30;
-
-    EXPECT_EQ(map.size(), 3);
-
-    map.clear();
-
-    EXPECT_TRUE(map.empty());
-    EXPECT_EQ(map.size(), 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, reset_to_empty_state_allows_reinsertion)
-{
-    flat_hash_map<int, int> map;
-    map[1] = 10;
-    map.clear();
-
-    map[1] = 20;
-    EXPECT_EQ(map.size(), 1);
-    EXPECT_EQ(map[1], 20);
-
-    END_TEST();
-}
-
-// ============================================================================
-// Prime Number Hash Policy Tests
-// ============================================================================
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_index_for_hash)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    // Test index_for_hash with various hash values
-    uint64_t index1 = policy.index_for_hash(12345, 0);
+    uint64_t index1 = policy1.index_for_hash(12345, 0);
     EXPECT_GE(index1, 0);
 
-    uint64_t index2 = policy.index_for_hash(67890, 0);
+    uint64_t index2 = policy1.index_for_hash(67890, 0);
     EXPECT_GE(index2, 0);
 
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_next_size_over)
-{
-    xsigma::prime_number_hash_policy policy;
+    // ===== NEXT SIZE OVER =====
+    xsigma::prime_number_hash_policy policy2;
 
     uint64_t size          = 10;
     uint64_t original_size = size;
-    policy.next_size_over(size);
-
+    policy2.next_size_over(size);
     EXPECT_GT(size, original_size);
 
-    END_TEST();
-}
+    // ===== NEXT SIZE OVER SMALL =====
+    xsigma::prime_number_hash_policy policy3;
+    uint64_t                         small_size = 1;
+    auto                             f          = policy3.next_size_over(small_size);
+    EXPECT_GT(small_size, 1ULL);
+    EXPECT_EQ(f(small_size), 0ULL);  // n % n == 0
 
-XSIGMATEST(FlatHash, prime_number_hash_policy_reset)
-{
-    xsigma::prime_number_hash_policy policy;
+    // ===== NEXT SIZE OVER BETWEEN PRIMES =====
+    xsigma::prime_number_hash_policy policy4;
+    uint64_t                         between_size = 6;
+    auto                             f2           = policy4.next_size_over(between_size);
+    EXPECT_GE(between_size, 6ULL);
+    EXPECT_EQ(f2(between_size), 0ULL);
+    EXPECT_EQ(f2(between_size + 1), 1ULL);
 
-    uint64_t size = 100;
-    policy.next_size_over(size);
-    policy.reset();
-
-    // After reset, the policy should be in initial state
-    // Verify by checking that next_size_over works correctly
-    uint64_t size2 = 10;
-    policy.next_size_over(size2);
-    EXPECT_GT(size2, 10);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_keep_in_range)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    uint64_t index = policy.keep_in_range(12345, 100);
-    EXPECT_LE(index, 100);
-
-    END_TEST();
-}
-
-// ============================================================================
-// Prime Number Hash Policy - Complete Coverage
-// ============================================================================
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_next_size_over_small)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    uint64_t size = 1;  // very small
-    auto     f    = policy.next_size_over(size);
-    // size should be updated to the first prime in the list; f is corresponding mod function
-    EXPECT_GT(size, 1ULL);
-    EXPECT_EQ(f(size), 0ULL);  // n % n == 0
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_next_size_over_between_primes)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    uint64_t size = 6;  // between 5 and 7 -> should become 7
-    auto     f    = policy.next_size_over(size);
-    EXPECT_GE(size, 6ULL);
-    // Verify returned function behaves like modulo 'size'
-    EXPECT_EQ(f(size), 0ULL);
-    EXPECT_EQ(f(size + 1), 1ULL);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_commit_and_index_for_hash)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    // Acquire a modulus function for a known target size
-    uint64_t size = 1000;
-    auto     f    = policy.next_size_over(size);
-    // Commit the modulus function; index_for_hash must now use it
-    policy.commit(f);
+    // ===== COMMIT AND INDEX FOR HASH =====
+    xsigma::prime_number_hash_policy policy5;
+    uint64_t                         commit_size = 1000;
+    auto                             f3          = policy5.next_size_over(commit_size);
+    policy5.commit(f3);
 
     uint64_t h = 1234567890123456789ULL;
-    EXPECT_EQ(policy.index_for_hash(h, 0), f(h));
+    EXPECT_EQ(policy5.index_for_hash(h, 0), f3(h));
 
-    // keep_in_range: below threshold returns unchanged
-    EXPECT_EQ(policy.keep_in_range(42, 100), 42ULL);
-    // keep_in_range: above threshold returns reduced via current mod function
-    uint64_t big = size * 3 + 5;  // guarantee > size
-    EXPECT_EQ(policy.keep_in_range(big, size - 1), f(big));
+    // keep_in_range tests
+    EXPECT_EQ(policy5.keep_in_range(42, 100), 42ULL);
+    uint64_t big = commit_size * 3 + 5;
+    EXPECT_EQ(policy5.keep_in_range(big, commit_size - 1), f3(big));
 
-    END_TEST();
-}
+    // ===== RESET RESTORES MOD0 =====
+    xsigma::prime_number_hash_policy policy6;
+    uint64_t                         reset_size = 50;
+    auto                             f4         = policy6.next_size_over(reset_size);
+    policy6.commit(f4);
+    uint64_t h2 = 987654321ULL;
+    EXPECT_EQ(policy6.index_for_hash(h2, 0), f4(h2));
 
-XSIGMATEST(FlatHash, prime_number_hash_policy_reset_restores_mod0)
-{
-    xsigma::prime_number_hash_policy policy;
+    policy6.reset();
+    EXPECT_EQ(policy6.index_for_hash(h2, 0), 0ULL);
+    EXPECT_EQ(policy6.keep_in_range(h2, 0ULL), 0ULL);
 
-    // Commit a non-default mod function first
-    uint64_t size = 50;
-    auto     f    = policy.next_size_over(size);
-    policy.commit(f);
-    uint64_t h = 987654321ULL;
-    EXPECT_EQ(policy.index_for_hash(h, 0), f(h));
+    // ===== NEXT SIZE OVER LARGE =====
+    xsigma::prime_number_hash_policy policy7;
+    uint64_t                         requested  = std::numeric_limits<uint64_t>::max() - 12345ULL;
+    uint64_t                         large_size = requested;
+    auto                             f5         = policy7.next_size_over(large_size);
+    EXPECT_GE(large_size, requested);
+    EXPECT_EQ(f5(large_size), 0ULL);
 
-    // Reset -> mod0 -> always 0
-    policy.reset();
-    EXPECT_EQ(policy.index_for_hash(h, 0), 0ULL);
-    EXPECT_EQ(policy.keep_in_range(h, 0ULL), 0ULL);  // since index > 0, reduced via mod0
+    policy7.commit(f5);
+    uint64_t h3 = requested - 777ULL;
+    EXPECT_EQ(policy7.index_for_hash(h3, 0), f5(h3));
 
-    END_TEST();
-}
+    // ===== KEEP IN RANGE =====
+    xsigma::prime_number_hash_policy policy8;
+    uint64_t                         range_index = policy8.keep_in_range(12345, 100);
+    EXPECT_LE(range_index, 100);
 
-XSIGMATEST(FlatHash, prime_number_hash_policy_next_size_over_large)
-{
-    xsigma::prime_number_hash_policy policy;
+    // ===== SEQUENTIAL NEXT SIZE OVER =====
+    xsigma::prime_number_hash_policy policy9;
+    uint64_t                         seq_size1 = 5;
+    policy9.next_size_over(seq_size1);
+    uint64_t first_prime = seq_size1;
 
-    // Use a very large request; should clamp to a large prime in the list
-    uint64_t requested = std::numeric_limits<uint64_t>::max() - 12345ULL;
-    uint64_t size      = requested;
-    auto     f         = policy.next_size_over(size);
+    uint64_t seq_size2 = first_prime + 1;
+    policy9.next_size_over(seq_size2);
+    uint64_t second_prime = seq_size2;
+    EXPECT_GT(second_prime, first_prime);
 
-    EXPECT_GE(size, requested);
-    EXPECT_EQ(f(size), 0ULL);  // modulo by itself
+    // ===== INDEX FOR HASH AFTER COMMIT =====
+    xsigma::prime_number_hash_policy policy10;
+    uint64_t                         iah_size = 20;
+    auto                             mod_func = policy10.next_size_over(iah_size);
+    policy10.commit(mod_func);
 
-    // Commit and validate index_for_hash with large inputs
-    policy.commit(f);
-    uint64_t h1 = requested - 777ULL;
-    EXPECT_EQ(policy.index_for_hash(h1, 0), f(h1));
+    uint64_t iah_index1 = policy10.index_for_hash(12345, 0);
+    uint64_t iah_index2 = policy10.index_for_hash(67890, 0);
+    EXPECT_GE(iah_index1, 0);
+    EXPECT_GE(iah_index2, 0);
+
+    // ===== KEEP IN RANGE AFTER COMMIT =====
+    xsigma::prime_number_hash_policy policy11;
+    uint64_t                         kir_size     = 30;
+    auto                             kir_mod_func = policy11.next_size_over(kir_size);
+    policy11.commit(kir_mod_func);
+
+    uint64_t kir_index1 = policy11.keep_in_range(100, 50);
+    EXPECT_LE(kir_index1, 50);
+
+    uint64_t kir_index2 = policy11.keep_in_range(0xFFFFFFFF, 50);
+    EXPECT_LE(kir_index2, 50);
+
+    // ===== EDGE CASES =====
+    xsigma::prime_number_hash_policy policy_edge;
+
+    // Size zero
+    uint64_t zero_size = 0;
+    policy_edge.next_size_over(zero_size);
+    EXPECT_GT(zero_size, 0);
+
+    // Size one
+    uint64_t one_size = 1;
+    policy_edge.next_size_over(one_size);
+    EXPECT_GT(one_size, 0);
+
+    // Size two
+    uint64_t two_size = 2;
+    policy_edge.next_size_over(two_size);
+    EXPECT_GE(two_size, 2);
+
+    // Large size
+    uint64_t huge_size = 1000000000;
+    policy_edge.next_size_over(huge_size);
+    EXPECT_GT(huge_size, 0);
+
+    // ===== RESET AFTER OPERATIONS =====
+    xsigma::prime_number_hash_policy policy12;
+    uint64_t                         rao_size     = 50;
+    auto                             rao_mod_func = policy12.next_size_over(rao_size);
+    policy12.commit(rao_mod_func);
+
+    policy12.reset();
+    uint64_t rao_index = policy12.index_for_hash(12345, 0);
+    EXPECT_GE(rao_index, 0);
 
     END_TEST();
 }
 
 // ============================================================================
-// Fibonacci Hash Policy Tests
+// Consolidated Test 6: Fibonacci Hash Policy
 // ============================================================================
-
-XSIGMATEST(FlatHash, fibonacci_hash_policy_index_for_hash)
+// Tests: all fibonacci_hash_policy methods including index_for_hash,
+//        next_size_over, reset, keep_in_range, commit
+XSIGMATEST(FlatHash, fibonacci_hash_policy_comprehensive)
 {
-    xsigma::fibonacci_hash_policy policy;
+    // ===== INDEX FOR HASH =====
+    xsigma::fibonacci_hash_policy policy1;
 
-    uint64_t index1 = policy.index_for_hash(12345, 0);
+    uint64_t index1 = policy1.index_for_hash(12345, 0);
     EXPECT_GE(index1, 0);
 
-    uint64_t index2 = policy.index_for_hash(67890, 0);
+    uint64_t index2 = policy1.index_for_hash(67890, 0);
     EXPECT_GE(index2, 0);
 
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, fibonacci_hash_policy_next_size_over)
-{
-    xsigma::fibonacci_hash_policy policy;
+    // ===== NEXT SIZE OVER =====
+    xsigma::fibonacci_hash_policy policy2;
 
     uint64_t size  = 10;
-    int8_t   shift = policy.next_size_over(size);
-
+    int8_t   shift = policy2.next_size_over(size);
     EXPECT_GE(size, 2);
     EXPECT_LE(shift, 63);
 
-    END_TEST();
-}
+    // ===== NEXT SIZE OVER MINIMUM =====
+    xsigma::fibonacci_hash_policy policy3;
 
-XSIGMATEST(FlatHash, fibonacci_hash_policy_next_size_over_minimum)
-{
-    xsigma::fibonacci_hash_policy policy;
+    uint64_t min_size = 1;
+    policy3.next_size_over(min_size);
+    EXPECT_GE(min_size, 2);
 
-    uint64_t size = 1;
-    policy.next_size_over(size);
+    // ===== RESET =====
+    xsigma::fibonacci_hash_policy policy4;
 
-    EXPECT_GE(size, 2);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, fibonacci_hash_policy_reset)
-{
-    xsigma::fibonacci_hash_policy policy;
-
-    uint64_t size = 100;
-    policy.next_size_over(size);
-    policy.reset();
+    uint64_t reset_size = 100;
+    policy4.next_size_over(reset_size);
+    policy4.reset();
 
     // After reset, verify the policy is in initial state
-    uint64_t size2 = 10;
-    policy.next_size_over(size2);
-    EXPECT_GE(size2, 2);
+    uint64_t reset_size2 = 10;
+    policy4.next_size_over(reset_size2);
+    EXPECT_GE(reset_size2, 2);
 
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, fibonacci_hash_policy_keep_in_range)
-{
-    xsigma::fibonacci_hash_policy policy;
+    // ===== KEEP IN RANGE =====
+    xsigma::fibonacci_hash_policy policy5;
 
     uint64_t num_slots_minus_one = 127;  // 2^7 - 1
-    uint64_t index               = policy.keep_in_range(12345, num_slots_minus_one);
+    uint64_t range_index         = policy5.keep_in_range(12345, num_slots_minus_one);
+    EXPECT_LE(range_index, num_slots_minus_one);
 
-    EXPECT_LE(index, num_slots_minus_one);
+    // ===== COMMIT =====
+    xsigma::fibonacci_hash_policy policy6;
 
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, fibonacci_hash_policy_commit)
-{
-    xsigma::fibonacci_hash_policy policy;
-
-    uint64_t size  = 16;
-    int8_t   shift = policy.next_size_over(size);
-    policy.commit(shift);
+    uint64_t commit_size  = 16;
+    int8_t   commit_shift = policy6.next_size_over(commit_size);
+    policy6.commit(commit_shift);
 
     // After commit, index_for_hash should use the new shift value
-    uint64_t index = policy.index_for_hash(12345, 0);
-    EXPECT_GE(index, 0);
+    uint64_t commit_index = policy6.index_for_hash(12345, 0);
+    EXPECT_GE(commit_index, 0);
 
     END_TEST();
 }
 
 // ============================================================================
-// Power of Two Hash Policy Tests
+// Consolidated Test 7: Power of Two Hash Policy
 // ============================================================================
-
-XSIGMATEST(FlatHash, power_of_two_hash_policy_index_for_hash)
+// Tests: all power_of_two_hash_policy methods including index_for_hash,
+//        keep_in_range, next_size_over (small/medium/large), commit, reset
+XSIGMATEST(FlatHash, power_of_two_hash_policy_comprehensive)
 {
-    xsigma::power_of_two_hash_policy policy;
+    // ===== INDEX FOR HASH =====
+    xsigma::power_of_two_hash_policy policy1;
 
-    // Test index_for_hash with various hash values and num_slots_minus_one
-    uint64_t index1 = policy.index_for_hash(12345, 15);  // 15 = 0xF (4 bits)
+    uint64_t index1 = policy1.index_for_hash(12345, 15);  // 15 = 0xF (4 bits)
     EXPECT_LE(index1, 15);
 
-    uint64_t index2 = policy.index_for_hash(67890, 31);  // 31 = 0x1F (5 bits)
+    uint64_t index2 = policy1.index_for_hash(67890, 31);  // 31 = 0x1F (5 bits)
     EXPECT_LE(index2, 31);
 
-    uint64_t index3 = policy.index_for_hash(0xFFFFFFFF, 255);  // 255 = 0xFF (8 bits)
+    uint64_t index3 = policy1.index_for_hash(0xFFFFFFFF, 255);  // 255 = 0xFF (8 bits)
     EXPECT_LE(index3, 255);
 
-    END_TEST();
-}
+    // ===== INDEX FOR HASH BITWISE AND =====
+    xsigma::power_of_two_hash_policy policy2;
 
-XSIGMATEST(FlatHash, power_of_two_hash_policy_index_for_hash_bitwise_and)
-{
-    xsigma::power_of_two_hash_policy policy;
-
-    // Verify that index_for_hash uses bitwise AND
     uint64_t hash                = 0x12345678;
     uint64_t num_slots_minus_one = 0xFF;  // 255
 
-    uint64_t index    = policy.index_for_hash(hash, num_slots_minus_one);
+    uint64_t index    = policy2.index_for_hash(hash, num_slots_minus_one);
     uint64_t expected = hash & num_slots_minus_one;
-
     EXPECT_EQ(index, expected);
 
-    END_TEST();
-}
+    // ===== KEEP IN RANGE =====
+    xsigma::power_of_two_hash_policy policy3;
 
-XSIGMATEST(FlatHash, power_of_two_hash_policy_keep_in_range)
-{
-    xsigma::power_of_two_hash_policy policy;
-
-    uint64_t num_slots_minus_one = 127;  // 2^7 - 1
+    uint64_t nsmone = 127;  // 2^7 - 1
 
     // Test with index within range
-    uint64_t index1 = policy.keep_in_range(50, num_slots_minus_one);
-    EXPECT_LE(index1, num_slots_minus_one);
+    uint64_t kir_index1 = policy3.keep_in_range(50, nsmone);
+    EXPECT_LE(kir_index1, nsmone);
 
     // Test with index out of range
-    uint64_t index2 = policy.keep_in_range(200, num_slots_minus_one);
-    EXPECT_LE(index2, num_slots_minus_one);
+    uint64_t kir_index2 = policy3.keep_in_range(200, nsmone);
+    EXPECT_LE(kir_index2, nsmone);
 
     // Test with large index
-    uint64_t index3 = policy.keep_in_range(0xFFFFFFFF, num_slots_minus_one);
-    EXPECT_LE(index3, num_slots_minus_one);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, power_of_two_hash_policy_next_size_over_small)
-{
-    xsigma::power_of_two_hash_policy policy;
-
-    uint64_t size  = 1;
-    int8_t   shift = policy.next_size_over(size);
-
-    // Should return power of two
-    EXPECT_GE(size, 1);
-    // Verify it's a power of two: (size & (size - 1)) == 0
-    EXPECT_EQ(size & (size - 1), 0);
-    EXPECT_EQ(shift, 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, power_of_two_hash_policy_next_size_over_medium)
-{
-    xsigma::power_of_two_hash_policy policy;
-
-    uint64_t size          = 10;
-    uint64_t original_size = size;
-    int8_t   shift         = policy.next_size_over(size);
-
-    // Should return next power of two >= original size
-    EXPECT_GE(size, original_size);
-    // Verify it's a power of two
-    EXPECT_EQ(size & (size - 1), 0);
-    EXPECT_EQ(shift, 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, power_of_two_hash_policy_next_size_over_large)
-{
-    xsigma::power_of_two_hash_policy policy;
-
-    uint64_t size          = 1000000;
-    uint64_t original_size = size;
-    int8_t   shift         = policy.next_size_over(size);
-
-    // Should return next power of two >= original size
-    EXPECT_GE(size, original_size);
-    // Verify it's a power of two
-    EXPECT_EQ(size & (size - 1), 0);
-    EXPECT_EQ(shift, 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, power_of_two_hash_policy_next_size_over_already_power_of_two)
-{
-    xsigma::power_of_two_hash_policy policy;
-
-    uint64_t size  = 64;  // Already a power of two
-    int8_t   shift = policy.next_size_over(size);
-
-    // Should remain 64 or become next power of two
-    EXPECT_GE(size, 64);
-    EXPECT_EQ(size & (size - 1), 0);
-    EXPECT_EQ(shift, 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, power_of_two_hash_policy_commit_is_noop)
-{
-    xsigma::power_of_two_hash_policy policy;
-
-    // commit() should be a no-op for power_of_two_hash_policy
-    uint64_t index1 = policy.index_for_hash(12345, 255);
-    policy.commit(5);  // Should have no effect
-    uint64_t index2 = policy.index_for_hash(12345, 255);
-
-    EXPECT_EQ(index1, index2);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, power_of_two_hash_policy_reset_is_noop)
-{
-    xsigma::power_of_two_hash_policy policy;
-
-    // reset() should be a no-op for power_of_two_hash_policy
-    uint64_t index1 = policy.index_for_hash(12345, 255);
-    policy.reset();  // Should have no effect
-    uint64_t index2 = policy.index_for_hash(12345, 255);
-
-    EXPECT_EQ(index1, index2);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, power_of_two_hash_policy_sequential_operations)
-{
-    xsigma::power_of_two_hash_policy policy;
-
-    // Test sequential operations
-    uint64_t size1 = 5;
-    policy.next_size_over(size1);
-    EXPECT_EQ(size1 & (size1 - 1), 0);
-
-    uint64_t size2 = 100;
-    policy.next_size_over(size2);
-    EXPECT_EQ(size2 & (size2 - 1), 0);
-
-    uint64_t index = policy.index_for_hash(0xDEADBEEF, size2 - 1);
-    EXPECT_LE(index, size2 - 1);
-
-    END_TEST();
-}
-
-// ============================================================================
-// Prime Number Hash Policy - Extended Tests
-// ============================================================================
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_commit)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    uint64_t size     = 10;
-    auto     mod_func = policy.next_size_over(size);
-
-    // After commit, the policy should use the new mod function
-    policy.commit(mod_func);
-
-    // Verify that index_for_hash works with the committed function
-    uint64_t index = policy.index_for_hash(12345, 0);
-    EXPECT_GE(index, 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_sequential_next_size_over)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    uint64_t size1 = 5;
-    policy.next_size_over(size1);
-    uint64_t first_prime = size1;
-
-    uint64_t size2 = first_prime + 1;
-    policy.next_size_over(size2);
-    uint64_t second_prime = size2;
-
-    // Second prime should be larger than first prime
-    EXPECT_GT(second_prime, first_prime);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_index_for_hash_after_commit)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    uint64_t size     = 20;
-    auto     mod_func = policy.next_size_over(size);
-    policy.commit(mod_func);
-
-    // Test that index_for_hash returns valid indices
-    uint64_t index1 = policy.index_for_hash(12345, 0);
-    uint64_t index2 = policy.index_for_hash(67890, 0);
-
-    EXPECT_GE(index1, 0);
-    EXPECT_GE(index2, 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_keep_in_range_after_commit)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    uint64_t size     = 30;
-    auto     mod_func = policy.next_size_over(size);
-    policy.commit(mod_func);
-
-    // Test keep_in_range with various indices
-    uint64_t index1 = policy.keep_in_range(100, 50);
-    EXPECT_LE(index1, 50);
-
-    uint64_t index2 = policy.keep_in_range(0xFFFFFFFF, 50);
-    EXPECT_LE(index2, 50);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_edge_case_size_zero)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    uint64_t size = 0;
-    policy.next_size_over(size);
-
-    // Should return a valid prime size
-    EXPECT_GT(size, 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_edge_case_size_one)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    uint64_t size = 1;
-    policy.next_size_over(size);
-
-    // Should return a valid prime size
-    EXPECT_GT(size, 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_edge_case_size_two)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    uint64_t size = 2;
-    policy.next_size_over(size);
-
-    // Should return a valid prime size
-    EXPECT_GE(size, 2);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_large_size)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    uint64_t size = 1000000000;
-    policy.next_size_over(size);
-
-    // Should return a valid prime size
-    EXPECT_GT(size, 0);
-
-    END_TEST();
-}
-
-XSIGMATEST(FlatHash, prime_number_hash_policy_reset_after_operations)
-{
-    xsigma::prime_number_hash_policy policy;
-
-    uint64_t size     = 50;
-    auto     mod_func = policy.next_size_over(size);
-    policy.commit(mod_func);
-
-    // After reset, should use mod0
-    policy.reset();
-
-    // Verify reset worked by checking index_for_hash behavior
-    uint64_t index = policy.index_for_hash(12345, 0);
-    EXPECT_GE(index, 0);
+    uint64_t kir_index3 = policy3.keep_in_range(0xFFFFFFFF, nsmone);
+    EXPECT_LE(kir_index3, nsmone);
+
+    // ===== NEXT SIZE OVER SMALL =====
+    xsigma::power_of_two_hash_policy policy4;
+
+    uint64_t small_size  = 1;
+    int8_t   small_shift = policy4.next_size_over(small_size);
+    EXPECT_GE(small_size, 1);
+    EXPECT_EQ(small_size & (small_size - 1), 0);  // Power of two
+    EXPECT_EQ(small_shift, 0);
+
+    // ===== NEXT SIZE OVER MEDIUM =====
+    xsigma::power_of_two_hash_policy policy5;
+
+    uint64_t medium_size     = 10;
+    uint64_t original_medium = medium_size;
+    int8_t   medium_shift    = policy5.next_size_over(medium_size);
+    EXPECT_GE(medium_size, original_medium);
+    EXPECT_EQ(medium_size & (medium_size - 1), 0);  // Power of two
+    EXPECT_EQ(medium_shift, 0);
+
+    // ===== NEXT SIZE OVER LARGE =====
+    xsigma::power_of_two_hash_policy policy6;
+
+    uint64_t large_size     = 1000000;
+    uint64_t original_large = large_size;
+    int8_t   large_shift    = policy6.next_size_over(large_size);
+    EXPECT_GE(large_size, original_large);
+    EXPECT_EQ(large_size & (large_size - 1), 0);  // Power of two
+    EXPECT_EQ(large_shift, 0);
+
+    // ===== NEXT SIZE OVER ALREADY POWER OF TWO =====
+    xsigma::power_of_two_hash_policy policy7;
+
+    uint64_t pow2_size  = 64;  // Already a power of two
+    int8_t   pow2_shift = policy7.next_size_over(pow2_size);
+    EXPECT_GE(pow2_size, 64);
+    EXPECT_EQ(pow2_size & (pow2_size - 1), 0);
+    EXPECT_EQ(pow2_shift, 0);
+
+    // ===== COMMIT IS NOOP =====
+    xsigma::power_of_two_hash_policy policy8;
+
+    uint64_t commit_index1 = policy8.index_for_hash(12345, 255);
+    policy8.commit(5);  // Should have no effect
+    uint64_t commit_index2 = policy8.index_for_hash(12345, 255);
+    EXPECT_EQ(commit_index1, commit_index2);
+
+    // ===== RESET IS NOOP =====
+    xsigma::power_of_two_hash_policy policy9;
+
+    uint64_t reset_index1 = policy9.index_for_hash(12345, 255);
+    policy9.reset();  // Should have no effect
+    uint64_t reset_index2 = policy9.index_for_hash(12345, 255);
+    EXPECT_EQ(reset_index1, reset_index2);
+
+    // ===== SEQUENTIAL OPERATIONS =====
+    xsigma::power_of_two_hash_policy policy10;
+
+    uint64_t seq_size1 = 5;
+    policy10.next_size_over(seq_size1);
+    EXPECT_EQ(seq_size1 & (seq_size1 - 1), 0);
+
+    uint64_t seq_size2 = 100;
+    policy10.next_size_over(seq_size2);
+    EXPECT_EQ(seq_size2 & (seq_size2 - 1), 0);
+
+    uint64_t seq_index = policy10.index_for_hash(0xDEADBEEF, seq_size2 - 1);
+    EXPECT_LE(seq_index, seq_size2 - 1);
 
     END_TEST();
 }

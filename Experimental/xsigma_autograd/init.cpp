@@ -587,13 +587,11 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
     py_context_manager_DEPRECATED<DisableFuncTorch>(_C_m, "_DisableFuncTorch");
     py_context_manager<DisableAutocast>(_C_m, "_DisableAutocast");
     py::class_<torch::autograd::SavedVariable>(std::move(m), "SavedTensor")
-        .def(
-            py::init(
-                []() -> torch::autograd::SavedVariable
-                {
-                    XSIGMA_CHECK(
-                        false, "Trying to create a SavedTensor object from Python is forbidden.");
-                }))
+        .def(py::init(
+            []() -> torch::autograd::SavedVariable {
+                XSIGMA_CHECK(
+                    false, "Trying to create a SavedTensor object from Python is forbidden.");
+            }))
         .def(
             "register_hooks",
             [](torch::autograd::SavedVariable& s,
@@ -602,9 +600,8 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
             {
                 // Because we use a py::object, pybind will increment the refcount
                 // of the hook functions for us
-                s.register_hooks(
-                    std::make_unique<torch::autograd::PySavedVariableHooks>(
-                        pack_hook, unpack_hook));
+                s.register_hooks(std::make_unique<torch::autograd::PySavedVariableHooks>(
+                    pack_hook, unpack_hook));
             })
         .def_property_readonly(
             "data",

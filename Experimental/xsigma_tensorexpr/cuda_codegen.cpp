@@ -512,8 +512,8 @@ void CudaPrinter::visit(const AtomicAddPtr& v)
     }
     else
     {
-        os() << "atomicAdd(&" << *v->base_handle() << "[" << *v->flat_index() << "]"
-             << ", " << *v->value() << ");";
+        os() << "atomicAdd(&" << *v->base_handle() << "[" << *v->flat_index() << "]" << ", "
+             << *v->value() << ");";
     }
     os() << '\n';
 }
@@ -1271,19 +1271,18 @@ void CudaCodeGen::call_with_numel(void** args, int64_t numel)
 
     auto stream = xsigma::cuda::getCurrentCUDAStream();
     xsigma::cuda::jit::initializeCudaContext();
-    AT_CUDA_DRIVER_CHECK(
-        nvrtc().cuLaunchKernel(
-            function_,
-            gpu_block_extents,
-            1,
-            1,
-            gpu_thread_extents,
-            1,
-            1,
-            0,
-            stream,
-            ptr_to_args.data(),
-            nullptr));
+    AT_CUDA_DRIVER_CHECK(nvrtc().cuLaunchKernel(
+        function_,
+        gpu_block_extents,
+        1,
+        1,
+        gpu_thread_extents,
+        1,
+        1,
+        0,
+        stream,
+        ptr_to_args.data(),
+        nullptr));
 
     if (prior_device != device)
     {
@@ -1401,19 +1400,18 @@ void CudaCodeGen::call_raw(const std::vector<void*>& raw_args)
     // Launch the kernels
     auto stream = xsigma::cuda::getCurrentCUDAStream();
     xsigma::cuda::jit::initializeCudaContext();
-    AT_CUDA_DRIVER_CHECK(
-        nvrtc().cuLaunchKernel(
-            function_,
-            gpu_block_extents_v[0],
-            gpu_block_extents_v[1],
-            gpu_block_extents_v[2],
-            gpu_thread_extents_v[0],
-            gpu_thread_extents_v[1],
-            gpu_thread_extents_v[2],
-            0,
-            stream,
-            ptr_to_args.data(),
-            nullptr));
+    AT_CUDA_DRIVER_CHECK(nvrtc().cuLaunchKernel(
+        function_,
+        gpu_block_extents_v[0],
+        gpu_block_extents_v[1],
+        gpu_block_extents_v[2],
+        gpu_thread_extents_v[0],
+        gpu_thread_extents_v[1],
+        gpu_thread_extents_v[2],
+        0,
+        stream,
+        ptr_to_args.data(),
+        nullptr));
 
     if (prior_device != this->device().index())
     {

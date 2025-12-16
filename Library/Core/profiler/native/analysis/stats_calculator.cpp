@@ -95,8 +95,7 @@ std::string stats_calculator::header_string(const std::string& title) const
         init_field(stream, 8) << "[cdf%]";
         init_field(stream, 10) << "[mem KB]";
         init_field(stream, 9) << "[times called]";
-        stream << "\t"
-               << "[Name]";
+        stream << "\t" << "[Name]";
     }
     return stream.str();
 }

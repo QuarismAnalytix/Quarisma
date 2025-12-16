@@ -52,9 +52,8 @@ struct TORCH_API NamedTensorMeta final : public c10::NamedTensorMetaInterface
 
     void check_invariants() const
     {
-        TORCH_INTERNAL_ASSERT_DEBUG_ONLY(
-            std::any_of(
-                names_.begin(), names_.end(), [](const Dimname& n) { return !n.isWildcard(); }));
+        TORCH_INTERNAL_ASSERT_DEBUG_ONLY(std::any_of(
+            names_.begin(), names_.end(), [](const Dimname& n) { return !n.isWildcard(); }));
     }
 
     void set_names(HAS_NON_WILDCARD /*unused*/, DimnameList new_names)

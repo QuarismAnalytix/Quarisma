@@ -60,14 +60,13 @@ ExprHandle ReduceOp::make(
     ExprHandle                    ri_operand,
     const Reducer&                reducer)
 {
-    return ExprHandle(
-        alloc<ReduceOp>(
-            body.node(),
-            VarHandleVectorToVarVector(reduce_args),
-            result_buf.node(),
-            acc_buf.node(),
-            ri_operand.node(),
-            reducer));
+    return ExprHandle(alloc<ReduceOp>(
+        body.node(),
+        VarHandleVectorToVarVector(reduce_args),
+        result_buf.node(),
+        acc_buf.node(),
+        ri_operand.node(),
+        reducer));
 }
 
 }  // namespace torch::jit::tensorexpr

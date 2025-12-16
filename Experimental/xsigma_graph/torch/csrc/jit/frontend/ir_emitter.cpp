@@ -880,8 +880,8 @@ private:
         {
             throw(
                 ErrorReport(def.decl().params().range())
-                << "Number of type annotations for"
-                << " function parameters (" << schema.arguments().size() << ")"
+                << "Number of type annotations for" << " function parameters ("
+                << schema.arguments().size() << ")"
                 << " does not match the number of parameters on the function ("
                 << expected_annotation_size << ")!");
         }
@@ -1017,9 +1017,7 @@ private:
     {
         if (loop_status_ == LoopStatus::NOT_IN_LOOP)
         {
-            throw(
-                ErrorReport(loc) << "SyntaxError: '" << stmt_name << "'"
-                                 << " outside loop");
+            throw(ErrorReport(loc) << "SyntaxError: '" << stmt_name << "'" << " outside loop");
         }
         else if (loop_status_ == LoopStatus::IN_UNROLLED_LOOP)
         {
@@ -1475,9 +1473,9 @@ private:
             if (!is_dict_constructor && candidate_types.empty())
             {
                 throw(
-                    ErrorReport(src) << "Expected an Union type annotation "
-                                     << "with an inner " << match_repr << " type, but got "
-                                     << (*refined_type_hint_ptr)->repr_str());
+                    ErrorReport(src)
+                    << "Expected an Union type annotation " << "with an inner " << match_repr
+                    << " type, but got " << (*refined_type_hint_ptr)->repr_str());
             }
             else if (candidate_types.size() == 1)
             {
@@ -1853,8 +1851,8 @@ private:
                 if (!is_key_subtype)
                 {
                     err << "Dict type annotation `" << dict_type_hint->repr_str()
-                        << "` did not match the "
-                        << "type of an actual key type `" << k->type()->repr_str() << "`\n"
+                        << "` did not match the " << "type of an actual key type `"
+                        << k->type()->repr_str() << "`\n"
                         << ss.str();
                 }
 
@@ -1865,8 +1863,8 @@ private:
                 if (!is_value_subtype)
                 {
                     err << "Dict type annotation `" << dict_type_hint->repr_str()
-                        << "` did not match the "
-                        << "type of an actual value type `" << v->type()->repr_str() << "`\n"
+                        << "` did not match the " << "type of an actual value type `"
+                        << v->type()->repr_str() << "`\n"
                         << ss.str();
                 }
 
@@ -2334,8 +2332,8 @@ private:
             {
                 ErrorReport error(loc);
                 error << "Type mismatch: " << x << " is set to type " << tv->type()->repr_str()
-                      << " in the true branch"
-                      << " and type " << fv->type()->repr_str() << " in the false branch";
+                      << " in the true branch" << " and type " << fv->type()->repr_str()
+                      << " in the false branch";
                 if (save_true->findInParentFrame(x) || save_false->findInParentFrame(x))
                 {
                     throw ErrorReport(error);
@@ -2966,8 +2964,8 @@ private:
         break;
         default:
             throw(
-                ErrorReport(stmt.lhs()) << "unexpected expression on "
-                                        << "left-hand side of augmented assignment");
+                ErrorReport(stmt.lhs())
+                << "unexpected expression on " << "left-hand side of augmented assignment");
         }
     }
 
@@ -3059,9 +3057,9 @@ private:
         if (subscriptExprs.size() != 1)
         {
             throw(
-                ErrorReport(subscriptExprs) << "Sliced expression not yet supported for "
-                                            << type->repr_str() << " augmented assignment. "
-                                            << "File a bug if you want this");
+                ErrorReport(subscriptExprs)
+                << "Sliced expression not yet supported for " << type->repr_str()
+                << " augmented assignment. " << "File a bug if you want this");
         }
 
         TypePtr elemType = nullptr;
@@ -3217,9 +3215,9 @@ private:
             if (subscript.size() != 1 || subscript[0].kind() == TK_SLICE_EXPR)
             {
                 throw(
-                    ErrorReport(subscript) << "Sliced expression not yet supported for"
-                                           << " subscripted assignment. "
-                                           << "File a bug if you want this");
+                    ErrorReport(subscript)
+                    << "Sliced expression not yet supported for" << " subscripted assignment. "
+                    << "File a bug if you want this");
             }
             if (sliceable->type()->isSubtypeOf(*AnyTupleType::get()))
             {
@@ -3362,12 +3360,11 @@ private:
         auto ident = Var::create(stmt.rhs().range(), Ident::create(stmt.rhs().range(), tmp_name));
         for (auto expr : stmt.lhs_list())
         {
-            emitSingleAssignment(
-                Assign::create(
-                    stmt.range(),
-                    List<Expr>::create(expr.range(), {expr}),
-                    Maybe<Expr>::create(stmt.rhs().range(), ident),
-                    Maybe<Expr>::create(stmt.range())));
+            emitSingleAssignment(Assign::create(
+                stmt.range(),
+                List<Expr>::create(expr.range(), {expr}),
+                Maybe<Expr>::create(stmt.rhs().range(), ident),
+                Maybe<Expr>::create(stmt.range())));
         }
     }
 
@@ -4223,8 +4220,8 @@ private:
         {
             throw(
                 ErrorReport(apply)
-                << "There are multiple candidate "
-                << "Dict types in the Union type annotation `" << type_hint->repr_str()
+                << "There are multiple candidate " << "Dict types in the Union type annotation `"
+                << type_hint->repr_str()
                 << "`, and full type inference is not yet supported for the "
                 << "`dict()` constructor.");
         }
@@ -4289,8 +4286,7 @@ private:
                     ErrorReport(apply.range())
                     << "Cannot determine the type "
                     << "of an empty dict given the Union annotation `" << type_hint->repr_str()
-                    << "`, which contains multiple "
-                    << "candidate Dict types ");
+                    << "`, which contains multiple " << "candidate Dict types ");
             }
 
             XSIGMA_CHECK(
@@ -4830,9 +4826,8 @@ private:
             {
                 throw(
                     ErrorReport(ll)
-                    << "Cannot assign an empty list to a "
-                    << "variable annotated to be type " << refined_type_hint->repr_str()
-                    << " because there are multiple possible List "
+                    << "Cannot assign an empty list to a " << "variable annotated to be type "
+                    << refined_type_hint->repr_str() << " because there are multiple possible List "
                     << "type candidates in the Union annotation");
             }
         }
@@ -4984,10 +4979,10 @@ private:
             if (!all_candidates.empty() && values.empty())
             {
                 throw(
-                    ErrorReport(dl) << "Cannot assign an empty dict to a "
-                                    << "variable annotated to be type " << type_hint->repr_str()
-                                    << " because there are multiple possible Dict "
-                                    << "type candidates in the Union annotation");
+                    ErrorReport(dl)
+                    << "Cannot assign an empty dict to a " << "variable annotated to be type "
+                    << type_hint->repr_str() << " because there are multiple possible Dict "
+                    << "type candidates in the Union annotation");
             }
         }
         else

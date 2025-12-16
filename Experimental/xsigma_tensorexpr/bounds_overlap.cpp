@@ -299,10 +299,9 @@ std::vector<Bound> subtractBound(const Bound& a, const Bound& b)
         auto vars = VarFinder::find(lowDiff);
         if (vars.size() == 1)
         {
-            lowDiff = IRSimplifier::simplify(
-                alloc<Sub>(
-                    SubstituteInClone(b.start, {{*vars.begin(), immLike(b.start, 1)}}),
-                    SubstituteInClone(a.start, {{*vars.begin(), immLike(a.start, 1)}})));
+            lowDiff = IRSimplifier::simplify(alloc<Sub>(
+                SubstituteInClone(b.start, {{*vars.begin(), immLike(b.start, 1)}}),
+                SubstituteInClone(a.start, {{*vars.begin(), immLike(a.start, 1)}})));
         }
     }
 
@@ -311,10 +310,9 @@ std::vector<Bound> subtractBound(const Bound& a, const Bound& b)
         auto vars = VarFinder::find(highDiff);
         if (vars.size() == 1)
         {
-            highDiff = IRSimplifier::simplify(
-                alloc<Sub>(
-                    SubstituteInClone(b.end, {{*vars.begin(), immLike(b.end, 1)}}),
-                    SubstituteInClone(a.end, {{*vars.begin(), immLike(a.end, 1)}})));
+            highDiff = IRSimplifier::simplify(alloc<Sub>(
+                SubstituteInClone(b.end, {{*vars.begin(), immLike(b.end, 1)}}),
+                SubstituteInClone(a.end, {{*vars.begin(), immLike(a.end, 1)}})));
         }
     }
 

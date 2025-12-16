@@ -815,13 +815,12 @@ inline Variable make_variable_differentiable_view(
             "If this doesn't seem applicable, please file a bug to PyTorch.");
         xsigma::TensorImpl* data_impl = data.unsafeGetTensorImpl();
         data_impl->set_allow_tensor_metadata_change(allow_tensor_metadata_change);
-        data_impl->set_autograd_meta(
-            std::make_unique<DifferentiableViewMeta>(
-                data_impl,
-                std::move(backward_info),
-                std::move(forward_info),
-                shared_view_info,
-                creation_meta));
+        data_impl->set_autograd_meta(std::make_unique<DifferentiableViewMeta>(
+            data_impl,
+            std::move(backward_info),
+            std::move(forward_info),
+            shared_view_info,
+            creation_meta));
         return data;
     }
     return Variable();

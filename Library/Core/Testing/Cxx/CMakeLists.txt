@@ -103,16 +103,17 @@ add_executable(CoreCxxTests ${TestFiles})
 # Compile definitions
 target_compile_definitions(CoreCxxTests PRIVATE XSIGMA_GOOGLE_TEST USE_GTEST _VARIADIC_MAX=10)
 
-# Workaround for Clang 21.x compiler crash in TestPointer.cpp
-# The crash occurs in the Greedy Register Allocator pass when compiling with -O3 and C++20
+# Workaround for Clang 20/21.x compiler crash in register allocator
+# The crash occurs in the Greedy Register Allocator pass when compiling with -O3
 # This is a known Clang bug: https://github.com/llvm/llvm-project/issues/
-# Disable optimization for this specific file to work around the ICE
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_STANDARD GREATER_EQUAL 20)
+# Disable optimization for affected files to work around the ICE
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set_source_files_properties(
     "${CMAKE_CURRENT_SOURCE_DIR}/TestPointer.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/TestAsyncParallel.cpp"
     PROPERTIES COMPILE_FLAGS "-O1"
   )
-  message(STATUS "Applied Clang ICE workaround: TestPointer.cpp compiled with -O1")
+  message(STATUS "Applied Clang ICE workaround: TestPointer.cpp and TestAsyncParallel.cpp compiled with -O1")
 endif()
 
 # Link libraries Core library is linked which transitively brings in all centralized dependencies
@@ -142,6 +143,10 @@ if(XSIGMA_ENABLE_COVERAGE AND DEFINED XSIGMA_LLVM_PROFILE_FILE)
   set_tests_properties(
     CoreCxxTests PROPERTIES ENVIRONMENT "LLVM_PROFILE_FILE=${XSIGMA_LLVM_PROFILE_FILE}"
   )
+endif()
+
+if(XSIGMA_ENABLE_ENZYME)
+  target_link_libraries(CoreCxxTests PRIVATE XSigma::enzyme)
 endif()
 
 message(STATUS "✓ CoreCxxTests registered with CTest")

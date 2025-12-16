@@ -203,8 +203,7 @@ void BlockPrinter::PrintTensorInfo(const std::unordered_set<BufPtr>& bufs)
         os() << "{";
         os() << "{" << flat_dim_names[num_dims - 1] << "};";
         os() << " elem : " << blockDtypeCppString(buf->dtype());
-        os() << "}"
-             << " // flattened tensor";
+        os() << "}" << " // flattened tensor";
     }
     os() << '\n';
     emitIndent();
@@ -263,9 +262,7 @@ void BlockPrinter::PrintBufferInfo(const std::unordered_set<BufPtr>& bufs)
         emitIndent();
         emitIndent();
         os() << block_analysis_->getFlatInputName(read) << " = ";
-        os() << "{{"
-             << "bs_DPE"
-             << "}}";
+        os() << "{{" << "bs_DPE" << "}}";
     }
     os() << '\n';
     emitIndent();

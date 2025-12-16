@@ -32,7 +32,12 @@
       "Bash(/Users/toufikbellaj/XSigma/build_ninja/bin/benchmark_parallelbackends:*)",
       "Bash(./build_ninja/bin/CoreCxxTests:*)",
       "Bash(timeout 60 ./build_ninja/bin/CoreCxxTests:*)",
-      "Bash(./build_ninja_smp_tbb/bin/CoreCxxTests:*)"
+      "Bash(./build_ninja_smp_tbb/bin/CoreCxxTests:*)",
+      "Bash(nm:*)",
+      "Bash(/tmp/test_enzyme:*)",
+      "Bash(echo:*)",
+      "Bash(timeout 120 ./build_ninja/bin/CoreCxxTests:*)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []

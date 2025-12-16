@@ -232,6 +232,10 @@ if(XSIGMA_DEPENDENCY_LIBS)
   message(STATUS "Core library linked with centralized dependencies: ${XSIGMA_DEPENDENCY_LIBS}")
 endif()
 
+if(XSIGMA_ENABLE_ENZYME)
+  target_link_libraries(Core PRIVATE XSigma::enzyme)
+endif()
+
 # ============================================================================= Compile Definitions
 # for Optional Features
 # =============================================================================

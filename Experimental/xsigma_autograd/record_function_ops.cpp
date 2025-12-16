@@ -143,33 +143,31 @@ TORCH_LIBRARY_FRAGMENT(profiler, m)
     m.def("_record_function_exit", &record_function_exit_legacy);
     m.def("_record_function_exit._RecordFunction", &record_function_exit_new);
 
-    torch::jit::registerOperator(
-        torch::jit::Operator(
-            "profiler::_call_end_callbacks_on_jit_fut(Tensor x, Future(t) y) -> Future(t)",
-            [](jit::Stack& stack)
-            {
-                // Pop inputs, which should be a future and a tensor
-                auto fut         = jit::pop(stack).toFuture();
-                auto tensor      = jit::pop(stack).toTensor();
-                auto profiledFut = _call_end_callbacks_on_fut_legacy(tensor, fut);
-                // return future that completes when profiling callbacks have run.
-                jit::push(stack, std::move(profiledFut));
-            },
-            xsigma::AliasAnalysisKind::FROM_SCHEMA));
-    torch::jit::registerOperator(
-        torch::jit::Operator(
-            "profiler::_call_end_callbacks_on_jit_fut._RecordFunction("
-            "__torch__.torch.classes.profiler._RecordFunction x, Future(t) y) -> Future(t)",
-            [](xsigma::Stack& stack)
-            {
-                // Pop inputs, which should be a future and a PythonRecordFunction
-                auto fut         = torch::jit::pop(stack).toFuture();
-                auto tensor      = torch::jit::pop(stack).toCustomClass<PythonRecordFunction>();
-                auto profiledFut = _call_end_callbacks_on_fut_new(tensor, fut);
-                // return future that completes when profiling callbacks have run.
-                torch::jit::push(stack, std::move(profiledFut));
-            },
-            xsigma::AliasAnalysisKind::FROM_SCHEMA));
+    torch::jit::registerOperator(torch::jit::Operator(
+        "profiler::_call_end_callbacks_on_jit_fut(Tensor x, Future(t) y) -> Future(t)",
+        [](jit::Stack& stack)
+        {
+            // Pop inputs, which should be a future and a tensor
+            auto fut         = jit::pop(stack).toFuture();
+            auto tensor      = jit::pop(stack).toTensor();
+            auto profiledFut = _call_end_callbacks_on_fut_legacy(tensor, fut);
+            // return future that completes when profiling callbacks have run.
+            jit::push(stack, std::move(profiledFut));
+        },
+        xsigma::AliasAnalysisKind::FROM_SCHEMA));
+    torch::jit::registerOperator(torch::jit::Operator(
+        "profiler::_call_end_callbacks_on_jit_fut._RecordFunction("
+        "__torch__.torch.classes.profiler._RecordFunction x, Future(t) y) -> Future(t)",
+        [](xsigma::Stack& stack)
+        {
+            // Pop inputs, which should be a future and a PythonRecordFunction
+            auto fut         = torch::jit::pop(stack).toFuture();
+            auto tensor      = torch::jit::pop(stack).toCustomClass<PythonRecordFunction>();
+            auto profiledFut = _call_end_callbacks_on_fut_new(tensor, fut);
+            // return future that completes when profiling callbacks have run.
+            torch::jit::push(stack, std::move(profiledFut));
+        },
+        xsigma::AliasAnalysisKind::FROM_SCHEMA));
 }
 
 }  // namespace torch::autograd::profiler

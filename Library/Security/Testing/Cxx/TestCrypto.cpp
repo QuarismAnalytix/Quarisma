@@ -277,9 +277,8 @@ XSIGMATEST(crypto_test, hex_roundtrip)
 
     EXPECT_TRUE(result.has_value());
     EXPECT_EQ(result.value().size(), sizeof(original));
-    EXPECT_TRUE(
-        std::equal(
-            result.value().begin(), result.value().end(), original, original + sizeof(original)));
+    EXPECT_TRUE(std::equal(
+        result.value().begin(), result.value().end(), original, original + sizeof(original)));
 }
 
 // ============================================================================

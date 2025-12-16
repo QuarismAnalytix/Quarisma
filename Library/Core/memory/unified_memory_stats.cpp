@@ -248,13 +248,11 @@ std::string unified_resource_stats::debug_string() const
     int64_t const largest    = largest_alloc_size.load(std::memory_order_relaxed);
     int64_t const active     = active_allocations.load(std::memory_order_relaxed);
 
-    oss << "unified_resource_stats: "
-        << "allocs=" << allocs << ", deallocs=" << deallocs << ", active=" << active
-        << ", in_use=" << (bytes_used / 1024.0 / 1024.0) << "MB"
+    oss << "unified_resource_stats: " << "allocs=" << allocs << ", deallocs=" << deallocs
+        << ", active=" << active << ", in_use=" << (bytes_used / 1024.0 / 1024.0) << "MB"
         << ", peak=" << (peak_bytes / 1024.0 / 1024.0) << "MB"
-        << ", largest=" << (largest / 1024.0 / 1024.0) << "MB"
-        << ", efficiency=" << std::fixed << std::setprecision(1) << (memory_efficiency() * 100.0)
-        << "%"
+        << ", largest=" << (largest / 1024.0 / 1024.0) << "MB" << ", efficiency=" << std::fixed
+        << std::setprecision(1) << (memory_efficiency() * 100.0) << "%"
         << ", success_rate=" << std::fixed << std::setprecision(1) << allocation_success_rate()
         << "%";
 
@@ -484,8 +482,7 @@ memory_fragmentation_metrics memory_fragmentation_metrics::calculate(
 std::string memory_fragmentation_metrics::debug_string() const
 {
     std::ostringstream oss;
-    oss << "memory_fragmentation_metrics: "
-        << "free_blocks=" << total_free_blocks
+    oss << "memory_fragmentation_metrics: " << "free_blocks=" << total_free_blocks
         << ", largest=" << (largest_free_block / 1024.0 / 1024.0) << "MB"
         << ", smallest=" << (smallest_free_block / 1024.0 / 1024.0) << "MB"
         << ", average=" << (average_free_block_size / 1024.0 / 1024.0) << "MB"

@@ -105,10 +105,12 @@ int nnc_lowerings_lazy_registration()
 
 #define DEFINE_BINARY_SCALAR_OP_LOWERING(op_name, op)                         \
     RegisterNNCLoweringsFunction aten_##op_name##_scalar(                     \
-        {"aten::" #op_name ".int(int a, int b) -> (int)",                     \
-         "aten::" #op_name ".int_float(int a, float b) -> (float)",           \
-         "aten::" #op_name ".float_int(float a, int b) -> (float)",           \
-         "aten::" #op_name ".float(float a, float b) -> (float)"},            \
+        {                                                                     \
+            "aten::" #op_name ".int(int a, int b) -> (int)",                  \
+                "aten::" #op_name ".int_float(int a, float b) -> (float)",    \
+                "aten::" #op_name ".float_int(float a, int b) -> (float)",    \
+                "aten::" #op_name ".float(float a, float b) -> (float)"       \
+        },                                                                    \
         [](const std::vector<ArgValue>&     inputs,                           \
            const std::vector<ExprHandle>&   outputShape,                      \
            const std::vector<ExprHandle>&   outputStrides,                    \
@@ -151,11 +153,13 @@ int nnc_lowerings_lazy_registration()
 
 #define DEFINE_COMPARISON_SCALAR_OP_LOWERING(op_name, op)                     \
     RegisterNNCLoweringsFunction aten_##op_name##_scalar(                     \
-        {"aten::" #op_name ".bool(bool a, bool b) -> (bool)",                 \
-         "aten::" #op_name ".int(int a, int b) -> (bool)",                    \
-         "aten::" #op_name ".int_float(int a, float b) -> (bool)",            \
-         "aten::" #op_name ".float_int(float a, int b) -> (bool)",            \
-         "aten::" #op_name ".float(float a, float b) -> (bool)"},             \
+        {                                                                     \
+            "aten::" #op_name ".bool(bool a, bool b) -> (bool)",              \
+                "aten::" #op_name ".int(int a, int b) -> (bool)",             \
+                "aten::" #op_name ".int_float(int a, float b) -> (bool)",     \
+                "aten::" #op_name ".float_int(float a, int b) -> (bool)",     \
+                "aten::" #op_name ".float(float a, float b) -> (bool)"        \
+        },                                                                    \
         [](const std::vector<ArgValue>&     inputs,                           \
            const std::vector<ExprHandle>&   outputShape,                      \
            const std::vector<ExprHandle>&   outputStrides,                    \
@@ -180,7 +184,7 @@ int nnc_lowerings_lazy_registration()
 
 #define DEFINE_BITWISE_SCALAR_OP_LOWERING(op_name, op)                        \
     RegisterNNCLoweringsFunction aten_##op_name##_int_scalar(                 \
-        {"aten::" #op_name ".int(int a, int b) -> (int)"},                    \
+        { "aten::" #op_name ".int(int a, int b) -> (int)" },                  \
         [](const std::vector<ArgValue>&     inputs,                           \
            const std::vector<ExprHandle>&   outputShape,                      \
            const std::vector<ExprHandle>&   outputStrides,                    \
@@ -204,7 +208,7 @@ int nnc_lowerings_lazy_registration()
 
 #define DEFINE_LOGICAL_SCALAR_OP_LOWERING(op_name, op)                        \
     RegisterNNCLoweringsFunction aten_##op_name##_bool_scalar(                \
-        {"aten::" #op_name ".bool(bool a, bool b) -> (bool)"},                \
+        { "aten::" #op_name ".bool(bool a, bool b) -> (bool)" },              \
         [](const std::vector<ArgValue>&     inputs,                           \
            const std::vector<ExprHandle>&   outputShape,                      \
            const std::vector<ExprHandle>&   outputStrides,                    \
@@ -1273,8 +1277,7 @@ int nnc_lowerings_lazy_registration()
                 outputShape,
                 outputStrides,
                 outputType,
-                [](const ExprHandle& lhs, const ExprHandle& rhs)
-                {
+                [](const ExprHandle& lhs, const ExprHandle& rhs) {
                     return atan2(
                         promoteIntegerToDefaultType(lhs), promoteIntegerToDefaultType(rhs));
                 });

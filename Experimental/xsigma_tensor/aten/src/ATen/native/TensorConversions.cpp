@@ -1932,10 +1932,9 @@ void convert_indices_from_csr_to_coo_cpu(
     if (batch_ndim > 0)
     {
         auto batch_indices = indices.narrow(0, 0, batch_ndim);
-        batch_indices.copy_(
-            at::sparse::full_coo_indices(
-                crow_indices.sizes().slice(0, batch_ndim), crow_indices.options())
-                .repeat_interleave(nnz, 1));
+        batch_indices.copy_(at::sparse::full_coo_indices(
+                                crow_indices.sizes().slice(0, batch_ndim), crow_indices.options())
+                                .repeat_interleave(nnz, 1));
     }
     const input_t* crow_indices_data_in = crow_indices_->const_data_ptr<input_t>();
     TORCH_INTERNAL_ASSERT(indices.is_contiguous());

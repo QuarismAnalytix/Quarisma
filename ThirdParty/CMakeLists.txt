@@ -1075,11 +1075,13 @@ endif()
 # Enzyme - Automatic Differentiation (Handled by enzyme.cmake)
 # -----------------------------------------------------------------------------
 # Enzyme is configured by enzyme.cmake (included before ThirdParty subdirectory)
-# which creates XSigma::enzyme interface target. We add it to the dependency list here.
+# which creates XSigma::enzyme interface target.
+# NOTE: Enzyme is NOT added to XSIGMA_DEPENDENCY_LIBS because it should only be applied
+# to specific source files that use it (via set_source_files_properties), not globally.
+# The Enzyme plugin can cause compilation crashes on files that don't use it.
 if(XSIGMA_ENABLE_ENZYME)
   if(TARGET XSigma::enzyme)
-    list(APPEND XSIGMA_DEPENDENCY_LIBS XSigma::enzyme)
-    message(STATUS "Dependency: XSigma::enzyme added to XSIGMA_DEPENDENCY_LIBS")
+    message(STATUS "Enzyme: XSigma::enzyme target available (apply selectively to source files)")
   endif()
 endif()
 

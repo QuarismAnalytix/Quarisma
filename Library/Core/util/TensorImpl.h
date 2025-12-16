@@ -1,7 +1,6 @@
 #pragma once
 /*
 #include <xsigma/core/Allocator.h>
-#include <xsigma/core/device_option.h>
 #include <xsigma/core/DeviceType.h>
 #include <xsigma/core/DispatchKey.h>
 #include <xsigma/core/DispatchKeySet.h>
@@ -16,15 +15,16 @@
 #include <xsigma/core/SymIntArrayRef.h>
 #include <xsigma/core/SymbolicShapeMeta.h>
 #include <xsigma/core/WrapDimMinimal.h>
+#include <xsigma/core/device_option.h>
 #include <xsigma/core/impl/PyObjectSlot.h>
 #include <xsigma/core/impl/SizesAndStrides.h>
 #include <xsigma/macros/Export.h>
 #include <xsigma/macros/Macros.h>
-#include <xsigma/util/array_ref.h>
 #include <xsigma/util/DimVector.h>
 #include <xsigma/util/Exception.h>
 #include <xsigma/util/Flags.h>
 #include <xsigma/util/accumulate.h>
+#include <xsigma/util/array_ref.h>
 #include <xsigma/util/intrusive_ptr.h>
 #include <xsigma/util/irange.h>
 #include <xsigma/util/safe_numerics.h>
@@ -1224,7 +1224,8 @@ public:
 #else
     TENSORIMPL_MAYBE_VIRTUAL
 #endif
-        bool has_storage() const
+        bool
+        has_storage() const
 // NOTE: we devirtualize this because it arguably shouldn't be an
 // error just to ask subclasses if they have storage.
 // This used to throw for most subclasses, but OpaqueTensorImpl
@@ -2589,9 +2590,8 @@ public:
                 auto size     = numel_;
                 auto dtor     = data_type_.placementDelete();
                 auto data_ptr = allocator->allocate(numel_ * data_type_.itemsize());
-                storage_.set_data_ptr_noswap(
-                    PlacementDeleteContext::makeDataPtr(
-                        std::move(data_ptr), dtor, size, storage_.device()));
+                storage_.set_data_ptr_noswap(PlacementDeleteContext::makeDataPtr(
+                    std::move(data_ptr), dtor, size, storage_.device()));
                 data_type_.placementNew()(storage_.mutable_data(), numel_);
             }
             else

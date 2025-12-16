@@ -165,9 +165,7 @@ static std::vector<std::string> _single_input_general_value_aten_funcs = {
 };
 
 static std::vector<std::string> _clamp_funcs = {
-    "hardtanh",
-    "hardtanh_",
-    "clamp",
+    "hardtanh", "hardtanh_", "clamp",
     // "clamp_",  // Enable when quantized `clamp_` is ready
 };
 

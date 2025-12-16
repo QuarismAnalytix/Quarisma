@@ -1040,8 +1040,7 @@ Tensor unbind_backward(const variable_list& grads, int64_t dim)
     }
     auto grads_tensors = fmap(
         grads,
-        [&](const Variable& v)
-        {
+        [&](const Variable& v) {
             return (
                 v.defined() ? static_cast<Tensor>(v) : xsigma::zeros({}, o).expand_symint(sizes));
         });

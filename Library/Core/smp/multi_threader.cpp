@@ -264,7 +264,7 @@ void multi_threader::single_method_execute()
     {
         thread_info_array_[thread_loop].user_data         = single_data_;
         thread_info_array_[thread_loop].number_of_threads = number_of_threads_;
-        process_id[thread_loop]                            = CreateThread(  // NOLINT
+        process_id[thread_loop]                           = CreateThread(  // NOLINT
             nullptr,
             0,
             single_method_,
@@ -389,7 +389,7 @@ void multi_threader::multiple_method_execute()
     {
         thread_info_array_[thread_loop].user_data         = multiple_data_[thread_loop];
         thread_info_array_[thread_loop].number_of_threads = number_of_threads_;
-        process_id[thread_loop]                            = CreateThread(  // NOLINT
+        process_id[thread_loop]                           = CreateThread(  // NOLINT
             nullptr,
             0,
             multiple_method_[thread_loop],

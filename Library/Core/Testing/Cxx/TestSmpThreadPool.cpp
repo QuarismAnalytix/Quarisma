@@ -35,99 +35,65 @@ namespace xsigma
 {
 
 // ============================================================================
-// Test Group 1: Singleton and Lifecycle
+// Consolidated Test 1: Singleton, Lifecycle, and Initial State
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, singleton_access)
+XSIGMATEST(SmpThreadPool, singleton_lifecycle_and_state)
 {
-    // Get singleton instance
+    // Test 1: Singleton access - ensure same instance is returned
     smp_thread_pool& pool1 = smp_thread_pool::instance();
     smp_thread_pool& pool2 = smp_thread_pool::instance();
-
-    // Should be the same instance
     EXPECT_EQ(&pool1, &pool2);
-}
 
-XSIGMATEST(SmpThreadPool, initial_state)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
+    // Test 2: Initial state - should not be in parallel scope
+    EXPECT_FALSE(pool1.is_parallel_scope());
 
-    // Initially should not be in parallel scope
-    EXPECT_FALSE(pool.is_parallel_scope());
+    // Test 3: Thread ID should be external_thread_id (1)
+    EXPECT_EQ(pool1.get_thread_id(), smp_thread_pool::external_thread_id);
 
-    // Thread ID should be external_thread_id (1)
-    EXPECT_EQ(pool.get_thread_id(), smp_thread_pool::external_thread_id);
-}
-
-XSIGMATEST(SmpThreadPool, thread_count)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
-    size_t count = pool.thread_count();
-
-    // Should be reasonable
+    // Test 4: Thread count should be reasonable
+    size_t count = pool1.thread_count();
     EXPECT_GT(count, 0u);
     EXPECT_LE(count, std::thread::hardware_concurrency() * 2);
 }
 
 // ============================================================================
-// Test Group 2: Thread Allocation and Proxy
+// Consolidated Test 2: Thread Allocation and Proxy Management
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, allocate_threads_default)
+XSIGMATEST(SmpThreadPool, thread_allocation_and_proxy_management)
 {
     smp_thread_pool& pool = smp_thread_pool::instance();
 
-    // Allocate with default thread count (0 = auto)
+    // Test 1: Allocate with default thread count (0 = auto)
     {
         auto proxy = pool.allocate_threads(0);
-
-        // Proxy should be valid
         EXPECT_TRUE(proxy.is_top_level());
 
         auto threads = proxy.get_threads();
         EXPECT_GT(threads.size(), 0u);
     }
-
-    // After proxy destruction, should return to normal state
     EXPECT_FALSE(pool.is_parallel_scope());
-}
 
-XSIGMATEST(SmpThreadPool, allocate_threads_custom_count)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
+    // Test 2: Allocate with custom count (4 threads)
     {
-        auto proxy = pool.allocate_threads(4);
-
+        auto proxy   = pool.allocate_threads(4);
         auto threads = proxy.get_threads();
 
-        // Should have 4 threads (or close to it)
         EXPECT_GE(threads.size(), 1u);
         EXPECT_LE(threads.size(), 4u);
     }
-
     EXPECT_FALSE(pool.is_parallel_scope());
-}
 
-XSIGMATEST(SmpThreadPool, allocate_single_thread)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
+    // Test 3: Allocate single thread
     {
-        auto proxy = pool.allocate_threads(1);
-
+        auto proxy   = pool.allocate_threads(1);
         auto threads = proxy.get_threads();
         EXPECT_GE(threads.size(), 0u);  // May be 0 or 1 depending on implementation
     }
-
     EXPECT_FALSE(pool.is_parallel_scope());
-}
 
-XSIGMATEST(SmpThreadPool, proxy_move_semantics)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
+    // Test 4: Proxy move semantics
     {
         auto proxy1 = pool.allocate_threads(2);
         EXPECT_TRUE(proxy1.is_top_level());
@@ -141,69 +107,65 @@ XSIGMATEST(SmpThreadPool, proxy_move_semantics)
         proxy3      = std::move(proxy2);
         EXPECT_TRUE(proxy3.is_top_level());
     }
+    EXPECT_FALSE(pool.is_parallel_scope());
 
+    // Test 5: Get threads and verify they are joinable
+    {
+        auto proxy   = pool.allocate_threads(4);
+        auto threads = proxy.get_threads();
+
+        EXPECT_GT(threads.size(), 0u);
+        for (auto& thread_ref : threads)
+        {
+            EXPECT_TRUE(thread_ref.get().joinable());
+        }
+    }
     EXPECT_FALSE(pool.is_parallel_scope());
 }
 
 // ============================================================================
-// Test Group 3: Job Execution
+// Consolidated Test 3: Job Execution and Distribution
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, do_job_basic)
+XSIGMATEST(SmpThreadPool, job_execution_and_distribution)
 {
     smp_thread_pool& pool = smp_thread_pool::instance();
 
-    std::atomic<int> counter{0};
-
+    // Test 1: Basic job execution
     {
-        auto proxy = pool.allocate_threads(4);
+        std::atomic<int> counter{0};
+        auto             proxy = pool.allocate_threads(4);
 
-        // Execute job
         proxy.do_job([&counter]() { counter.fetch_add(1, std::memory_order_relaxed); });
-
-        // Join to wait for completion
         proxy.join();
+
+        EXPECT_GE(counter.load(std::memory_order_relaxed), 1);
     }
 
-    // Job should have executed
-    EXPECT_GE(counter.load(std::memory_order_relaxed), 1);
-}
-
-XSIGMATEST(SmpThreadPool, do_job_multiple_times)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
-    std::atomic<int> counter{0};
-
+    // Test 2: Multiple jobs execution
     {
-        auto proxy = pool.allocate_threads(2);
+        std::atomic<int> counter{0};
+        auto             proxy = pool.allocate_threads(2);
 
-        // Execute multiple jobs
         for (int i = 0; i < 5; ++i)
         {
             proxy.do_job([&counter]() { counter.fetch_add(1, std::memory_order_relaxed); });
         }
-
         proxy.join();
+
+        EXPECT_GE(counter.load(std::memory_order_relaxed), 5);
     }
 
-    EXPECT_GE(counter.load(std::memory_order_relaxed), 5);
-}
-
-XSIGMATEST(SmpThreadPool, do_job_with_data)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
-    std::vector<std::atomic<int>> results(10);
-    for (auto& r : results)
+    // Test 3: Job with data manipulation
     {
-        r.store(0, std::memory_order_relaxed);
-    }
+        std::vector<std::atomic<int>> results(10);
+        for (auto& r : results)
+        {
+            r.store(0, std::memory_order_relaxed);
+        }
 
-    {
         auto proxy = pool.allocate_threads(4);
 
-        // Job that modifies array
         proxy.do_job(
             [&results]()
             {
@@ -214,19 +176,15 @@ XSIGMATEST(SmpThreadPool, do_job_with_data)
             });
 
         proxy.join();
+
+        // Verify results
+        for (size_t i = 0; i < results.size(); ++i)
+        {
+            EXPECT_EQ(results[i].load(std::memory_order_relaxed), static_cast<int>(i * 2));
+        }
     }
 
-    // Verify results
-    for (size_t i = 0; i < results.size(); ++i)
-    {
-        EXPECT_EQ(results[i].load(std::memory_order_relaxed), static_cast<int>(i * 2));
-    }
-}
-
-XSIGMATEST(SmpThreadPool, do_job_exception_handling)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
+    // Test 4: Exception handling in jobs
     {
         auto proxy = pool.allocate_threads(2);
 
@@ -236,29 +194,25 @@ XSIGMATEST(SmpThreadPool, do_job_exception_handling)
         // Should not crash
         proxy.join();
     }
-
-    // Should still be usable
     EXPECT_FALSE(pool.is_parallel_scope());
 }
 
 // ============================================================================
-// Test Group 4: Thread Identification
+// Consolidated Test 4: Thread Identification
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, get_thread_id_external)
+XSIGMATEST(SmpThreadPool, thread_identification)
 {
     smp_thread_pool& pool = smp_thread_pool::instance();
 
-    // Outside parallel region
+    // Test 1: Verify external_thread_id constant
+    EXPECT_EQ(smp_thread_pool::external_thread_id, 1u);
+
+    // Test 2: Get thread ID outside parallel region
     size_t thread_id = pool.get_thread_id();
-
     EXPECT_EQ(thread_id, smp_thread_pool::external_thread_id);
-}
 
-XSIGMATEST(SmpThreadPool, get_thread_id_inside_job)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
+    // Test 3: Get thread ID inside job
     std::atomic<size_t> internal_thread_id{0};
 
     {
@@ -277,28 +231,18 @@ XSIGMATEST(SmpThreadPool, get_thread_id_inside_job)
     EXPECT_GT(id, 0u);
 }
 
-XSIGMATEST(SmpThreadPool, external_thread_id_constant)
-{
-    // Verify external_thread_id constant
-    EXPECT_EQ(smp_thread_pool::external_thread_id, 1u);
-}
-
 // ============================================================================
-// Test Group 5: Parallel Scope Detection
+// Consolidated Test 5: Parallel Scope Detection
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, is_parallel_scope_outside)
+XSIGMATEST(SmpThreadPool, parallel_scope_detection)
 {
     smp_thread_pool& pool = smp_thread_pool::instance();
 
-    // Outside any parallel region
+    // Test 1: Outside parallel region should return false
     EXPECT_FALSE(pool.is_parallel_scope());
-}
 
-XSIGMATEST(SmpThreadPool, is_parallel_scope_inside)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
+    // Test 2: Inside parallel region should return true
     std::atomic<bool> inside_result{false};
 
     {
@@ -310,32 +254,32 @@ XSIGMATEST(SmpThreadPool, is_parallel_scope_inside)
         proxy.join();
     }
 
-    // Inside parallel region should return true
     EXPECT_TRUE(inside_result.load(std::memory_order_relaxed));
-}
 
-XSIGMATEST(SmpThreadPool, single_thread_detection)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
+    // Test 3: Single thread detection - should not crash
     bool is_single = pool.single_thread();
-
-    // May return true or false depending on configuration
-    // Just ensure no crash
     SUCCEED();
 }
 
 // ============================================================================
-// Test Group 6: Nested Proxies
+// Consolidated Test 6: Nested Proxies and Top-Level Detection
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, nested_proxies)
+XSIGMATEST(SmpThreadPool, nested_proxies_and_top_level)
 {
     smp_thread_pool& pool = smp_thread_pool::instance();
 
     std::atomic<int> outer_counter{0};
     std::atomic<int> inner_counter{0};
 
+    // Test 1: Top-level proxy detection
+    {
+        auto proxy = pool.allocate_threads(4);
+        EXPECT_TRUE(proxy.is_top_level());
+    }
+    EXPECT_FALSE(pool.is_parallel_scope());
+
+    // Test 2: Nested proxies behavior
     {
         auto outer_proxy = pool.allocate_threads(2);
         EXPECT_TRUE(outer_proxy.is_top_level());
@@ -362,52 +306,17 @@ XSIGMATEST(SmpThreadPool, nested_proxies)
     EXPECT_GE(inner_counter.load(std::memory_order_relaxed), 1);
 }
 
-XSIGMATEST(SmpThreadPool, proxy_is_top_level)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
-    {
-        auto proxy = pool.allocate_threads(4);
-        EXPECT_TRUE(proxy.is_top_level());
-    }
-
-    // After destruction
-    EXPECT_FALSE(pool.is_parallel_scope());
-}
-
 // ============================================================================
-// Test Group 7: Thread Reuse and Management
+// Consolidated Test 7: Thread Reuse and Sequential Allocation
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, get_threads)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
-    {
-        auto proxy = pool.allocate_threads(4);
-
-        auto threads = proxy.get_threads();
-
-        // Should have threads
-        EXPECT_GT(threads.size(), 0u);
-
-        // All threads should be valid
-        for (auto& thread_ref : threads)
-        {
-            EXPECT_TRUE(thread_ref.get().joinable());
-        }
-    }
-
-    EXPECT_FALSE(pool.is_parallel_scope());
-}
-
-XSIGMATEST(SmpThreadPool, sequential_proxy_allocation)
+XSIGMATEST(SmpThreadPool, thread_reuse_and_sequential_allocation)
 {
     smp_thread_pool& pool = smp_thread_pool::instance();
 
     std::atomic<int> counter{0};
 
-    // Allocate multiple proxies sequentially
+    // Test: Allocate multiple proxies sequentially to verify thread reuse
     for (int iteration = 0; iteration < 5; ++iteration)
     {
         auto proxy = pool.allocate_threads(2);
@@ -421,91 +330,69 @@ XSIGMATEST(SmpThreadPool, sequential_proxy_allocation)
 }
 
 // ============================================================================
-// Test Group 8: Edge Cases and Error Handling
+// Consolidated Test 8: Edge Cases and Error Handling
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, allocate_zero_threads)
+XSIGMATEST(SmpThreadPool, edge_cases_and_error_handling)
 {
     smp_thread_pool& pool = smp_thread_pool::instance();
 
+    // Test 1: Allocate zero threads (should use default)
     {
-        // Zero threads should use default
-        auto proxy = pool.allocate_threads(0);
-
+        auto proxy   = pool.allocate_threads(0);
         auto threads = proxy.get_threads();
         EXPECT_GT(threads.size(), 0u);
     }
-
     EXPECT_FALSE(pool.is_parallel_scope());
-}
 
-XSIGMATEST(SmpThreadPool, allocate_excessive_threads)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
+    // Test 2: Allocate excessive threads (should be capped)
     {
-        // Request excessive threads - should be capped
-        auto proxy = pool.allocate_threads(10000);
-
+        auto proxy   = pool.allocate_threads(10000);
         auto threads = proxy.get_threads();
 
-        // Should be capped to reasonable number
         EXPECT_GT(threads.size(), 0u);
         EXPECT_LT(threads.size(), 10000u);
     }
-
     EXPECT_FALSE(pool.is_parallel_scope());
-}
 
-XSIGMATEST(SmpThreadPool, join_without_jobs)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
+    // Test 3: Join without submitting jobs (should not crash)
     {
         auto proxy = pool.allocate_threads(2);
-
-        // Join without submitting jobs - should not crash
         proxy.join();
     }
-
     SUCCEED();
-}
 
-XSIGMATEST(SmpThreadPool, multiple_joins)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
-    std::atomic<int> counter{0};
-
+    // Test 4: Multiple joins should be safe
     {
-        auto proxy = pool.allocate_threads(2);
+        std::atomic<int> counter{0};
+        auto             proxy = pool.allocate_threads(2);
 
         proxy.do_job([&counter]() { counter.fetch_add(1, std::memory_order_relaxed); });
 
-        // Multiple joins should be safe
         proxy.join();
         proxy.join();
         proxy.join();
-    }
 
-    EXPECT_GE(counter.load(std::memory_order_relaxed), 1);
+        EXPECT_GE(counter.load(std::memory_order_relaxed), 1);
+    }
 }
 
 // ============================================================================
-// Test Group 9: Thread Safety and Concurrency
+// Consolidated Test 9: Thread Safety and Concurrency
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, concurrent_job_execution)
+XSIGMATEST(SmpThreadPool, thread_safety_and_concurrency)
 {
     smp_thread_pool& pool = smp_thread_pool::instance();
 
-    std::vector<std::atomic<int>> counters(100);
-    for (auto& c : counters)
+    // Test 1: Concurrent job execution
     {
-        c.store(0, std::memory_order_relaxed);
-    }
+        std::vector<std::atomic<int>> counters(100);
+        for (auto& c : counters)
+        {
+            c.store(0, std::memory_order_relaxed);
+        }
 
-    {
         auto proxy = pool.allocate_threads(4);
 
         // Submit many jobs concurrently
@@ -515,26 +402,22 @@ XSIGMATEST(SmpThreadPool, concurrent_job_execution)
         }
 
         proxy.join();
+
+        // All jobs should have executed
+        for (const auto& c : counters)
+        {
+            EXPECT_GE(c.load(std::memory_order_relaxed), 1);
+        }
     }
 
-    // All jobs should have executed
-    for (const auto& c : counters)
+    // Test 2: Data race detection
     {
-        EXPECT_GE(c.load(std::memory_order_relaxed), 1);
-    }
-}
+        std::vector<std::atomic<int>> data(1000);
+        for (auto& d : data)
+        {
+            d.store(0, std::memory_order_relaxed);
+        }
 
-XSIGMATEST(SmpThreadPool, data_race_detection)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
-    std::vector<std::atomic<int>> data(1000);
-    for (auto& d : data)
-    {
-        d.store(0, std::memory_order_relaxed);
-    }
-
-    {
         auto proxy = pool.allocate_threads(4);
 
         // Each index should be modified exactly once per job
@@ -551,23 +434,18 @@ XSIGMATEST(SmpThreadPool, data_race_detection)
         }
 
         proxy.join();
+
+        // Each element should be exactly 10
+        for (const auto& d : data)
+        {
+            EXPECT_EQ(d.load(std::memory_order_relaxed), 10);
+        }
     }
 
-    // Each element should be exactly 10
-    for (const auto& d : data)
+    // Test 3: Stress test with many jobs
     {
-        EXPECT_EQ(d.load(std::memory_order_relaxed), 10);
-    }
-}
-
-XSIGMATEST(SmpThreadPool, stress_test_many_jobs)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
-
-    std::atomic<int> counter{0};
-
-    {
-        auto proxy = pool.allocate_threads(8);
+        std::atomic<int> counter{0};
+        auto             proxy = pool.allocate_threads(8);
 
         // Submit many small jobs
         for (int i = 0; i < 1000; ++i)
@@ -576,32 +454,32 @@ XSIGMATEST(SmpThreadPool, stress_test_many_jobs)
         }
 
         proxy.join();
-    }
 
-    EXPECT_EQ(counter.load(std::memory_order_relaxed), 1000);
+        EXPECT_EQ(counter.load(std::memory_order_relaxed), 1000);
+    }
 }
 
 // ============================================================================
-// Test Group 10: Integration Tests
+// Consolidated Test 10: Integration Tests
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, full_workflow)
+XSIGMATEST(SmpThreadPool, integration_tests)
 {
     smp_thread_pool& pool = smp_thread_pool::instance();
 
-    // Simulate a typical parallel computation
-    const size_t                  size = 10000;
-    std::vector<int>              input(size);
-    std::vector<std::atomic<int>> output(size);
-
-    // Initialize input
-    for (size_t i = 0; i < size; ++i)
+    // Test 1: Full workflow - typical parallel computation
     {
-        input[i] = static_cast<int>(i);
-        output[i].store(0, std::memory_order_relaxed);
-    }
+        const size_t                  size = 10000;
+        std::vector<int>              input(size);
+        std::vector<std::atomic<int>> output(size);
 
-    {
+        // Initialize input
+        for (size_t i = 0; i < size; ++i)
+        {
+            input[i] = static_cast<int>(i);
+            output[i].store(0, std::memory_order_relaxed);
+        }
+
         auto proxy = pool.allocate_threads(4);
 
         // Process data in parallel
@@ -616,32 +494,29 @@ XSIGMATEST(SmpThreadPool, full_workflow)
             });
 
         proxy.join();
+
+        // Verify results
+        for (size_t i = 0; i < size; ++i)
+        {
+            int expected = static_cast<int>(i) * 2 + 1;
+            EXPECT_EQ(output[i].load(std::memory_order_relaxed), expected)
+                << "Mismatch at index " << i;
+        }
     }
 
-    // Verify results
-    for (size_t i = 0; i < size; ++i)
+    // Test 2: Parallel reduction
     {
-        int expected = static_cast<int>(i) * 2 + 1;
-        EXPECT_EQ(output[i].load(std::memory_order_relaxed), expected) << "Mismatch at index " << i;
-    }
-}
+        const size_t     size = 10000;
+        std::vector<int> data(size);
 
-XSIGMATEST(SmpThreadPool, parallel_reduction)
-{
-    smp_thread_pool& pool = smp_thread_pool::instance();
+        // Initialize
+        for (size_t i = 0; i < size; ++i)
+        {
+            data[i] = 1;
+        }
 
-    const size_t     size = 10000;
-    std::vector<int> data(size);
+        std::atomic<int> total{0};
 
-    // Initialize
-    for (size_t i = 0; i < size; ++i)
-    {
-        data[i] = 1;
-    }
-
-    std::atomic<int> total{0};
-
-    {
         auto proxy = pool.allocate_threads(4);
 
         // Parallel reduction
@@ -657,9 +532,9 @@ XSIGMATEST(SmpThreadPool, parallel_reduction)
             });
 
         proxy.join();
-    }
 
-    EXPECT_GE(total.load(std::memory_order_relaxed), static_cast<int>(size));
+        EXPECT_GE(total.load(std::memory_order_relaxed), static_cast<int>(size));
+    }
 }
 
 }  // namespace xsigma

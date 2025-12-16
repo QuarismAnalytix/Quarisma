@@ -53,7 +53,7 @@ public:
     void*                                 get_context() const { return ptr_.get_context(); }
     void*                                 release_context() { return ptr_.release_context(); }
     std::unique_ptr<void, DeleterFnPtr>&& move_context() { return ptr_.move_context(); }
-                                          operator bool() const { return static_cast<bool>(ptr_); }
+    operator bool() const { return static_cast<bool>(ptr_); }
     template <typename T>
     T* cast_context(DeleterFnPtr expected_deleter) const
     {

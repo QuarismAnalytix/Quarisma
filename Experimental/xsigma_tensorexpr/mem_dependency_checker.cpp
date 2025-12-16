@@ -271,8 +271,8 @@ void AccessInfo::dumpDOT(std::ostream& os) const
     os << "]\n";
     for (auto& pair : dependencies_)
     {
-        os << "n" << pair.second->id() << " -> "
-           << "n" << id_ << " [color=\"" << edgeColour << "\"]\n";
+        os << "n" << pair.second->id() << " -> " << "n" << id_ << " [color=\"" << edgeColour
+           << "\"]\n";
     }
 }
 
