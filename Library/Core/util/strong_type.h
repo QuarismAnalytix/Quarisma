@@ -218,17 +218,17 @@ class equality::modifier<::strong::type<T, Tag, M...>>
 
 public:
     [[nodiscard]]
-    friend constexpr auto operator==(const type& lh, const type& rh) noexcept(noexcept(
-        std::declval<const T&>() ==
-        std::declval<const T&>())) -> decltype(std::declval<const T&>() == std::declval<const T&>())
+    friend constexpr auto operator==(const type& lh, const type& rh) noexcept(
+        noexcept(std::declval<const T&>() == std::declval<const T&>()))
+        -> decltype(std::declval<const T&>() == std::declval<const T&>())
     {
         return value_of(lh) == value_of(rh);
     }
 
     [[nodiscard]]
-    friend constexpr auto operator!=(const type& lh, const type& rh) noexcept(noexcept(
-        std::declval<const T&>() !=
-        std::declval<const T&>())) -> decltype(std::declval<const T&>() != std::declval<const T&>())
+    friend constexpr auto operator!=(const type& lh, const type& rh) noexcept(
+        noexcept(std::declval<const T&>() != std::declval<const T&>()))
+        -> decltype(std::declval<const T&>() != std::declval<const T&>())
     {
         return value_of(lh) != value_of(rh);
     }
@@ -455,25 +455,25 @@ class ordered::modifier<::strong::type<T, Tag, M...>>
 
 public:
     [[nodiscard]]
-    friend constexpr auto operator<(const type& lh, const type& rh) noexcept(noexcept(
-        std::declval<const T&>() <
-        std::declval<const T&>())) -> decltype(std::declval<const T&>() < std::declval<const T&>())
+    friend constexpr auto operator<(const type& lh, const type& rh) noexcept(
+        noexcept(std::declval<const T&>() < std::declval<const T&>()))
+        -> decltype(std::declval<const T&>() < std::declval<const T&>())
     {
         return value_of(lh) < value_of(rh);
     }
 
     [[nodiscard]]
-    friend constexpr auto operator<=(const type& lh, const type& rh) noexcept(noexcept(
-        std::declval<const T&>() <=
-        std::declval<const T&>())) -> decltype(std::declval<const T&>() <= std::declval<const T&>())
+    friend constexpr auto operator<=(const type& lh, const type& rh) noexcept(
+        noexcept(std::declval<const T&>() <= std::declval<const T&>()))
+        -> decltype(std::declval<const T&>() <= std::declval<const T&>())
     {
         return value_of(lh) <= value_of(rh);
     }
 
     [[nodiscard]]
-    friend constexpr auto operator>(const type& lh, const type& rh) noexcept(noexcept(
-        std::declval<const T&>() >
-        std::declval<const T&>())) -> decltype(std::declval<const T&>() > std::declval<const T&>())
+    friend constexpr auto operator>(const type& lh, const type& rh) noexcept(
+        noexcept(std::declval<const T&>() > std::declval<const T&>()))
+        -> decltype(std::declval<const T&>() > std::declval<const T&>())
     {
         return value_of(lh) > value_of(rh);
     }

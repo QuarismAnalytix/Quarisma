@@ -323,17 +323,18 @@ void example_batch_processing()
     // Launch all batch operations
     for (size_t batch_idx = 0; batch_idx < NUM_BATCHES; ++batch_idx)
     {
-        handles.emplace_back(xsigma::async_parallel_for(
-            0,
-            static_cast<int64_t>(BATCH_SIZE),
-            10000,
-            [&batches, batch_idx](int64_t begin, int64_t end)
-            {
-                for (int64_t i = begin; i < end; ++i)
+        handles.emplace_back(
+            xsigma::async_parallel_for(
+                0,
+                static_cast<int64_t>(BATCH_SIZE),
+                10000,
+                [&batches, batch_idx](int64_t begin, int64_t end)
                 {
-                    batches[batch_idx][i] = std::exp(static_cast<double>(i) / 1000.0);
-                }
-            }));
+                    for (int64_t i = begin; i < end; ++i)
+                    {
+                        batches[batch_idx][i] = std::exp(static_cast<double>(i) / 1000.0);
+                    }
+                }));
     }
 
     std::cout << NUM_BATCHES << " batch operations launched" << std::endl;

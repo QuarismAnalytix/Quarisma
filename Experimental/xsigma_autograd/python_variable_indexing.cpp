@@ -474,13 +474,15 @@ PyObject* THPVariable_getitem(PyObject* self, PyObject* index)
     // handle simple types: none, ellipsis
     if (index == Py_None)
     {
-        return THPVariable_Wrap(xsigma::indexing::get_item(
-            self_, {xsigma::indexing::TensorIndex(xsigma::indexing::None)}));
+        return THPVariable_Wrap(
+            xsigma::indexing::get_item(
+                self_, {xsigma::indexing::TensorIndex(xsigma::indexing::None)}));
     }
     else if (index == Py_Ellipsis)
     {
-        return THPVariable_Wrap(xsigma::indexing::get_item(
-            self_, {xsigma::indexing::TensorIndex(xsigma::indexing::Ellipsis)}));
+        return THPVariable_Wrap(
+            xsigma::indexing::get_item(
+                self_, {xsigma::indexing::TensorIndex(xsigma::indexing::Ellipsis)}));
     }
 
     bool is_tracing = torch::jit::tracer::isTracing();
@@ -492,8 +494,9 @@ PyObject* THPVariable_getitem(PyObject* self, PyObject* index)
         {
             recordSelectTrace(THPVariable_Unpack(index));
         }
-        return THPVariable_Wrap(xsigma::indexing::get_item(
-            self_, {xsigma::indexing::TensorIndex(THPUtils_unpackLong(index))}));
+        return THPVariable_Wrap(
+            xsigma::indexing::get_item(
+                self_, {xsigma::indexing::TensorIndex(THPUtils_unpackLong(index))}));
     }
     else if (PySlice_Check(index))
     {
@@ -502,10 +505,11 @@ PyObject* THPVariable_getitem(PyObject* self, PyObject* index)
         {
             recordSliceTrace(index);
         }
-        return THPVariable_Wrap(xsigma::indexing::get_item(
-            self_,
-            {xsigma::indexing::TensorIndex(
-                xsigma::indexing::Slice(val.start, val.stop, val.step))}));
+        return THPVariable_Wrap(
+            xsigma::indexing::get_item(
+                self_,
+                {xsigma::indexing::TensorIndex(
+                    xsigma::indexing::Slice(val.start, val.stop, val.step))}));
     }
     else if (index == Py_False || index == Py_True)
     {

@@ -16,7 +16,7 @@ struct IfView
     ArrayRef<Value*> elseOutputs() const { return elseBlock()->outputs(); }
     ArrayRef<Value*> outputs() const { return node_->outputs(); }
     Node*            node() const { return node_; }
-    operator Node*() const { return node_; }
+                     operator Node*() const { return node_; }
 
     void permuteOutputs(const std::vector<size_t>& new_output_order)
     {
@@ -59,7 +59,7 @@ struct LoopView
     }
     ArrayRef<Value*> bodyCarriedOutputs() const { return bodyBlock()->outputs().slice(1); }
     Node*            node() const { return node_; }
-    operator Node*() const { return node_; }
+                     operator Node*() const { return node_; }
 
     void permuteLoopCarried(const std::vector<size_t>& new_output_order)
     {

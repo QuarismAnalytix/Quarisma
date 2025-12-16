@@ -71,6 +71,14 @@
 #include "common/export.h"
 #include "multi_threader.h"
 
+// Undefine min/max macros from Windows headers if they were defined
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace threaded_task_queue_internals
 {
@@ -88,40 +96,40 @@ template <typename R, typename... Args>
 class XSIGMA_VISIBILITY threaded_task_queue
 {
 public:
-    XSIGMA_API threaded_task_queue(
+    threaded_task_queue(
         std::function<R(Args...)> worker,
         bool                      strict_ordering      = true,
         int                       buffer_size          = -1,
         int                       max_concurrent_tasks = -1);
-    XSIGMA_API ~threaded_task_queue();
+    ~threaded_task_queue();
 
     /**
    * Push arguments for the work
    */
-    XSIGMA_API void push(Args&&... args);
+    void push(Args&&... args);
 
     /**
    * Pop the last result. Returns true on success. May fail if called on an
    * empty queue. This will wait for result to be available.
    */
-    XSIGMA_API bool pop(R& result);
+    bool pop(R& result);
 
     /**
    * Attempt to pop without waiting. If no results are available, returns
    * false.
    */
-    XSIGMA_API bool try_pop(R& result);
+    bool try_pop(R& result);
 
     /**
    * Returns false if there's some result that may be popped right now or in the
    * future.
    */
-    XSIGMA_API bool is_empty() const;
+    bool is_empty() const;
 
     /**
    * Blocks till the queue becomes empty.
    */
-    XSIGMA_API void flush();
+    void flush();
 
 private:
     threaded_task_queue(const threaded_task_queue&) = delete;
@@ -138,28 +146,28 @@ template <typename... Args>
 class XSIGMA_VISIBILITY threaded_task_queue<void, Args...>
 {
 public:
-    XSIGMA_API threaded_task_queue(
+    threaded_task_queue(
         std::function<void(Args...)> worker,
         bool                         strict_ordering      = true,
         int                          buffer_size          = -1,
         int                          max_concurrent_tasks = -1);
-    XSIGMA_API ~threaded_task_queue();
+    ~threaded_task_queue();
 
     /**
    * Push arguments for the work
    */
-    XSIGMA_API void push(Args&&... args);
+    void push(Args&&... args);
 
     /**
    * Returns false if there's some result that may be popped right now or in the
    * future.
    */
-    XSIGMA_API bool is_empty() const;
+    bool is_empty() const;
 
     /**
    * Blocks till the queue becomes empty.
    */
-    XSIGMA_API void flush();
+    void flush();
 
 private:
     threaded_task_queue(const threaded_task_queue&) = delete;
@@ -288,7 +296,8 @@ public:
         std::unique_lock<std::mutex> lk(results_mutex_);
         results_cv_.wait(
             lk,
-            [this] {
+            [this]
+            {
                 return !results_.empty() &&
                        (!strict_ordering_ || results_.top().first == next_result_id_);
             });

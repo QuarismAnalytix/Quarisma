@@ -325,26 +325,17 @@ public:
 };
 
 // Encode typed immediate values e.g. IntImm, FloatImm.
-#define IMM_DECLARE(Type, Name)                                                     \
-    class TORCH_API Name##Imm : public ExprNode<Name##Imm>                          \
-    {                                                                               \
-    public:                                                                         \
-        Name##Imm(Type value) : ExprNodeBase(k##Name, kPrimitive), value_(value) {} \
-        bool isConstant() const override                                            \
-        {                                                                           \
-            return true;                                                            \
-        }                                                                           \
-        Type value() const                                                          \
-        {                                                                           \
-            return value_;                                                          \
-        }                                                                           \
-        static ExprHandle make(Type value)                                          \
-        {                                                                           \
-            return ExprHandle(alloc<Name##Imm>(value));                             \
-        }                                                                           \
-                                                                                    \
-    private:                                                                        \
-        Type value_;                                                                \
+#define IMM_DECLARE(Type, Name)                                                            \
+    class TORCH_API Name##Imm : public ExprNode<Name##Imm>                                 \
+    {                                                                                      \
+    public:                                                                                \
+        Name##Imm(Type value) : ExprNodeBase(k##Name, kPrimitive), value_(value) {}        \
+        bool              isConstant() const override { return true; }                     \
+        Type              value() const { return value_; }                                 \
+        static ExprHandle make(Type value) { return ExprHandle(alloc<Name##Imm>(value)); } \
+                                                                                           \
+    private:                                                                               \
+        Type value_;                                                                       \
     };
 AT_FORALL_SCALAR_TYPES_AND3(Bool, Half, BFloat16, IMM_DECLARE)
 #undef IMM_DECLARE
@@ -604,8 +595,14 @@ public:
         {
             throw malformed_input("bad dtype in CompareSelect");
         }
-        return ExprHandle(alloc<CompareSelect>(
-            lhs.node(), rhs.node(), IntImm::make(1).node(), IntImm::make(0).node(), cmp_op, bias));
+        return ExprHandle(
+            alloc<CompareSelect>(
+                lhs.node(),
+                rhs.node(),
+                IntImm::make(1).node(),
+                IntImm::make(0).node(),
+                cmp_op,
+                bias));
     }
 
     static ExprHandle make(
@@ -620,8 +617,9 @@ public:
         {
             throw malformed_input("bad dtype in CompareSelect");
         }
-        return ExprHandle(alloc<CompareSelect>(
-            lhs.node(), rhs.node(), ret_val1.node(), ret_val2.node(), cmp_op, bias));
+        return ExprHandle(
+            alloc<CompareSelect>(
+                lhs.node(), rhs.node(), ret_val1.node(), ret_val2.node(), cmp_op, bias));
     }
 
     CompareSelect(

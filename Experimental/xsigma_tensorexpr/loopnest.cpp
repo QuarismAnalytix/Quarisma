@@ -376,7 +376,8 @@ public:
         return try_vectorize(
             v,
             inputs,
-            [&]() {
+            [&]()
+            {
                 return Max::make(ExprHandle(inputs[0]), ExprHandle(inputs[1]), v->propagate_nans());
             });
     }
@@ -387,7 +388,8 @@ public:
         return try_vectorize(
             v,
             inputs,
-            [&]() {
+            [&]()
+            {
                 return Min::make(ExprHandle(inputs[0]), ExprHandle(inputs[1]), v->propagate_nans());
             });
     }
@@ -416,7 +418,8 @@ public:
         return try_vectorize(
             v,
             inputs,
-            [&]() {
+            [&]()
+            {
                 return BitCast::make(
                     Dtype(v->dtype().scalar_type(), lanes_), ExprHandle(inputs[0]));
             });
@@ -514,7 +517,8 @@ public:
         return try_vectorize(
             v,
             inputs,
-            [&]() {
+            [&]()
+            {
                 return IfThenElse::make(
                     ExprHandle(condition), ExprHandle(inputs[0]), ExprHandle(inputs[1]));
             });
@@ -534,7 +538,8 @@ public:
         return try_vectorize(
             v,
             inputs,
-            [&]() {
+            [&]()
+            {
                 return Store::make(BufHandle(buf), {ExprHandle(inputs[0])}, ExprHandle(inputs[1]));
             });
     }

@@ -3360,11 +3360,12 @@ private:
         auto ident = Var::create(stmt.rhs().range(), Ident::create(stmt.rhs().range(), tmp_name));
         for (auto expr : stmt.lhs_list())
         {
-            emitSingleAssignment(Assign::create(
-                stmt.range(),
-                List<Expr>::create(expr.range(), {expr}),
-                Maybe<Expr>::create(stmt.rhs().range(), ident),
-                Maybe<Expr>::create(stmt.range())));
+            emitSingleAssignment(
+                Assign::create(
+                    stmt.range(),
+                    List<Expr>::create(expr.range(), {expr}),
+                    Maybe<Expr>::create(stmt.rhs().range(), ident),
+                    Maybe<Expr>::create(stmt.range())));
         }
     }
 

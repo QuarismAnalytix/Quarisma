@@ -212,13 +212,13 @@ public:
    * Pushes a function f to be passed args... as arguments.
    */
     template <class FT, class... ArgsT>
-    XSIGMA_API shared_future_pointer<invoke_result<FT>> push(FT&& f, ArgsT&&... args);
+    shared_future_pointer<invoke_result<FT>> push(FT&& f, ArgsT&&... args);
 
     /**
    * This method behaves the same way `push` does, with the addition of a container of `futures`.
    */
     template <class SharedFutureContainerT, class FT, class... ArgsT>
-    XSIGMA_API shared_future_pointer<invoke_result<FT>> push_dependent(
+    shared_future_pointer<invoke_result<FT>> push_dependent(
         SharedFutureContainerT&& prior_shared_futures, FT&& f, ArgsT&&... args);
 
     /**
@@ -226,17 +226,16 @@ public:
    * inside `prior_shared_future` has terminated.
    */
     template <class SharedFutureContainerT>
-    XSIGMA_API void wait(SharedFutureContainerT&& prior_shared_future);
+    void wait(SharedFutureContainerT&& prior_shared_future);
 
     ///@{
     /**
    * Get the returned value from the task associated with the input future.
    */
     template <class ReturnT>
-    XSIGMA_API typename shared_future<ReturnT>::return_lvalue_ref get(
-        shared_future_pointer<ReturnT>& future);
+    typename shared_future<ReturnT>::return_lvalue_ref get(shared_future_pointer<ReturnT>& future);
     template <class ReturnT>
-    XSIGMA_API typename shared_future<ReturnT>::return_const_lvalue_ref get(
+    typename shared_future<ReturnT>::return_const_lvalue_ref get(
         const shared_future_pointer<ReturnT>& future);
     ///@}
 
@@ -788,8 +787,8 @@ void threaded_callback_queue::push_control(FT&& f, ArgsT&&... args)
 
     worker w;
     using invoker_pointer_type = invoker_pointer<worker, threaded_callback_queue*, FT, ArgsT...>;
-    auto invoker_ptr =
-        invoker_pointer_type(invoker<worker, threaded_callback_queue*, FT, ArgsT...>::create(
+    auto invoker_ptr           = invoker_pointer_type(
+        invoker<worker, threaded_callback_queue*, FT, ArgsT...>::create(
             w, this, std::forward<FT>(f), std::forward<ArgsT>(args)...));
     w.future_ = invoker_ptr;
 

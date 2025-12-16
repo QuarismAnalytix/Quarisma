@@ -715,8 +715,9 @@ GraphTask::GraphTask(
       reentrant_depth_(reentrant_depth),
       exit_on_error_(exit_on_error),
       cpu_ready_queue_(std::move(cpu_ready_queue)),
-      future_result_(xsigma::make_intrusive<xsigma::ivalue::Future>(
-          xsigma::ListType::create(xsigma::TensorType::get()))),
+      future_result_(
+          xsigma::make_intrusive<xsigma::ivalue::Future>(
+              xsigma::ListType::create(xsigma::TensorType::get()))),
       id_(graph_task_id.fetch_add(1, std::memory_order_relaxed))
 {
     thread_locals_.set_grad_mode(grad_mode);
@@ -916,8 +917,10 @@ void set_device(int device)
             auto* impl = xsigma::impl::device_guard_impl_registry[i].load();
             if (impl && device < impl->deviceCount())
             {
-                impl->setDevice(xsigma::Device(
-                    static_cast<xsigma::DeviceType>(i), static_cast<xsigma::DeviceIndex>(device)));
+                impl->setDevice(
+                    xsigma::Device(
+                        static_cast<xsigma::DeviceType>(i),
+                        static_cast<xsigma::DeviceIndex>(device)));
             }
         }
     }

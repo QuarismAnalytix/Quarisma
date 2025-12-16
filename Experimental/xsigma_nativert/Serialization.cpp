@@ -279,18 +279,21 @@ std::unique_ptr<Graph> jsonToSubgraph(
             if (isSymbolic(arg))
             {
                 // Symbolic values are made part of the inputs to the node
-                node->addInput(NamedArgument{
-                    input.get_name(), symbolicToValue(input.get_arg(), *graph, node)});
+                node->addInput(
+                    NamedArgument{
+                        input.get_name(), symbolicToValue(input.get_arg(), *graph, node)});
             }
             else if (arg.tag() == torch::_export::Argument::Tag::AS_NONE)
             {
-                node->addInput(NamedArgument{
-                    input.get_name(), graph->addValue(std::nullopt, Type::Kind::None, node)});
+                node->addInput(
+                    NamedArgument{
+                        input.get_name(), graph->addValue(std::nullopt, Type::Kind::None, node)});
             }
             else
             {
-                node->addAttribute(Attribute{
-                    input.get_name(), constantToValue(input.get_arg(), loadNodeMetadata)});
+                node->addAttribute(
+                    Attribute{
+                        input.get_name(), constantToValue(input.get_arg(), loadNodeMetadata)});
                 // Constant values are added as "attributes" to the node.
             }
         }

@@ -2387,9 +2387,10 @@ static ExprPtr simplifyRoundModPattern(const PolynomialPtr& poly)
                     TermPtr merged_m = alloc<Term>(
                         hasher,
                         mod_round.scalar,
-                        IRSimplifier::simplify(alloc<Mod>(
-                            mod_round.denom,
-                            alloc<Mul>(mod_round.divisor, mod_round.mod_divisor))));
+                        IRSimplifier::simplify(
+                            alloc<Mod>(
+                                mod_round.denom,
+                                alloc<Mul>(mod_round.divisor, mod_round.mod_divisor))));
                     mods_merged.push_back(merged_m);
                     merged      = true;
                     repeat      = true;

@@ -121,8 +121,11 @@ static PyObject* THPVariable_as_tensor(PyObject* self, PyObject* args, PyObject*
         return handle_torch_function(r, nullptr, args, kwargs, THPVariableFunctionsModule, "torch");
     }
     jit::tracer::warn("torch.as_tensor", jit::tracer::WARN_CONSTRUCTOR);
-    return THPVariable_Wrap(torch::utils::as_tensor(
-        torch::tensors::get_default_dispatch_key(), torch::tensors::get_default_scalar_type(), r));
+    return THPVariable_Wrap(
+        torch::utils::as_tensor(
+            torch::tensors::get_default_dispatch_key(),
+            torch::tensors::get_default_scalar_type(),
+            r));
     END_HANDLE_TH_ERRORS
 }
 
@@ -172,10 +175,11 @@ static PyObject* THPVariable_nonzero(PyObject* self, PyObject* args, PyObject* k
                 r, nullptr, args, kwargs, THPVariableFunctionsModule, "torch");           \
         }                                                                                 \
         jit::tracer::warn("torch." #NAME, jit::tracer::WARN_CONSTRUCTOR);                 \
-        return THPVariable_Wrap(torch::utils::NAME##_ctor(                                \
-            torch::tensors::get_default_dispatch_key(),                                   \
-            torch::tensors::get_default_scalar_type(),                                    \
-            r));                                                                          \
+        return THPVariable_Wrap(                                                          \
+            torch::utils::NAME##_ctor(                                                    \
+                torch::tensors::get_default_dispatch_key(),                               \
+                torch::tensors::get_default_scalar_type(),                                \
+                r));                                                                      \
         END_HANDLE_TH_ERRORS                                                              \
     }
 
@@ -246,8 +250,11 @@ static PyObject* THPVariable_sparse_coo_tensor(PyObject* self, PyObject* args, P
         return handle_torch_function(r, nullptr, args, kwargs, THPVariableFunctionsModule, "torch");
     }
     jit::tracer::warn("torch.sparse_coo_tensor", jit::tracer::WARN_CONSTRUCTOR);
-    return THPVariable_Wrap(torch::utils::sparse_coo_tensor_ctor(
-        torch::tensors::get_default_dispatch_key(), torch::tensors::get_default_scalar_type(), r));
+    return THPVariable_Wrap(
+        torch::utils::sparse_coo_tensor_ctor(
+            torch::tensors::get_default_dispatch_key(),
+            torch::tensors::get_default_scalar_type(),
+            r));
     END_HANDLE_TH_ERRORS
 }
 
@@ -269,8 +276,11 @@ static PyObject* THPVariable_tensor(PyObject* self, PyObject* args, PyObject* kw
         return handle_torch_function(r, nullptr, args, kwargs, THPVariableFunctionsModule, "torch");
     }
     jit::tracer::warn("torch.tensor", jit::tracer::WARN_CONSTRUCTOR);
-    return THPVariable_Wrap(torch::utils::tensor_ctor(
-        torch::tensors::get_default_dispatch_key(), torch::tensors::get_default_scalar_type(), r));
+    return THPVariable_Wrap(
+        torch::utils::tensor_ctor(
+            torch::tensors::get_default_dispatch_key(),
+            torch::tensors::get_default_scalar_type(),
+            r));
     END_HANDLE_TH_ERRORS
 }
 

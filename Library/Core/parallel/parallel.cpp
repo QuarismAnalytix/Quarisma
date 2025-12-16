@@ -121,7 +121,7 @@
 // Disable TBB implicit linkage on MSVC to avoid linker issues
 #ifdef _MSC_VER
 #pragma push_macro("__TBB_NO_IMPLICIT_LINKAGE")
-#define __TBB_NO_IMPLICIT_LINKAGE 1
+#define __TBB_NO_IMPLICIT_LINKAGE 1  // NOLINT(bugprone-reserved-identifier)
 #endif
 
 #include <tbb/global_control.h>

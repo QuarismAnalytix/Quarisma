@@ -700,13 +700,15 @@ private:
             TypePtr typ = node->input()->type();
             if (typ->isSubtypeOf(*IntType::get()) || typ->isSubtypeOf(*BoolType::get()))
             {
-                node->output()->setType(TensorType::create(
-                    xsigma::kLong, xsigma::kCPU, 0, /*requires_grad=*/std::nullopt));
+                node->output()->setType(
+                    TensorType::create(
+                        xsigma::kLong, xsigma::kCPU, 0, /*requires_grad=*/std::nullopt));
             }
             else if (node->input()->type()->isSubtypeOf(*FloatType::get()))
             {
-                node->output()->setType(TensorType::create(
-                    xsigma::kDouble, xsigma::kCPU, 0, /*requires_grad=*/std::nullopt));
+                node->output()->setType(
+                    TensorType::create(
+                        xsigma::kDouble, xsigma::kCPU, 0, /*requires_grad=*/std::nullopt));
             }
             return;
         }
@@ -2032,11 +2034,12 @@ private:
                                 default_device = inp->toDevice();
                             }
                         }
-                        node->output()->setType(TensorType::create(
-                            default_type,
-                            default_device,
-                            type->dim(),
-                            /*requires_grad=*/std::nullopt));
+                        node->output()->setType(
+                            TensorType::create(
+                                default_type,
+                                default_device,
+                                type->dim(),
+                                /*requires_grad=*/std::nullopt));
                     }
                 }
                 return nullptr;
@@ -2266,10 +2269,11 @@ private:
             auto lhs_sizes = lhs_type->sizes().concrete_sizes().value();
             auto rhs_sizes = rhs_type->sizes().concrete_sizes().value();
             SHAPE_ASSERT(*lhs_type->sizes().size() == 2 && *rhs_type->sizes().size() == 2);
-            node->output()->setType(TensorType::createContiguous(
-                *lhs_type->scalarType(),
-                *lhs_type->device(),
-                xsigma::IntArrayRef{lhs_sizes[0], rhs_sizes[1]}));
+            node->output()->setType(
+                TensorType::createContiguous(
+                    *lhs_type->scalarType(),
+                    *lhs_type->device(),
+                    xsigma::IntArrayRef{lhs_sizes[0], rhs_sizes[1]}));
             return true;
         }
         else if (node->matches("aten::t(Tensor self) -> Tensor"))

@@ -46,8 +46,9 @@ std::unique_ptr<Stack> MTensorArgumentCreator(Node* n)
             // for rank.
             auto rank        = tp->symbolic_sizes().rank();  // Validity checked earlier
             auto tensor_size = std::vector<int64_t>(rank.value(), 1);
-            stack->emplace_back(xsigma::empty(
-                tensor_size, xsigma::TensorOptions(xsigma::kMeta).dtype(*tp->scalarType())));
+            stack->emplace_back(
+                xsigma::empty(
+                    tensor_size, xsigma::TensorOptions(xsigma::kMeta).dtype(*tp->scalarType())));
             continue;
         }
         // Someday Todo: Fill in concrete values that we know.

@@ -356,8 +356,9 @@ class scoped_itt_stub
 public:
     explicit scoped_itt_stub(recording_itt_stub& stub)
         : stub_(stub),
-          previous_(const_cast<xsigma::profiler::impl::ProfilerStubs*>(
-              xsigma::profiler::impl::ittStubs()))
+          previous_(
+              const_cast<xsigma::profiler::impl::ProfilerStubs*>(
+                  xsigma::profiler::impl::ittStubs()))
     {
         xsigma::profiler::impl::registerITTMethods(&stub_);
     }

@@ -167,7 +167,8 @@ static void reduced_float_copy_kernel(TensorIteratorBase& iter, bool requires_ne
                     0,
                     iter.numel(),
                     grain_size,
-                    [&](int64_t begin, int64_t end) {
+                    [&](int64_t begin, int64_t end)
+                    {
                         at::internal::serial_for_each(
                             shape, strides, ptrs.data(), 2, loop, {begin, end});
                     });
@@ -262,7 +263,8 @@ static void reduced_float_copy_kernel(TensorIteratorBase& iter, bool requires_ne
                     0,
                     iter.numel(),
                     grain_size,
-                    [&](int64_t begin, int64_t end) {
+                    [&](int64_t begin, int64_t end)
+                    {
                         at::internal::serial_for_each(
                             shape, strides, ptrs.data(), 2, loop, {begin, end});
                     });

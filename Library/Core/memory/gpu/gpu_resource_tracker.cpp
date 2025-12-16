@@ -94,8 +94,9 @@ private:
                 {
                     while (!stop_background_thread_.load())
                     {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(
-                            static_cast<int>(leak_config_.scan_interval_ms)));
+                        std::this_thread::sleep_for(
+                            std::chrono::milliseconds(
+                                static_cast<int>(leak_config_.scan_interval_ms)));
 
                         if (stop_background_thread_.load())
                         {

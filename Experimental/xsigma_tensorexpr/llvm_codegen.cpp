@@ -366,8 +366,14 @@ XSIGMA_DEFINE_bool(
             llvm::Value* val);
 
         void        optimize(llvm::Module& M);
-        std::string getLLVMCodeText() { return llvmCode_; }
-        std::string getASMCodeText() { return asmCode_; }
+        std::string getLLVMCodeText()
+        {
+            return llvmCode_;
+        }
+        std::string getASMCodeText()
+        {
+            return asmCode_;
+        }
     };
 
 }  // namespace torch::jit::tensorexpr
@@ -651,8 +657,9 @@ void LLVMCodeGenImpl::emitWrapper(const std::vector<llvm::Type*>& params)
         // Place the variable just before the function,
         // the optimizer might otherwise disable this workaround.
         // https://llvm.org/docs/LangRef.html#prefix-data
-        wrapper->setPrefixData(llvm::Constant::getNullValue(
-            llvm::ArrayType::get(llvm::Type::getInt8Ty(getContext()), 8)));
+        wrapper->setPrefixData(
+            llvm::Constant::getNullValue(
+                llvm::ArrayType::get(llvm::Type::getInt8Ty(getContext()), 8)));
     }
 
     auto wrapBB = llvm::BasicBlock::Create(getContext(), "wrapBB", wrapper);

@@ -23,7 +23,7 @@ namespace xsigma
 // ============================================================================
 
 // Test 1: Thread pool creation and destruction
-XSIGMATEST(ThreadPool, creation_and_destruction)
+XSIGMATEST(ThreadPool, Test)
 {
     {
         thread_pool pool(4);

@@ -376,8 +376,9 @@ void initTensorExprBindings(PyObject* module)
         py::return_value_policy::reference);
 
     py::class_<Stmt, std::shared_ptr<Stmt>>(te, "Stmt")
-        .def(py::init([](const std::vector<StmtPtr>& stmts)
-                      { return tensorexpr::Block::make(stmts); }))
+        .def(
+            py::init([](const std::vector<StmtPtr>& stmts)
+                     { return tensorexpr::Block::make(stmts); }))
         .def(
             "__str__",
             [](Stmt& self)
@@ -418,8 +419,9 @@ void initTensorExprBindings(PyObject* module)
         .def("false_stmt", &Cond::false_stmt);
 
     py::class_<tensorexpr::Block, Stmt, std::shared_ptr<tensorexpr::Block>>(te, "Block")
-        .def(py::init([](const std::vector<StmtPtr>& stmts)
-                      { return tensorexpr::Block::make(stmts); }))
+        .def(
+            py::init([](const std::vector<StmtPtr>& stmts)
+                     { return tensorexpr::Block::make(stmts); }))
         .def("stmts", &tensorexpr::Block::stmts);
     py::class_<ExternalCall, Stmt, std::shared_ptr<ExternalCall>>(te, "ExternalCall")
         .def(py::init(&ExternalCall::make));
@@ -427,17 +429,18 @@ void initTensorExprBindings(PyObject* module)
     py::class_<LoopNest>(te, "LoopNest")
         .def(py::init<const std::vector<Tensor>&>())
         .def(py::init<const std::vector<Tensor>&, const std::vector<Tensor>&>())
-        .def(py::init(
-            [](const StmtPtr& s, const std::vector<BufHandle>& bufs)
-            {
-                std::unordered_set<BufPtr> buf_nodes;
-                buf_nodes.reserve(bufs.size());
-                for (auto& buf : bufs)
+        .def(
+            py::init(
+                [](const StmtPtr& s, const std::vector<BufHandle>& bufs)
                 {
-                    buf_nodes.insert(buf.node());
-                }
-                return std::make_unique<LoopNest>(s, buf_nodes);
-            }))
+                    std::unordered_set<BufPtr> buf_nodes;
+                    buf_nodes.reserve(bufs.size());
+                    for (auto& buf : bufs)
+                    {
+                        buf_nodes.insert(buf.node());
+                    }
+                    return std::make_unique<LoopNest>(s, buf_nodes);
+                }))
         .def("vectorize_inner_loops", &LoopNest::vectorizeInnerLoops)
         .def(
             "prepare_for_codegen",
@@ -685,8 +688,9 @@ void initTensorExprBindings(PyObject* module)
         });
 
     py::class_<ArgValue>(te, "ArgValue")
-        .def(py::init([](py::handle inp)
-                      { return std::make_unique<ArgValue>(convertPyToArgValue(inp)); }))
+        .def(
+            py::init([](py::handle inp)
+                     { return std::make_unique<ArgValue>(convertPyToArgValue(inp)); }))
         .def("as_buf", [](const ArgValue& self) { return std::get<BufHandle>(self); })
         .def("as_var", [](const ArgValue& self) { return std::get<VarHandle>(self); })
         .def("as_float", [](const ArgValue& self) { return std::get<double>(self); })

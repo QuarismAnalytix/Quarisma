@@ -24,9 +24,16 @@
 #include "multi_threader.h"
 
 #ifdef _WIN32
-#include <windows.h>
 #ifndef NOMINMAX
 #define NOMINMAX
+#endif
+#include <windows.h>
+// Undefine min/max macros from Windows headers if they were defined
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
 #endif
 #endif
 
@@ -230,7 +237,7 @@ void multi_threader::single_method_execute()
 
 #if XSIGMA_USE_WIN32_THREADS
     DWORD  threadId;
-    HANDLE process_id[XSIGMA_MAX_THREADS] = {};
+    HANDLE process_id[XSIGMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
 #endif
 
 #if XSIGMA_USE_PTHREADS
@@ -267,7 +274,7 @@ void multi_threader::single_method_execute()
         process_id[thread_loop]                           = CreateThread(  // NOLINT
             nullptr,
             0,
-            single_method_,
+            reinterpret_cast<LPTHREAD_START_ROUTINE>(single_method_),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
             static_cast<void*>(&thread_info_array_[thread_loop]),
             0,
             &threadId);
@@ -360,7 +367,7 @@ void multi_threader::multiple_method_execute()
 
 #if XSIGMA_USE_WIN32_THREADS
     DWORD  threadId;
-    HANDLE process_id[XSIGMA_MAX_THREADS] = {};
+    HANDLE process_id[XSIGMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
 #endif
 
 #if XSIGMA_USE_PTHREADS
@@ -392,7 +399,7 @@ void multi_threader::multiple_method_execute()
         process_id[thread_loop]                           = CreateThread(  // NOLINT
             nullptr,
             0,
-            multiple_method_[thread_loop],
+            reinterpret_cast<LPTHREAD_START_ROUTINE>(multiple_method_[thread_loop]),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
             static_cast<void*>(&thread_info_array_[thread_loop]),
             0,
             &threadId);
@@ -502,7 +509,8 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
         CreateThread(
             nullptr,
             0,
-            f,
+            reinterpret_cast<LPTHREAD_START_ROUTINE>(
+                f),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
             static_cast<void*>(&spawned_thread_info_array_[id]),
             0,
             &threadId);  // NOLINT

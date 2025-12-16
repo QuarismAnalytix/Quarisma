@@ -49,8 +49,9 @@ Node* MutationRemover::createSpecialMappedOp(Node* n)
     {
         new_node = graph_->insert(aten::zeros_like, {n->inputs().xsigma(0)})->node();
     }
-    else if (n->matches("aten::normal_(Tensor(a!) self, float mean=0, float std=1, *, Generator? "
-                        "generator=None) -> Tensor(a!)"))
+    else if (n->matches(
+                 "aten::normal_(Tensor(a!) self, float mean=0, float std=1, *, Generator? "
+                 "generator=None) -> Tensor(a!)"))
     {
         // TODO: we should have normal_like operator
         // normal(float mean, float std, int[] size, *, Generator? generator=None,

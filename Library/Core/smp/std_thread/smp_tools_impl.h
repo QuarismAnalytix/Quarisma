@@ -66,7 +66,7 @@ void smp_tools_impl<backend_type::std_thread>::parallel_for(
             grain                 = (estimate_grain > 0) ? estimate_grain : 1;
         }
 
-        auto proxy = smp_thread_pool::instance().allocate_threads(thread_number);
+        auto proxy = detail::smp::smp_thread_pool::instance().allocate_threads(thread_number);
 
         for (size_t from = first; from < last; from += grain)
         {

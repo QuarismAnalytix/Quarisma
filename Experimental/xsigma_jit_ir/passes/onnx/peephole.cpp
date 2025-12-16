@@ -569,8 +569,10 @@ static void fixDefaultRNNState(Graph* graph, Node* n, int input_index, int opset
     num_directions->insertBefore(n);
     num_directions->t_(
         attr::value,
-        scalar_to_tensor(xsigma::Scalar(
-            n->hasAttribute(attr::direction) && n->s(attr::direction) == "bidirectional" ? 2 : 1)));
+        scalar_to_tensor(
+            xsigma::Scalar(
+                n->hasAttribute(attr::direction) && n->s(attr::direction) == "bidirectional" ? 2
+                                                                                             : 1)));
 
     Node* unsqueezed_num_directions =
         createONNXUnsqueeze(graph, n, num_directions->outputs()[0], 0, opset_version);

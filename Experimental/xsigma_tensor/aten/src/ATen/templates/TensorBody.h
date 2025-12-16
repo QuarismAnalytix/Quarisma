@@ -555,8 +555,7 @@ public:
     // These are needed because int -> bool conversion takes precedence over int -> IntArrayRef
     // So, for example std(0) would select the std(unbiased=False) overload
 
-    Tensor
-    var(int dim) const
+    Tensor var(int dim) const
     {
         return var(IntArrayRef{dim});
     }

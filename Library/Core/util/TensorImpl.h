@@ -1224,8 +1224,7 @@ public:
 #else
     TENSORIMPL_MAYBE_VIRTUAL
 #endif
-        bool
-        has_storage() const
+        bool has_storage() const
 // NOTE: we devirtualize this because it arguably shouldn't be an
 // error just to ask subclasses if they have storage.
 // This used to throw for most subclasses, but OpaqueTensorImpl
@@ -2590,8 +2589,9 @@ public:
                 auto size     = numel_;
                 auto dtor     = data_type_.placementDelete();
                 auto data_ptr = allocator->allocate(numel_ * data_type_.itemsize());
-                storage_.set_data_ptr_noswap(PlacementDeleteContext::makeDataPtr(
-                    std::move(data_ptr), dtor, size, storage_.device()));
+                storage_.set_data_ptr_noswap(
+                    PlacementDeleteContext::makeDataPtr(
+                        std::move(data_ptr), dtor, size, storage_.device()));
                 data_type_.placementNew()(storage_.mutable_data(), numel_);
             }
             else

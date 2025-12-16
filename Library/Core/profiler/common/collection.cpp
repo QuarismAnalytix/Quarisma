@@ -402,8 +402,8 @@ std::unique_ptr<KinetoObserverContext> ThreadLocalSubqueue::begin_op(
 {
     const auto* overload_name =
         config_.experimental_config.capture_overload_names ? fn.overload_name() : "";
-    auto [event, corr_id] =
-        torch_ops_.op_events_.emplace_back(xsigma::profiler::impl::TorchOpBasicFields{
+    auto [event, corr_id] = torch_ops_.op_events_.emplace_back(
+        xsigma::profiler::impl::TorchOpBasicFields{
             fn.seqNr(),
             fn.forwardThreadId(),
             fn.scope(),
@@ -760,55 +760,60 @@ std::string Result::name() const
 // Stub implementation
 std::string Result::name() const
 {
-    return visit(xsigma::overloaded(
-        ATTRIBUTE(Vulkan, std::string(e.name_)),
-        ATTRIBUTE(Allocation, std::string("[memory]")),
-        ATTRIBUTE(OutOfMemory, std::string("[OutOfMemory]")),
-        ATTRIBUTE(PythonGC, std::string("Python GC")),
-        [](const auto& e) -> std::string { return e.name_; }));
+    return visit(
+        xsigma::overloaded(
+            ATTRIBUTE(Vulkan, std::string(e.name_)),
+            ATTRIBUTE(Allocation, std::string("[memory]")),
+            ATTRIBUTE(OutOfMemory, std::string("[OutOfMemory]")),
+            ATTRIBUTE(PythonGC, std::string("Python GC")),
+            [](const auto& e) -> std::string { return e.name_; }));
 }
 #endif
 
 std::string Result::overload_name() const
 {
-    return visit(xsigma::overloaded(
-        ATTRIBUTE(TorchOp, std::string(e.overload_name_)),
-        [](const auto& /*e*/) -> std::string { return ""; }));
+    return visit(
+        xsigma::overloaded(
+            ATTRIBUTE(TorchOp, std::string(e.overload_name_)),
+            [](const auto& /*e*/) -> std::string { return ""; }));
 }
 
 libkineto::ActivityType Result::kinetoType() const
 {
-    return visit(xsigma::overloaded(
-        ATTRIBUTE(TorchOp, scopeToType(e.scope_)),
-        ATTRIBUTE(Backend, scopeToType(e.scope_)),
-        ATTRIBUTE(Vulkan, libkineto::ActivityType::CPU_OP),
-        ATTRIBUTE(Allocation, libkineto::ActivityType::CPU_INSTANT_EVENT),
-        ATTRIBUTE(OutOfMemory, libkineto::ActivityType::CPU_INSTANT_EVENT),
-        ATTRIBUTE(PyCall, libkineto::ActivityType::PYTHON_FUNCTION),
-        ATTRIBUTE(PyCCall, libkineto::ActivityType::PYTHON_FUNCTION),
-        ATTRIBUTE(PythonGC, libkineto::ActivityType::PYTHON_FUNCTION),
-        ATTRIBUTE(Kineto, e.activity_type_)));
+    return visit(
+        xsigma::overloaded(
+            ATTRIBUTE(TorchOp, scopeToType(e.scope_)),
+            ATTRIBUTE(Backend, scopeToType(e.scope_)),
+            ATTRIBUTE(Vulkan, libkineto::ActivityType::CPU_OP),
+            ATTRIBUTE(Allocation, libkineto::ActivityType::CPU_INSTANT_EVENT),
+            ATTRIBUTE(OutOfMemory, libkineto::ActivityType::CPU_INSTANT_EVENT),
+            ATTRIBUTE(PyCall, libkineto::ActivityType::PYTHON_FUNCTION),
+            ATTRIBUTE(PyCCall, libkineto::ActivityType::PYTHON_FUNCTION),
+            ATTRIBUTE(PythonGC, libkineto::ActivityType::PYTHON_FUNCTION),
+            ATTRIBUTE(Kineto, e.activity_type_)));
 }
 
 uint64_t Result::correlationID() const
 {
-    return visit(xsigma::overloaded(
-        ATTRIBUTE(TorchOp, e.correlation_id_),
-        ATTRIBUTE(Kineto, kinetoEventCorrelationID(e, parent_)),
-        [&](const auto&) -> uint64_t { return 0; }));
+    return visit(
+        xsigma::overloaded(
+            ATTRIBUTE(TorchOp, e.correlation_id_),
+            ATTRIBUTE(Kineto, kinetoEventCorrelationID(e, parent_)),
+            [&](const auto&) -> uint64_t { return 0; }));
 }
 
 int64_t Result::endTimeNS() const
 {
-    auto end_time_ns = visit(xsigma::overloaded(
-        ATTRIBUTE(TorchOp, torchOpEndNS(e, finished_, parent_)),
-        ATTRIBUTE(Backend, e.end_time_us_ * 1000),
-        ATTRIBUTE(Vulkan, start_time_ns_ + (e.in_tree_building_ ? 0 : e.duration_ns_)),
-        ATTRIBUTE(Allocation, start_time_ns_),
-        ATTRIBUTE(OutOfMemory, start_time_ns_),
-        ATTRIBUTE(Kineto, start_time_ns_ + e.duration_ns_),
-        ATTRIBUTE(PythonGC, start_time_ns_ + e.duration_ns_),
-        [&](const auto& e) -> int64_t { return e.end_time_ns_; }));
+    auto end_time_ns = visit(
+        xsigma::overloaded(
+            ATTRIBUTE(TorchOp, torchOpEndNS(e, finished_, parent_)),
+            ATTRIBUTE(Backend, e.end_time_us_ * 1000),
+            ATTRIBUTE(Vulkan, start_time_ns_ + (e.in_tree_building_ ? 0 : e.duration_ns_)),
+            ATTRIBUTE(Allocation, start_time_ns_),
+            ATTRIBUTE(OutOfMemory, start_time_ns_),
+            ATTRIBUTE(Kineto, start_time_ns_ + e.duration_ns_),
+            ATTRIBUTE(PythonGC, start_time_ns_ + e.duration_ns_),
+            [&](const auto& e) -> int64_t { return e.end_time_ns_; }));
 
     // In rare cases we're willing to tolerate ops which are missing an end time
     // so long as they can borrow their parent's end time. A consequence of this,
@@ -820,18 +825,20 @@ int64_t Result::endTimeNS() const
 
 uint64_t Result::endTID() const
 {
-    return visit(xsigma::overloaded(
-        ATTRIBUTE(TorchOp, e.end_tid_), [&](const auto&) -> uint64_t { return start_tid_; }));
+    return visit(
+        xsigma::overloaded(
+            ATTRIBUTE(TorchOp, e.end_tid_), [&](const auto&) -> uint64_t { return start_tid_; }));
 }
 
 xsigma::device_enum Result::deviceType() const
 {
     using xsigma::autograd::profiler::deviceTypeFromActivity;
-    return visit(xsigma::overloaded(
-        ATTRIBUTE(Allocation, e.device_type_),
-        ATTRIBUTE(OutOfMemory, e.device_type_),
-        ATTRIBUTE(Kineto, deviceTypeFromActivity(e.activity_type_)),
-        [&](const auto&) { return xsigma::device_enum::CPU; }));
+    return visit(
+        xsigma::overloaded(
+            ATTRIBUTE(Allocation, e.device_type_),
+            ATTRIBUTE(OutOfMemory, e.device_type_),
+            ATTRIBUTE(Kineto, deviceTypeFromActivity(e.activity_type_)),
+            [&](const auto&) { return xsigma::device_enum::CPU; }));
 }
 #undef ATTRIBUTE
 
@@ -1289,20 +1296,22 @@ private:
             {
                 if (config_.experimental_config.expose_kineto_event_metadata)
                 {
-                    e->visit(xsigma::overloaded(
-                        [&](ExtraFields<EventType::TorchOp>& i)
-                        { i.metadata_json_ = activity->metadataJson(); },
-                        [&](ExtraFields<EventType::Kineto>& i)
-                        { i.metadata_json_ = activity->metadataJson(); },
-                        [](auto&) { return; }));
+                    e->visit(
+                        xsigma::overloaded(
+                            [&](ExtraFields<EventType::TorchOp>& i)
+                            { i.metadata_json_ = activity->metadataJson(); },
+                            [&](ExtraFields<EventType::Kineto>& i)
+                            { i.metadata_json_ = activity->metadataJson(); },
+                            [](auto&) { return; }));
                 }
                 const auto* linked_activity = activity->linkedActivity();
                 if (linked_activity != nullptr)
                 {
-                    e->visit(xsigma::overloaded(
-                        [&](ExtraFields<EventType::Kineto>& i)
-                        { i.linked_activity_ = toResult(linked_activity); },
-                        [](auto&) { XSIGMA_CHECK(false); }));
+                    e->visit(
+                        xsigma::overloaded(
+                            [&](ExtraFields<EventType::Kineto>& i)
+                            { i.linked_activity_ = toResult(linked_activity); },
+                            [](auto&) { XSIGMA_CHECK(false); }));
                 }
             }
         }
@@ -1310,14 +1319,15 @@ private:
 
     void setKinetoTID(std::shared_ptr<Result>& r, std::shared_ptr<Result> parent)
     {
-        r->visit(xsigma::overloaded(
-            [&]([[maybe_unused]] ExtraFields<EventType::Kineto>& i)
-            {
-                XSIGMA_CHECK(r->start_tid_ == noTID);
-                r->start_tid_ =
-                    parent ? parent->start_tid_ : xsigma::RecordFunction::currentThreadId();
-            },
-            [](auto&) {}));
+        r->visit(
+            xsigma::overloaded(
+                [&]([[maybe_unused]] ExtraFields<EventType::Kineto>& i)
+                {
+                    XSIGMA_CHECK(r->start_tid_ == noTID);
+                    r->start_tid_ =
+                        parent ? parent->start_tid_ : xsigma::RecordFunction::currentThreadId();
+                },
+                [](auto&) {}));
 
         for (auto& child : r->children_)
         {
@@ -1332,51 +1342,53 @@ private:
         for (auto& e : results_.get())
         {
             XSIGMA_CHECK(e != nullptr);
-            e->visit(xsigma::overloaded(
-                [&](const ExtraFields<EventType::Kineto>& i)
-                {
-                    if (i.flow.type == libkineto::kLinkAsyncCpuGpu && i.flow.start)
+            e->visit(
+                xsigma::overloaded(
+                    [&](const ExtraFields<EventType::Kineto>& i)
                     {
-                        auto inserted = flow_map.insert({i.flow.id, e});
-#ifdef XSIGMA_USE_ROCM
-                        if (inserted.second)
+                        if (i.flow.type == libkineto::kLinkAsyncCpuGpu && i.flow.start)
                         {
-                            XSIGMA_LOG_WARNING(
-                                "ROCTracer produced duplicate flow start: ", i.flow.id);
-                        }
+                            auto inserted = flow_map.insert({i.flow.id, e});
+#ifdef XSIGMA_USE_ROCM
+                            if (inserted.second)
+                            {
+                                XSIGMA_LOG_WARNING(
+                                    "ROCTracer produced duplicate flow start: ", i.flow.id);
+                            }
 #else   // XSIGMA_USE_ROCM
-                        XSIGMA_CHECK(inserted.second);
+                            XSIGMA_CHECK(inserted.second);
 #endif  // XSIGMA_USE_ROCM
-                    }
-                    XSIGMA_CHECK(e->parent_.expired());
-                    e->parent_ = i.linked_activity_;
-                },
-                [](const auto&) {}));
+                        }
+                        XSIGMA_CHECK(e->parent_.expired());
+                        e->parent_ = i.linked_activity_;
+                    },
+                    [](const auto&) {}));
         }
 
         // Second pass
         for (auto& e : results_.get())
         {
-            e->visit(xsigma::overloaded(
-                [&](const ExtraFields<EventType::Kineto>& i)
-                {
-                    // Flow takes priority over linked event.
-                    const auto it = flow_map.find(i.flow.id);
-                    if (it != flow_map.end() && i.flow.type == libkineto::kLinkAsyncCpuGpu &&
-                        !i.flow.start)
+            e->visit(
+                xsigma::overloaded(
+                    [&](const ExtraFields<EventType::Kineto>& i)
                     {
-                        e->parent_ = it->second;
-                    }
+                        // Flow takes priority over linked event.
+                        const auto it = flow_map.find(i.flow.id);
+                        if (it != flow_map.end() && i.flow.type == libkineto::kLinkAsyncCpuGpu &&
+                            !i.flow.start)
+                        {
+                            e->parent_ = it->second;
+                        }
 
-                    // If a parent was set we have to do some bookkeeping.
-                    auto parent = e->parent_.lock();
-                    if (parent)
-                    {
-                        parent->children_.push_back(e);
-                        mark_finished(e);
-                    }
-                },
-                [](const auto&) {}));
+                        // If a parent was set we have to do some bookkeeping.
+                        auto parent = e->parent_.lock();
+                        if (parent)
+                        {
+                            parent->children_.push_back(e);
+                            mark_finished(e);
+                        }
+                    },
+                    [](const auto&) {}));
         }
 
         // Set TIDs now that we have established lineage.
@@ -1442,12 +1454,13 @@ void set_in_tree_building(const std::vector<result_ptr_t>& results, const bool v
 {
     for (result_ptr_t const& r : results)
     {
-        r->visit(xsigma::overloaded(
-            [value](ExtraFields<EventType::Vulkan>& i) { i.in_tree_building_ = value; },
-            [&](auto&)
-            {
-                // pass
-            }));
+        r->visit(
+            xsigma::overloaded(
+                [value](ExtraFields<EventType::Vulkan>& i) { i.in_tree_building_ = value; },
+                [&](auto&)
+                {
+                    // pass
+                }));
     }
 }
 
@@ -1481,9 +1494,10 @@ void build_tree(std::vector<std::shared_ptr<Result>>& sorted_events)
         auto parent_it = stacks.find(event->start_tid_);
         if (parent_it == stacks.end())
         {
-            auto fwd_tid = event->visit(xsigma::overloaded(
-                [](const op_fields& i) { return i.forward_tid_; },
-                [](const auto&) -> uint64_t { return 0; }));
+            auto fwd_tid = event->visit(
+                xsigma::overloaded(
+                    [](const op_fields& i) { return i.forward_tid_; },
+                    [](const auto&) -> uint64_t { return 0; }));
             if (fwd_tid)
             {
                 parent_it = stacks.find(fwd_tid);
@@ -1581,22 +1595,23 @@ int64_t adjust_durations_dfs(std::shared_ptr<Result>& r)
 
         if (children_total_duration > original_duration)
         {
-            r->visit(xsigma::overloaded(
-                [&r, &children_total_duration](ExtraFields<EventType::TorchOp>& i)
-                { i.end_time_ns_ = r->start_time_ns_ + children_total_duration; },
-                [&children_total_duration](ExtraFields<EventType::Vulkan>& i)
-                { i.duration_ns_ = children_total_duration; },
-                []([[maybe_unused]] ExtraFields<EventType::Allocation>& _)
-                {
-                    // Pass- Allocation events can't have children
-                },
-                [&](auto&)
-                {
-                    SOFT_ASSERT(
-                        false,
-                        "unexpected event type in mobile profiler adjust_durations_dfs: ",
-                        r->name());
-                }));
+            r->visit(
+                xsigma::overloaded(
+                    [&r, &children_total_duration](ExtraFields<EventType::TorchOp>& i)
+                    { i.end_time_ns_ = r->start_time_ns_ + children_total_duration; },
+                    [&children_total_duration](ExtraFields<EventType::Vulkan>& i)
+                    { i.duration_ns_ = children_total_duration; },
+                    []([[maybe_unused]] ExtraFields<EventType::Allocation>& _)
+                    {
+                        // Pass- Allocation events can't have children
+                    },
+                    [&](auto&)
+                    {
+                        SOFT_ASSERT(
+                            false,
+                            "unexpected event type in mobile profiler adjust_durations_dfs: ",
+                            r->name());
+                    }));
             return children_total_duration;
         }
 
@@ -1620,24 +1635,25 @@ int64_t adjust_timestamps_dfs(std::shared_ptr<Result>& r, int64_t new_start_time
         if (r->start_time_ns_ != new_start_time)
         {
             // Adjust start time (keeping duration constant)
-            r->visit(xsigma::overloaded(
-                [&r, &new_start_time](ExtraFields<EventType::TorchOp>& i)
-                { i.end_time_ns_ = new_start_time + (i.end_time_ns_ - r->start_time_ns_); },
-                []([[maybe_unused]] ExtraFields<EventType::Vulkan>& i)
-                {
-                    // Pass- We don't need to manually adjust end time for Vulkan events
-                },
-                []([[maybe_unused]] ExtraFields<EventType::Allocation>& _)
-                {
-                    // Pass- No duration or end time to adjust
-                },
-                [&](auto&)
-                {
-                    SOFT_ASSERT(
-                        false,
-                        "unexpected event type in mobile profiler adjust_timestamps_dfs: ",
-                        r->name());
-                }));
+            r->visit(
+                xsigma::overloaded(
+                    [&r, &new_start_time](ExtraFields<EventType::TorchOp>& i)
+                    { i.end_time_ns_ = new_start_time + (i.end_time_ns_ - r->start_time_ns_); },
+                    []([[maybe_unused]] ExtraFields<EventType::Vulkan>& i)
+                    {
+                        // Pass- We don't need to manually adjust end time for Vulkan events
+                    },
+                    []([[maybe_unused]] ExtraFields<EventType::Allocation>& _)
+                    {
+                        // Pass- No duration or end time to adjust
+                    },
+                    [&](auto&)
+                    {
+                        SOFT_ASSERT(
+                            false,
+                            "unexpected event type in mobile profiler adjust_timestamps_dfs: ",
+                            r->name());
+                    }));
             r->start_time_ns_ = new_start_time;
         }
         int64_t const children_total_duration = std::accumulate(
@@ -1731,11 +1747,12 @@ RecordQueue::getRecords(
                 {
                     start_time_ns = converter(i.start_time_);
                 }
-                out.emplace_back(Result::create(
-                    /*start_time_ns_=*/start_time_ns,
-                    /*start_tid_=*/queue.tid(),
-                    /*kineto_info_=*/queue.kineto_info(),
-                    /*extra_fields_=*/std::move(i)));
+                out.emplace_back(
+                    Result::create(
+                        /*start_time_ns_=*/start_time_ns,
+                        /*start_tid_=*/queue.tid(),
+                        /*kineto_info_=*/queue.kineto_info(),
+                        /*extra_fields_=*/std::move(i)));
             }
             events.clear();
         };
@@ -1745,11 +1762,12 @@ RecordQueue::getRecords(
         materialize_vulkan(out, queue.vulkan_events_, converter, queue.tid(), queue.kineto_info());
         for (auto& i : queue.allocations_)
         {
-            out.emplace_back(Result::create(
-                /*start_time_ns_=*/converter(i.start_time_),
-                /*start_tid_=*/queue.tid(),
-                /*kineto_info_=*/queue.kineto_info(),
-                /*extra_fields_=*/ExtraFields<EventType::Allocation>(i)));
+            out.emplace_back(
+                Result::create(
+                    /*start_time_ns_=*/converter(i.start_time_),
+                    /*start_tid_=*/queue.tid(),
+                    /*kineto_info_=*/queue.kineto_info(),
+                    /*extra_fields_=*/ExtraFields<EventType::Allocation>(i)));
         }
         queue.allocations_.clear();
         materialize(queue.ooms_);

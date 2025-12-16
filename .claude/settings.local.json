@@ -37,7 +37,10 @@
       "Bash(/tmp/test_enzyme:*)",
       "Bash(echo:*)",
       "Bash(timeout 120 ./build_ninja/bin/CoreCxxTests:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(python setup.py:*)",
+      "Bash(C:PROGRA~1LLVMbinCLANG_~1.EXE:*)",
+      "Bash(\"C:/Program Files/LLVM/bin/clang++.exe\":*)"
     ],
     "deny": [],
     "ask": []

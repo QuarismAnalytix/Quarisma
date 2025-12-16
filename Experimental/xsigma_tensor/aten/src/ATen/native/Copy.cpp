@@ -216,7 +216,8 @@ static Tensor& copy_impl(Tensor& self, const Tensor& src, bool non_blocking)
                     0,
                     self.numel(),
                     at::internal::GRAIN_SIZE,
-                    [&](int64_t begin, int64_t end) {
+                    [&](int64_t begin, int64_t end)
+                    {
                         fbgemm::Float16ToFloat_simd(
                             in_data + begin, output_ptr + begin, end - begin);
                     });

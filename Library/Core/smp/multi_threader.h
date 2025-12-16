@@ -22,11 +22,11 @@
 
 typedef void (*thread_function_type)(void*);
 
-#ifdef XSIGMA_USE_PTHREADS
+#if XSIGMA_USE_PTHREADS
 #include <pthread.h>
 typedef pthread_t thread_process_id_type;
 typedef pthread_t multi_threader_id_type;
-#elif defined(XSIGMA_USE_WIN32_THREADS)
+#elif XSIGMA_USE_WIN32_THREADS
 #include <windows.h>
 typedef HANDLE thread_process_id_type;
 typedef DWORD  multi_threader_id_type;
@@ -38,7 +38,7 @@ typedef int multi_threader_id_type;
 class XSIGMA_VISIBILITY multi_threader
 {
 public:
-    static multi_threader* create();
+    XSIGMA_API static multi_threader* create();
     virtual ~multi_threader();
 
     /**

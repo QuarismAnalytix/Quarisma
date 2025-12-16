@@ -534,12 +534,14 @@ static void UnpackQuantizedTensorInputs(std::shared_ptr<Graph>& graph)
         // scale and zero_point type can be found xsigma torch/include/XSigma/Operators.h
         auto input_scale =
             graph->insertInput(index + 1, input_name + "_scale")
-                ->setType(TensorType::create(
-                    xsigma::kDouble, xsigma::kCPU, 0, /*requires_grad=*/std::nullopt));
+                ->setType(
+                    TensorType::create(
+                        xsigma::kDouble, xsigma::kCPU, 0, /*requires_grad=*/std::nullopt));
         auto input_zero_point =
             graph->insertInput(index + 2, input_name + "_zero_point")
-                ->setType(TensorType::create(
-                    xsigma::kLong, xsigma::kCPU, 0, /*requires_grad=*/std::nullopt));
+                ->setType(
+                    TensorType::create(
+                        xsigma::kLong, xsigma::kCPU, 0, /*requires_grad=*/std::nullopt));
         std::vector<Value*> converted{input_value, input_scale, input_zero_point};
         auto input_tuple = graph->prependNode(graph->createTuple(converted))->output();
         g_input->replaceAllUsesWith(input_tuple);

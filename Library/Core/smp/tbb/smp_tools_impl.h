@@ -60,8 +60,8 @@ void XSIGMA_API smp_tools_impl_for_tbb(
 class XSIGMA_VISIBILITY smp_tools_impl_tbb_initialize
 {
 public:
-    smp_tools_impl_tbb_initialize();
-    ~smp_tools_impl_tbb_initialize();
+    XSIGMA_API smp_tools_impl_tbb_initialize();
+    XSIGMA_API ~smp_tools_impl_tbb_initialize();
 };
 
 //--------------------------------------------------------------------------------

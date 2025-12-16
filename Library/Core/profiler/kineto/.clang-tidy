@@ -1,0 +1,5 @@
+---
+# Disable all bugprone checks which cause crash with fmt code
+# This is a known issue with clang-tidy 21.1.0 when analyzing fmt code with -O3
+Checks: '-bugprone-*'
+WarningsAsErrors: ''

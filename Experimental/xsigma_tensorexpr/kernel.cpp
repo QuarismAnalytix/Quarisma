@@ -2266,8 +2266,9 @@ std::vector<CodeGen::CallArg> TensorExprKernel::prepareRunArgs(
         // add stride args
         for (const auto& input_stride_arg : input_stride_args_)
         {
-            runArgs.emplace_back(inputs[input_stride_arg.first].toTensor().strides().xsigma(
-                input_stride_arg.second));
+            runArgs.emplace_back(
+                inputs[input_stride_arg.first].toTensor().strides().xsigma(
+                    input_stride_arg.second));
         }
 
         for (size_t i = 0, e = bufOutputs_.size(); i < e; ++i)

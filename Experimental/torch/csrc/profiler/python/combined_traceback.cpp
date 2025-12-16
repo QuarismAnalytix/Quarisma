@@ -24,7 +24,7 @@ namespace
 {
 static std::mutex                              to_free_frames_mutex;
 static std::vector<CapturedTraceback::PyFrame> to_free_frames;
-class XSIGMA_VISIBILITY                        PythonTraceback : public CapturedTraceback::Python
+class XSIGMA_VISIBILITY PythonTraceback : public CapturedTraceback::Python
 {
     std::vector<CapturedTraceback::PyFrame> gather() override
     {
@@ -105,10 +105,11 @@ class XSIGMA_VISIBILITY                        PythonTraceback : public Captured
             auto       lineno   = PyCode_Addr2Line(f_code, f.lasti);
             result.tracebacks.emplace_back();
             result.tracebacks.back().push_back(result.all_frames.size());
-            result.all_frames.emplace_back(unwind::Frame{
-                py::cast<std::string>(filename),
-                py::cast<std::string>(funcname),
-                (uint64_t)lineno});
+            result.all_frames.emplace_back(
+                unwind::Frame{
+                    py::cast<std::string>(filename),
+                    py::cast<std::string>(funcname),
+                    (uint64_t)lineno});
             // find all the additional frames associated with inductor generated
             // code
             if (stack_frames_for_code.ptr())
@@ -119,10 +120,11 @@ class XSIGMA_VISIBILITY                        PythonTraceback : public Captured
                     for (py::handle h : extra)
                     {
                         result.tracebacks.back().push_back(result.all_frames.size());
-                        result.all_frames.emplace_back(unwind::Frame{
-                            py::cast<std::string>(h[filename_s]),
-                            py::cast<std::string>(h[name_s]),
-                            py::cast<uint64_t>(h[line_s])});
+                        result.all_frames.emplace_back(
+                            unwind::Frame{
+                                py::cast<std::string>(h[filename_s]),
+                                py::cast<std::string>(h[name_s]),
+                                py::cast<uint64_t>(h[line_s])});
                     }
                 }
             }

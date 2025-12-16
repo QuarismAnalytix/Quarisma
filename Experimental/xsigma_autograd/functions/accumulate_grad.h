@@ -205,8 +205,12 @@ struct TORCH_API AccumulateGrad : public Node
                     !xsigma::caching::is_cached_tensor(new_grad._values()) &&
                     !xsigma::caching::is_cached_tensor(new_grad));
 
-                update_grad(xsigma::_sparse_coo_tensor_unsafe(
-                    new_grad._indices(), new_grad._values(), new_grad.sizes(), new_grad.options()));
+                update_grad(
+                    xsigma::_sparse_coo_tensor_unsafe(
+                        new_grad._indices(),
+                        new_grad._values(),
+                        new_grad.sizes(),
+                        new_grad.options()));
             }
             else
             {

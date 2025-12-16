@@ -34,7 +34,7 @@
 
 #ifdef _MSC_VER
 #pragma push_macro("__TBB_NO_IMPLICIT_LINKAGE")
-#define __TBB_NO_IMPLICIT_LINKAGE 1
+#define __TBB_NO_IMPLICIT_LINKAGE 1  // NOLINT(bugprone-reserved-identifier)
 #endif
 
 #include <tbb/task_arena.h>  // For tbb:task_arena
@@ -75,7 +75,12 @@ smp_tools_impl_tbb_initialize::smp_tools_impl_tbb_initialize()
 }
 
 //------------------------------------------------------------------------------
-smp_tools_impl_tbb_initialize::~smp_tools_impl_tbb_initialize() = default;
+smp_tools_impl_tbb_initialize::
+    ~smp_tools_impl_tbb_initialize()  // NOLINT(modernize-use-equals-default)
+{
+    // Empty destructor - cleanup is handled by unique_ptr members
+    // Cannot use = default due to DLL export issues on Windows
+}
 
 //------------------------------------------------------------------------------
 template <>

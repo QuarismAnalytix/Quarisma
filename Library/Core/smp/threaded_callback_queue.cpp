@@ -24,6 +24,7 @@
 #include "threaded_callback_queue.h"
 
 #include <algorithm>
+#include <iterator>
 
 //=============================================================================
 class threaded_callback_queue::thread_worker

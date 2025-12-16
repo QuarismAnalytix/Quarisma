@@ -198,8 +198,9 @@ PyObject* THPCppFunction_register_hook_dict(PyObject* self, PyObject* _var)
     }
     auto  var = (THPVariable*)_var;
     auto& fn  = *((THPCppFunction*)self)->cdata;
-    fn.add_tensor_pre_hook(std::make_unique<PyFunctionTensorPreHook>(
-        var->backward_hooks, THPVariable_Unpack(var).output_nr()));
+    fn.add_tensor_pre_hook(
+        std::make_unique<PyFunctionTensorPreHook>(
+            var->backward_hooks, THPVariable_Unpack(var).output_nr()));
     Py_RETURN_NONE;
 }
 

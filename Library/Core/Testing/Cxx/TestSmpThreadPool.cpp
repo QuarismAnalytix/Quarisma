@@ -33,7 +33,6 @@
 
 namespace xsigma
 {
-
 // ============================================================================
 // Consolidated Test 1: Singleton, Lifecycle, and Initial State
 // ============================================================================
@@ -41,15 +40,15 @@ namespace xsigma
 XSIGMATEST(SmpThreadPool, singleton_lifecycle_and_state)
 {
     // Test 1: Singleton access - ensure same instance is returned
-    smp_thread_pool& pool1 = smp_thread_pool::instance();
-    smp_thread_pool& pool2 = smp_thread_pool::instance();
+    detail::smp::smp_thread_pool& pool1 = detail::smp::smp_thread_pool::instance();
+    detail::smp::smp_thread_pool& pool2 = detail::smp::smp_thread_pool::instance();
     EXPECT_EQ(&pool1, &pool2);
 
     // Test 2: Initial state - should not be in parallel scope
     EXPECT_FALSE(pool1.is_parallel_scope());
 
     // Test 3: Thread ID should be external_thread_id (1)
-    EXPECT_EQ(pool1.get_thread_id(), smp_thread_pool::external_thread_id);
+    EXPECT_EQ(pool1.get_thread_id(), detail::smp::smp_thread_pool::external_thread_id);
 
     // Test 4: Thread count should be reasonable
     size_t count = pool1.thread_count();
@@ -63,7 +62,7 @@ XSIGMATEST(SmpThreadPool, singleton_lifecycle_and_state)
 
 XSIGMATEST(SmpThreadPool, thread_allocation_and_proxy_management)
 {
-    smp_thread_pool& pool = smp_thread_pool::instance();
+    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
 
     // Test 1: Allocate with default thread count (0 = auto)
     {
@@ -129,7 +128,7 @@ XSIGMATEST(SmpThreadPool, thread_allocation_and_proxy_management)
 
 XSIGMATEST(SmpThreadPool, job_execution_and_distribution)
 {
-    smp_thread_pool& pool = smp_thread_pool::instance();
+    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
 
     // Test 1: Basic job execution
     {
@@ -203,14 +202,14 @@ XSIGMATEST(SmpThreadPool, job_execution_and_distribution)
 
 XSIGMATEST(SmpThreadPool, thread_identification)
 {
-    smp_thread_pool& pool = smp_thread_pool::instance();
+    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
 
     // Test 1: Verify external_thread_id constant
-    EXPECT_EQ(smp_thread_pool::external_thread_id, 1u);
+    EXPECT_EQ(detail::smp::smp_thread_pool::external_thread_id, 1u);
 
     // Test 2: Get thread ID outside parallel region
     size_t thread_id = pool.get_thread_id();
-    EXPECT_EQ(thread_id, smp_thread_pool::external_thread_id);
+    EXPECT_EQ(thread_id, detail::smp::smp_thread_pool::external_thread_id);
 
     // Test 3: Get thread ID inside job
     std::atomic<size_t> internal_thread_id{0};
@@ -237,7 +236,7 @@ XSIGMATEST(SmpThreadPool, thread_identification)
 
 XSIGMATEST(SmpThreadPool, parallel_scope_detection)
 {
-    smp_thread_pool& pool = smp_thread_pool::instance();
+    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
 
     // Test 1: Outside parallel region should return false
     EXPECT_FALSE(pool.is_parallel_scope());
@@ -267,7 +266,7 @@ XSIGMATEST(SmpThreadPool, parallel_scope_detection)
 
 XSIGMATEST(SmpThreadPool, nested_proxies_and_top_level)
 {
-    smp_thread_pool& pool = smp_thread_pool::instance();
+    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
 
     std::atomic<int> outer_counter{0};
     std::atomic<int> inner_counter{0};
@@ -312,7 +311,7 @@ XSIGMATEST(SmpThreadPool, nested_proxies_and_top_level)
 
 XSIGMATEST(SmpThreadPool, thread_reuse_and_sequential_allocation)
 {
-    smp_thread_pool& pool = smp_thread_pool::instance();
+    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
 
     std::atomic<int> counter{0};
 
@@ -335,7 +334,7 @@ XSIGMATEST(SmpThreadPool, thread_reuse_and_sequential_allocation)
 
 XSIGMATEST(SmpThreadPool, edge_cases_and_error_handling)
 {
-    smp_thread_pool& pool = smp_thread_pool::instance();
+    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
 
     // Test 1: Allocate zero threads (should use default)
     {
@@ -383,7 +382,7 @@ XSIGMATEST(SmpThreadPool, edge_cases_and_error_handling)
 
 XSIGMATEST(SmpThreadPool, thread_safety_and_concurrency)
 {
-    smp_thread_pool& pool = smp_thread_pool::instance();
+    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
 
     // Test 1: Concurrent job execution
     {
@@ -465,7 +464,7 @@ XSIGMATEST(SmpThreadPool, thread_safety_and_concurrency)
 
 XSIGMATEST(SmpThreadPool, integration_tests)
 {
-    smp_thread_pool& pool = smp_thread_pool::instance();
+    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
 
     // Test 1: Full workflow - typical parallel computation
     {

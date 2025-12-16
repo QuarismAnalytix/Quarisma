@@ -660,10 +660,12 @@ void TensorIteratorBase::compute_types(const TensorIteratorConfig& config)
                 // then after calling the out kernel, do the conversion (which
                 // is cast_outputs here), but integrating this with existing
                 // TensorIterator will take a little doing
-                op.exchange_tensor(c10::MaybeOwned<TensorBase>::owned(at::empty_like(
-                    op.tensor(),
-                    op.tensor_base().options().dtype(common_dtype_),
-                    LEGACY_CONTIGUOUS_MEMORY_FORMAT)));
+                op.exchange_tensor(
+                    c10::MaybeOwned<TensorBase>::owned(
+                        at::empty_like(
+                            op.tensor(),
+                            op.tensor_base().options().dtype(common_dtype_),
+                            LEGACY_CONTIGUOUS_MEMORY_FORMAT)));
                 if (!names_.empty())
                 {
                     namedinference::propagate_names(op.tensor_base(), names_);
@@ -1116,10 +1118,11 @@ void TensorIteratorBase::select_all_keeping_dim(int start_dim, IntArrayRef indic
 void TensorIteratorBase::build_binary_float_op(
     const TensorBase& out, const TensorBase& a, const TensorBase& b)
 {
-    build(BINARY_FLOAT_OP_CONFIG()
-              .add_owned_output(out)
-              .add_owned_const_input(a)
-              .add_owned_const_input(b));
+    build(
+        BINARY_FLOAT_OP_CONFIG()
+            .add_owned_output(out)
+            .add_owned_const_input(a)
+            .add_owned_const_input(b));
 }
 
 void TensorIteratorBase::build_borrowing_binary_float_op(
@@ -1194,14 +1197,15 @@ void TensorIteratorBase::build_borrowing_except_last_argument_comparison_op(
 void TensorIteratorBase::build_ternary_op(
     const TensorBase& out, const TensorBase& a, const TensorBase& b, const TensorBase& c)
 {
-    build(TensorIteratorConfig()
-              .promote_inputs_to_common_dtype(true)
-              .cast_common_dtype_to_outputs(true)
-              .enforce_safe_casting_to_output(true)
-              .add_owned_output(out)
-              .add_owned_const_input(a)
-              .add_owned_const_input(b)
-              .add_owned_const_input(c));
+    build(
+        TensorIteratorConfig()
+            .promote_inputs_to_common_dtype(true)
+            .cast_common_dtype_to_outputs(true)
+            .enforce_safe_casting_to_output(true)
+            .add_owned_output(out)
+            .add_owned_const_input(a)
+            .add_owned_const_input(b)
+            .add_owned_const_input(c));
 }
 
 // This cannot be a function because TensorIteratorConfig is not
@@ -1269,12 +1273,13 @@ void TensorIteratorBase::build_borrowing_unary_op(const TensorBase& out, const T
 void TensorIteratorBase::build_output_borrowing_argument_owning_unary_op(
     const TensorBase& out, const TensorBase& a)
 {
-    build(TensorIteratorConfig()
-              .set_check_mem_overlap(true)
-              .cast_common_dtype_to_outputs(true)
-              .enforce_safe_casting_to_output(true)
-              .add_output(out)
-              .add_owned_const_input(a));
+    build(
+        TensorIteratorConfig()
+            .set_check_mem_overlap(true)
+            .cast_common_dtype_to_outputs(true)
+            .enforce_safe_casting_to_output(true)
+            .add_output(out)
+            .add_owned_const_input(a));
 }
 
 // Helper to construct a unary op that forcibly promotes output to boolean.
@@ -1282,13 +1287,14 @@ void TensorIteratorBase::build_output_borrowing_argument_owning_unary_op(
 void TensorIteratorBase::build_borrowing_unary_force_boolean_op(
     const TensorBase& out, const TensorBase& a)
 {
-    build(TensorIteratorConfig()
-              .set_check_mem_overlap(true)
-              .check_all_same_dtype(false)
-              .declare_static_dtype(at::kBool)
-              .declare_static_device(a.device())
-              .add_output(out)
-              .add_const_input(a));
+    build(
+        TensorIteratorConfig()
+            .set_check_mem_overlap(true)
+            .check_all_same_dtype(false)
+            .declare_static_dtype(at::kBool)
+            .declare_static_device(a.device())
+            .add_output(out)
+            .add_const_input(a));
 }
 
 TensorIterator TensorIterator::binary_op(TensorBase& out, const TensorBase& a, const TensorBase& b)

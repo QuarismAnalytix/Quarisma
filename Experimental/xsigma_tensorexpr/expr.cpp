@@ -485,12 +485,13 @@ BufHandle Buf::make(
     const std::vector<ExprHandle>& strides,
     Dtype                          dtype)
 {
-    return BufHandle(alloc<Buf>(
-        name_hint,
-        ExprHandleVectorToExprVector(dims),
-        dtype,
-        nullptr,
-        ExprHandleVectorToExprVector(strides)));
+    return BufHandle(
+        alloc<Buf>(
+            name_hint,
+            ExprHandleVectorToExprVector(dims),
+            dtype,
+            nullptr,
+            ExprHandleVectorToExprVector(strides)));
 }
 
 BufHandle Buf::make(
@@ -507,14 +508,15 @@ BufHandle Buf::make(
     {
         opt_strides = ExprHandleVectorToExprVector(*strides);
     }
-    return BufHandle(alloc<Buf>(
-        name_hint,
-        ExprHandleVectorToExprVector(dims),
-        dtype,
-        initializer ? initializer->node() : nullptr,
-        opt_strides,
-        qscale ? qscale->node() : nullptr,
-        qzero ? qzero->node() : nullptr));
+    return BufHandle(
+        alloc<Buf>(
+            name_hint,
+            ExprHandleVectorToExprVector(dims),
+            dtype,
+            initializer ? initializer->node() : nullptr,
+            opt_strides,
+            qscale ? qscale->node() : nullptr,
+            qzero ? qzero->node() : nullptr));
 }
 
 bool Buf::is_contiguous(xsigma::MemoryFormat memory_format) const

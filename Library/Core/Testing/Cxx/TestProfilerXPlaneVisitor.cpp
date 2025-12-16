@@ -157,7 +157,8 @@ XSIGMATEST(XPlaneVisitor, x_stat_visitor_bool_value)
         [](const xline_visitor& line)
         {
             line.for_each_event(
-                [](const xevent_visitor& event) {
+                [](const xevent_visitor& event)
+                {
                     event.for_each_stat([](const x_stat_visitor& stat)
                                         { EXPECT_TRUE(stat.bool_value()); });
                 });
@@ -327,7 +328,8 @@ XSIGMATEST(XPlaneVisitor, xevent_visitor_comparison)
 
     std::vector<xevent_visitor> events;
     plane_visitor.for_each_line(
-        [&events](const xline_visitor& line) {
+        [&events](const xline_visitor& line)
+        {
             line.for_each_event([&events](const xevent_visitor& event)
                                 { events.push_back(event); });
         });

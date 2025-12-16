@@ -51,9 +51,10 @@ cuda_error_info::cuda_error_info(
     : error_code(static_cast<int>(cuda_error)),
       error_message(cudaGetErrorString(cuda_error)),
       cuda_function((function_name != nullptr) ? function_name : "unknown"),
-      timestamp_us(std::chrono::duration_cast<std::chrono::microseconds>(
-                       std::chrono::steady_clock::now().time_since_epoch())
-                       .count()),
+      timestamp_us(
+          std::chrono::duration_cast<std::chrono::microseconds>(
+              std::chrono::steady_clock::now().time_since_epoch())
+              .count()),
       attempted_size(size),
       device_index(device)
 {
