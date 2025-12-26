@@ -1,0 +1,43 @@
+---
+HeaderFilterRegex: '^(?!.*ThirdParty).*'  # Exclude third party folder from checks
+Checks: "-*,\
+bugprone-*,\
+-bugprone-unchecked-optional-access,\
+-bugprone-exception-escape,\
+-bugprone-narrowing-conversions,\
+-bugprone-easily-swappable-parameters,\
+modernize-*,\
+-modernize-use-ranges,\
+-modernize-use-trailing-return-type,\
+-modernize-avoid-c-arrays,\
+-modernize-type-traits,\
+-modernize-concat-nested-namespaces,\
+-modernize-use-designated-initializers,\
+-modernize-use-integer-sign-comparison,\
+-modernize-use-equals-delete,\
+readability-*,\
+-readability-suspicious-call-argument,\
+-readability-deleted-default,\
+-readability-function-cognitive-complexity,\
+-readability-avoid-unconditional-preprocessor-if,\
+-readability-avoid-return-with-void-value,\
+-readability-avoid-nested-conditional-operator,\
+-readability-static-accessed-through-instance,\
+-readability-uppercase-literal-suffix,\
+-readability-magic-numbers,\
+-readability-identifier-length,\
+misc-*,\
+-misc-include-cleaner,\
+-misc-use-anonymous-namespace,\
+-misc-no-recursion,\
+-misc-non-private-member-variables-in-classes,\
+-misc-header-include-cycle,\
+"
+CheckOptions:
+  - key: readability-identifier-length.MinimumVariableNameLength
+    value: '2'
+  - key: readability-identifier-length.ParameterNameLength
+    value: '2'
+#WarningsAsErrors: "*"
+UseColor: true  # Enable colored output
+...

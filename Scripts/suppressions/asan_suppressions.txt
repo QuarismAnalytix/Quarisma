@@ -1,0 +1,8 @@
+# AddressSanitizer Suppressions for Quarisma
+# ===========================================
+# This file contains suppressions for AddressSanitizer to handle known false positives
+# and issues in third-party libraries that cannot be easily fixed.
+#
+# Format: <error_type>:<pattern>
+# Where error_type can be: leak, heap-buffer-overflow, stack-buffer-overflow, etc.
+# Pattern can match function names, file paths, or library names.

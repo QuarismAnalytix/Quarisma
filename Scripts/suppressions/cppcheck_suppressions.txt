@@ -1,0 +1,25 @@
+# cppcheck .   --platform=unspecified   --enable=style   -q   --library=qt --library=posix --library=gnu --library=bsd --library=windows   --check-level=exhaustive   --template='{id},{file}:{line},{severity},{message}' --suppressions-list=Scripts/cppcheck_suppressions.txt -j8   -I Library
+
+# Exclude third-party and test code
+*:ThirdParty/*
+*:Library/*/Testing/Cxx/*
+*:Library/Core/experimental/*
+
+# Suppress unknown macro warnings
+unknownMacro:QUARISMA_UNLIKELY
+unknownMacro:QUARISMA_LIKELY
+
+# Suppress missing include warnings
+missingIncludeSystem:*
+missingInclude:*
+
+# Suppress false positives for intentional design patterns
+# Virtual call in destructor is intentional (stop() is final in host_tracer)
+#virtualCallInConstructor:Library/Core/profiler/cpu/host_tracer.cxx:71
+
+# Double-checked locking pattern (intentional for thread safety)
+#identicalInnerCondition:Library/Core/smp_new/parallel/parallel_api.cxx:199
+#identicalInnerCondition:Library/Core/smp_new/parallel/parallel_api.cxx:218
+
+# Test helper function - pointer is not modified
+#constParameterPointer:Library/Core/Testing/quarismaTest.h:234

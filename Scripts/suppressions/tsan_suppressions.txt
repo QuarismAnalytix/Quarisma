@@ -1,0 +1,85 @@
+# ThreadSanitizer Suppressions for Quarisma
+# ========================================
+# This file contains suppressions for ThreadSanitizer to handle known false positives
+# and issues in third-party libraries that cannot be easily fixed.
+#
+# Format: <error_type>:<pattern>
+# Where error_type can be: race, deadlock, mutex, signal, etc.
+# Pattern can match function names, file paths, or library names.
+
+# Third-party library suppressions
+# ---------------------------------
+
+# fmt library - suppress formatting-related races
+race:*fmt*
+
+# loguru library - suppress logging-related races (common in logging libraries)
+race:*loguru*
+mutex:*loguru*
+
+# Google Test - suppress test framework races
+race:*gtest*
+race:*testing*
+
+# cpuinfo library - suppress CPU detection races
+race:*cpuinfo*
+
+# mimalloc - suppress memory allocator races
+race:*mimalloc*
+mutex:*mimalloc*
+
+# Windows system libraries
+# -------------------------
+
+# Windows CRT and system DLLs
+race:*msvcrt*
+race:*kernel32*
+race:*ntdll*
+
+# LLVM/Clang runtime libraries
+race:*clang_rt*
+race:*compiler_rt*
+
+# Known false positives
+# ---------------------
+
+# Standard library thread-related issues
+race:*std::thread*
+race:*std::mutex*
+race:*std::condition_variable*
+
+# Static initialization races (common false positive)
+race:*__cxa_guard*
+race:*static*initialization*
+
+# Global constructor/destructor races
+race:*__static_initialization_and_destruction*
+
+# Example suppressions for common patterns:
+# race:MyClass::problematic_function
+# deadlock:ThirdPartyLib::*
+# mutex:*/path/to/problematic/file.cpp
+
+# Project-specific suppressions
+# ------------------------------
+# Add project-specific suppressions below as needed
+
+# Suppress races in experimental profiler code during development
+race:*experimental*profiler*
+
+# Suppress races in test code (tests may have intentional races)
+race:*Test*
+
+# Suppress races in SMP (Symmetric Multi-Processing) components
+# These may be intentional or require careful analysis
+race:*smp*
+race:*thread_pool*
+race:*multi_threader*
+
+# Suppress races in memory allocator components
+race:*allocator*
+race:*memory*pool*
+
+# Suppress races in logging components (often acceptable)
+race:*logger*
+race:*logging*

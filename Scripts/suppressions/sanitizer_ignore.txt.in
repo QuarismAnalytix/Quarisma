@@ -1,0 +1,29 @@
+# Blacklist third party libraries from invoking sanitizer errors
+src:@QUARISMA_SOURCE_DIR@/ThirdParty/*
+
+# Workaround for Clang 20.1.0 compiler crash with AddressSanitizer
+# Issue: Compiler crashes during various optimization passes when instrumenting
+# complex C++ template instantiations and STL containers with AddressSanitizer
+# This is a known compiler bug in Clang 20.1.0, not an issue with the Quarisma code
+# TODO: Remove these entries when upgrading to a stable Clang version
+
+# Crash in Live DEBUG_VALUE analysis pass on hash table operations
+fun:*_Forced_rehash*
+fun:*_Hash*
+fun:*_Uhash_compare*
+src:*/TestHashUtil.cxx
+
+# Crash in X86 DAG->DAG Instruction Selection pass on memory allocation patterns
+fun:*AllocatorTest*PerformanceBenchmark*
+fun:*PerformanceBenchmark*TestBody*
+src:*/TestCPUMemory.cxx
+
+# Suppress runtime allocator mismatch issues on Windows with mimalloc
+# Issue: AddressSanitizer detects "bad-free" errors when mixing system allocators
+# with mimalloc during program shutdown. This is a known issue when using
+# custom allocators with AddressSanitizer on Windows.
+# The error occurs in Windows runtime libraries during destructor cleanup.
+fun:*ucrtbased*
+fun:*MSVCP140D*
+src:*ucrtbased*
+src:*MSVCP140D*

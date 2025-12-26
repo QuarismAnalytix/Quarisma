@@ -1,0 +1,81 @@
+# UndefinedBehaviorSanitizer Suppressions for Quarisma
+# ===================================================
+# This file contains suppressions for UndefinedBehaviorSanitizer to handle known false positives
+# and issues in third-party libraries that cannot be easily fixed.
+#
+# Format: <error_type>:<pattern>
+# Where error_type can be: alignment, bool, bounds, enum, float-cast-overflow, etc.
+# Pattern can match function names, file paths, or library names.
+
+# Third-party library suppressions
+# ---------------------------------
+
+# fmt library - suppress formatting-related UB
+alignment:*fmt*
+signed-integer-overflow:*fmt*
+unsigned-integer-overflow:*fmt*
+
+# loguru library - suppress logging-related UB
+alignment:*loguru*
+signed-integer-overflow:*loguru*
+
+# Google Test - suppress test framework UB
+alignment:*gtest*
+alignment:*testing*
+signed-integer-overflow:*gtest*
+
+# cpuinfo library - suppress CPU detection UB
+alignment:*cpuinfo*
+signed-integer-overflow:*cpuinfo*
+
+# mimalloc - suppress memory allocator UB
+alignment:*mimalloc*
+signed-integer-overflow:*mimalloc*
+
+# Windows system libraries
+# -------------------------
+
+# Windows CRT and system DLLs
+alignment:*msvcrt*
+signed-integer-overflow:*msvcrt*
+
+# LLVM/Clang runtime libraries
+alignment:*clang_rt*
+alignment:*compiler_rt*
+
+# Known false positives
+# ---------------------
+
+# Standard library issues
+alignment:*std::*
+signed-integer-overflow:*std::*
+
+# Template instantiation issues
+alignment:*template*
+
+# Pointer arithmetic in system code
+pointer-overflow:*system*
+
+# Common patterns that may trigger false positives
+enum:*magic_enum*
+bool:*magic_enum*
+
+# Example suppressions for common patterns:
+# alignment:MyClass::problematic_function
+# signed-integer-overflow:ThirdPartyLib::*
+# bounds:*/path/to/problematic/file.cpp
+
+# Project-specific suppressions
+# ------------------------------
+# Add project-specific suppressions below as needed
+
+# Suppress issues in experimental profiler code during development
+alignment:*experimental*profiler*
+signed-integer-overflow:*experimental*profiler*
+
+# Suppress issues in test code
+alignment:*Test*
+signed-integer-overflow:*Test*
+
+# Suppress known issues in specific Quarisma components
+# (Add specific suppressions as they are discovered during testing)

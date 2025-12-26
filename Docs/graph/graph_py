@@ -1,0 +1,2378 @@
+# PyTorch Computational Graph Architecture: Progressive Learning Guide
+
+**Last Updated**: November 2025
+**Scope**: PyTorch 2.x - Core autograd graph infrastructure, JIT/TorchScript, AOT Autograd
+**Document Type**: Progressive Learning Guide + Technical Reference
+
+---
+
+## Table of Contents
+
+### Part 1: Fundamentals (Bottom-Up)
+1. [Introduction](#introduction)
+2. [Part 1: Fundamentals](#part-1-fundamentals-bottom-up)
+   - [1.1 Edges: The Basic Connection](#11-edges-the-basic-connection)
+   - [1.2 Nodes: Operations in the Graph](#12-nodes-operations-in-the-graph)
+   - [1.3 Graph Structure: Connecting Everything](#13-graph-structure-connecting-everything)
+
+### Part 2: Basic Operations
+3. [Part 2: Basic Operations](#part-2-basic-operations)
+   - [2.1 Building a Simple Graph](#21-building-a-simple-graph)
+   - [2.2 Executing a Simple Graph](#22-executing-a-simple-graph)
+
+### Part 3: Advanced Topics
+4. [Part 3: Advanced Topics](#part-3-advanced-topics)
+   - [3.1 Autograd System](#31-autograd-system)
+   - [3.2 Custom Functions](#32-custom-functions)
+   - [3.3 Hooks and Callbacks](#33-hooks-and-callbacks)
+   - [3.4 JIT/TorchScript Graphs](#34-jittorchscript-graphs)
+   - [3.5 AOT Autograd](#35-aot-autograd)
+   - [3.6 Graph Optimization](#36-graph-optimization)
+   - [3.7 Profiling and Debugging](#37-profiling-and-debugging)
+
+### Reference
+5. [Complete File Inventory](#complete-file-inventory)
+6. [File Dependencies](#file-dependencies)
+7. [Summary Statistics](#summary-statistics)
+
+---
+
+## Introduction
+
+PyTorch implements a **dynamic computational graph** system that:
+- **Builds graphs lazily** during forward pass (only when needed)
+- **Executes graphs eagerly** during backward pass (immediate execution)
+- **Supports flexible control flow** through eager evaluation (loops, conditionals)
+- **Scales efficiently** via multi-threaded execution (parallel gradient computation)
+
+This document teaches you how PyTorch's graph system works, starting from first principles (edges and nodes) and progressing to advanced features (JIT compilation, AOT autograd, graph optimization).
+
+---
+
+# PART 1: FUNDAMENTALS (BOTTOM-UP)
+
+## 1.1 Edges: The Basic Connection
+
+### What is an Edge?
+
+An **edge** is the most fundamental building block of PyTorch's computational graph. It represents a **data dependency** between two operations.
+
+**File**: `torch/csrc/autograd/edge.h` (lines 1-57)
+
+### Edge Structure
+
+```cpp
+// From torch/csrc/autograd/edge.h
+struct Edge {
+  std::shared_ptr<Node> function;  // Target node (operation)
+  uint32_t input_nr;               // Which input of target node
+};
+```
+
+### Understanding Edges with an Example
+
+Consider the operation: `c = a + b`
+
+```
+┌─────────────────────────────────────────┐
+│         Computational Graph             │
+├─────────────────────────────────────────┤
+│                                         │
+│  Tensor a ──┐                           │
+│             ├──→ [AddBackward0] ──→ c   │
+│  Tensor b ──┘                           │
+│                                         │
+│  Edge 1: (AddBackward0, input_nr=0)     │
+│  Edge 2: (AddBackward0, input_nr=1)     │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+**Edge 1** connects tensor `a` to the AddBackward0 node's first input (input_nr=0)
+**Edge 2** connects tensor `b` to the AddBackward0 node's second input (input_nr=1)
+
+### Key Properties of Edges
+
+| Property | Meaning |
+|----------|---------|
+| `function` | Pointer to the target Node (the operation) |
+| `input_nr` | Which input slot of the target node (0, 1, 2, ...) |
+| Immutable | Once created, edges don't change |
+| Shared ownership | Uses `std::shared_ptr` for memory management |
+
+### Why Edges Matter
+
+Edges are the **glue** that connects operations together. Without edges:
+- Operations would be isolated
+- Gradients couldn't flow backward
+- The graph would be disconnected
+
+---
+
+## 1.2 Nodes: Operations in the Graph
+
+### What is a Node?
+
+A **node** represents a single **operation** in the computational graph. Every operation (add, multiply, convolution, etc.) is represented as a node.
+
+**File**: `torch/csrc/autograd/function.h` (lines 113-792)
+
+### Node Structure
+
+```cpp
+// Simplified from torch/csrc/autograd/function.h
+class Node {
+  // Execution metadata
+  uint64_t sequence_nr_;        // Execution priority (higher = earlier)
+  uint64_t topological_nr_;     // Ensures correct ordering
+
+  // Graph connectivity
+  std::vector<Edge> next_edges_;  // Outgoing edges to next nodes
+
+  // Input information
+  std::vector<InputMetadata> input_metadata_;  // Shape, dtype, device
+
+  // Hooks for interception
+  std::vector<std::unique_ptr<FunctionPreHook>> pre_hooks_;
+  std::vector<std::unique_ptr<FunctionPostHook>> post_hooks_;
+
+public:
+  // Core backward computation
+  virtual variable_list apply(variable_list&& inputs) = 0;
+
+  // Metadata management
+  void add_input_metadata(const Tensor& input);
+  void set_next_edges(edge_list&& edges);
+};
+```
+
+### Node Lifecycle
+
+```
+1. Creation
+   └─ Node created when operation is performed
+
+2. Metadata Collection
+   └─ Input shapes, dtypes, devices stored
+
+3. Edge Setup
+   └─ next_edges_ populated with connections to previous operations
+
+4. Backward Execution
+   └─ apply() called with incoming gradients
+
+5. Gradient Propagation
+   └─ Gradients sent to next nodes via edges
+```
+
+### Example: AddBackward0 Node
+
+When you compute `c = a + b`, PyTorch creates an `AddBackward0` node:
+
+```cpp
+// Conceptual representation
+class AddBackward0 : public Node {
+  // Stores metadata about inputs a and b
+  InputMetadata input_a_metadata;  // shape, dtype, device of a
+  InputMetadata input_b_metadata;  // shape, dtype, device of b
+
+  // Backward computation
+  variable_list apply(variable_list&& grad_outputs) override {
+    auto grad_c = grad_outputs[0];
+
+    // Gradient of addition: da = dc, db = dc
+    auto grad_a = grad_c;
+    auto grad_b = grad_c;
+
+    return {grad_a, grad_b};
+  }
+};
+```
+
+### Key Node Properties
+
+| Property | Purpose |
+|----------|---------|
+| `sequence_nr_` | Determines execution order (higher = earlier) |
+| `topological_nr_` | Ensures parents execute before children |
+| `next_edges_` | Connections to previous operations |
+| `input_metadata_` | Tensor information for gradient computation |
+| `apply()` | Computes gradients during backward pass |
+
+### Node Types
+
+PyTorch has many node types for different operations:
+
+| Node Type | Operation | File |
+|-----------|-----------|------|
+| `AddBackward0` | Addition | `torch/csrc/autograd/functions/tensor.cpp` |
+| `MulBackward0` | Multiplication | `torch/csrc/autograd/functions/tensor.cpp` |
+| `ConvolutionBackward0` | Convolution | `torch/csrc/autograd/functions/tensor.cpp` |
+| `AccumulateGrad` | Leaf gradient accumulation | `torch/csrc/autograd/functions/accumulate_grad.h` |
+| `GraphRoot` | Backward entry point | `torch/csrc/autograd/functions/basic_ops.h` |
+
+---
+
+## 1.3 Graph Structure: Connecting Everything
+
+### What is a Graph?
+
+A **graph** is a collection of nodes connected by edges. It represents the entire computation from inputs to outputs.
+
+**Files**:
+- `torch/csrc/autograd/graph_task.h` - Execution metadata
+- `torch/csrc/autograd/variable.h` - Tensor-to-node connection
+
+### Graph Components
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Computational Graph                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Nodes:                                                     │
+│  ├─ AddBackward0 (for c = a + b)                           │
+│  ├─ MulBackward0 (for d = c * 2)                           │
+│  ├─ AccumulateGrad (for parameter a)                       │
+│  └─ GraphRoot (backward entry point)                       │
+│                                                             │
+│  Edges:                                                     │
+│  ├─ a.grad_fn → AddBackward0 (input 0)                     │
+│  ├─ b.grad_fn → AddBackward0 (input 1)                     │
+│  ├─ AddBackward0 → MulBackward0 (input 0)                  │
+│  └─ MulBackward0 → GraphRoot                               │
+│                                                             │
+│  Tensors:                                                   │
+│  ├─ a: grad_fn = AccumulateGrad                            │
+│  ├─ b: grad_fn = AccumulateGrad                            │
+│  ├─ c: grad_fn = AddBackward0, output_nr = 0               │
+│  └─ d: grad_fn = MulBackward0, output_nr = 0               │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Tensor-to-Node Connection
+
+Each tensor stores a reference to its **gradient function** (grad_fn):
+
+```cpp
+// From torch/csrc/autograd/variable.h
+class Variable {
+  // ... other fields ...
+
+  // Gradient function (backward node)
+  std::shared_ptr<Node> grad_fn_;
+
+  // Which output of grad_fn this tensor is
+  uint32_t output_nr_;
+
+  // Accumulated gradient
+  Tensor grad_;
+
+  // Whether to compute gradients
+  bool requires_grad_;
+};
+```
+
+### Example: Building a Graph
+
+```python
+# Python code
+a = torch.tensor([1.0, 2.0], requires_grad=True)
+b = torch.tensor([3.0, 4.0], requires_grad=True)
+c = a + b
+d = c * 2
+loss = d.sum()
+```
+
+**Graph Structure**:
+
+```
+a (requires_grad=True)
+  └─ grad_fn: AccumulateGrad
+     └─ next_edges: [Edge(AddBackward0, 0)]
+
+b (requires_grad=True)
+  └─ grad_fn: AccumulateGrad
+     └─ next_edges: [Edge(AddBackward0, 1)]
+
+c = a + b
+  └─ grad_fn: AddBackward0
+     ├─ input_metadata: [a's shape/dtype, b's shape/dtype]
+     ├─ next_edges: [Edge(MulBackward0, 0)]
+     └─ apply(): returns [grad_c, grad_c]
+
+d = c * 2
+  └─ grad_fn: MulBackward0
+     ├─ input_metadata: [c's shape/dtype, scalar 2]
+     ├─ next_edges: [Edge(SumBackward0, 0)]
+     └─ apply(): returns [grad_d * 2, grad_d * sum(c)]
+
+loss = d.sum()
+  └─ grad_fn: SumBackward0
+     ├─ input_metadata: [d's shape/dtype]
+     ├─ next_edges: [Edge(GraphRoot, 0)]
+     └─ apply(): returns [grad_loss * ones_like(d)]
+```
+
+### InputBuffer: Gradient Accumulation
+
+When a node has multiple incoming edges, gradients must be accumulated:
+
+**File**: `torch/csrc/autograd/input_buffer.h`
+
+```cpp
+// Simplified InputBuffer
+class InputBuffer {
+  std::vector<Tensor> buffer_;  // One slot per input
+
+public:
+  void add(uint32_t input_nr, const Tensor& grad) {
+    if (buffer_[input_nr].defined()) {
+      buffer_[input_nr] = buffer_[input_nr] + grad;
+    } else {
+      buffer_[input_nr] = grad;
+    }
+  }
+
+  Tensor sum_all() {
+    Tensor result;
+    for (const auto& grad : buffer_) {
+      if (grad.defined()) {
+        result = result.defined() ? result + grad : grad;
+      }
+    }
+    return result;
+  }
+};
+```
+
+### GraphTask: Execution Metadata
+
+**File**: `torch/csrc/autograd/graph_task.h` (lines 17-230)
+
+```cpp
+// Simplified GraphTask
+struct GraphTask {
+  // Dependency tracking
+  std::unordered_map<Node*, uint32_t> dependencies_;
+
+  // Nodes waiting for inputs
+  std::unordered_map<Node*, InputBuffer> not_ready_;
+
+  // All nodes in the graph
+  std::unordered_set<Node*> nodes_in_graph_;
+
+  // Entry points for backward
+  std::vector<Edge> graph_roots_;
+
+  // Execution control
+  std::atomic<uint32_t> outstanding_tasks_;
+  bool keep_graph_;
+  bool create_graph_;
+};
+```
+
+---
+
+# PART 2: BASIC OPERATIONS
+
+## 2.1 Building a Simple Graph
+
+### Step-by-Step: Forward Pass
+
+Let's trace through how PyTorch builds a graph for `c = a + b`:
+
+#### Step 1: Operation Dispatch
+
+```python
+# User code
+a = torch.tensor([1.0, 2.0], requires_grad=True)
+b = torch.tensor([3.0, 4.0], requires_grad=True)
+c = a + b  # ← This triggers the autograd system
+```
+
+**What happens internally**:
+
+1. The `+` operator is dispatched to the autograd system
+2. PyTorch checks: "Do any inputs require gradients?"
+3. Since both `a` and `b` have `requires_grad=True`, a backward node is created
+
+#### Step 2: Node Creation
+
+```cpp
+// Generated by tools/autograd/gen_variable_type.py
+// Simplified version of what gets generated
+
+Tensor add_impl(const Tensor& a, const Tensor& b) {
+  // Check if we need to track gradients
+  if (a.requires_grad() || b.requires_grad()) {
+    // Create backward node
+    auto grad_fn = std::make_shared<AddBackward0>();
+
+    // Collect edges from input tensors
+    auto next_edges = collect_next_edges({a, b});
+    grad_fn->set_next_edges(std::move(next_edges));
+
+    // Store input metadata
+    grad_fn->add_input_metadata(a);
+    grad_fn->add_input_metadata(b);
+
+    // Compute forward result
+    auto result = a + b;  // Actual computation
+
+    // Connect result to grad_fn
+    set_history(result, grad_fn);
+
+    return result;
+  } else {
+    // No gradients needed, just compute
+    return a + b;
+  }
+}
+```
+
+#### Step 3: Metadata Storage
+
+```cpp
+// From torch/csrc/autograd/functions/utils.h (lines 66-91)
+void set_history(Tensor& output, std::shared_ptr<Node> grad_fn) {
+  // 1. Add input metadata to grad_fn
+  // (already done in add_input_metadata calls)
+
+  // 2. Create edge from output to grad_fn
+  Edge edge(grad_fn, 0);  // output_nr = 0
+
+  // 3. Set output tensor's grad_fn
+  output.grad_fn_ = grad_fn;
+  output.output_nr_ = 0;
+
+  // 4. Mark that output requires gradients
+  output.requires_grad_ = true;
+}
+```
+
+#### Step 4: Graph Connectivity
+
+After `c = a + b`, the graph looks like:
+
+```
+a (AccumulateGrad)
+  └─ next_edges: [Edge(AddBackward0, 0)]
+
+b (AccumulateGrad)
+  └─ next_edges: [Edge(AddBackward0, 1)]
+
+AddBackward0
+  ├─ input_metadata: [a's info, b's info]
+  ├─ next_edges: [Edge(AccumulateGrad_a, 0), Edge(AccumulateGrad_b, 0)]
+  └─ apply(grad_c): returns [grad_c, grad_c]
+
+c (output of AddBackward0)
+  ├─ grad_fn: AddBackward0
+  ├─ output_nr: 0
+  └─ requires_grad: true
+```
+
+### Complete Example: Building a Multi-Operation Graph
+
+```python
+# Python code
+a = torch.tensor([1.0, 2.0], requires_grad=True)
+b = torch.tensor([3.0, 4.0], requires_grad=True)
+
+c = a + b      # Creates AddBackward0
+d = c * 2      # Creates MulBackward0
+e = d.sum()    # Creates SumBackward0
+```
+
+**Graph Structure**:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Forward Pass Graph                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  a (AccumulateGrad)                                         │
+│    └─ next_edges: [Edge(AddBackward0, 0)]                  │
+│                                                             │
+│  b (AccumulateGrad)                                         │
+│    └─ next_edges: [Edge(AddBackward0, 1)]                  │
+│                                                             │
+│  AddBackward0 (c = a + b)                                   │
+│    ├─ input_metadata: [a, b]                               │
+│    ├─ next_edges: [Edge(MulBackward0, 0)]                  │
+│    └─ apply(grad_c): [grad_c, grad_c]                      │
+│                                                             │
+│  MulBackward0 (d = c * 2)                                   │
+│    ├─ input_metadata: [c, scalar(2)]                       │
+│    ├─ next_edges: [Edge(SumBackward0, 0)]                  │
+│    └─ apply(grad_d): [grad_d * 2, grad_d * c.sum()]        │
+│                                                             │
+│  SumBackward0 (e = d.sum())                                 │
+│    ├─ input_metadata: [d]                                  │
+│    ├─ next_edges: [Edge(GraphRoot, 0)]                     │
+│    └─ apply(grad_e): [grad_e * ones_like(d)]               │
+│                                                             │
+│  GraphRoot (backward entry point)                           │
+│    └─ Receives final gradients                             │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2.2 Executing a Simple Graph
+
+### Step-by-Step: Backward Pass
+
+Now let's trace through `e.backward()`:
+
+#### Step 1: Backward Initiation
+
+```python
+# Python code
+e.backward()
+```
+
+**What happens internally**:
+
+```cpp
+// From torch/csrc/autograd/engine.cpp
+void backward(Tensor& self, ...) {
+  // 1. Get the grad_fn from the tensor
+  auto grad_fn = self.grad_fn_;  // SumBackward0
+
+  // 2. Create root edges
+  std::vector<Edge> root_edges;
+  root_edges.push_back(Edge(grad_fn, 0));
+
+  // 3. Call engine to execute backward
+  Engine::get_default_engine().execute(
+    root_edges,
+    {Tensor(1.0)},  // Initial gradient
+    ...
+  );
+}
+```
+
+#### Step 2: GraphTask Creation
+
+```cpp
+// From torch/csrc/autograd/engine.cpp
+std::unique_ptr<GraphTask> task = std::make_unique<GraphTask>(
+  graph_roots,
+  keep_graph,
+  create_graph,
+  ...
+);
+```
+
+**GraphTask contains**:
+- `dependencies_`: Map of node → incoming edge count
+- `not_ready_`: Nodes waiting for inputs
+- `nodes_in_graph_`: All nodes in execution
+- `graph_roots_`: Entry points (SumBackward0)
+
+#### Step 3: Dependency Computation
+
+```cpp
+// From torch/csrc/autograd/engine.cpp (lines 1250-1278)
+void compute_dependencies(Node* root, GraphTask& task) {
+  std::vector<Node*> queue{root};
+
+  while (!queue.empty()) {
+    auto fn = queue.back();
+    queue.pop_back();
+
+    // For each outgoing edge
+    for (const auto& edge : fn->next_edges()) {
+      if (auto next_ptr = edge.function.get()) {
+        // Increment dependency count
+        task.dependencies_[next_ptr] += 1;
+
+        // Add to graph if new
+        if (task.nodes_in_graph_.insert(next_ptr).second) {
+          queue.push_back(next_ptr);
+        }
+      }
+    }
+  }
+}
+```
+
+**Result**: `dependencies_` map:
+```
+SumBackward0 → 1 (from GraphRoot)
+MulBackward0 → 1 (from SumBackward0)
+AddBackward0 → 1 (from MulBackward0)
+AccumulateGrad_a → 1 (from AddBackward0)
+AccumulateGrad_b → 1 (from AddBackward0)
+```
+
+#### Step 4: Ready Queue Initialization
+
+```cpp
+// Priority queue ordered by sequence_nr (higher = earlier)
+std::priority_queue<NodeTask> ready_queue;
+
+// Add root nodes
+for (const auto& edge : graph_roots) {
+  ready_queue.push(NodeTask(edge.function.get(), ...));
+}
+```
+
+#### Step 5: Topological Execution
+
+```cpp
+// From torch/csrc/autograd/engine.cpp (lines 524-600, simplified)
+while (!ready_queue.empty()) {
+  // 1. Pop highest priority node
+  NodeTask task = ready_queue.top();
+  ready_queue.pop();
+
+  auto fn = task.fn;
+  auto inputs = task.inputs_;
+
+  // 2. Execute node.apply(gradients)
+  auto outputs = fn->apply(std::move(inputs));
+
+  // 3. Process outputs
+  for (size_t i = 0; i < fn->next_edges().size(); ++i) {
+    const auto& edge = fn->next_edges()[i];
+    Node* next_ptr = edge.function.get();
+
+    if (!next_ptr) continue;
+
+    // 4. Add gradient to InputBuffer
+    auto& input_buffer = graph_task->not_ready_[next_ptr];
+    input_buffer.add(edge.input_nr, outputs[i]);
+
+    // 5. Decrement dependency count
+    auto it = graph_task->dependencies_.find(next_ptr);
+    if (--it->second == 0) {
+      // All inputs ready, queue for execution
+      ready_queue.push(NodeTask(next_ptr, ...));
+    }
+  }
+}
+```
+
+### Execution Trace: e.backward()
+
+Let's trace the actual execution:
+
+```
+Initial: ready_queue = [SumBackward0]
+
+Step 1: Execute SumBackward0
+  Input: grad_e = 1.0
+  Output: grad_d = 1.0 * ones_like(d) = [1.0, 1.0]
+  Next: MulBackward0
+  Action: Decrement dependencies[MulBackward0] → 0, queue it
+
+Step 2: Execute MulBackward0
+  Input: grad_d = [1.0, 1.0]
+  Output: [grad_d * 2, grad_d * c.sum()]
+         = [[2.0, 2.0], 4.0]
+  Next: AddBackward0
+  Action: Decrement dependencies[AddBackward0] → 0, queue it
+
+Step 3: Execute AddBackward0
+  Input: grad_c = [2.0, 2.0]
+  Output: [grad_c, grad_c] = [[2.0, 2.0], [2.0, 2.0]]
+  Next: AccumulateGrad_a, AccumulateGrad_b
+  Action: Queue both
+
+Step 4: Execute AccumulateGrad_a
+  Input: grad_a = [2.0, 2.0]
+  Action: a.grad += [2.0, 2.0]
+
+Step 5: Execute AccumulateGrad_b
+  Input: grad_b = [2.0, 2.0]
+  Action: b.grad += [2.0, 2.0]
+
+Final: a.grad = [2.0, 2.0], b.grad = [2.0, 2.0]
+```
+
+### Gradient Accumulation in Detail
+
+When multiple paths lead to the same node, gradients are accumulated:
+
+```python
+# Example: Multiple paths to same tensor
+a = torch.tensor([1.0, 2.0], requires_grad=True)
+b = a * 2
+c = a * 3
+d = b + c  # Two paths to a
+loss = d.sum()
+loss.backward()
+```
+
+**Graph**:
+```
+a (AccumulateGrad)
+  ├─ next_edges: [Edge(MulBackward0_2x, 0)]
+  └─ next_edges: [Edge(MulBackward0_3x, 0)]
+
+MulBackward0_2x (b = a * 2)
+  └─ next_edges: [Edge(AddBackward0, 0)]
+
+MulBackward0_3x (c = a * 3)
+  └─ next_edges: [Edge(AddBackward0, 1)]
+
+AddBackward0 (d = b + c)
+  └─ next_edges: [Edge(SumBackward0, 0)]
+```
+
+**Backward execution**:
+```
+SumBackward0 → grad_d = [1.0, 1.0]
+
+AddBackward0 receives grad_d:
+  ├─ Sends [1.0, 1.0] to MulBackward0_2x
+  └─ Sends [1.0, 1.0] to MulBackward0_3x
+
+MulBackward0_2x receives [1.0, 1.0]:
+  └─ Sends [2.0, 2.0] to AccumulateGrad_a
+
+MulBackward0_3x receives [1.0, 1.0]:
+  └─ Sends [3.0, 3.0] to AccumulateGrad_a
+
+AccumulateGrad_a receives both:
+  ├─ First: a.grad = [2.0, 2.0]
+  └─ Then: a.grad += [3.0, 3.0] = [5.0, 5.0]
+
+Final: a.grad = [5.0, 5.0]  ✓ Correct!
+```
+
+---
+
+# PART 3: ADVANCED TOPICS
+
+## 3.1 Autograd System
+
+### Complete Autograd Infrastructure
+
+**Files**:
+- `torch/csrc/autograd/engine.h/cpp` - Core backward execution
+- `torch/csrc/autograd/autograd.cpp` - Dispatch system
+- `torch/csrc/autograd/grad_mode.h/cpp` - Gradient computation control
+- `torch/csrc/autograd/anomaly_mode.h/cpp` - Anomaly detection
+
+### Engine Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Autograd Engine                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Engine::execute()                                          │
+│  ├─ Create GraphTask                                        │
+│  ├─ compute_dependencies()                                  │
+│  ├─ Initialize ready_queue                                 │
+│  ├─ execute_graph_task()                                    │
+│  │  ├─ While ready_queue not empty:                         │
+│  │  │  ├─ Pop highest priority node                         │
+│  │  │  ├─ Execute node.apply()                              │
+│  │  │  ├─ Accumulate gradients                              │
+│  │  │  └─ Queue ready nodes                                 │
+│  │  └─ Return gradients                                     │
+│  └─ Clean up                                                │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Execution Priority
+
+Nodes are executed in this order:
+
+1. **Shutdown tasks** (highest priority)
+2. **Lower reentrant_depth** (nested backward)
+3. **Higher sequence_nr** (later operations first)
+4. **Regular tasks** (lowest priority)
+
+This ensures **reverse topological order** execution.
+
+### Multi-threaded Execution
+
+```cpp
+// From torch/csrc/autograd/engine.cpp
+class Engine {
+  std::vector<std::thread> worker_threads_;
+  std::vector<std::queue<NodeTask>> thread_local_ready_queues_;
+
+  void thread_main(std::shared_ptr<GraphTask> graph_task) {
+    while (graph_task && !graph_task->completed()) {
+      NodeTask task = local_ready_queue->pop();
+
+      // Execute node
+      auto outputs = task.fn->apply(task.inputs_);
+
+      // Distribute outputs to next nodes
+      for (const auto& edge : task.fn->next_edges()) {
+        // Add to appropriate thread's queue
+        distribute_to_thread(edge, outputs);
+      }
+    }
+  }
+};
+```
+
+### Gradient Mode Control
+
+**File**: `torch/csrc/autograd/grad_mode.h`
+
+```cpp
+// Disable gradient computation
+{
+  torch::NoGradGuard no_grad;
+  // Operations here don't build graph
+  c = a + b;  // No grad_fn created
+}
+
+// Enable gradient computation
+{
+  torch::GradMode::set_enabled(true);
+  c = a + b;  // grad_fn created
+}
+```
+
+### Anomaly Detection
+
+**File**: `torch/csrc/autograd/anomaly_mode.h`
+
+```cpp
+// Enable anomaly detection
+torch::autograd::AnomalyMode::set_enabled(true);
+
+// Now backward pass will:
+// 1. Record stack traces
+// 2. Detect NaN/Inf gradients
+// 3. Print helpful error messages
+```
+
+---
+
+## 3.2 Custom Functions
+
+### autograd.Function
+
+**File**: `torch/csrc/autograd/custom_function.h/cpp`
+
+Custom functions allow you to define custom forward and backward operations:
+
+```python
+import torch
+from torch.autograd import Function
+
+class CustomAdd(Function):
+    @staticmethod
+    def forward(ctx, a, b):
+        # Save tensors for backward
+        ctx.save_for_backward(a, b)
+        return a + b
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        a, b = ctx.saved_tensors
+        # Compute gradients
+        grad_a = grad_output
+        grad_b = grad_output
+        return grad_a, grad_b
+
+# Use it
+a = torch.tensor([1.0, 2.0], requires_grad=True)
+b = torch.tensor([3.0, 4.0], requires_grad=True)
+c = CustomAdd.apply(a, b)
+```
+
+### Implementation Details
+
+```cpp
+// C++ implementation
+class CppNode : public Node {
+  PyObject* forward_fn_;
+  PyObject* backward_fn_;
+
+  variable_list apply(variable_list&& inputs) override {
+    // Call Python backward function
+    return call_backward_fn(inputs);
+  }
+};
+```
+
+---
+
+## 3.3 Hooks and Callbacks
+
+### Function Hooks
+
+**Files**:
+- `torch/csrc/autograd/function_hook.h` - Hook interface
+- `torch/csrc/autograd/python_hook.h/cpp` - Python hooks
+
+#### Pre-Hooks
+
+Execute before node.apply():
+
+```python
+def my_pre_hook(grad_inputs):
+    print(f"Incoming gradients: {grad_inputs}")
+    return grad_inputs
+
+node.register_pre_hook(my_pre_hook)
+```
+
+#### Post-Hooks
+
+Execute after node.apply():
+
+```python
+def my_post_hook(grad_inputs, grad_outputs):
+    print(f"Outgoing gradients: {grad_outputs}")
+    return grad_outputs
+
+node.register_post_hook(my_post_hook)
+```
+
+### Tensor Hooks
+
+**File**: `torch/nn/modules/module.py`
+
+```python
+# Register backward hook on tensor
+def my_hook(grad):
+    print(f"Gradient: {grad}")
+    return grad
+
+tensor.register_hook(my_hook)
+```
+
+---
+
+## 3.4 JIT/TorchScript Graphs
+
+### Static Graph Compilation
+
+**Files**:
+- `torch/csrc/jit/ir/ir.h/cpp` - JIT IR definition
+- `torch/csrc/jit/runtime/autodiff.cpp` - JIT autodiff
+
+JIT compiles Python code to a static graph:
+
+```python
+@torch.jit.script
+def add_mul(a: Tensor, b: Tensor) -> Tensor:
+    c = a + b
+    d = c * 2
+    return d
+```
+
+### JIT IR Structure
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    JIT IR Graph                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Graph                                                      │
+│  ├─ Blocks (basic blocks)                                   │
+│  │  ├─ Nodes (operations)                                   │
+│  │  │  ├─ Values (inputs/outputs)                           │
+│  │  │  └─ Attributes                                        │
+│  │  └─ Return values                                        │
+│  └─ Type information                                        │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### JIT Autodiff
+
+```cpp
+// From torch/csrc/jit/runtime/autodiff.cpp
+Graph* differentiate(Graph* graph) {
+  // 1. Traverse forward graph
+  // 2. Create backward graph
+  // 3. Apply optimizations
+  return backward_graph;
+}
+```
+
+---
+
+## 3.5 AOT Autograd
+
+### Ahead-of-Time Autograd Compilation
+
+**Files**:
+- `torch/_functorch/aot_autograd.py` - AOT interface
+- `torch/_functorch/_aot_autograd/graph_compile.py` - Compilation
+- `torch/_functorch/_aot_autograd/graph_capture.py` - Graph capture
+
+AOT autograd compiles the backward pass ahead of time:
+
+```python
+from torch._functorch.aot_autograd import aot_function
+
+def forward(a, b):
+    return a + b
+
+def backward(grad_output):
+    return grad_output, grad_output
+
+compiled_fn = aot_function(forward, backward)
+```
+
+### Benefits
+
+- **Compile-time optimization**: Backward pass optimized before execution
+- **Reduced overhead**: No runtime graph building
+- **Better fusion**: More aggressive optimization opportunities
+
+---
+
+## 3.6 Graph Optimization
+
+### Optimization Passes
+
+**Files**:
+- `torch/csrc/jit/passes/dead_code_elimination.cpp` - Remove unused nodes
+- `torch/csrc/jit/passes/common_subexpression_elimination.cpp` - Remove duplicates
+- `torch/csrc/jit/passes/graph_fuser.cpp` - Fuse operations
+
+#### Dead Code Elimination (DCE)
+
+```
+Before:
+  a = x + y
+  b = x * y
+  c = a + b
+  return c
+
+After:
+  a = x + y
+  b = x * y
+  c = a + b
+  return c
+
+(No change - all code is used)
+```
+
+#### Common Subexpression Elimination (CSE)
+
+```
+Before:
+  a = x + y
+  b = x + y
+  c = a + b
+  return c
+
+After:
+  a = x + y
+  c = a + a
+  return c
+
+(Removed duplicate x + y)
+```
+
+#### Graph Fusion
+
+```
+Before:
+  a = x + y
+  b = a * 2
+  c = b + 1
+  return c
+
+After:
+  c = (x + y) * 2 + 1
+  return c
+
+(Fused into single operation)
+```
+
+---
+
+## 3.7 Profiling and Debugging
+
+### Sequence Numbers
+
+**File**: `aten/src/ATen/SequenceNumber.h/cpp`
+
+Thread-local monotonically increasing counter for execution priority:
+
+```cpp
+// Get current sequence number
+uint64_t seq_nr = at::sequence_number::get_and_increment();
+
+// Peek without incrementing
+uint64_t current = at::sequence_number::peek();
+```
+
+### Record Function
+
+**File**: `aten/src/ATen/record_function.cpp`
+
+Record function execution for profiling:
+
+```python
+import torch
+from torch.profiler import profile, record_function
+
+with profile(activities=[...]) as prof:
+    with record_function("my_operation"):
+        c = a + b
+```
+
+### Profiling Record
+
+**File**: `torch/csrc/jit/runtime/profiling_record.h/cpp`
+
+Instrument graph with profiling information:
+
+```cpp
+class ProfilingRecord {
+  std::vector<int64_t> execution_counts_;
+  std::vector<int64_t> execution_times_;
+
+  void record_execution(Node* node, int64_t time) {
+    execution_times_[node->id()] = time;
+  }
+};
+```
+
+### Debugging Utilities
+
+**Files**:
+- `torch/_lazy/debug.py` - Lazy tensor debugging
+- `torch/_inductor/debug.py` - Inductor debugging
+- `torch/_dynamo/debug_utils.py` - TorchDynamo debugging
+
+```python
+# Visualize graph
+from torch._lazy.debug import render_ir_graph
+render_ir_graph(graph, "graph.png")
+
+# Dump IR
+from torch._lazy.debug import dump_ir
+dump_ir(graph)
+```
+
+---
+
+# COMPLETE FILE INVENTORY
+
+## 1. GRAPH STRUCTURE COMPONENTS (8 files)
+
+#### Core Node and Edge Definitions
+
+**torch/csrc/autograd/function.h**
+- **Purpose**: Node class definition for autograd graph
+- **Key Components**: 
+  - `Node` struct (lines 113-792)
+  - `sequence_nr_`: Execution priority
+  - `topological_nr_`: Ensures correct ordering
+  - `next_edges_`: Outgoing edges to next nodes
+  - `input_metadata_`: Tensor shape, dtype, device info
+- **Dependencies**: edge.h, input_metadata.h
+
+**torch/csrc/autograd/function.cpp**
+- **Purpose**: Node implementation and lifecycle management
+- **Key Functions**: `deleteNode()`, `gatherFunctions()`, node memory management
+- **Dependencies**: function.h, variable.h
+
+**torch/csrc/autograd/edge.h**
+- **Purpose**: Edge structure connecting nodes
+- **Key Components**: 
+  - `Edge` struct (lines 1-57)
+  - `function`: Target node pointer
+  - `input_nr`: Which input of target node
+- **Dependencies**: None (minimal)
+
+**torch/csrc/autograd/function_hook.h**
+- **Purpose**: Hook interface for intercepting node execution
+- **Key Components**: `FunctionPreHook`, `FunctionPostHook` base classes
+- **Dependencies**: None
+
+#### Graph Execution Metadata
+
+**torch/csrc/autograd/graph_task.h**
+- **Purpose**: Metadata for single backward execution
+- **Key Components** (lines 17-230):
+  - `outstanding_tasks_`: Atomic counter
+  - `dependencies_`: Map of node → incoming edge count
+  - `not_ready_`: Nodes waiting for inputs
+  - `nodes_in_graph_`: All nodes in execution
+  - `graph_roots_`: Entry points for backward
+- **Dependencies**: edge.h, input_buffer.h
+
+**torch/csrc/autograd/input_buffer.h**
+- **Purpose**: Gradient accumulation for node inputs
+- **Key Components**: `InputBuffer` class
+- **Algorithm**: 
+  1. Initialize buffer with size = number of inputs
+  2. For each incoming gradient, add to buffer slot
+  3. When all inputs ready, sum all gradients
+  4. Return accumulated gradient
+- **Dependencies**: variable.h
+
+**torch/csrc/autograd/input_buffer.cpp**
+- **Purpose**: InputBuffer implementation
+- **Key Functions**: Gradient summation, buffer management
+- **Dependencies**: input_buffer.h
+
+**torch/csrc/autograd/input_metadata.h**
+- **Purpose**: Store tensor metadata (shape, dtype, device, stream)
+- **Key Components**: `InputMetadata` struct
+- **Dependencies**: None
+
+**torch/csrc/autograd/input_metadata.cpp**
+- **Purpose**: InputMetadata implementation
+- **Dependencies**: input_metadata.h
+
+#### Tensor Autograd Metadata
+
+**torch/csrc/autograd/variable.h**
+- **Purpose**: Tensor autograd metadata and grad_fn management
+- **Key Components**:
+  - `grad_fn_`: Backward node for tensor
+  - `grad_`: Accumulated gradient
+  - `requires_grad_`: Whether to compute gradients
+  - `is_leaf_`: Whether leaf tensor
+  - `retains_grad_`: Retain gradient for non-leaf
+- **Key Functions**: `grad_fn()`, `set_grad_fn()`, `rebase_history()`
+- **Dependencies**: edge.h
+
+**torch/csrc/autograd/variable.cpp**
+- **Purpose**: Variable implementation
+- **Key Functions** (lines 213-344):
+  - `rebase_history()`: Update grad_fn after in-place op
+  - `set_gradient_edge()`: Set gradient edge on tensor
+  - `grad_fn_unsafe()`: Get raw grad_fn pointer
+  - `bump_version()`: Increment version counter
+- **Dependencies**: variable.h, function.h
+
+**torch/csrc/autograd/variable_info.h**
+- **Purpose**: Variable information storage
+- **Key Components**: `VariableInfo` struct
+- **Dependencies**: None
+
+**torch/csrc/autograd/variable_info.cpp**
+- **Purpose**: VariableInfo implementation
+- **Dependencies**: variable_info.h
+
+**torch/csrc/autograd/saved_variable.h**
+- **Purpose**: Wrapper for tensors saved during forward pass
+- **Key Components**: `SavedVariable` class
+- **Dependencies**: variable.h
+
+**torch/csrc/autograd/saved_variable.cpp**
+- **Purpose**: SavedVariable implementation
+- **Dependencies**: saved_variable.h
+
+**c10/core/TensorImpl.cpp**
+- **Purpose**: Core tensor implementation with autograd metadata
+- **Key Functions**: `mutable_grad()`, `_fw_grad()`, `_set_fw_grad()`
+- **Dependencies**: AutogradMeta interface
+
+**torch/autograd/graph.py**
+- **Purpose**: Python graph interface
+- **Key Components**: `Node` abstract class, hook registration
+- **Dependencies**: torch._C._functions
+
+---
+
+### 2. GRAPH CREATION (FORWARD PASS) - 12 files
+
+#### Graph Building Core
+
+**torch/csrc/autograd/functions/utils.h**
+- **Purpose**: Critical graph building utilities
+- **Key Functions** (lines 66-91):
+  - `set_history()`: Connects tensors to grad_fn
+  - `collect_next_edges()`: Gathers edges from input tensors
+- **Algorithm**:
+  ```
+  set_history(tensor, grad_fn):
+    1. Add input metadata to grad_fn
+    2. Set gradient edge on output tensor
+    3. Store output_nr for tracking
+  ```
+- **Dependencies**: function.h, edge.h
+
+**torch/csrc/autograd/functions/utils.cpp**
+- **Purpose**: Utils implementation
+- **Dependencies**: utils.h
+
+**torch/csrc/autograd/VariableTypeUtils.h**
+- **Purpose**: Variable type utilities for graph building
+- **Key Functions**: `rebase_history()` for in-place operations
+- **Dependencies**: variable.h, function.h
+
+#### Operation Node Types
+
+**torch/csrc/autograd/functions/basic_ops.h**
+- **Purpose**: Basic operation nodes
+- **Key Components**: `GraphRoot`, `Error` nodes
+- **Dependencies**: function.h
+
+**torch/csrc/autograd/functions/basic_ops.cpp**
+- **Purpose**: Basic ops implementation
+- **Dependencies**: basic_ops.h
+
+**torch/csrc/autograd/functions/accumulate_grad.h**
+- **Purpose**: Leaf gradient accumulation node
+- **Key Components**: `AccumulateGrad` (accumulates into parameter.grad)
+- **Dependencies**: function.h
+
+**torch/csrc/autograd/functions/accumulate_grad.cpp**
+- **Purpose**: AccumulateGrad implementation
+- **Dependencies**: accumulate_grad.h
+
+**torch/csrc/autograd/functions/tensor.h**
+- **Purpose**: Tensor operation backward nodes
+- **Key Components**: Operation-specific backward implementations
+- **Dependencies**: function.h
+
+**torch/csrc/autograd/functions/tensor.cpp**
+- **Purpose**: Tensor ops implementation
+- **Dependencies**: tensor.h
+
+**torch/csrc/autograd/functions/comm.h**
+- **Purpose**: Communication operation nodes
+- **Key Components**: Distributed operation backward nodes
+- **Dependencies**: function.h
+
+**torch/csrc/autograd/functions/comm.cpp**
+- **Purpose**: Comm ops implementation
+- **Dependencies**: comm.h
+
+#### Custom Function Support
+
+**torch/csrc/autograd/custom_function.h**
+- **Purpose**: Custom autograd.Function support
+- **Key Components**: `CppNode`, `apply()` wrapper
+- **Dependencies**: function.h
+
+**torch/csrc/autograd/custom_function.cpp**
+- **Purpose**: Custom function implementation
+- **Key Functions**: User-defined backward logic
+- **Dependencies**: custom_function.h
+
+**torch/csrc/autograd/python_function.cpp**
+- **Purpose**: Python Function support
+- **Key Functions** (lines 1292-1350): Python `autograd.Function` integration
+- **Dependencies**: custom_function.h
+
+#### Dispatch and Autograd Integration
+
+**torch/csrc/autograd/autograd.cpp**
+- **Purpose**: Autograd system core
+- **Key Functions** (lines 90-203): Dispatch interception, node creation
+- **Dependencies**: function.h, variable.h
+
+**torch/csrc/autograd/VariableTypeManual.cpp**
+- **Purpose**: Manual variable type operations
+- **Key Functions**: Forward AD, view operations
+- **Dependencies**: variable.h, function.h
+
+**torch/csrc/autograd/autograd_not_implemented_fallback.cpp**
+- **Purpose**: Fallback for unimplemented operations
+- **Key Components**: `WarnNotImplemented` node creation
+- **Dependencies**: function.h
+
+#### Code Generation
+
+**tools/autograd/gen_variable_type.py**
+- **Purpose**: Autograd code generator
+- **Key Functions**: Generates backward node creation code
+- **Output**: Generated VariableType implementations
+- **Dependencies**: None (code generator)
+
+---
+
+### 3. GRAPH EXECUTION (BACKWARD PASS) - 8 files
+
+#### Backward Engine
+
+**torch/csrc/autograd/engine.h**
+- **Purpose**: Engine interface definition
+- **Key Components**: `Engine` class, `execute()` method
+- **Dependencies**: graph_task.h, edge.h
+
+**torch/csrc/autograd/engine.cpp**
+- **Purpose**: Core backward execution engine
+- **Key Functions** (lines 1288-1380):
+  - `Engine::execute()`: Main backward execution
+  - `compute_dependencies()`: Graph traversal, dependency counting
+  - `execute_graph_task()`: Topological execution
+  - `thread_main()`: Worker thread execution
+- **Algorithm**:
+  ```
+  execute():
+    1. Create GraphTask with execution metadata
+    2. Create GraphRoot node
+    3. compute_dependencies() - traverse graph, count edges
+    4. Initialize ready_queue with GraphRoot
+    5. While ready_queue not empty:
+       - Pop highest priority node (by sequence_nr)
+       - Execute node.apply(gradients)
+       - Accumulate outputs in InputBuffer
+       - Decrement dependency count
+       - Queue ready nodes
+    6. Return gradients
+  ```
+- **Dependencies**: graph_task.h, input_buffer.h, function.h
+
+**torch/csrc/autograd/python_engine.h**
+- **Purpose**: Python engine wrapper
+- **Dependencies**: engine.h
+
+**torch/csrc/autograd/python_engine.cpp**
+- **Purpose**: Python-C++ bridge for backward
+- **Dependencies**: python_engine.h, engine.h
+
+#### Gradient Mode Control
+
+**torch/csrc/autograd/grad_mode.h**
+- **Purpose**: Gradient computation control
+- **Key Components**: `GradMode`, `no_grad()` context
+- **Dependencies**: None
+
+**torch/csrc/autograd/grad_mode.cpp**
+- **Purpose**: GradMode implementation
+- **Dependencies**: grad_mode.h
+
+**torch/csrc/autograd/InferenceMode.h**
+- **Purpose**: Inference mode (disables autograd)
+- **Key Components**: `InferenceMode` context manager
+- **Dependencies**: None
+
+#### Anomaly Detection
+
+**torch/csrc/autograd/anomaly_mode.h**
+- **Purpose**: Anomaly detection interface
+- **Key Components**: `AnomalyMode` class
+- **Dependencies**: None
+
+**torch/csrc/autograd/anomaly_mode.cpp**
+- **Purpose**: Anomaly detection implementation
+- **Key Functions**: Stack trace recording, error detection
+- **Dependencies**: anomaly_mode.h
+
+---
+
+### 4. HOOKS AND CALLBACKS - 7 files
+
+#### Function Hooks
+
+**torch/csrc/autograd/function_hook.h**
+- **Purpose**: Hook base classes
+- **Key Components**: `FunctionPreHook`, `FunctionPostHook`
+- **Dependencies**: None
+
+**torch/csrc/autograd/cpp_hook.h**
+- **Purpose**: C++ hook implementations
+- **Key Components**: `CppFunctionTensorPreHook`, `CppFunctionPostHook`
+- **Dependencies**: function_hook.h
+
+**torch/csrc/autograd/python_hook.h**
+- **Purpose**: Python hook implementations
+- **Key Components**: `PyFunctionPreHook`, `PyFunctionPostHook`
+- **Dependencies**: function_hook.h
+
+**torch/csrc/autograd/python_hook.cpp**
+- **Purpose**: Python hook execution
+- **Dependencies**: python_hook.h
+
+#### Tensor Hooks
+
+**torch/_tensor.py**
+- **Purpose**: Tensor hook registration interface
+- **Key Functions**: `register_hook()`, `register_post_accumulate_grad_hook()`
+- **Dependencies**: torch.utils.hooks
+
+**torch/utils/hooks.py**
+- **Purpose**: Hook utilities
+- **Key Components**: `BackwardHook`, `RemovableHandle`
+- **Dependencies**: None
+
+#### Module Hooks
+
+**torch/nn/modules/module.py**
+- **Purpose**: Module hook registration
+- **Key Functions**: `register_forward_hook()`, `register_backward_hook()`
+- **Dependencies**: torch.utils.hooks
+
+---
+
+### 5. JIT/TORCHSCRIPT GRAPH INFRASTRUCTURE - 12 files
+
+#### JIT IR (Intermediate Representation)
+
+**torch/csrc/jit/ir/ir.h**
+- **Purpose**: JIT graph structure definition
+- **Key Components**: `Graph`, `Node`, `Value`, `Block`
+- **Dependencies**: None
+
+**torch/csrc/jit/ir/ir.cpp**
+- **Purpose**: JIT IR implementation
+- **Key Functions**: Graph construction, node management
+- **Dependencies**: ir.h
+
+**torch/csrc/jit/ir/irparser.h**
+- **Purpose**: IR parser interface
+- **Key Functions**: `parseIR()`
+- **Dependencies**: ir.h
+
+**torch/csrc/jit/ir/irparser.cpp**
+- **Purpose**: IR parser implementation
+- **Key Functions**: Parse IR strings to graphs
+- **Dependencies**: irparser.h
+
+#### JIT Autodiff
+
+**torch/csrc/jit/runtime/autodiff.cpp**
+- **Purpose**: JIT autodiff implementation
+- **Key Functions** (lines 835-852): `differentiate()`, gradient graph generation
+- **Dependencies**: ir.h
+
+#### JIT Graph Passes
+
+**torch/csrc/jit/passes/dead_code_elimination.h**
+- **Purpose**: Dead code elimination interface
+- **Key Functions**: `EliminateDeadCode()`
+- **Dependencies**: ir.h
+
+**torch/csrc/jit/passes/dead_code_elimination.cpp**
+- **Purpose**: DCE implementation
+- **Key Functions**: Remove unused nodes
+- **Dependencies**: dead_code_elimination.h
+
+**torch/csrc/jit/passes/common_subexpression_elimination.h**
+- **Purpose**: CSE interface
+- **Key Functions**: `EliminateCommonSubexpression()`
+- **Dependencies**: ir.h
+
+**torch/csrc/jit/passes/common_subexpression_elimination.cpp**
+- **Purpose**: CSE implementation
+- **Key Functions**: Remove duplicate computations
+- **Dependencies**: common_subexpression_elimination.h
+
+**torch/csrc/jit/passes/graph_fuser.h**
+- **Purpose**: Graph fusion interface
+- **Key Functions**: `FuseGraph()`
+- **Dependencies**: ir.h
+
+**torch/csrc/jit/passes/graph_fuser.cpp**
+- **Purpose**: Graph fusion implementation
+- **Key Functions** (lines 1255-1266): Fuse operations into groups
+- **Dependencies**: graph_fuser.h
+
+**torch/csrc/jit/passes/tensorexpr_fuser.cpp**
+- **Purpose**: TensorExpr fusion
+- **Key Functions**: `FuseTensorExprs()`
+- **Dependencies**: ir.h
+
+**torch/csrc/jit/passes/eliminate_no_ops.cpp**
+- **Purpose**: No-op elimination
+- **Key Functions**: Remove identity operations
+- **Dependencies**: ir.h
+
+**torch/csrc/jit/passes/frozen_graph_optimizations.cpp**
+- **Purpose**: Frozen graph optimization
+- **Key Functions**: `OptimizeFrozenGraph()`
+- **Dependencies**: ir.h
+
+**torch/csrc/jit/OVERVIEW.md**
+- **Purpose**: JIT architecture documentation
+- **Dependencies**: None
+
+---
+
+### 6. FUNCTIONAL TRANSFORMATION (AOT AUTOGRAD) - 3 files
+
+**torch/_functorch/aot_autograd.py**
+- **Purpose**: AOT autograd interface
+- **Key Functions**: `aot_function()`, `aot_module_simplified()`
+- **Dependencies**: graph_compile.py, graph_capture.py
+
+**torch/_functorch/_aot_autograd/graph_compile.py**
+- **Purpose**: Graph compilation
+- **Key Functions** (lines 1866-1883): `aot_stage2_autograd()`, joint graph generation
+- **Dependencies**: graph_capture.py
+
+**torch/_functorch/_aot_autograd/graph_capture.py**
+- **Purpose**: Graph capture
+- **Key Functions** (lines 362-374): `aot_dispatch_autograd_graph()`
+- **Dependencies**: aot_autograd.py
+
+---
+
+### 7. FX GRAPH TRANSFORMATION - 4 files
+
+**torch/fx/__init__.py**
+- **Purpose**: FX framework
+- **Key Components**: Symbolic tracing, graph IR
+- **Dependencies**: None
+
+**torch/_inductor/fx_passes/joint_graph.py**
+- **Purpose**: Joint graph passes
+- **Key Functions**: `joint_graph_passes()`
+- **Dependencies**: None
+
+**torch/_inductor/fx_passes/post_grad.py**
+- **Purpose**: Post-grad passes
+- **Key Functions**: `post_grad_passes()`
+- **Dependencies**: None
+
+**torch/_inductor/fx_passes/pre_grad.py**
+- **Purpose**: Pre-grad passes
+- **Key Functions**: `fuse_fx()`
+- **Dependencies**: None
+
+---
+
+### 8. GRAPH SERIALIZATION - 5 files
+
+**torch/nativert/graph/Serialization.h**
+- **Purpose**: Serialization interface
+- **Key Functions**: `jsonToGraph()`
+- **Dependencies**: Graph.h
+
+**torch/nativert/graph/Serialization.cpp**
+- **Purpose**: Serialization implementation
+- **Key Functions**: JSON to graph conversion
+- **Dependencies**: Serialization.h
+
+**torch/csrc/jit/serialization/import_read.h**
+- **Purpose**: JIT import interface
+- **Key Functions**: `readArchiveAndTensors()`
+- **Dependencies**: None
+
+**torch/_export/serde/serialize.py**
+- **Purpose**: Export serialization
+- **Key Components**: `ExportedProgramSerializer`, `GraphModuleDeserializer`
+- **Dependencies**: None
+
+**torch/distributed/checkpoint/state_dict_saver.py**
+- **Purpose**: Checkpoint saving
+- **Key Functions**: `save()`, `async_save()`
+- **Dependencies**: None
+
+---
+
+### 9. GRAPH VISUALIZATION - 4 files
+
+**torch/fx/passes/graph_drawer.py**
+- **Purpose**: FX graph visualization
+- **Key Components**: `FxGraphDrawer` (graphviz rendering)
+- **Dependencies**: pydot
+
+**torch/_functorch/partitioners.py**
+- **Purpose**: Graph drawing utilities
+- **Key Functions**: `draw_graph()`
+- **Dependencies**: graph_drawer.py
+
+**torch/_inductor/debug.py**
+- **Purpose**: Inductor debugging
+- **Key Functions**: `draw_buffers()`, graph visualization
+- **Dependencies**: None
+
+**tools/experimental/torchfuzz/visualize_graph.py**
+- **Purpose**: Graph visualization
+- **Key Functions**: DOT format rendering
+- **Dependencies**: None
+
+---
+
+### 10. GRAPH DEBUGGING - 4 files
+
+**torch/_lazy/debug.py**
+- **Purpose**: Lazy tensor debugging
+- **Key Functions**: `render_ir_graph()`, `dump_ir()`
+- **Dependencies**: torch._C._lazy
+
+**torch/_dynamo/debug_utils.py**
+- **Purpose**: TorchDynamo debugging
+- **Key Functions**: Graph inspection utilities
+- **Dependencies**: None
+
+**torch/_inductor/runtime/debug_utils.py**
+- **Purpose**: Inductor runtime debugging
+- **Key Functions**: Memory tracking, tensor inspection
+- **Dependencies**: None
+
+**torch/csrc/lazy/core/debug_util.h**
+- **Purpose**: Lazy graph debugging
+- **Key Components**: `DebugUtil` class
+- **Dependencies**: None
+
+---
+
+### 11. PROFILING AND TRACING - 8 files
+
+#### Sequence Numbers
+
+**aten/src/ATen/SequenceNumber.h**
+- **Purpose**: Sequence number interface
+- **Key Functions**: `get_and_increment()`, `peek()`
+- **Algorithm**: Thread-local monotonically increasing counter
+- **Dependencies**: None
+
+**aten/src/ATen/SequenceNumber.cpp**
+- **Purpose**: Sequence number implementation
+- **Key Variables**: `thread_local uint64_t sequence_nr_`
+- **Dependencies**: SequenceNumber.h
+
+#### Record Function
+
+**aten/src/ATen/record_function.cpp**
+- **Purpose**: Record function implementation
+- **Key Functions**: Function recording for profiling
+- **Dependencies**: None
+
+#### JIT Profiling
+
+**torch/csrc/jit/runtime/profiling_record.h**
+- **Purpose**: Profiling record interface
+- **Key Components**: `ProfilingRecord`
+- **Dependencies**: ir.h
+
+**torch/csrc/jit/runtime/profiling_record.cpp**
+- **Purpose**: Profiling implementation
+- **Key Functions**: Graph instrumentation
+- **Dependencies**: profiling_record.h
+
+**torch/csrc/jit/runtime/profiling_graph_executor_impl.cpp**
+- **Purpose**: Profiling executor
+- **Key Functions**: Profiling-guided optimization
+- **Dependencies**: profiling_record.h
+
+#### Execution Tracing
+
+**torch/csrc/profiler/standalone/execution_trace_observer.cpp**
+- **Purpose**: Execution tracing
+- **Key Functions**: Operation recording
+- **Dependencies**: None
+
+**torch/csrc/autograd/profiler_kineto.cpp**
+- **Purpose**: Kineto profiler integration
+- **Key Functions**: Performance profiling
+- **Dependencies**: None
+
+**torch/autograd/profiler.py**
+- **Purpose**: Python profiler interface
+- **Key Functions**: Profiling utilities
+- **Dependencies**: None
+
+**torch/csrc/profiler/README.md**
+- **Purpose**: Profiler documentation
+- **Dependencies**: None
+
+---
+
+### 12. LAZY TENSOR GRAPH EXECUTION - 2 files
+
+**torch/csrc/lazy/core/lazy_graph_executor.cpp**
+- **Purpose**: Lazy graph executor
+- **Key Functions**: `SyncTensorsGraph()`, graph execution
+- **Dependencies**: None
+
+**torch/csrc/lazy/core/debug_util.h**
+- **Purpose**: Lazy debugging
+- **Key Functions**: Graph inspection
+- **Dependencies**: None
+
+---
+
+### 13. INDUCTOR GRAPH SCHEDULING - 3 files
+
+**torch/_inductor/scheduler.py**
+- **Purpose**: Graph scheduling
+- **Key Functions**: `_topological_sort_nodes()`
+- **Dependencies**: None
+
+**torch/_inductor/memory.py**
+- **Purpose**: Memory optimization
+- **Key Functions**: `topological_sort_bfs()`
+- **Dependencies**: None
+
+**torch/_inductor/ir.py**
+- **Purpose**: Inductor IR
+- **Key Components**: TensorBox, Buffer, View representations
+- **Dependencies**: None
+
+---
+
+## Architecture Overview
+
+### System Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     PYTORCH AUTOGRAD SYSTEM                     │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │              FORWARD PASS (Graph Building)              │  │
+│  ├──────────────────────────────────────────────────────────┤  │
+│  │                                                          │  │
+│  │  Operation → Dispatch (VariableTypeManual.cpp)          │  │
+│  │       ↓                                                  │  │
+│  │  gen_variable_type.py (codegen) → Node Creation         │  │
+│  │       ↓                                                  │  │
+│  │  set_history() (utils.h) → Edge Setup                   │  │
+│  │       ↓                                                  │  │
+│  │  Tensor.grad_fn = Node (variable.cpp)                   │  │
+│  │       ↓                                                  │  │
+│  │  InputMetadata Stored (input_metadata.h)                │  │
+│  │                                                          │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                          ↓                                      │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │           GRAPH STRUCTURE (In Memory)                   │  │
+│  ├──────────────────────────────────────────────────────────┤  │
+│  │                                                          │  │
+│  │  Nodes (function.h):                                    │  │
+│  │  ├─ sequence_nr_: Execution priority                    │  │
+│  │  ├─ topological_nr_: Ordering guarantee                 │  │
+│  │  ├─ next_edges_: Outgoing edges                         │  │
+│  │  └─ input_metadata_: Tensor info                        │  │
+│  │                                                          │  │
+│  │  Edges (edge.h):                                        │  │
+│  │  ├─ function: Target node                              │  │
+│  │  └─ input_nr: Input index                              │  │
+│  │                                                          │  │
+│  │  GraphTask (graph_task.h):                              │  │
+│  │  ├─ dependencies_: Edge counts                          │  │
+│  │  ├─ not_ready_: Waiting nodes                           │  │
+│  │  └─ nodes_in_graph_: All nodes                          │  │
+│  │                                                          │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                          ↓                                      │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │            BACKWARD PASS (Graph Execution)              │  │
+│  ├──────────────────────────────────────────────────────────┤  │
+│  │                                                          │  │
+│  │  loss.backward() → Engine::execute() (engine.cpp)       │  │
+│  │       ↓                                                  │  │
+│  │  GraphTask Creation (graph_task.h)                      │  │
+│  │       ↓                                                  │  │
+│  │  compute_dependencies() → Topological Sort              │  │
+│  │       ↓                                                  │  │
+│  │  Ready Queue (Priority by sequence_nr)                  │  │
+│  │       ↓                                                  │  │
+│  │  While ready_queue not empty:                           │  │
+│  │  ├─ Pop highest priority node                           │  │
+│  │  ├─ Execute node.apply(gradients)                       │  │
+│  │  ├─ InputBuffer accumulation                            │  │
+│  │  ├─ Decrement dependency count                          │  │
+│  │  └─ Queue ready nodes                                   │  │
+│  │       ↓                                                  │  │
+│  │  AccumulateGrad → parameter.grad Update                 │  │
+│  │                                                          │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Component Interconnection Map
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CORE DEPENDENCIES                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  function.h (Node)                                              │
+│  ├─ Depends on: edge.h, input_metadata.h                       │
+│  ├─ Used by: engine.cpp, variable.cpp, all operation nodes    │
+│  └─ Critical for: Graph structure, execution                  │
+│                                                                 │
+│  edge.h (Edge)                                                  │
+│  ├─ Depends on: function.h (forward decl)                      │
+│  ├─ Used by: function.h, graph_task.h, engine.cpp             │
+│  └─ Critical for: Node connectivity                            │
+│                                                                 │
+│  graph_task.h (GraphTask)                                       │
+│  ├─ Depends on: edge.h, input_buffer.h                         │
+│  ├─ Used by: engine.cpp                                        │
+│  └─ Critical for: Backward execution metadata                  │
+│                                                                 │
+│  engine.cpp (Backward Engine)                                   │
+│  ├─ Depends on: function.h, graph_task.h, input_buffer.h      │
+│  ├─ Uses: All node types, variable.cpp                         │
+│  └─ Critical for: Backward pass execution                      │
+│                                                                 │
+│  variable.cpp (Tensor Metadata)                                 │
+│  ├─ Depends on: function.h, edge.h                             │
+│  ├─ Used by: All operations, engine.cpp                        │
+│  └─ Critical for: Tensor-Node connection                       │
+│                                                                 │
+│  utils.h (set_history)                                          │
+│  ├─ Depends on: function.h, variable.cpp                       │
+│  ├─ Used by: All operation implementations                     │
+│  └─ Critical for: Forward pass graph building                  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Execution Flow
+
+### Forward Pass: Graph Construction
+
+**Step 1: Operation Dispatch**
+```
+User Code: c = a + b
+    ↓
+Dispatch System (VariableTypeManual.cpp)
+    ↓
+Autograd Dispatch Key Triggered
+```
+
+**Step 2: Node Creation**
+```
+gen_variable_type.py (codegen) generates:
+    1. Check if any input requires_grad
+    2. Create backward node (e.g., AddBackward0)
+    3. Collect next_edges from input tensors
+    4. Set node's next_edges
+```
+
+**Step 3: Metadata Storage**
+```
+For each input tensor:
+    1. Call grad_fn->add_input_metadata(tensor)
+    2. Store: shape, dtype, device, stream
+    3. Get output_nr for this input
+```
+
+**Step 4: History Setting**
+```
+set_history() (utils.h):
+    1. Add input metadata to grad_fn
+    2. Create Edge(grad_fn, output_nr)
+    3. Set output tensor's grad_fn
+    4. Set output tensor's output_nr
+```
+
+**Step 5: Graph Connectivity**
+```
+Output tensor now has:
+    - grad_fn: Pointer to AddBackward0 node
+    - output_nr: Which output of AddBackward0
+    
+AddBackward0 node has:
+    - next_edges: [Edge(a.grad_fn, 0), Edge(b.grad_fn, 0)]
+    - input_metadata: [a's metadata, b's metadata]
+```
+
+### Backward Pass: Graph Execution
+
+**Step 1: Backward Initiation**
+```
+loss.backward()
+    ↓
+Engine::execute(root_edges, inputs, keep_graph, create_graph, ...)
+```
+
+**Step 2: GraphTask Creation**
+```
+Create GraphTask with:
+    - keep_graph: Whether to retain graph
+    - grad_mode: Whether to create graph for backward
+    - reentrant_depth: For nested backward calls
+    - cpu_ready_queue: Thread-local ready queue
+    - graph_roots: Entry points (usually GraphRoot)
+```
+
+**Step 3: Dependency Computation**
+```
+compute_dependencies(graph_root, graph_task, min_topo_nr):
+    1. BFS/DFS from graph_root
+    2. For each node encountered:
+       - Add to nodes_in_graph_
+       - For each next_edge:
+         - Increment dependencies[target_node]
+    3. Result: dependencies_ map with edge counts
+```
+
+**Step 4: Ready Queue Initialization**
+```
+Initialize priority queue with:
+    - Comparator: Higher sequence_nr comes first
+    - Initial nodes: graph_roots (usually just GraphRoot)
+```
+
+**Step 5: Topological Execution**
+```
+While ready_queue not empty:
+    1. Pop node with highest sequence_nr
+    2. Execute node.apply(input_gradients)
+    3. For each output gradient:
+       - Get next_edge
+       - Add gradient to InputBuffer[next_node][input_nr]
+       - Decrement dependencies[next_node]
+       - If dependencies[next_node] == 0:
+         - Queue next_node
+    4. Continue
+```
+
+**Step 6: Gradient Accumulation**
+```
+InputBuffer accumulation:
+    1. Initialize buffer with size = num_inputs
+    2. For each incoming gradient:
+       - Add to buffer[input_nr]
+    3. When all inputs ready:
+       - Sum all buffer entries
+       - Return accumulated gradient
+```
+
+**Step 7: Leaf Accumulation**
+```
+AccumulateGrad node:
+    1. Receives gradient from next node
+    2. Adds to parameter.grad
+    3. Triggers post_accumulate_grad hooks
+```
+
+### Topological Sorting Algorithm
+
+```
+compute_dependencies(root, task, min_topo_nr):
+    queue = [root]
+    dependencies = {}
+    nodes_in_graph = {}
+    
+    while queue not empty:
+        fn = queue.pop_back()
+        
+        if fn.topological_nr < min_topo_nr:
+            continue
+        
+        for edge in fn.next_edges:
+            next_fn = edge.function
+            if next_fn is None:
+                continue
+            
+            dependencies[next_fn] += 1
+            
+            if next_fn not in nodes_in_graph:
+                nodes_in_graph.insert(next_fn)
+                queue.push_back(next_fn)
+    
+    return dependencies
+```
+
+### Execution Priority
+
+Nodes are executed in this priority order:
+
+1. **Shutdown tasks** (highest)
+2. **Lower reentrant_depth** (nested backward)
+3. **Higher sequence_nr** (later operations first)
+4. **Regular tasks** (lowest)
+
+This ensures:
+- Backward pass follows reverse topological order
+- Later operations computed before earlier ones
+- Correct gradient flow
+
+---
+
+## File Dependencies
+
+### Dependency Graph (Critical Path)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    DEPENDENCY HIERARCHY                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Level 0 (No dependencies):                                     │
+│  ├─ edge.h                                                      │
+│  ├─ input_metadata.h                                            │
+│  ├─ input_buffer.h                                              │
+│  ├─ saved_variable.h                                            │
+│  └─ function_hook.h                                             │
+│                                                                 │
+│  Level 1 (Depends on Level 0):                                  │
+│  ├─ function.h (depends on: edge.h, input_metadata.h)          │
+│  ├─ variable.h (depends on: edge.h)                            │
+│  └─ graph_task.h (depends on: edge.h, input_buffer.h)          │
+│                                                                 │
+│  Level 2 (Depends on Level 1):                                  │
+│  ├─ function.cpp (depends on: function.h, variable.h)          │
+│  ├─ variable.cpp (depends on: function.h, edge.h)              │
+│  ├─ functions/utils.h (depends on: function.h, variable.h)     │
+│  └─ All operation nodes (depend on: function.h)                │
+│                                                                 │
+│  Level 3 (Depends on Level 2):                                  │
+│  ├─ engine.cpp (depends on: function.h, graph_task.h,          │
+│  │                          input_buffer.h, variable.cpp)      │
+│  ├─ autograd.cpp (depends on: function.h, variable.h)          │
+│  └─ custom_function.cpp (depends on: function.h)               │
+│                                                                 │
+│  Level 4 (High-level):                                          │
+│  ├─ python_engine.cpp (depends on: engine.cpp)                 │
+│  ├─ JIT passes (depend on: ir.h)                               │
+│  └─ AOT autograd (depends on: graph_compile.py)                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Cross-Module Dependencies
+
+```
+AUTOGRAD SYSTEM
+├─ Core (function.h, edge.h, graph_task.h)
+│  └─ Used by: engine.cpp, all operations, variable.cpp
+│
+├─ Forward Pass (utils.h, operation nodes)
+│  └─ Used by: Dispatch system, codegen
+│
+├─ Backward Pass (engine.cpp, input_buffer.h)
+│  └─ Uses: All nodes, variable.cpp
+│
+└─ Utilities (hooks, profiling, debugging)
+   └─ Used by: All subsystems
+
+JIT SYSTEM
+├─ IR (ir.h, ir.cpp)
+│  └─ Used by: All JIT passes, autodiff.cpp
+│
+├─ Passes (DCE, CSE, fusion)
+│  └─ Uses: IR, alias analysis
+│
+└─ Autodiff (autodiff.cpp)
+   └─ Uses: IR, graph passes
+
+AOT AUTOGRAD
+├─ Graph Capture (graph_capture.py)
+│  └─ Uses: Dispatch system
+│
+├─ Graph Compile (graph_compile.py)
+│  └─ Uses: Partitioner, graph passes
+│
+└─ FX Passes (joint_graph.py, post_grad.py)
+   └─ Uses: FX IR, optimization passes
+```
+
+---
+
+## Summary Statistics
+
+### File Count by Category
+
+| Category | Count | Critical Files |
+|----------|-------|-----------------|
+| Graph Structure | 8 | function.h/cpp, edge.h, graph_task.h |
+| Graph Creation | 12 | utils.h, operation nodes, custom_function.h |
+| Graph Execution | 8 | engine.h/cpp, grad_mode.h, anomaly_mode.h |
+| Hooks & Callbacks | 7 | function_hook.h, python_hook.h, module.py |
+| JIT Infrastructure | 12 | ir.h/cpp, autodiff.cpp, graph passes |
+| AOT Autograd | 3 | aot_autograd.py, graph_compile.py |
+| FX Transformation | 4 | joint_graph.py, post_grad.py, pre_grad.py |
+| Serialization | 5 | Serialization.h/cpp, serialize.py |
+| Visualization | 4 | graph_drawer.py, debug.py |
+| Debugging | 4 | debug.py (lazy, dynamo, inductor) |
+| Profiling | 8 | SequenceNumber.h/cpp, profiling_record.h/cpp |
+| Lazy Execution | 2 | lazy_graph_executor.cpp, debug_util.h |
+| Scheduling | 3 | scheduler.py, memory.py, ir.py |
+| **TOTAL** | **~80** | **~15 critical** |
+
+### Most Critical Files (by impact)
+
+| Rank | File | Impact | Reason |
+|------|------|--------|--------|
+| 1 | `torch/csrc/autograd/engine.cpp` | **CRITICAL** | Core backward execution |
+| 2 | `torch/csrc/autograd/function.h` | **CRITICAL** | Node definition |
+| 3 | `torch/csrc/autograd/functions/utils.h` | **CRITICAL** | Graph building |
+| 4 | `torch/csrc/autograd/variable.cpp` | **CRITICAL** | Tensor-Node connection |
+| 5 | `torch/csrc/autograd/graph_task.h` | **HIGH** | Execution metadata |
+| 6 | `torch/csrc/autograd/edge.h` | **HIGH** | Node connectivity |
+| 7 | `torch/csrc/autograd/input_buffer.h` | **HIGH** | Gradient accumulation |
+| 8 | `torch/csrc/jit/ir/ir.h` | **HIGH** | JIT graph structure |
+| 9 | `torch/csrc/jit/runtime/autodiff.cpp` | **HIGH** | JIT autodiff |
+| 10 | `tools/autograd/gen_variable_type.py` | **HIGH** | Code generation |
+
+### Lines of Code (Approximate)
+
+| Component | LOC | Notes |
+|-----------|-----|-------|
+| engine.cpp | 1500+ | Core backward execution |
+| function.h | 700+ | Node class definition |
+| ir.cpp | 2000+ | JIT IR implementation |
+| variable.cpp | 600+ | Tensor metadata |
+| All autograd/*.h/cpp | 8000+ | Core autograd system |
+| All JIT passes | 5000+ | Graph optimization |
+| All AOT autograd | 3000+ | Functional transformation |
+| **TOTAL** | **~25000+** | Approximate |
+
+---
+
+## Key Algorithms
+
+### Topological Sort (Reverse Order)
+
+```cpp
+// From engine.cpp, lines 1250-1278
+void Engine::compute_dependencies(
+    Node* root,
+    GraphTask& task,
+    uint64_t min_topo_nr) {
+  
+  std::vector<Node*> queue{root};
+  auto& dependencies = task.dependencies_;
+  
+  while (!queue.empty()) {
+    auto fn = queue.back();
+    queue.pop_back();
+    
+    if (fn->topological_nr() < min_topo_nr) {
+      continue;
+    }
+    
+    for (const auto& edge : fn->next_edges()) {
+      if (auto next_ptr = edge.function.get()) {
+        dependencies[next_ptr] += 1;
+        const bool was_inserted = 
+            task.nodes_in_graph_.insert(next_ptr).second;
+        if (was_inserted)
+          queue.push_back(next_ptr);
+      }
+    }
+  }
+}
+```
+
+### Backward Execution Loop
+
+```cpp
+// From engine.cpp, lines 524-600 (simplified)
+void Engine::thread_main(std::shared_ptr<GraphTask> graph_task) {
+  while (graph_task == nullptr || 
+         !graph_task->future_result_->completed()) {
+    
+    NodeTask task = local_ready_queue->pop();
+    auto fn = task.fn;
+    auto inputs = task.inputs_;
+    
+    // Execute the node
+    auto outputs = fn->apply(std::move(inputs));
+    
+    // Process outputs
+    for (const auto& edge : fn->next_edges()) {
+      Node* next_ptr = edge.function.get();
+      if (!next_ptr) continue;
+      
+      // Add gradient to InputBuffer
+      auto& input_buffer = 
+          graph_task->not_ready_[next_ptr];
+      input_buffer.add_next_edge(edge, outputs);
+      
+      // Decrement dependency count
+      auto it = graph_task->dependencies_.find(next_ptr);
+      if (--it->second == 0) {
+        graph_task->dependencies_.erase(it);
+        local_ready_queue->push(next_ptr);
+      }
+    }
+  }
+}
+```
+
+### Gradient Accumulation
+
+```cpp
+// From input_buffer.h (conceptual)
+class InputBuffer {
+  std::vector<at::Tensor> buffer_;
+  
+public:
+  void add(uint32_t input_nr, const at::Tensor& grad) {
+    if (buffer_[input_nr].defined()) {
+      buffer_[input_nr] = buffer_[input_nr] + grad;
+    } else {
+      buffer_[input_nr] = grad;
+    }
+  }
+  
+  at::Tensor sum_all() {
+    at::Tensor result;
+    for (const auto& grad : buffer_) {
+      if (grad.defined()) {
+        if (result.defined()) {
+          result = result + grad;
+        } else {
+          result = grad;
+        }
+      }
+    }
+    return result;
+  }
+};
+```
+
+---
+
+## Quick Reference
+
+### Common Operations
+
+**Creating a Node**
+```cpp
+auto grad_fn = std::make_shared<AddBackward0>();
+grad_fn->set_next_edges(collect_next_edges(inputs));
+grad_fn->add_input_metadata(input_a);
+grad_fn->add_input_metadata(input_b);
+```
+
+**Setting Tensor History**
+```cpp
+set_history(output_tensor, grad_fn);
+// Internally:
+// 1. Adds input metadata
+// 2. Sets output_tensor.grad_fn = grad_fn
+// 3. Sets output_tensor.output_nr
+```
+
+**Executing Backward**
+```cpp
+loss.backward();
+// Internally:
+// 1. Engine::execute(root_edges, ...)
+// 2. compute_dependencies()
+// 3. execute_graph_task()
+// 4. Gradient accumulation
+```
+
+### Important Constants
+
+| Constant | Value | Meaning |
+|----------|-------|---------|
+| `sequence_nr_` | 0-2^64 | Execution priority (higher = earlier) |
+| `topological_nr_` | 0-2^64 | Ensures parent > children |
+| `output_nr` | 0-N | Which output of node |
+| `input_nr` | 0-N | Which input of node |
+
+---
+
+## References and Further Reading
+
+- **Autograd System**: `torch/csrc/autograd/` directory
+- **Engine Implementation**: `torch/csrc/autograd/engine.cpp` (lines 1288-1380)
+- **JIT System**: `torch/csrc/jit/` directory
+- **AOT Autograd**: `torch/_functorch/` directory
+- **Profiler**: `torch/csrc/profiler/` directory
+
+---
+
+**Document Version**: 1.0  
+**Last Updated**: November 2025  
+**Scope**: PyTorch 2.x (current development)
+

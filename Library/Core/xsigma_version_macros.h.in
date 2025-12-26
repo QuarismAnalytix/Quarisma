@@ -1,0 +1,19 @@
+/*
+ * Some parts of this implementation were inspired by code from VTK
+ * (The Visualization Toolkit), distributed under a BSD-style license.
+ * See LICENSE for details.
+ */
+
+#ifndef __quarisma_version_macros_h__
+#define __quarisma_version_macros_h__
+
+// clang-format off
+
+#define __QUARISMA_MAJOR_VERSION__ @QUARISMA_MAJOR_VERSION@
+#define __QUARISMA_MINOR_VERSION__ @QUARISMA_MINOR_VERSION@
+#define __QUARISMA_BUILD_VERSION__ @QUARISMA_BUILD_VERSION@
+#define __QUARISMA_VERSION__ "@QUARISMA_VERSION@"
+#define __QUARISMA_VERSION_FULL__ "@QUARISMA_VERSION_FULL@"
+
+// clang-format on
+#endif

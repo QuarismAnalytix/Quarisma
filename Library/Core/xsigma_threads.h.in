@@ -1,0 +1,36 @@
+/*
+ * Some parts of this implementation were inspired by code from VTK
+ * (The Visualization Toolkit), distributed under a BSD-style license.
+ * See LICENSE for details.
+ */
+
+#ifndef __quarisma_threads_h__
+#define __quarisma_threads_h__
+
+/* Threading system.  */
+#cmakedefine QUARISMA_USE_PTHREADS
+#cmakedefine QUARISMA_USE_WIN32_THREADS
+
+// clang-format off
+#define QUARISMA_MAX_THREADS @QUARISMA_MAX_THREADS@
+// clang-format on
+
+// If QUARISMA_USE_PTHREADS is defined, then the multithreaded
+// function is of type void *, and returns nullptr
+// Otherwise the type is void which is correct for WIN32
+#ifdef QUARISMA_USE_PTHREADS
+#define __QUARISMA_THREAD_RETURN_VALUE__ nullptr
+#define __QUARISMA_THREAD_RETURN_TYPE__ void*
+#endif
+
+#ifdef QUARISMA_USE_WIN32_THREADS
+#define __QUARISMA_THREAD_RETURN_VALUE__ 0
+#define __QUARISMA_THREAD_RETURN_TYPE__ quarismaWindowsDWORD __stdcall
+#endif
+
+#if !defined(QUARISMA_USE_PTHREADS) && !defined(QUARISMA_USE_WIN32_THREADS)
+#define __QUARISMA_THREAD_RETURN_VALUE__
+#define __QUARISMA_THREAD_RETURN_TYPE__ void
+#endif
+
+#endif

@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(lldb) Attach",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "enter program name, for example ${workspaceFolder}/a.out",
+            "MIMode": "lldb"
+        },
+        {
+            "name": "Debug (WSL)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/../build_ninja_tbb/bin/CoreCxxTests",
+            "args": ["--gtest_filter=ProfilerHeavyFunction.ComprehensiveComputationalProfiling"],
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "console": "integratedTerminal",
+            "sourceLanguages": ["cpp"]
+        }
+    ]
+}

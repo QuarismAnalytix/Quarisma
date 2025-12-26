@@ -1,0 +1,31 @@
+[MASTER]
+ignore=tests
+jobs=1
+extension-pkg-whitelist=
+persistent=yes
+suggestion-mode=yes
+
+[MESSAGES CONTROL]
+disable=
+    C0114,  ; missing-module-docstring
+    C0115,  ; missing-class-docstring
+    C0116,  ; missing-function-docstring
+    R0903,  ; too-few-public-methods
+
+[FORMAT]
+max-line-length=80
+indent-string='    '
+
+[DESIGN]
+max-args=5
+max-locals=15
+max-returns=6
+max-branches=12
+max-statements=50
+
+[REPORTS]
+output-format=colorized
+score=yes
+
+[TYPECHECK]
+ignored-modules=requests

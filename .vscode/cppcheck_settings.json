@@ -1,0 +1,9 @@
+{
+  "cppcheck.executable": "C:/Strawberry/c/bin/cppcheck.exe;--enable=warning;--quiet;--inline-suppr;--error-exitcode=2;--force;--platform=win64;--library=windows;--library=gnu;--check-level=normal;--ctu;--max-ctu-depth=3;-j16;--template={id}:{file}:{line},{severity},{message};--relative-paths=C:/dev/cursor_code/XSigma;--checkers-report=C:/dev/cursor_code/XSigma/build/cppcheck-checkers.txt;--suppressions-list=C:/dev/cursor_code/XSigma/Scripts/cppcheck_suppressions.txt",
+  "cppcheck.configFile": "C:/dev/cursor_code/XSigma/Scripts/cppcheck_suppressions.txt",
+  "cppcheck.includePaths": [
+    "C:/dev/cursor_code/XSigma/Library"
+  ],
+  "cppcheck.platform": "Windows",
+  "cppcheck.standard": ["c++17"]
+}

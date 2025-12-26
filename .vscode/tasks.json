@@ -1,0 +1,217 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build: Standard (ninja.clang.test.CONFIG)",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "setup.py",
+                "build.ninja.clang.test.CONFIG"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Scripts"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": false,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "Build: Coverage + IWYU",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "setup.py",
+                "build.ninja.clang.test.CONFIG.coverage.iwyu"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Scripts"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": false,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "Build: Coverage Only",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "setup.py",
+                "build.ninja.clang.test.CONFIG.coverage"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Scripts"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": false,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "Build: IWYU Only",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "setup.py",
+                "build.ninja.clang.test.CONFIG.iwyu"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Scripts"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": false,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "Run: CoreCxxTests (All)",
+            "type": "shell",
+            "command": "${workspaceFolder}/../build_ninja/bin/CoreCxxTests",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}/../build_ninja/bin",
+                "env": {
+                    "DYLD_LIBRARY_PATH": "${workspaceFolder}/../build_ninja/lib"
+                }
+            },
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": false,
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run: TrackingAllocatorTest.EnhancedTrackingAnalytics",
+            "type": "shell",
+            "command": "${workspaceFolder}/../build_ninja/bin/CoreCxxTests",
+            "args": [
+                "--gtest_filter=TrackingAllocatorTest.EnhancedTrackingAnalytics"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/../build_ninja/bin",
+                "env": {
+                    "DYLD_LIBRARY_PATH": "${workspaceFolder}/../build_ninja/lib"
+                }
+            },
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": true,
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run: All TrackingAllocatorTest Tests",
+            "type": "shell",
+            "command": "${workspaceFolder}/../build_ninja/bin/CoreCxxTests",
+            "args": [
+                "--gtest_filter=TrackingAllocatorTest.*"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/../build_ninja/bin",
+                "env": {
+                    "DYLD_LIBRARY_PATH": "${workspaceFolder}/../build_ninja/lib"
+                }
+            },
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": false,
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Clean: Standard Build",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "-rf",
+                "${workspaceFolder}/../build_ninja"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": false,
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Clean: All Builds",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "-rf",
+                "${workspaceFolder}/../build_ninja*"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": false,
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "List: Available Tests",
+            "type": "shell",
+            "command": "${workspaceFolder}/../build_ninja/bin/CoreCxxTests",
+            "args": [
+                "--gtest_list_tests"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/../build_ninja/bin",
+                "env": {
+                    "DYLD_LIBRARY_PATH": "${workspaceFolder}/../build_ninja/lib"
+                }
+            },
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": true,
+                "clear": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}
+

@@ -1,0 +1,273 @@
+# Valgrind Suppression File for Quarisma Project
+# This file contains suppressions for known false positives and third-party library issues
+#
+# Format:
+# {
+#    <suppression_name>
+#    Memcheck:<error_type>
+#    ...stack trace patterns...
+# }
+#
+# Error types: Leak_DefinitelyLost, Leak_IndirectlyLost, Leak_PossiblyLost, Leak_StillReachable
+#              Cond, Value1, Value2, Value4, Value8, Value16, Addr1, Addr2, Addr4, Addr8, Addr16
+#              Jump, Param, Free, Overlap
+
+# ============================================================================
+# Standard Library Suppressions
+# ============================================================================
+
+{
+   std_string_leak
+   Memcheck:Leak
+   ...
+   fun:*std*string*
+}
+
+{
+   std_locale_leak
+   Memcheck:Leak
+   ...
+   fun:*std*locale*
+}
+
+{
+   std_ios_base_init
+   Memcheck:Leak
+   ...
+   fun:*std*ios_base*Init*
+}
+
+# ============================================================================
+# C++ Runtime Suppressions
+# ============================================================================
+
+{
+   cxx_abi_demangle
+   Memcheck:Leak
+   ...
+   fun:*__cxa_demangle*
+}
+
+{
+   cxx_thread_local
+   Memcheck:Leak
+   ...
+   fun:*__cxa_thread_atexit*
+}
+
+{
+   cxx_static_init
+   Memcheck:Leak
+   ...
+   fun:*__cxa_atexit*
+}
+
+# ============================================================================
+# Google Test Suppressions
+# ============================================================================
+
+{
+   gtest_init
+   Memcheck:Leak
+   ...
+   fun:*testing*internal*
+}
+
+{
+   gtest_test_info
+   Memcheck:Leak
+   ...
+   fun:*testing*TestInfo*
+}
+
+{
+   gtest_test_suite
+   Memcheck:Leak
+   ...
+   fun:*testing*TestSuite*
+}
+
+{
+   gtest_unit_test
+   Memcheck:Leak
+   ...
+   fun:*testing*UnitTest*
+}
+
+# ============================================================================
+# Loguru Suppressions
+# ============================================================================
+
+{
+   loguru_init
+   Memcheck:Leak
+   ...
+   fun:*loguru*init*
+}
+
+{
+   loguru_thread_name
+   Memcheck:Leak
+   ...
+   fun:*loguru*set_thread_name*
+}
+
+# ============================================================================
+# fmt Library Suppressions
+# ============================================================================
+
+{
+   fmt_format
+   Memcheck:Leak
+   ...
+   fun:*fmt*format*
+}
+
+{
+   fmt_vformat
+   Memcheck:Leak
+   ...
+   fun:*fmt*vformat*
+}
+
+# ============================================================================
+# Threading Library Suppressions
+# ============================================================================
+
+{
+   pthread_create
+   Memcheck:Leak
+   ...
+   fun:pthread_create*
+}
+
+{
+   std_thread
+   Memcheck:Leak
+   ...
+   fun:*std*thread*
+}
+
+{
+   std_mutex
+   Memcheck:Leak
+   ...
+   fun:*std*mutex*
+}
+
+{
+   std_condition_variable
+   Memcheck:Leak
+   ...
+   fun:*std*condition_variable*
+}
+
+# ============================================================================
+# Dynamic Loader Suppressions
+# ============================================================================
+
+{
+   dlopen_leak
+   Memcheck:Leak
+   ...
+   fun:dlopen*
+}
+
+{
+   dlsym_leak
+   Memcheck:Leak
+   ...
+   fun:dlsym*
+}
+
+# ============================================================================
+# macOS Specific Suppressions
+# ============================================================================
+
+{
+   macos_dyld
+   Memcheck:Leak
+   ...
+   fun:*dyld*
+}
+
+{
+   macos_objc
+   Memcheck:Leak
+   ...
+   fun:*objc*
+}
+
+{
+   macos_cf
+   Memcheck:Leak
+   ...
+   fun:*CF*
+}
+
+# ============================================================================
+# Linux Specific Suppressions
+# ============================================================================
+
+{
+   linux_ld
+   Memcheck:Leak
+   ...
+   fun:*ld-linux*
+}
+
+{
+   linux_libc_start
+   Memcheck:Leak
+   ...
+   fun:__libc_start_main
+}
+
+# ============================================================================
+# Memory Allocator Suppressions
+# ============================================================================
+
+{
+   mimalloc_init
+   Memcheck:Leak
+   ...
+   fun:*mi_*
+}
+
+{
+   malloc_init
+   Memcheck:Leak
+   ...
+   fun:malloc_init*
+}
+
+# ============================================================================
+# Compiler Runtime Suppressions
+# ============================================================================
+
+{
+   compiler_rt_init
+   Memcheck:Leak
+   ...
+   fun:*__compiler_rt*
+}
+
+{
+   sanitizer_init
+   Memcheck:Leak
+   ...
+   fun:*__sanitizer*
+}
+
+# ============================================================================
+# Quarisma Specific Suppressions (if needed)
+# ============================================================================
+
+# Add project-specific suppressions here as needed
+# Example:
+# {
+#    quarisma_known_issue
+#    Memcheck:Leak
+#    ...
+#    fun:*quarisma*specific_function*
+# }

@@ -1,0 +1,103 @@
+# MemorySanitizer Suppressions for Quarisma
+# ========================================
+# This file contains suppressions for MemorySanitizer to handle known false positives
+# and issues in third-party libraries that cannot be easily fixed.
+#
+# Format: <error_type>:<pattern>
+# Where error_type is typically "use-of-uninitialized-value"
+# Pattern can match function names, file paths, or library names.
+
+# Third-party library suppressions
+# ---------------------------------
+
+# fmt library - suppress formatting-related uninitialized memory issues
+use-of-uninitialized-value:*fmt*
+
+# loguru library - suppress logging-related uninitialized memory issues
+use-of-uninitialized-value:*loguru*
+
+# Google Test - suppress test framework uninitialized memory issues
+use-of-uninitialized-value:*gtest*
+use-of-uninitialized-value:*testing*
+use-of-uninitialized-value:*TestEventRepeater*
+use-of-uninitialized-value:*TestEventListeners*
+
+# cpuinfo library - suppress CPU detection uninitialized memory issues
+use-of-uninitialized-value:*cpuinfo*
+
+# mimalloc - suppress memory allocator uninitialized memory issues
+use-of-uninitialized-value:*mimalloc*
+
+# System libraries (MemorySanitizer is Linux-only, so focus on Linux libraries)
+# ------------------------------------------------------------------------------
+
+# glibc and system libraries
+use-of-uninitialized-value:*libc*
+use-of-uninitialized-value:*libpthread*
+use-of-uninitialized-value:*libdl*
+
+# LLVM/Clang runtime libraries
+use-of-uninitialized-value:*clang_rt*
+use-of-uninitialized-value:*compiler_rt*
+
+# Known false positives
+# ---------------------
+
+# Standard library issues
+use-of-uninitialized-value:*std::*
+
+# Template instantiation issues
+use-of-uninitialized-value:*template*
+
+# System call wrappers that may have uninitialized padding
+use-of-uninitialized-value:*syscall*
+
+# Example suppressions for common patterns:
+# use-of-uninitialized-value:MyClass::problematic_function
+# use-of-uninitialized-value:ThirdPartyLib::*
+# use-of-uninitialized-value:*/path/to/problematic/file.cpp
+
+# Project-specific suppressions
+# ------------------------------
+# Add project-specific suppressions below as needed
+
+# Suppress issues in experimental profiler code during development
+use-of-uninitialized-value:*experimental*profiler*
+
+# Suppress issues in test code
+use-of-uninitialized-value:*Test*
+
+# Suppress issues in specific Quarisma components that may have
+# intentional uninitialized memory usage (e.g., performance optimizations)
+use-of-uninitialized-value:*allocator*
+use-of-uninitialized-value:*memory*pool*
+
+# Note: Fixed allocator registry initialization issue by adding default member initializers
+
+# Note: MemorySanitizer is very strict and may require extensive suppressions
+# for third-party libraries. Consider using it primarily for core library code.
+
+# Standard library issues
+fun:*std::*
+fun:*std::*allocator*
+fun:*std::*vector*
+fun:*std::*string*
+fun:*__gnu_cxx*
+# GoogleTest initialization uses uninstrumented libstdc++
+fun:*testing::internal::UnitTestFilter*
+fun:*testing::internal::UnitTestImpl::GetTestSuite*
+fun:*testing::internal::MakeAndRegisterTestInfo*
+fun:__cxx_global_var_init*
+fun:_GLOBAL__sub_I_*
+
+# Standard library allocations - these are false positives with uninstrumented libstdc++
+fun:*std::*allocator*::allocate*
+fun:*std::_Vector_base*::_M_allocate*
+fun:*std::vector*::_M_realloc_insert*
+fun:*std::*basic_string*
+
+# C++ global initialization
+src:*/bits/stl_vector.h
+src:*/bits/basic_string.h
+src:*/bits/new_allocator.h
+src:*/bits/alloc_traits.h

@@ -1,0 +1,94 @@
+# LeakSanitizer Suppressions for Quarisma
+# ======================================
+# This file contains suppressions for LeakSanitizer to handle known false positives
+# and issues in third-party libraries that cannot be easily fixed.
+#
+# Format: leak:<pattern>
+# Pattern can match function names, file paths, or library names.
+
+# Third-party library suppressions
+# ---------------------------------
+
+# fmt library - suppress formatting-related leaks
+leak:*fmt*
+
+# loguru library - suppress logging-related leaks (common in logging libraries)
+leak:*loguru*
+
+# Google Test - suppress test framework leaks
+leak:*gtest*
+leak:*testing*
+
+# cpuinfo library - suppress CPU detection leaks
+leak:*cpuinfo*
+
+# mimalloc - suppress memory allocator leaks
+leak:*mimalloc*
+
+# Windows system libraries
+# -------------------------
+
+# Windows CRT and system DLLs
+leak:*msvcrt*
+leak:*kernel32*
+leak:*ntdll*
+leak:*user32*
+
+# LLVM/Clang runtime libraries
+leak:*clang_rt*
+leak:*compiler_rt*
+
+# Known false positives
+# ---------------------
+
+# Standard library static allocations
+leak:*std::*
+
+# Static initialization leaks (common false positive)
+leak:*__cxa_guard*
+leak:*static*initialization*
+
+# Global constructor leaks
+leak:*__static_initialization_and_destruction*
+
+# Thread-local storage leaks
+leak:*__tls*
+leak:*thread_local*
+
+# Example suppressions for common patterns:
+# leak:MyClass::problematic_function
+# leak:ThirdPartyLib::*
+# leak:*/path/to/problematic/file.cpp
+
+# Project-specific suppressions
+# ------------------------------
+# Add project-specific suppressions below as needed
+
+# Suppress leaks in experimental profiler code during development
+leak:*experimental*profiler*
+
+# Suppress leaks in test code (tests may intentionally leak for simplicity)
+leak:*Test*
+
+# Suppress leaks in singleton patterns (intentional leaks)
+leak:*singleton*
+leak:*Singleton*
+
+# Suppress leaks in static factory patterns
+leak:*factory*
+leak:*Factory*
+
+# Suppress leaks in logging infrastructure (often acceptable)
+leak:*logger*
+leak:*logging*
+
+# Suppress leaks in memory allocator infrastructure
+leak:*allocator*registry*
+
+# Suppress leaks in thread pool infrastructure (threads may not be cleanly shut down)
+leak:*thread_pool*
+leak:*ThreadPool*
+
+# Suppress leaks in logging infrastructure (often acceptable)
+leak:loguru::set_thread_name
+leak:loguru::init
