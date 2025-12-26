@@ -177,12 +177,13 @@ smp_thread_pool::proxy::proxy(std::unique_ptr<proxy_data>&& data) : data_{std::m
 /**
  * @brief Destructor ensures all jobs are completed before destruction
  *
+ *
  * If the proxy is destroyed with pending jobs (i.e., join() was not called),
  * the program is terminated to prevent undefined behavior.
  */
 smp_thread_pool::proxy::~proxy()
 {
-    if (!data_->jobs_futures_.empty())
+    if (data_ != nullptr && !data_->jobs_futures_.empty())
     {
         std::cerr << "Proxy not joined. Terminating." << std::endl;
         std::terminate();

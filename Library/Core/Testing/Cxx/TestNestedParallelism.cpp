@@ -527,7 +527,7 @@ XSIGMATEST(NestedParallelism, Test)
                         inner_size,
                         10,
                         static_cast<int64_t>(0),
-                        [outer](int64_t col_begin, int64_t col_end, int64_t identity)
+                        [outer, inner_size](int64_t col_begin, int64_t col_end, int64_t identity)
                         {
                             int64_t partial = identity;
                             for (int64_t col = col_begin; col < col_end; ++col)
