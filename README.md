@@ -1,5 +1,7 @@
 # Quarisma
 
+![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 [![CI Status](https://github.com/QuarismAnalytix/Quarisma/actions/workflows/ci.yml/badge.svg)](https://github.com/QuarismAnalytix/Quarisma/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/QuarismAnalytix/Quarisma/branch/main/graph/badge.svg)](https://codecov.io/gh/QuarismAnalytix/Quarisma)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11420/badge)](https://www.bestpractices.dev/projects/11420)
