@@ -430,11 +430,20 @@ jobs:
         ctest --test-dir "$buildDir" --output-on-failure -j 2
 
     - name: Verify Build Configuration
-      working-directory: ${{ github.workspace }}/build
       shell: bash
       run: |
+        # Determine build directory name (same logic as build steps)
+        BUILD_DIR="build_ninja"
+        if [ "${{ matrix.tbb_enabled }}" = "ON" ]; then
+          BUILD_DIR="${BUILD_DIR}_tbb"
+        fi
+        if [ "${{ matrix.cxx_std }}" != "17" ]; then
+          BUILD_DIR="${BUILD_DIR}_cxx${{ matrix.cxx_std }}"
+        fi
+
         echo "=== Build Configuration Verification ==="
         echo "Platform: ${{ runner.os }}"
+        echo "Build Directory: $BUILD_DIR"
         echo "C++ Standard: ${{ matrix.cxx_std }}"
         echo "Build Type: ${{ matrix.build_type }}"
         echo "Logging Backend: ${{ matrix.logging_backend }}"
@@ -444,11 +453,11 @@ jobs:
 
         # Verify core library was built successfully
         if [ "${{ runner.os }}" = "Linux" ]; then
-          if [ -f "Library/Core/libCore.so" ] || [ -f "Library/Core/libCore.a" ]; then
+          if [ -f "$BUILD_DIR/Library/Core/libCore.so" ] || [ -f "$BUILD_DIR/Library/Core/libCore.a" ]; then
             echo "SUCCESS: Core library built successfully (Linux)"
             # Check TBB linkage if enabled
-            if [ "${{ matrix.tbb_enabled }}" = "ON" ] && [ -f "Library/Core/libCore.so" ]; then
-              if ldd Library/Core/libCore.so | grep -q "tbb"; then
+            if [ "${{ matrix.tbb_enabled }}" = "ON" ] && [ -f "$BUILD_DIR/Library/Core/libCore.so" ]; then
+              if ldd $BUILD_DIR/Library/Core/libCore.so | grep -q "tbb"; then
                 echo "SUCCESS: TBB dependencies found in Core library"
               else
                 echo "INFO: TBB may be statically linked or not found"
@@ -458,11 +467,11 @@ jobs:
             echo "WARNING: Core library not found (Linux)"
           fi
         elif [ "${{ runner.os }}" = "macOS" ]; then
-          if [ -f "Library/Core/libCore.dylib" ] || [ -f "Library/Core/libCore.a" ]; then
+          if [ -f "$BUILD_DIR/Library/Core/libCore.dylib" ] || [ -f "$BUILD_DIR/Library/Core/libCore.a" ]; then
             echo "SUCCESS: Core library built successfully (macOS)"
             # Check TBB linkage if enabled
-            if [ "${{ matrix.tbb_enabled }}" = "ON" ] && [ -f "Library/Core/libCore.dylib" ]; then
-              if otool -L Library/Core/libCore.dylib | grep -q "tbb"; then
+            if [ "${{ matrix.tbb_enabled }}" = "ON" ] && [ -f "$BUILD_DIR/Library/Core/libCore.dylib" ]; then
+              if otool -L $BUILD_DIR/Library/Core/libCore.dylib | grep -q "tbb"; then
                 echo "SUCCESS: TBB dependencies found in Core library"
               else
                 echo "INFO: TBB may be statically linked or not found"
@@ -472,7 +481,7 @@ jobs:
             echo "WARNING: Core library not found (macOS)"
           fi
         elif [ "${{ runner.os }}" = "Windows" ]; then
-          if [ -f "Library/Core/Core.dll" ] || [ -f "Library/Core/Core.lib" ]; then
+          if [ -f "$BUILD_DIR/Library/Core/Core.dll" ] || [ -f "$BUILD_DIR/Library/Core/Core.lib" ]; then
             echo "SUCCESS: Core library built successfully (Windows)"
             echo "INFO: Windows TBB testing is handled separately with Visual Studio"
           else
@@ -486,8 +495,8 @@ jobs:
       with:
         name: test-results-${{ matrix.name }}
         path: |
-          build/Testing/Temporary/LastTest.log
-          build/**/*.log
+          build*/Testing/Temporary/LastTest.log
+          build*/**/*.log
 
   # ============================================================================
   # TBB-Specific Testing - Unix/macOS Only
