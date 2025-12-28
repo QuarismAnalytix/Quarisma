@@ -36,6 +36,7 @@
 #define SMP_TOOLS_H
 
 #include <functional>   // For std::function
+#include <string>       // For std::string
 #include <type_traits>  // For std::enable_if
 
 #include "common/export.h"

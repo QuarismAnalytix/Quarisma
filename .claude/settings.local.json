@@ -40,7 +40,8 @@
       "Bash(tee:*)",
       "Bash(python setup.py:*)",
       "Bash(C:PROGRA~1LLVMbinCLANG_~1.EXE:*)",
-      "Bash(\"C:/Program Files/LLVM/bin/clang++.exe\":*)"
+      "Bash(\"C:/Program Files/LLVM/bin/clang++.exe\":*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []
