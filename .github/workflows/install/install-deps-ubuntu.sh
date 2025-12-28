@@ -122,7 +122,7 @@ if [ "$WITH_TBB" = true ]; then
     log_info "Installing Intel TBB..."
     sudo apt-get install -y \
         libtbb-dev \
-        libtbb2 \
+        libtbbmalloc2 \
         || {
             log_warning "Failed to install TBB from package manager"
         }
