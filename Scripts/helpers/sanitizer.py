@@ -30,7 +30,7 @@ def get_sanitizer_options(sanitizer_type: str, source_path: str) -> Optional[str
         },
         "leak": {
             "env_var": "LSAN_OPTIONS",
-            "base_options": "print_suppressions=0",
+            "base_options": "print_suppressions=1",
             "suppression_file": os.path.join(suppressions_dir, "lsan_suppressions.txt"),
         },
         "thread": {

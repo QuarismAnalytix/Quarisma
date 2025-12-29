@@ -1034,6 +1034,12 @@ class XsigmaFlags:
     def is_cppcheck(self):
         return self.__value["cppcheck"] == self.ON
 
+    def get_sanitizer_type(self):
+        """Get the current sanitizer type if enabled, None otherwise."""
+        if self.__value.get("sanitizer") == self.ON:
+            return self.__value.get("sanitizer_enum")
+        return None
+
 
 class XsigmaConfiguration:
     def __init__(self, args_list):
@@ -1390,6 +1396,8 @@ class XsigmaConfiguration:
             self.__value["system"],
             self.__value["verbosity"],
             self.__shell_flag(),
+            sanitizer_type=self.__xsigma_flags.get_sanitizer_type(),
+            source_path=source_path,
         )
 
     def coverage(self, source_path, build_path):

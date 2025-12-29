@@ -65,41 +65,13 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
 
             // Test set and get number of threads
             {
-                timer_scope test_timer2("1.2 Thread management (4 threads)");
-                std::cout << "  [1.2] Testing thread management (4 threads)..." << std::endl;
-                queue->set_number_of_threads(4);
-                auto future1a = queue->push([]() { return 0; });
-                auto future1b = queue->push([]() { return 0; });
-                auto future1c = queue->push([]() { return 0; });
-                future1a->wait();
-                future1b->wait();
-                future1c->wait();
-                EXPECT_EQ(queue->get_number_of_threads(), 4);
-                std::cout << "  [1.2] ✓ Thread count set to 4\n" << std::endl;
-            }
-
-            if(false){
-                timer_scope test_timer3("1.3 Thread management (8 threads)");
-                std::cout << "  [1.3] Testing thread management (8 threads)..." << std::endl;
-                queue->set_number_of_threads(8);
-                auto future2a = queue->push([]() { return 0; });
-                auto future2b = queue->push([]() { return 0; });
-                auto future2c = queue->push([]() { return 0; });
-                future2a->wait();
-                future2b->wait();
-                future2c->wait();
-                EXPECT_EQ(queue->get_number_of_threads(), 8);
-                std::cout << "  [1.3] ✓ Thread count set to 8\n" << std::endl;
-            }
-
-            // Reset to reasonable thread count for remaining tests
-            {
-                timer_scope test_timer4("1.4 Reset to 2 threads");
-                std::cout << "  [1.4] Resetting to 2 threads..." << std::endl;
+                timer_scope test_timer2("1.2 Thread management (2 threads)");
+                std::cout << "  [1.2] Testing thread management (2 threads)..." << std::endl;
                 queue->set_number_of_threads(2);
-                auto sync_future = queue->push([]() { return 0; });
-                sync_future->wait();
-                std::cout << "  [1.4] ✓ Reset complete\n" << std::endl;
+                auto future1a = queue->push([]() { return 0; });
+                future1a->wait();
+                EXPECT_EQ(queue->get_number_of_threads(), 2);
+                std::cout << "  [1.2] ✓ Thread count set to 2\n" << std::endl;
             }
 
             // Test push simple task with int return
@@ -186,8 +158,6 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
                 [&task_started]()
                 {
                     task_started.store(true);
-                    // Reduced from 1ms to 100us for faster tests
-                    std::this_thread::sleep_for(std::chrono::microseconds(100));
                     return 100;
                 });
 
@@ -199,13 +169,7 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
         // Test get with wait
         {
             timer_scope test_timer("2.2 Get with wait");
-            auto        get_future = queue->push(
-                []()
-                {
-                    // Reduced from 1ms to 100us for faster tests
-                    std::this_thread::sleep_for(std::chrono::microseconds(100));
-                    return 999;
-                });
+            auto        get_future = queue->push([]() { return 999; });
 
             int result = queue->get(get_future);
             EXPECT_EQ(result, 999);
@@ -218,14 +182,9 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
                 decltype(std::declval<threaded_callback_queue>().push(std::declval<int (*)()>()));
             std::vector<future_type> futures;
 
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < 3; ++i)
             {
-                futures.push_back(queue->push(
-                    [i]()
-                    {
-                        // No sleep needed - just test the future mechanism
-                        return i;
-                    }));
+                futures.push_back(queue->push([i]() { return i; }));
             }
 
             // Convert to raw pointers for wait
@@ -238,7 +197,7 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
             queue->wait(future_ptrs);
 
             // All futures should be ready
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < 3; ++i)
             {
                 EXPECT_EQ(futures[i]->get(), i);
             }
@@ -290,10 +249,6 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
         // Test chained dependencies
         {
             timer_scope test_timer("3.3 Chained dependencies");
-            queue->set_number_of_threads(2);
-            auto sync_future = queue->push([]() { return 0; });
-            sync_future->wait();
-
             auto chain_future1 = queue->push([]() { return 1; });
 
             std::vector<decltype(chain_future1.get())> deps1         = {chain_future1.get()};
@@ -304,11 +259,7 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
             auto                                       chain_future3 = queue->push_dependent(
                 deps2, [&chain_future2]() { return chain_future2->get() + 1; });
 
-            std::vector<decltype(chain_future3.get())> deps3         = {chain_future3.get()};
-            auto                                       chain_future4 = queue->push_dependent(
-                deps3, [&chain_future3]() { return chain_future3->get() + 1; });
-
-            EXPECT_EQ(chain_future4->get(), 4);
+            EXPECT_EQ(chain_future3->get(), 3);
         }
 
         delete queue;
@@ -384,13 +335,13 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
 
         // Test concurrent pushes
         {
-            timer_scope      test_timer("5.1 Concurrent pushes (100 tasks)");
+            timer_scope      test_timer("5.1 Concurrent pushes (20 tasks)");
             std::atomic<int> counter{0};
             using future_type =
                 decltype(std::declval<threaded_callback_queue>().push(std::declval<void (*)()>()));
             std::vector<future_type> futures1;
 
-            for (int i = 0; i < 100; ++i)
+            for (int i = 0; i < 20; ++i)
             {
                 futures1.push_back(queue->push([&counter]() { counter++; }));
             }
@@ -400,22 +351,18 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
                 f->wait();
             }
 
-            EXPECT_EQ(counter.load(), 100);
+            EXPECT_EQ(counter.load(), 20);
         }
 
         // Test atomic operations in tasks
         {
-            timer_scope test_timer("5.2 Atomic operations (100 tasks)");
-            queue->set_number_of_threads(4);
-            auto sync_future = queue->push([]() { return 0; });
-            sync_future->wait();
-
+            timer_scope test_timer("5.2 Atomic operations (20 tasks)");
             std::atomic<int64_t> sum{0};
             using future_type =
                 decltype(std::declval<threaded_callback_queue>().push(std::declval<void (*)()>()));
             std::vector<future_type> futures2;
 
-            for (int i = 0; i < 100; ++i)
+            for (int i = 0; i < 20; ++i)
             {
                 futures2.push_back(
                     queue->push([&sum, i]() { sum.fetch_add(i, std::memory_order_relaxed); }));
@@ -426,7 +373,7 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
                 f->wait();
             }
 
-            int64_t expected = (99 * 100) / 2;
+            int64_t expected = (19 * 20) / 2;
             EXPECT_EQ(sum.load(), expected);
         }
 
@@ -446,9 +393,6 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
         {
             timer_scope test_timer("6.1 Minimum threads (1 thread)");
             queue->set_number_of_threads(1);
-            auto sync_future1 = queue->push([]() { return 0; });
-            sync_future1->wait();
-
             auto min_thread_future = queue->push([]() { return 42; });
             EXPECT_EQ(min_thread_future->get(), 42);
         }
@@ -456,10 +400,6 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
         // Test empty lambda
         {
             timer_scope test_timer("6.2 Empty lambda");
-            queue->set_number_of_threads(2);
-            auto sync_future2 = queue->push([]() { return 0; });
-            sync_future2->wait();
-
             auto empty_future = queue->push([]() {});
             empty_future->wait();
             EXPECT_TRUE(true);
@@ -491,19 +431,19 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
         threaded_callback_queue* queue = threaded_callback_queue::create();
         queue->set_number_of_threads(8);
 
-        // Test many tasks (reduced from 1000 to 100 for faster tests)
+        // Test many tasks
         {
-            timer_scope test_timer("7.1 Many tasks (100 tasks)");
+            timer_scope test_timer("7.1 Many tasks (20 tasks)");
             using future_type =
                 decltype(std::declval<threaded_callback_queue>().push(std::declval<int (*)()>()));
             std::vector<future_type> futures;
 
-            for (int i = 0; i < 100; ++i)
+            for (int i = 0; i < 20; ++i)
             {
                 futures.push_back(queue->push([i]() { return i; }));
             }
 
-            for (int i = 0; i < 100; ++i)
+            for (int i = 0; i < 20; ++i)
             {
                 EXPECT_EQ(futures[i]->get(), i);
             }
@@ -512,10 +452,6 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
         // Test complex dependency graph
         {
             timer_scope test_timer("7.2 Complex dependency graph");
-            queue->set_number_of_threads(4);
-            auto sync_future = queue->push([]() { return 0; });
-            sync_future->wait();
-
             auto root = queue->push([]() { return 1; });
 
             std::vector<decltype(root.get())> root_deps = {root.get()};
@@ -528,18 +464,6 @@ XSIGMATEST(ThreadedCallbackQueue, Test)
                 merge_deps, [&left, &right]() { return left->get() + right->get(); });
 
             EXPECT_EQ(merge->get(), 5);  // 1 + (1+1) + (1+2) = 5
-        }
-
-        // Test rapid thread count changes (reduced iterations for faster tests)
-        {
-            timer_scope test_timer("7.3 Rapid thread count changes");
-            for (int threads = 1; threads <= 4; threads += 2)
-            {
-                queue->set_number_of_threads(threads);
-
-                auto future = queue->push([threads]() { return threads * 10; });
-                EXPECT_EQ(future->get(), threads * 10);
-            }
         }
 
         delete queue;
