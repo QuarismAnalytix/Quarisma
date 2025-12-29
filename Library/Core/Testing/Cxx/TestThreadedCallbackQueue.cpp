@@ -4,469 +4,231 @@
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * Comprehensive test suite for threaded_callback_queue functionality
- * Tests asynchronous task execution, futures, dependencies, and thread management
+ * Tests callback queue operations, threading, and both return value and void specializations
  */
 
 #include <atomic>
 #include <chrono>
-#include <iomanip>
+#include <functional>
 #include <thread>
-#include <vector>
 
 #include "Testing/xsigmaTest.h"
+#include "common/pointer.h"
 #include "smp/threaded_callback_queue.h"
 
 namespace xsigma
 {
+  struct IntArray
+  {
+    void SetName(const std::string& name) { this->name = name; }
+    std::string name;
+  };
 
-// ============================================================================
-// Timing Utility Helper
-// ============================================================================
-
-class timer_scope
+//-----------------------------------------------------------------------------
+void RunThreads(int nthreadsBegin, int nthreadsEnd)
 {
-public:
-    explicit timer_scope(const std::string& section_name)
-        : section_name_(section_name), start_(std::chrono::high_resolution_clock::now())
-    {
-    }
+  auto queue = std::make_unique<threaded_callback_queue>();
+  std::atomic_int count(0);
+  int N = 10000;
 
-    ~timer_scope()
-    {
-        auto end = std::chrono::high_resolution_clock::now();
-        auto duration_ms =
-            std::chrono::duration_cast<std::chrono::milliseconds>(end - start_).count();
-        std::cout << "    [TIMING] " << section_name_ << ": " << duration_ms << " ms" << std::endl;
-    }
+  // Spamming controls
+  for (int i = 0; i < 6; ++i)
+  {
+    queue->set_number_of_threads(nthreadsBegin);
+    queue->set_number_of_threads(nthreadsEnd);
+  }
 
-private:
-    std::string                                    section_name_;
-    std::chrono::high_resolution_clock::time_point start_;
+  // We are testing if the queue can properly resize itself and doesn't have deadlocks
+  for (int i = 0; i < N; ++i)
+  {
+    auto array = std::make_shared<IntArray>();
+    auto array2 = std::make_shared<IntArray>();
+    queue->push(
+      [&count, array, array2](const int& n, const double&&, char)
+      {
+        array2->SetName(std::to_string(n).c_str());
+        array->SetName(std::to_string(n).c_str());
+        ++count;
+      },
+      i, 0, 'a');
+  }
+
+  // If the jobs are not run, this test will do an infinite loop
+  while (count != N)
+    ;
+
+  // Checking how the queue behaves when being destroyed.
+  queue->set_number_of_threads(nthreadsBegin);
+  queue->set_number_of_threads(nthreadsEnd);
+}
+
+//=============================================================================
+struct A
+{
+  A() {XSIGMA_LOG_INFO("Constructor"); }
+  A(A&& other) noexcept
+    : array(std::move(other.array))
+    , val(other.val)
+  {
+    XSIGMA_LOG_INFO("Move constructor");
+  }
+  A(const A& other)
+    : array(other.array)
+    , val(other.val)
+  {
+    XSIGMA_LOG_INFO("Copy constructor called.");
+  }
+  void f(A&, A&&) {}
+  void const_f(A&, A&&) const {}
+  void operator()(A&, A&&) { std::cout << array->name << std::endl; }
+  int& get() { return val; }
+
+  std::shared_ptr<IntArray> array = std::make_shared<IntArray>();
+  int val = 0;
 };
 
-// ============================================================================
-// Test Group 1: Basic Functionality
-// ============================================================================
+//-----------------------------------------------------------------------------
+void f(A&, A&&) {}
 
-// Merged Test: Basic functionality (creation, thread management, task execution)
-XSIGMATEST(ThreadedCallbackQueue, Test)
+//-----------------------------------------------------------------------------
+bool TestFunctionTypeCompleteness()
 {
+  // We create a queue outside of the score where things are pushed to ensure that the pushed
+  // objects are persistent.
+  auto queue = std::make_unique<threaded_callback_queue>();
+  {
+    // Testing the queue on some exotic inputs
+
+    // lambdas
+    queue->push([] {}); // empty lambda used to fail with MSVC ARM64
+    queue->push([](A&&) {}, A());
+    queue->push([](A&, const A&, A&&, const A&&) {}, A(), A(), A(), A());
+
+    // member function pointers
+    queue->push(&A::f, A(), A(), A());
+    queue->push(&A::const_f, A(), A(), A());
+
+    std::shared_ptr<A> persistentA = std::make_shared<A>();
+
+    // Fetching an lvalue reference return type
+    auto future = queue->push(&A::get, persistentA);
+
+    // functor
+    queue->push(A(), A(), A());
+
+    // function pointer
+    queue->push(&f, A(), A());
+
+    // Passing an lvalue reference, which needs to be copied.
+    A a;
+    queue->push(a, A(), A());
+
+    // Passing a pointer wrapped functor
+    queue->push(std::unique_ptr<A>(new A()), A(), A());
+
+    // Passing a pointer wrapped object with a member function pointer
+    queue->push(&A::f, std::unique_ptr<A>(new A()), A(), A());
+
+    // Passing a std::function
+    std::function<void(A&, A&&)> func = f;
+    queue->push(func, A(), A());
+
+    // Testing lvalue reference return type behavior
+    int& val = queue->get(future);
+    if (&val != &persistentA->val)
     {
-        timer_scope group1_timer("Group 1: Basic Functionality");
-        std::cout << "\n=== Test Group 1: Basic Functionality ===\n";
-
-        // Test creation and destruction
-        {
-            timer_scope test_timer("1.1 Queue creation");
-            std::cout << "  [1.1] Testing queue creation..." << std::endl;
-            threaded_callback_queue* queue = threaded_callback_queue::create();
-            EXPECT_TRUE(queue != nullptr);
-            std::cout << "  [1.1] ✓ Queue created successfully\n" << std::endl;
-
-            // Test set and get number of threads
-            {
-                timer_scope test_timer2("1.2 Thread management (2 threads)");
-                std::cout << "  [1.2] Testing thread management (2 threads)..." << std::endl;
-                queue->set_number_of_threads(2);
-                auto future1a = queue->push([]() { return 0; });
-                future1a->wait();
-                EXPECT_EQ(queue->get_number_of_threads(), 2);
-                std::cout << "  [1.2] ✓ Thread count set to 2\n" << std::endl;
-            }
-
-            // Test push simple task with int return
-            if (false)
-            {
-                timer_scope test_timer5("1.5 Simple int task");
-                std::cout << "  [1.5] Testing simple int task (expect 42)..." << std::endl;
-                auto int_future = queue->push([]() { return 42; });
-                EXPECT_TRUE(int_future != nullptr);
-                int int_result = int_future->get();
-                EXPECT_EQ(int_result, 42);
-                std::cout << "  [1.5] ✓ Got result: " << int_result << "\n" << std::endl;
-            }
-
-            // Test push task with void return
-            {
-                timer_scope test_timer6("1.6 Void task with counter");
-                std::cout << "  [1.6] Testing void task with counter..." << std::endl;
-                std::atomic<int> counter{0};
-                auto             void_future = queue->push([&counter]() { counter++; });
-                EXPECT_TRUE(void_future != nullptr);
-                void_future->wait();
-                EXPECT_EQ(counter.load(), 1);
-                std::cout << "  [1.6] ✓ Counter incremented to: " << counter.load() << "\n"
-                          << std::endl;
-            }
-
-            // Test push task with arguments
-            {
-                timer_scope test_timer7("1.7 Task with arguments");
-                std::cout << "  [1.7] Testing task with arguments (10 + 20)..." << std::endl;
-                auto add        = [](int a, int b) { return a + b; };
-                auto add_future = queue->push(add, 10, 20);
-                int  add_result = add_future->get();
-                EXPECT_EQ(add_result, 30);
-                std::cout << "  [1.7] ✓ Addition result: " << add_result << "\n" << std::endl;
-            }
-
-            // Test multiple tasks execution
-            if (false)
-            {
-                timer_scope test_timer8("1.8 10 concurrent tasks");
-                std::cout << "  [1.8] Testing 10 concurrent tasks (i²)..." << std::endl;
-                queue->set_number_of_threads(4);
-                auto sync_future2 = queue->push([]() { return 0; });
-                sync_future2->wait();
-
-                using future_type = decltype(std::declval<threaded_callback_queue>().push(
-                    std::declval<int (*)()>()));
-                std::vector<future_type> futures;
-
-                for (int i = 0; i < 10; ++i)
-                {
-                    futures.push_back(queue->push([i]() { return i * i; }));
-                }
-
-                for (int i = 0; i < 10; ++i)
-                {
-                    EXPECT_EQ(futures[i]->get(), i * i);
-                }
-                std::cout << "  [1.8] ✓ All 10 tasks completed correctly\n" << std::endl;
-            }
-
-            delete queue;
-        }
-        std::cout << "=== Group 1 Complete ===\n" << std::endl;
+      std::cout << "lvalue reference was not correctly passed through the queue." << std::endl;
+      return false;
     }
-
-    // ============================================================================
-    // Test Group 2: Futures and Synchronization
-    // ============================================================================
-
-    // Merged Test: Future operations (wait, get, multiple futures)
-    {
-        timer_scope              group2_timer("Group 2: Futures and Synchronization");
-        threaded_callback_queue* queue = threaded_callback_queue::create();
-        queue->set_number_of_threads(4);
-
-        // Test future wait
-        {
-            timer_scope       test_timer("2.1 Future wait");
-            std::atomic<bool> task_started{false};
-            auto              wait_future = queue->push(
-                [&task_started]()
-                {
-                    task_started.store(true);
-                    return 100;
-                });
-
-            wait_future->wait();
-            EXPECT_TRUE(task_started.load());
-            EXPECT_EQ(wait_future->get(), 100);
-        }
-
-        // Test get with wait
-        {
-            timer_scope test_timer("2.2 Get with wait");
-            auto        get_future = queue->push([]() { return 999; });
-
-            int result = queue->get(get_future);
-            EXPECT_EQ(result, 999);
-        }
-
-        // Test wait for multiple futures
-        {
-            timer_scope test_timer("2.3 Multiple futures");
-            using future_type =
-                decltype(std::declval<threaded_callback_queue>().push(std::declval<int (*)()>()));
-            std::vector<future_type> futures;
-
-            for (int i = 0; i < 3; ++i)
-            {
-                futures.push_back(queue->push([i]() { return i; }));
-            }
-
-            // Convert to raw pointers for wait
-            std::vector<decltype(futures[0].get())> future_ptrs;
-            for (auto& f : futures)
-            {
-                future_ptrs.push_back(f.get());
-            }
-
-            queue->wait(future_ptrs);
-
-            // All futures should be ready
-            for (int i = 0; i < 3; ++i)
-            {
-                EXPECT_EQ(futures[i]->get(), i);
-            }
-        }
-
-        delete queue;
-    }
-
-    // ============================================================================
-    // Test Group 3: Dependent Tasks
-    // ============================================================================
-
-    // Merged Test: Dependent tasks (simple, multiple, chained)
-    {
-        timer_scope              group3_timer("Group 3: Dependent Tasks");
-        threaded_callback_queue* queue = threaded_callback_queue::create();
-        queue->set_number_of_threads(4);
-
-        // Test simple dependent task
-        {
-            timer_scope test_timer("3.1 Simple dependent task");
-            auto        simple_future1 = queue->push([]() { return 10; });
-
-            std::vector<decltype(simple_future1.get())> simple_deps    = {simple_future1.get()};
-            auto                                        simple_future2 = queue->push_dependent(
-                simple_deps, [&simple_future1]() { return simple_future1->get() * 2; });
-
-            EXPECT_EQ(simple_future2->get(), 20);
-        }
-
-        // Test multiple dependencies
-        {
-            timer_scope test_timer("3.2 Multiple dependencies");
-            auto        multi_future1 = queue->push([]() { return 5; });
-            auto        multi_future2 = queue->push([]() { return 10; });
-            auto        multi_future3 = queue->push([]() { return 15; });
-
-            std::vector<threaded_callback_queue::shared_future_base*> multi_deps = {
-                multi_future1.get(), multi_future2.get(), multi_future3.get()};
-
-            auto multi_future_sum = queue->push_dependent(
-                multi_deps,
-                [&multi_future1, &multi_future2, &multi_future3]()
-                { return multi_future1->get() + multi_future2->get() + multi_future3->get(); });
-
-            EXPECT_EQ(multi_future_sum->get(), 30);
-        }
-
-        // Test chained dependencies
-        {
-            timer_scope test_timer("3.3 Chained dependencies");
-            auto chain_future1 = queue->push([]() { return 1; });
-
-            std::vector<decltype(chain_future1.get())> deps1         = {chain_future1.get()};
-            auto                                       chain_future2 = queue->push_dependent(
-                deps1, [&chain_future1]() { return chain_future1->get() + 1; });
-
-            std::vector<decltype(chain_future2.get())> deps2         = {chain_future2.get()};
-            auto                                       chain_future3 = queue->push_dependent(
-                deps2, [&chain_future2]() { return chain_future2->get() + 1; });
-
-            EXPECT_EQ(chain_future3->get(), 3);
-        }
-
-        delete queue;
-    }
-
-    // ============================================================================
-    // Test Group 4: Complex Return Types
-    // ============================================================================
-
-    // Merged Test: Complex return types (string, vector, struct)
-    if (false)
-    {
-        timer_scope group4_timer("Group 4: Complex Return Types");
-        struct Point
-        {
-            int x, y;
-        };
-
-        threaded_callback_queue* queue = threaded_callback_queue::create();
-        queue->set_number_of_threads(2);
-
-        // Test string return type
-        {
-            timer_scope test_timer("4.1 String return type");
-            auto        string_future = queue->push([]() { return std::string("Hello, World!"); });
-            std::string string_result = string_future->get();
-            EXPECT_EQ(string_result, "Hello, World!");
-        }
-
-        // Test vector return type
-        {
-            timer_scope test_timer("4.2 Vector return type");
-            auto        vector_future = queue->push(
-                []()
-                {
-                    std::vector<int> vec;
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        vec.push_back(i * 10);
-                    }
-                    return vec;
-                });
-
-            std::vector<int> vector_result = vector_future->get();
-            EXPECT_EQ(vector_result.size(), 5);
-            for (int i = 0; i < 5; ++i)
-            {
-                EXPECT_EQ(vector_result[i], i * 10);
-            }
-        }
-
-        // Test struct return type
-        {
-            timer_scope test_timer("4.3 Struct return type");
-            auto        struct_future = queue->push([]() { return Point{10, 20}; });
-            Point       struct_result = struct_future->get();
-            EXPECT_EQ(struct_result.x, 10);
-            EXPECT_EQ(struct_result.y, 20);
-        }
-
-        delete queue;
-    }
-
-    // ============================================================================
-    // Test Group 5: Thread Safety
-    // ============================================================================
-
-    // Merged Test: Thread safety (concurrent pushes, atomic operations)
-    {
-        timer_scope              group5_timer("Group 5: Thread Safety");
-        threaded_callback_queue* queue = threaded_callback_queue::create();
-        queue->set_number_of_threads(8);
-
-        // Test concurrent pushes
-        {
-            timer_scope      test_timer("5.1 Concurrent pushes (20 tasks)");
-            std::atomic<int> counter{0};
-            using future_type =
-                decltype(std::declval<threaded_callback_queue>().push(std::declval<void (*)()>()));
-            std::vector<future_type> futures1;
-
-            for (int i = 0; i < 20; ++i)
-            {
-                futures1.push_back(queue->push([&counter]() { counter++; }));
-            }
-
-            for (auto& f : futures1)
-            {
-                f->wait();
-            }
-
-            EXPECT_EQ(counter.load(), 20);
-        }
-
-        // Test atomic operations in tasks
-        {
-            timer_scope test_timer("5.2 Atomic operations (20 tasks)");
-            std::atomic<int64_t> sum{0};
-            using future_type =
-                decltype(std::declval<threaded_callback_queue>().push(std::declval<void (*)()>()));
-            std::vector<future_type> futures2;
-
-            for (int i = 0; i < 20; ++i)
-            {
-                futures2.push_back(
-                    queue->push([&sum, i]() { sum.fetch_add(i, std::memory_order_relaxed); }));
-            }
-
-            for (auto& f : futures2)
-            {
-                f->wait();
-            }
-
-            int64_t expected = (19 * 20) / 2;
-            EXPECT_EQ(sum.load(), expected);
-        }
-
-        delete queue;
-    }
-
-    // ============================================================================
-    // Test Group 6: Edge Cases
-    // ============================================================================
-
-    // Merged Test: Edge cases (minimum threads, empty lambda, exception handling)
-    {
-        timer_scope              group6_timer("Group 6: Edge Cases");
-        threaded_callback_queue* queue = threaded_callback_queue::create();
-
-        // Test zero threads (should use at least 1)
-        {
-            timer_scope test_timer("6.1 Minimum threads (1 thread)");
-            queue->set_number_of_threads(1);
-            auto min_thread_future = queue->push([]() { return 42; });
-            EXPECT_EQ(min_thread_future->get(), 42);
-        }
-
-        // Test empty lambda
-        {
-            timer_scope test_timer("6.2 Empty lambda");
-            auto empty_future = queue->push([]() {});
-            empty_future->wait();
-            EXPECT_TRUE(true);
-        }
-
-        // Test task that might throw exception
-        {
-            timer_scope      test_timer("6.3 Multiple counter tasks");
-            std::atomic<int> counter{0};
-            auto             exception_future1 = queue->push([&counter]() { counter++; });
-            auto             exception_future2 = queue->push([&counter]() { counter++; });
-
-            exception_future1->wait();
-            exception_future2->wait();
-
-            EXPECT_GE(counter.load(), 1);
-        }
-
-        delete queue;
-    }
-
-    // ============================================================================
-    // Test Group 7: Stress Tests
-    // ============================================================================
-
-    // Merged Test: Stress tests (many tasks, rapid thread changes)
-    {
-        timer_scope              group7_timer("Group 7: Stress Tests");
-        threaded_callback_queue* queue = threaded_callback_queue::create();
-        queue->set_number_of_threads(8);
-
-        // Test many tasks
-        {
-            timer_scope test_timer("7.1 Many tasks (20 tasks)");
-            using future_type =
-                decltype(std::declval<threaded_callback_queue>().push(std::declval<int (*)()>()));
-            std::vector<future_type> futures;
-
-            for (int i = 0; i < 20; ++i)
-            {
-                futures.push_back(queue->push([i]() { return i; }));
-            }
-
-            for (int i = 0; i < 20; ++i)
-            {
-                EXPECT_EQ(futures[i]->get(), i);
-            }
-        }
-
-        // Test complex dependency graph
-        {
-            timer_scope test_timer("7.2 Complex dependency graph");
-            auto root = queue->push([]() { return 1; });
-
-            std::vector<decltype(root.get())> root_deps = {root.get()};
-            auto left  = queue->push_dependent(root_deps, [&root]() { return root->get() + 1; });
-            auto right = queue->push_dependent(root_deps, [&root]() { return root->get() + 2; });
-
-            std::vector<threaded_callback_queue::shared_future_base*> merge_deps = {
-                left.get(), right.get()};
-            auto merge = queue->push_dependent(
-                merge_deps, [&left, &right]() { return left->get() + right->get(); });
-
-            EXPECT_EQ(merge->get(), 5);  // 1 + (1+1) + (1+2) = 5
-        }
-
-        delete queue;
-    }
+  }
+  return true;
 }
-}  // namespace xsigma
+
+//-----------------------------------------------------------------------------
+bool TestSharedFutures()
+{
+  int N = 10;
+  bool retVal = true;
+  while (--N && retVal)
+  {
+    auto queue = std::make_unique<threaded_callback_queue>();
+    queue->set_number_of_threads(4);
+
+    std::atomic_int count(0);
+    std::mutex mutex;
+
+    auto f = [&count, &mutex](std::string& s, int low)
+    {
+      std::unique_lock<std::mutex> lock(mutex);
+      if (count++ < low)
+      {
+        XSIGMA_LOG_ERROR("Task {} started too early, in {}th position instead of {}th.",
+                         s, count.load(), low + 1);
+        return false;
+      }
+      lock.unlock();
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      return true;
+    };
+
+    using Array = std::vector<threaded_callback_queue::shared_future_pointer<bool>>;
+
+    int n = 10;
+
+    Array futures;
+
+    auto future1 = queue->push(f, "t1", 0);
+    auto future2 = queue->push_dependent(Array{ future1 }, f, "t2", 1);
+    auto future3 = queue->push_dependent(Array{ future1, future2 }, f, "t3", 2);
+    // These pushes makes the scenario where future2 and future4 are ready to run but have a higher
+    // future id than them. SharedFuture2 and future4 will need to wait here and we're ensuring
+    // everything goes well.
+    for (int i = 0; i < n; ++i)
+    {
+      futures.emplace_back(queue->push(f, "spam", 0));
+    }
+    auto fastFuture = queue->push(f, "spam", 0);
+    auto future4 = queue->push_dependent(Array{ future2 }, f, "t4", 3);
+    auto future5 = queue->push_dependent(Array{ future3, future4 }, f, "t5", 4);
+    auto future6 = queue->push(f, "t6", 0);
+
+    futures.emplace_back(future1);
+    futures.emplace_back(future2);
+    futures.emplace_back(future3);
+    futures.emplace_back(future4);
+    futures.emplace_back(future5);
+    futures.emplace_back(future6);
+
+    // Testing the case where Wait executes the task associated with a function that wasn't invoked
+    // yet.
+    queue->wait(Array{ fastFuture });
+
+    // Testing all other scenarios in Wait
+    queue->wait(futures);
+
+    for (auto& future : futures)
+    {
+      retVal &= queue->get(future);
+    }
+  }
+
+  return retVal;
+}
+
+
+XSIGMATEST(TestThreadedCallbackQueue, Test)
+{
+  XSIGMA_LOG_INFO("Testing futures");
+  bool retVal = xsigma::TestSharedFutures();
+
+  retVal &= xsigma::TestFunctionTypeCompleteness();
+
+  XSIGMA_LOG_INFO("Testing expanding from 2 to 8 threads");
+  // Testing expanding the number of threads
+  xsigma::RunThreads(2, 8);
+
+  XSIGMA_LOG_INFO("Testing shrinking from 8 to 2 threads");
+  // Testing shrinking the number of threads
+  xsigma::RunThreads(8, 2);
+}
+} // anonymous namespace

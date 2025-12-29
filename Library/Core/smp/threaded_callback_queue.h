@@ -643,14 +643,32 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+// Helper functions to extract raw pointer from either raw pointer or shared_ptr
+namespace detail
+{
+    template <typename T>
+    inline T* get_raw_ptr(T* ptr)
+    {
+        return ptr;
+    }
+
+    template <typename T>
+    inline T* get_raw_ptr(const std::shared_ptr<T>& ptr)
+    {
+        return ptr.get();
+    }
+}
+
+//-----------------------------------------------------------------------------
 template <class SharedFutureContainerT, class InvokerT>
 void threaded_callback_queue::handle_dependent_invoker(
     SharedFutureContainerT&& prior_shared_futures, InvokerT&& invoker)
 {
     if (!prior_shared_futures.empty())
     {
-        for (const auto& prior : prior_shared_futures)
+        for (const auto& future_item : prior_shared_futures)
         {
+            shared_future_base* prior = detail::get_raw_ptr(future_item);
             if (prior->status_.load(std::memory_order_acquire) == READY)
             {
                 continue;
@@ -687,7 +705,9 @@ bool threaded_callback_queue::must_wait(SharedFutureContainerT&& prior_shared_fu
     return std::any_of(
         prior_shared_futures.begin(),
         prior_shared_futures.end(),
-        [](const auto& prior) { return prior->status_.load(std::memory_order_acquire) != READY; });
+        [](const auto& future_item) {
+            return detail::get_raw_ptr(future_item)->status_.load(std::memory_order_acquire) != READY;
+        });
 }
 
 //-----------------------------------------------------------------------------
@@ -697,8 +717,9 @@ void threaded_callback_queue::wait(SharedFutureContainerT&& prior_shared_futures
     bool                    must_wait_flag         = false;
     SharedFutureContainerT& prior_shared_futures_r = prior_shared_futures;
 
-    for (shared_future_base* prior : prior_shared_futures)
+    for (const auto& future_item : prior_shared_futures)
     {
+        shared_future_base* prior = detail::get_raw_ptr(future_item);
         switch (prior->status_.load(std::memory_order_acquire))
         {
         case RUNNING:

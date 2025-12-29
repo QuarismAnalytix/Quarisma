@@ -11,7 +11,13 @@ import subprocess
 
 
 def run_ctest(
-    builder: str, build_enum: str, system: str, verbosity: str, shell_flag: bool
+    builder: str,
+    build_enum: str,
+    system: str,
+    verbosity: str,
+    shell_flag: bool,
+    sanitizer_type: str = None,
+    source_path: str = None,
 ) -> int:
     """
     Run tests using ctest.
@@ -22,6 +28,8 @@ def run_ctest(
         system: Operating system (Linux, Darwin, Windows)
         verbosity: Verbosity flag
         shell_flag: Whether to use shell execution
+        sanitizer_type: Type of sanitizer being used (address, thread, etc.)
+        source_path: Path to source directory
 
     Returns:
         Exit code (0 for success, non-zero for failure)
@@ -40,8 +48,20 @@ def run_ctest(
         if verbosity:
             ctest_cmd.append(verbosity)
 
+        # Set up sanitizer suppressions if using a sanitizer
+        env = os.environ.copy()
+        if sanitizer_type and source_path:
+            suppressions_file = os.path.join(
+                source_path, "Scripts", "suppressions", f"{sanitizer_type}san_suppressions.txt"
+            )
+            if os.path.exists(suppressions_file):
+                sanitizer_option = f"{sanitizer_type.upper()}SAN_OPTIONS"
+                env[sanitizer_option] = (
+                    f"suppressions={suppressions_file}:print_suppressions=1"
+                )
+
         return subprocess.check_call(
-            ctest_cmd, stderr=subprocess.STDOUT, shell=shell_flag
+            ctest_cmd, stderr=subprocess.STDOUT, shell=shell_flag, env=env
         )
 
     except subprocess.CalledProcessError:
