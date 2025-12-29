@@ -212,6 +212,11 @@ endif()
 target_link_libraries(Core PUBLIC XSigma::build)
 if(COMMAND xsigma_target_clang_tidy)
   xsigma_target_clang_tidy(Core)
+  # Disable clang-tidy for kineto profiler files that crash the analyzer
+  set_source_files_properties(
+    profiler/kineto/profiler_kineto.cpp
+    PROPERTIES SKIP_LINTING ON
+  )
 endif()
 
 # ============================================================================= Link with

@@ -646,18 +646,18 @@ private:
 // Helper functions to extract raw pointer from either raw pointer or shared_ptr
 namespace detail
 {
-    template <typename T>
-    inline T* get_raw_ptr(T* ptr)
-    {
-        return ptr;
-    }
-
-    template <typename T>
-    inline T* get_raw_ptr(const std::shared_ptr<T>& ptr)
-    {
-        return ptr.get();
-    }
+template <typename T>
+inline T* get_raw_ptr(T* ptr)
+{
+    return ptr;
 }
+
+template <typename T>
+inline T* get_raw_ptr(const std::shared_ptr<T>& ptr)
+{
+    return ptr.get();
+}
+}  // namespace detail
 
 //-----------------------------------------------------------------------------
 template <class SharedFutureContainerT, class InvokerT>
@@ -705,8 +705,10 @@ bool threaded_callback_queue::must_wait(SharedFutureContainerT&& prior_shared_fu
     return std::any_of(
         prior_shared_futures.begin(),
         prior_shared_futures.end(),
-        [](const auto& future_item) {
-            return detail::get_raw_ptr(future_item)->status_.load(std::memory_order_acquire) != READY;
+        [](const auto& future_item)
+        {
+            return detail::get_raw_ptr(future_item)->status_.load(std::memory_order_acquire) !=
+                   READY;
         });
 }
 

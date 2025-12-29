@@ -682,7 +682,7 @@ void invoke_parallel(
     // to avoid race condition where tasks complete before counter is set
     struct
     {
-        std::atomic_flag        err_flag = ATOMIC_FLAG_INIT;
+        std::atomic_flag        err_flag;
         std::exception_ptr      eptr;
         std::mutex              mutex;
         std::atomic_size_t      remaining;

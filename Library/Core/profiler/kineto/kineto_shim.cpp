@@ -90,8 +90,9 @@ DeviceAndResource kineto_ids()
 void addMetadata(activity_t* activity, const std::string& key, const std::string& value)
 {
 #if XSIGMA_HAS_KINETO
-    activity->addMetadata(key, value);
-#endif  // XSIGMA_HAS_KINETO
+    activity->addMetadata(
+        key, value);  // NOLINT(clang-analyzer-optin.cplusplus.UninitializedObject)
+#endif                // XSIGMA_HAS_KINETO
 }
 
 TraceWrapper::TraceWrapper(const int64_t start_time, const std::string& name)

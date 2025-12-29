@@ -1,0 +1,9 @@
+---
+# Disable all clang-tidy checks for third-party code
+# This file overrides the root .clang-tidy configuration for all files in ThirdParty/
+Checks: '-*,-clang-analyzer-*,-clang-diagnostic-*'
+WarningsAsErrors: ''
+CheckOptions:
+  - key: ClangTidy.WarningsAsErrors
+    value: ''
+...
