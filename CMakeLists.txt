@@ -280,6 +280,15 @@ include(threads)
 # Configure SMP backend selection (must be before openmp and tbb includes)
 include(smp_backend)
 
+# Create build interface target for common settings FIRST
+# This target is needed by sanitize.cmake and other modules
+add_library(xsigmabuild INTERFACE)
+add_library(XSigma::build ALIAS xsigmabuild)
+
+# Include sanitizer configuration EARLY to disable incompatible features
+# Must be before compile_definitions so XSIGMA_HAS_MIMALLOC is set correctly
+include(sanitize)
+
 # Configure optional features
 include(openmp)
 include(cuda)
@@ -296,16 +305,9 @@ include(valgrind)
 include(helper_macros)
 include(compile_definitions)
 
-# Create build interface target for common settings
-add_library(xsigmabuild INTERFACE)
-add_library(XSigma::build ALIAS xsigmabuild)
-
 # Include optimization modules AFTER xsigmabuild target is created These modules apply flags to the
 # xsigmabuild target to affect only XSigma targets, not third-party dependencies
 include(linker)
-
-# Include sanitizer configuration after xsigmabuild target is created
-include(sanitize)
 
 # Set compile features
 target_compile_features(xsigmabuild INTERFACE cxx_std_${XSIGMA_CXX_STANDARD})

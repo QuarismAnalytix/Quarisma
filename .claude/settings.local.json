@@ -41,7 +41,11 @@
       "Bash(python setup.py:*)",
       "Bash(C:PROGRA~1LLVMbinCLANG_~1.EXE:*)",
       "Bash(\"C:/Program Files/LLVM/bin/clang++.exe\":*)",
-      "Bash(gh run list:*)"
+      "Bash(gh run list:*)",
+      "Bash(timeout 30 ./bin/CoreCxxTests:*)",
+      "Bash(LSAN_OPTIONS=\"suppressions=/home/toufik/dev/XSigma/Scripts/suppressions/lsan_suppressions.txt:print_suppressions=1\" ./bin/CoreCxxTests:*)",
+      "Bash(timeout 120 python3:*)",
+      "Bash(timeout 300 bash -c \"python3 setup.py CONFIG.build.test.vv --sanitizer.address 2>&1 | tail -400\":*)"
     ],
     "deny": [],
     "ask": []
