@@ -56,6 +56,8 @@ namespace
 inline int64_t getTimeNs()
 {
 #if XSIGMA_HAS_KINETO
+    // NOLINTNEXTLINE(clang-analyzer-optin.cplusplus.UninitializedObject)
+    // False positive in fmt library's internal format_string_checker constructor
     return libkineto::timeSinceEpoch(std::chrono::system_clock::now());
 #else
     return xsigma::getTime();

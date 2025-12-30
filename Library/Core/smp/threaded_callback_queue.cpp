@@ -124,12 +124,6 @@ threaded_callback_queue::~threaded_callback_queue()
 }
 
 //-----------------------------------------------------------------------------
-threaded_callback_queue* threaded_callback_queue::create()
-{
-    return new threaded_callback_queue();
-}
-
-//-----------------------------------------------------------------------------
 void threaded_callback_queue::set_number_of_threads(int number_of_threads)
 {
     this->push_control(

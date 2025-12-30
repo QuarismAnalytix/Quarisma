@@ -357,7 +357,13 @@ void stats_calculator::add_node_stats(
     int64_t            mem_used)
 {
     detail* detail_ptr = nullptr;
+#if __cplusplus >= 202002L
+    // C++20: use contains()
+    if (!details_.contains(name))
+#else
+    // C++17: use find() for compatibility
     if (details_.find(name) == details_.end())
+#endif
     {
         details_.insert({name, {}});
         detail_ptr            = &details_.at(name);

@@ -90,9 +90,17 @@ DeviceAndResource kineto_ids()
 void addMetadata(activity_t* activity, const std::string& key, const std::string& value)
 {
 #if XSIGMA_HAS_KINETO
-    activity->addMetadata(
-        key, value);  // NOLINT(clang-analyzer-optin.cplusplus.UninitializedObject)
-#endif                // XSIGMA_HAS_KINETO
+    // Suppress false positive from clang static analyzer in fmt library
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wanalyzer-optin.cplusplus.UninitializedObject"
+#endif
+    activity->addMetadata(key, value);
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+#endif  // XSIGMA_HAS_KINETO
 }
 
 TraceWrapper::TraceWrapper(const int64_t start_time, const std::string& name)
@@ -169,12 +177,12 @@ void ActivityTraceWrapper::save(const std::string& path)
 {
 #if XSIGMA_HAS_KINETO
     XSIGMA_CHECK(!saved_, "Trace is already saved.");
+    // cppcheck-suppress unknownMacro
     XSIGMA_CHECK(trace_ != nullptr, "Missing trace.")
     trace_->save(path);
     saved_ = true;
 #else
-    XSIGMA_CHECK(
-        false,
+    XSIGMA_THROW(
         "Saving a trace requires using xsigma.profiler with Kineto support (XSIGMA_HAS_KINETO=1)");
 #endif  // XSIGMA_HAS_KINETO
 }

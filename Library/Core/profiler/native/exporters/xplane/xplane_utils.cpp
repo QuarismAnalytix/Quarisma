@@ -62,7 +62,13 @@ namespace
 {
 bool StartsWith(std::string_view str, std::string_view prefix)
 {
+#if __cplusplus >= 202002L
+    // C++20: use starts_with
+    return str.starts_with(prefix);
+#else
+    // C++17: use substr for compatibility
     return str.substr(0, prefix.size()) == prefix;
+#endif
 }
 
 // Returns the indices of all elements in array for which pred is true.

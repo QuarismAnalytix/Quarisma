@@ -573,9 +573,6 @@ void ThreadLocalSubqueue::TorchOpStorage::materialize(
         }
     }
 
-    auto input_shape_getter    = inputs_outputs_.getInputShapeGenerator();
-    auto concrete_input_getter = inputs_outputs_.getConcreteInputGenerator();
-
     // TODO: CTAD will take care of template args when we move to C++17
     auto jit_stack    = StealOrDefault<decltype(jit_stack_)>(jit_stack_);
     auto jit_module   = StealOrDefault<decltype(jit_modules_)>(jit_modules_);
@@ -586,6 +583,9 @@ void ThreadLocalSubqueue::TorchOpStorage::materialize(
 
 #if 0
     // Disabled: ExtraFields constructor expects std::vector<op_input_t> but getters return std::nullopt
+    // These variables are only used in the disabled code below
+    auto input_shape_getter    = inputs_outputs_.getInputShapeGenerator();
+    auto concrete_input_getter = inputs_outputs_.getConcreteInputGenerator();
     for (auto event = op_events_.begin(); event != op_events_.end(); ++event)
     {
         ExtraFields<EventType::TorchOp> e{

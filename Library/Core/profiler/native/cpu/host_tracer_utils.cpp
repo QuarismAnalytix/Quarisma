@@ -85,7 +85,13 @@ void may_add_display_name(xevent_metadata* xevent_metadata)
     }
 
     constexpr std::string_view kIteratorPrefix = "Iterator::";
+#if __cplusplus >= 202002L
+    // C++20 and later: use starts_with
+    if (name.starts_with(kIteratorPrefix))
+#else
+    // C++17: use rfind for compatibility
     if (name.rfind(kIteratorPrefix, 0) == 0)
+#endif
     {
         size_t const separator = name.rfind("::");
         if (separator != std::string_view::npos && separator + 2 < name.size())

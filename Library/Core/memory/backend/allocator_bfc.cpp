@@ -1382,7 +1382,9 @@ void RenderRegion(
         ((ptr_c + size - 1 - base_ptr_c + offset) * resolution) / total_render_size;
     XSIGMA_CHECK_DEBUG(end_location < resolution);
 
-    for (size_t i = start_location; i <= end_location; ++i)
+    // Ensure we don't exceed array bounds (clang-analyzer check)
+    size_t const safe_end_location = std::min(end_location, resolution - 1);
+    for (size_t i = start_location; i <= safe_end_location; ++i)
     {
         rendered[i] = c;
     }

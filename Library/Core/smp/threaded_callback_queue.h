@@ -98,12 +98,11 @@ private:
     class return_value_wrapper;
 
 public:
-    XSIGMA_API static threaded_callback_queue* create();
     XSIGMA_API virtual ~threaded_callback_queue();
 
     XSIGMA_API threaded_callback_queue();
 
-    /**
+  /**
    * `shared_future_base` is the base block to store, run, get the returned value of the tasks that
    * are pushed in the queue.
    */
