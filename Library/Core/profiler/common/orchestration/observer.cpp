@@ -133,7 +133,7 @@ ProfilerStateBase::~ProfilerStateBase()
 {
     if (handle_ != 0u)
     {
-        auto handle = handle_;
+        auto handle [[maybe_unused]] = handle_;  // Used in SOFT_ASSERT
         removeCallback();
         SOFT_ASSERT(false, "Leaked callback handle: ", handle);
     }

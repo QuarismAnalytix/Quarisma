@@ -250,8 +250,7 @@ int intraop_default_num_threads()
         {
             if (num_cores > 1)
             {
-                nthreads = num_cores;
-                return num_cores;
+                return num_cores;  // Return directly, nthreads assignment removed (dead code)
             }
         }
 #endif

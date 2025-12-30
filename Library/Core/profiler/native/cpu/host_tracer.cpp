@@ -100,7 +100,7 @@ host_tracer::~host_tracer()
     // Call stop directly without virtual dispatch since we're in destructor
     // NOLINTNEXTLINE(clang-analyzer-optin.cplusplus.VirtualCall)
     // cppcheck-suppress virtualCallInConstructor
-    stop();
+    host_tracer::stop();  // Explicitly call this class's stop() to avoid virtual dispatch
 }
 
 profiler_status host_tracer::start()

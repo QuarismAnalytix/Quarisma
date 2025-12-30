@@ -1383,8 +1383,9 @@ void RenderRegion(
     XSIGMA_CHECK_DEBUG(end_location < resolution);
 
     // Ensure we don't exceed array bounds (clang-analyzer check)
-    size_t const safe_end_location = std::min(end_location, resolution - 1);
-    for (size_t i = start_location; i <= safe_end_location; ++i)
+    size_t const safe_start = std::min(start_location, resolution - 1);
+    size_t const safe_end   = std::min(end_location, resolution - 1);
+    for (size_t i = safe_start; i <= safe_end; ++i)
     {
         rendered[i] = c;
     }

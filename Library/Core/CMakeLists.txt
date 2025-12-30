@@ -215,6 +215,7 @@ if(COMMAND xsigma_target_clang_tidy)
   # Disable clang-tidy for kineto profiler files that crash the analyzer
   set_source_files_properties(
     profiler/kineto/profiler_kineto.cpp
+    profiler/kineto/kineto_shim.cpp
     PROPERTIES SKIP_LINTING ON
   )
 endif()
