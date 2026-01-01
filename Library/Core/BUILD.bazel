@@ -36,7 +36,6 @@ filegroup(
             "smp/*.h",
             "smp/**/*.h",
             "c17/*.h",
-            "parallel/*.h",
         ],
         allow_empty = True,
     ),
@@ -75,7 +74,6 @@ filegroup(
             "profiler/**/*.cpp",
             "smp/*.cpp",
             "smp/**/*.cpp",
-            "parallel/*.cpp",
         ],
         exclude = [
             # Exclude GPU files if CUDA/HIP not enabled

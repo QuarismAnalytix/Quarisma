@@ -255,27 +255,3 @@ if(XSIGMA_ENABLE_BENCHMARK)
   list(LENGTH bench_sources bench_count)
   message(STATUS "✓ Individual benchmark executables configured (${bench_count} total)")
 endif()
-
-# ============================================================================= ProfileParallelBackends
-# Executable (Profiling Tool)
-# =============================================================================
-# This executable profiles the parallel backends (OpenMP, TBB, Native) using Kineto
-# Build separately for each backend to compare performance
-
-add_executable(ProfileParallelBackends ProfileParallelBackends.cpp)
-
-# Link libraries
-target_link_libraries(ProfileParallelBackends PRIVATE XSigma::Core)
-
-# Set target properties
-set_target_properties(ProfileParallelBackends PROPERTIES FOLDER "Profiling")
-
-# Apply XSigma output directory configuration
-if(COMMAND xsigma_set_target_output_directories)
-  xsigma_set_target_output_directories(ProfileParallelBackends)
-endif()
-
-message(STATUS "✓ ProfileParallelBackends executable configured")
-message(STATUS "  - Backend: ${XSIGMA_PARALLEL_BACKEND}")
-message(STATUS "  - OpenMP: ${XSIGMA_ENABLE_OPENMP}")
-message(STATUS "  - TBB: ${XSIGMA_ENABLE_TBB}")

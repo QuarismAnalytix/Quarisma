@@ -19,7 +19,6 @@ file(
   "${CMAKE_CURRENT_SOURCE_DIR}/memory/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/profiler/*.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/c17/*.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/parallel/*.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/smp/*.h"
   ${xsigma_headers}
 )
@@ -33,7 +32,6 @@ file(
   "${CMAKE_CURRENT_SOURCE_DIR}/memory/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/profiler/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/c17/*.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/parallel/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/smp/*.cpp"
   ${xsigma_sources}
 )
@@ -89,21 +87,6 @@ if(XSIGMA_USE_NATIVE_LOGGING)
     STATUS
       "NATIVE logging backend: Excluding logging.cpp and logging.h (using simplified fmt-based implementation)"
   )
-endif()
-
-if(XSIGMA_ENABLE_TBB)
-  # If TBB is enabled, remove STDThread files
-  file(GLOB_RECURSE TBB_FILES parallel/STDThread/*.cpp)
-  list(REMOVE_ITEM sources ${TBB_FILES})
-  file(GLOB_RECURSE TBB_HEADER_FILES parallel/STDThread/*.h parallel/STDThread/*.hxx)
-  list(REMOVE_ITEM headers ${TBB_HEADER_FILES})
-  list(REMOVE_ITEM templates ${TBB_HEADER_FILES})
-else()
-  file(GLOB_RECURSE TBB_FILES parallel/TBB/*.cpp)
-  list(REMOVE_ITEM sources ${TBB_FILES})
-  file(GLOB_RECURSE TBB_HEADER_FILES parallel/TBB/*.h parallel/TBB/*.hxx)
-  list(REMOVE_ITEM headers ${TBB_HEADER_FILES})
-  list(REMOVE_ITEM templates ${TBB_HEADER_FILES})
 endif()
 
 # Remove Kineto files if Kineto is disabled
