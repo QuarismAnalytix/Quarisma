@@ -43,31 +43,31 @@
 #### Phase 1: Verification (15 minutes)
 ```bash
 # Confirm no other usages
-grep -r "smp_thread_local" Library/Core Tests --include="*.h" --include="*.cpp" | \
-  grep -v "smp_thread_local_" | grep -v "smp_tools.h"
+grep -r "parallel_thread_local" Library/Core Tests --include="*.h" --include="*.cpp" | \
+  grep -v "parallel_thread_local_" | grep -v "parallel_tools.h"
 
 # Confirm no iteration usage
-grep -r "\.begin()\|\.end()" Library/Core/smp/smp_tools.h
+grep -r "\.begin()\|\.end()" Library/Core/parallel/parallel_tools.h
 ```
 
 #### Phase 2: Code Changes (30 minutes)
-1. Update `Library/Core/smp/smp_tools.h` (line 93)
-2. Remove `#include "smp_thread_local.h"`
-3. Replace `smp_thread_local<unsigned char>` with `thread_local unsigned char`
-4. Update CMakeLists.txt to remove smp_thread_local files
+1. Update `Library/Core/parallel/parallel_tools.h` (line 93)
+2. Remove `#include "parallel_thread_local.h"`
+3. Replace `parallel_thread_local<unsigned char>` with `thread_local unsigned char`
+4. Update CMakeLists.txt to remove parallel_thread_local files
 
 #### Phase 3: File Removal (10 minutes)
 ```bash
-rm Library/Core/smp/smp_thread_local.h
-rm Library/Core/smp/common/smp_thread_local_api.h
-rm Library/Core/smp/common/smp_thread_local_impl_abstract.h
-rm Library/Core/smp/std_thread/smp_thread_local_impl.h
-rm Library/Core/smp/std_thread/smp_thread_local_backend.h
-rm Library/Core/smp/std_thread/smp_thread_local_backend.cpp
-rm Library/Core/smp/openmp/smp_thread_local_impl.h
-rm Library/Core/smp/openmp/smp_thread_local_backend.h
-rm Library/Core/smp/openmp/smp_thread_local_backend.cpp
-rm Library/Core/smp/tbb/smp_thread_local_impl.h
+rm Library/Core/parallel/parallel_thread_local.h
+rm Library/Core/parallel/common/parallel_thread_local_api.h
+rm Library/Core/parallel/common/parallel_thread_local_impl_abstract.h
+rm Library/Core/parallel/std_thread/parallel_thread_local_impl.h
+rm Library/Core/parallel/std_thread/parallel_thread_local_backend.h
+rm Library/Core/parallel/std_thread/parallel_thread_local_backend.cpp
+rm Library/Core/parallel/openmp/parallel_thread_local_impl.h
+rm Library/Core/parallel/openmp/parallel_thread_local_backend.h
+rm Library/Core/parallel/openmp/parallel_thread_local_backend.cpp
+rm Library/Core/parallel/tbb/parallel_thread_local_impl.h
 ```
 
 #### Phase 4: Build & Test (30 minutes)
@@ -93,9 +93,9 @@ ctest -V
 
 If you discover that iteration/aggregation is needed:
 
-1. Create `Library/Core/smp/common/thread_local_storage.h`
+1. Create `Library/Core/parallel/common/thread_local_storage.h`
 2. Implement `thread_local_storage<T>` class
-3. Update `smp_tools.h` to use new class
+3. Update `parallel_tools.h` to use new class
 4. Add aggregation logic where needed
 5. Test thoroughly
 
@@ -129,7 +129,7 @@ If you discover that iteration/aggregation is needed:
 2. Is aggregation of thread-local results needed?
 3. Are there performance-critical sections?
 4. Is the codebase using per-thread initialization patterns?
-5. Are there external users of smp_thread_local?
+5. Are there external users of parallel_thread_local?
 
 **If all answers are "No" → Proceed with Option 1**
 

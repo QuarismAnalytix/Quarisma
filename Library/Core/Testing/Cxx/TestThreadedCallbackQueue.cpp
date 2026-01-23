@@ -14,7 +14,7 @@
 
 #include "Testing/xsigmaTest.h"
 #include "common/pointer.h"
-#include "smp/threaded_callback_queue.h"
+#include "parallel/threaded_callback_queue.h"
 
 namespace xsigma
 {

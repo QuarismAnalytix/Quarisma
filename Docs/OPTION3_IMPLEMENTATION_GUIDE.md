@@ -10,9 +10,9 @@ This guide provides step-by-step instructions to implement Option 3, which uses 
 
 **Current Implementation (Option 1)**:
 ```cpp
-struct smp_tools_functor_internal<Functor, true> {
+struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
-    smp_tools_functor_internal(Functor& f) : f_(f) {}
+    parallel_tools_functor_internal(Functor& f) : f_(f) {}
     void Execute(size_t first, size_t last) {
         thread_local unsigned char initialized = 0;
         if (!initialized) {
@@ -33,7 +33,7 @@ struct smp_tools_functor_internal<Functor, true> {
 
 ## Step 2: Add Required Includes
 
-**File**: `Library/Core/smp/smp_tools.h`
+**File**: `Library/Core/parallel/parallel_tools.h`
 
 Add conditional include for TBB:
 
@@ -42,7 +42,7 @@ Add conditional include for TBB:
 #include <type_traits>  // For std::enable_if
 
 #include "common/export.h"
-#include "smp/common/smp_tools_api.h"
+#include "parallel/common/parallel_tools_api.h"
 
 #if XSIGMA_HAS_TBB
 #include <tbb/enumerable_thread_specific.h>
@@ -53,18 +53,18 @@ Add conditional include for TBB:
 
 ## Step 3: Define OpenMP Threadprivate Static
 
-**Location**: In `Library/Core/smp/smp_tools.h` before the struct definition
+**Location**: In `Library/Core/parallel/parallel_tools.h` before the struct definition
 
 ```cpp
 namespace xsigma {
 namespace detail {
-namespace smp {
+namespace parallel {
 
 #if XSIGMA_HAS_OPENMP
 // Static storage for OpenMP threadprivate
 // Each thread gets its own copy automatically
-thread_local unsigned char smp_tools_functor_initialized = 0;
-#pragma omp threadprivate(smp_tools_functor_initialized)
+thread_local unsigned char parallel_tools_functor_initialized = 0;
+#pragma omp threadprivate(parallel_tools_functor_initialized)
 #endif
 
 // ... rest of code
@@ -74,13 +74,13 @@ thread_local unsigned char smp_tools_functor_initialized = 0;
 
 ## Step 4: Update Struct Definition
 
-**Location**: `Library/Core/smp/smp_tools.h` lines 88-108
+**Location**: `Library/Core/parallel/parallel_tools.h` lines 88-108
 
 Replace the entire struct with:
 
 ```cpp
 template <typename Functor>
-struct smp_tools_functor_internal<Functor, true>
+struct parallel_tools_functor_internal<Functor, true>
 {
     Functor& f_;
 
@@ -89,7 +89,7 @@ struct smp_tools_functor_internal<Functor, true>
     mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 #endif
 
-    smp_tools_functor_internal(Functor& f) : f_(f)
+    parallel_tools_functor_internal(Functor& f) : f_(f)
 #if XSIGMA_HAS_TBB
         , initialized_(0)
 #endif
@@ -99,10 +99,10 @@ struct smp_tools_functor_internal<Functor, true>
     {
 #if XSIGMA_HAS_OPENMP
         // OpenMP backend: Use threadprivate static
-        if (!smp_tools_functor_initialized)
+        if (!parallel_tools_functor_initialized)
         {
             this->f_.Initialize();
-            smp_tools_functor_initialized = 1;
+            parallel_tools_functor_initialized = 1;
         }
 #elif XSIGMA_HAS_TBB
         // TBB backend: Use enumerable_thread_specific
@@ -126,14 +126,14 @@ struct smp_tools_functor_internal<Functor, true>
 
     void parallel_for(size_t first, size_t last, size_t grain)
     {
-        auto& SMPToolsAPI = smp_tools_api::instance();
+        auto& SMPToolsAPI = parallel_tools_api::instance();
         SMPToolsAPI.parallel_for(first, last, grain, *this);
         this->f_.Reduce();
     }
 
-    smp_tools_functor_internal<Functor, true>& operator=(
-        const smp_tools_functor_internal<Functor, true>&);
-    smp_tools_functor_internal(const smp_tools_functor_internal<Functor, true>&);
+    parallel_tools_functor_internal<Functor, true>& operator=(
+        const parallel_tools_functor_internal<Functor, true>&);
+    parallel_tools_functor_internal(const parallel_tools_functor_internal<Functor, true>&);
 };
 ```
 
@@ -248,10 +248,10 @@ If issues arise:
 
 ```bash
 # Revert to Option 1 (standard C++ thread_local)
-git checkout HEAD -- Library/Core/smp/smp_tools.h
+git checkout HEAD -- Library/Core/parallel/parallel_tools.h
 
-# Or revert to original smp_thread_local
-git checkout HEAD~1 -- Library/Core/smp/
+# Or revert to original parallel_thread_local
+git checkout HEAD~1 -- Library/Core/parallel/
 ```
 
 ---

@@ -22,25 +22,25 @@
  */
 
 /**
- * @class   smp_tools
+ * @class   parallel_tools
  * @brief   A set of parallel (multi-threaded) utility functions.
  *
- * smp_tools provides a set of utility functions that can
+ * parallel_tools provides a set of utility functions that can
  * be used to parallelize parts of code using multiple threads.
  * There are several back-end implementations of parallel functionality
  * (currently std_thread, TBB, and OpenMP) that actual execution is
  * delegated to.
  */
 
-#ifndef SMP_TOOLS_H
-#define SMP_TOOLS_H
+#ifndef PARALLEL_TOOLS_H
+#define PARALLEL_TOOLS_H
 
 #include <functional>   // For std::function
 #include <string>       // For std::string
 #include <type_traits>  // For std::enable_if
 
 #include "common/export.h"
-#include "smp/common/smp_tools_api.h"
+#include "parallel/common/parallel_tools_api.h"
 
 #if XSIGMA_HAS_TBB
 #include <tbb/enumerable_thread_specific.h>
@@ -50,7 +50,7 @@ namespace xsigma
 {
 namespace detail
 {
-namespace smp
+namespace parallel
 {
 
 #if XSIGMA_HAS_OPENMP
@@ -58,12 +58,12 @@ namespace smp
 // Each thread gets its own copy automatically via OpenMP's threadprivate pragma.
 // NOTE: Do NOT use 'thread_local' with OpenMP's threadprivate pragma - they are incompatible.
 // OpenMP's threadprivate pragma provides thread-local storage for OpenMP parallel regions.
-unsigned char smp_tools_functor_initialized = 0;
-#pragma omp   threadprivate(smp_tools_functor_initialized)
+unsigned char parallel_tools_functor_initialized = 0;
+#pragma omp   threadprivate(parallel_tools_functor_initialized)
 #endif
 
 template <typename T>
-class smp_tools_has_initialize
+class parallel_tools_has_initialize
 {
     using no_type  = char (&)[1];
     using yes_type = char (&)[2];
@@ -81,7 +81,7 @@ public:
 };
 
 template <typename T>
-class smp_tools_has_initialize_const
+class parallel_tools_has_initialize_const
 {
     using no_type  = char (&)[1];
     using yes_type = char (&)[2];
@@ -99,26 +99,26 @@ public:
 };
 
 template <typename Functor, bool Init>
-struct smp_tools_functor_internal;
+struct parallel_tools_functor_internal;
 
 template <typename Functor>
-struct smp_tools_functor_internal<Functor, false>
+struct parallel_tools_functor_internal<Functor, false>
 {
     Functor& f_;
-    smp_tools_functor_internal(Functor& f) : f_(f) {}
+    parallel_tools_functor_internal(Functor& f) : f_(f) {}
     void Execute(size_t first, size_t last) { this->f_(first, last); }
     void parallel_for(size_t first, size_t last, size_t grain)
     {
-        auto& SMPToolsAPI = smp_tools_api::instance();
+        auto& SMPToolsAPI = parallel_tools_api::instance();
         SMPToolsAPI.parallel_for(first, last, grain, *this);
     }
-    smp_tools_functor_internal<Functor, false>& operator=(
-        const smp_tools_functor_internal<Functor, false>&);
-    smp_tools_functor_internal(const smp_tools_functor_internal<Functor, false>&);
+    parallel_tools_functor_internal<Functor, false>& operator=(
+        const parallel_tools_functor_internal<Functor, false>&);
+    parallel_tools_functor_internal(const parallel_tools_functor_internal<Functor, false>&);
 };
 
 template <typename Functor>
-struct smp_tools_functor_internal<Functor, true>
+struct parallel_tools_functor_internal<Functor, true>
 {
     Functor& f_;
 
@@ -127,7 +127,7 @@ struct smp_tools_functor_internal<Functor, true>
     mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 #endif
 
-    smp_tools_functor_internal(Functor& f)
+    parallel_tools_functor_internal(Functor& f)
         : f_(f)
 #if XSIGMA_HAS_TBB
           ,
@@ -140,10 +140,10 @@ struct smp_tools_functor_internal<Functor, true>
     {
 #if XSIGMA_HAS_OPENMP
         // OpenMP backend: Use threadprivate static
-        if (!smp_tools_functor_initialized)
+        if (!parallel_tools_functor_initialized)
         {
             this->f_.Initialize();
-            smp_tools_functor_initialized = 1;
+            parallel_tools_functor_initialized = 1;
         }
 #elif XSIGMA_HAS_TBB
         // TBB backend: Use enumerable_thread_specific
@@ -167,42 +167,42 @@ struct smp_tools_functor_internal<Functor, true>
 
     void parallel_for(size_t first, size_t last, size_t grain)
     {
-        auto& SMPToolsAPI = smp_tools_api::instance();
+        auto& SMPToolsAPI = parallel_tools_api::instance();
         SMPToolsAPI.parallel_for(first, last, grain, *this);
         this->f_.Reduce();
     }
 
-    smp_tools_functor_internal<Functor, true>& operator=(
-        const smp_tools_functor_internal<Functor, true>&);
-    smp_tools_functor_internal(const smp_tools_functor_internal<Functor, true>&);
+    parallel_tools_functor_internal<Functor, true>& operator=(
+        const parallel_tools_functor_internal<Functor, true>&);
+    parallel_tools_functor_internal(const parallel_tools_functor_internal<Functor, true>&);
 };
 
 template <typename Functor>
-class smp_tools_lookup_for
+class parallel_tools_lookup_for
 {
-    static bool const init = smp_tools_has_initialize<Functor>::value;
+    static bool const init = parallel_tools_has_initialize<Functor>::value;
 
 public:
-    using type = smp_tools_functor_internal<Functor, init>;
+    using type = parallel_tools_functor_internal<Functor, init>;
 };
 
 template <typename Functor>
-class smp_tools_lookup_for<Functor const>
+class parallel_tools_lookup_for<Functor const>
 {
-    static bool const init = smp_tools_has_initialize_const<Functor>::value;
+    static bool const init = parallel_tools_has_initialize_const<Functor>::value;
 
 public:
-    using type = smp_tools_functor_internal<Functor const, init>;
+    using type = parallel_tools_functor_internal<Functor const, init>;
 };
 
 template <typename T>
 using resolved_not_int = typename std::enable_if<!std::is_integral<T>::value, void>::type;
 
-}  // namespace smp
+}  // namespace parallel
 }  // namespace detail
 }  // namespace xsigma
 
-class XSIGMA_VISIBILITY smp_tools
+class XSIGMA_VISIBILITY parallel_tools
 {
 public:
     ///@{
@@ -225,14 +225,14 @@ public:
     template <typename Functor>
     static void parallel_for(size_t first, size_t last, size_t grain, Functor& f)
     {
-        typename xsigma::detail::smp::smp_tools_lookup_for<Functor>::type fi(f);
+        typename xsigma::detail::parallel::parallel_tools_lookup_for<Functor>::type fi(f);
         fi.parallel_for(first, last, grain);
     }
 
     template <typename Functor>
     static void parallel_for(size_t first, size_t last, size_t grain, const Functor& f)
     {
-        typename xsigma::detail::smp::smp_tools_lookup_for<Functor const>::type fi(f);
+        typename xsigma::detail::parallel::parallel_tools_lookup_for<Functor const>::type fi(f);
         fi.parallel_for(first, last, grain);
     }
 
@@ -293,7 +293,7 @@ public:
               nested_parallelism_(nested)
         {
         }
-        config(xsigma::detail::smp::smp_tools_api& API)
+        config(xsigma::detail::parallel::parallel_tools_api& API)
             : max_number_of_threads_(API.get_internal_desired_number_of_thread()),
               backend_(API.get_backend()),
               nested_parallelism_(API.nested_parallelism())
@@ -313,8 +313,8 @@ public:
     template <typename T>
     static void local_scope(config const& cfg, T&& lambda)
     {
-        auto& SMPToolsAPI = xsigma::detail::smp::smp_tools_api::instance();
-        SMPToolsAPI.local_scope<smp_tools::config>(cfg, lambda);
+        auto& SMPToolsAPI = xsigma::detail::parallel::parallel_tools_api::instance();
+        SMPToolsAPI.local_scope<parallel_tools::config>(cfg, lambda);
     }
 };
 

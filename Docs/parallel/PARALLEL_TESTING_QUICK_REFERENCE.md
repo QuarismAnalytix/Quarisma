@@ -5,7 +5,7 @@
 ### Run All SMP Tests
 ```bash
 cd build_ninja
-./bin/CoreCxxTests --gtest_filter="SMP*:Smp*"
+./bin/CoreCxxTests --gtest_filter="SMP*:Parallel*"
 ```
 
 **Expected Output:**
@@ -42,7 +42,7 @@ cd build_ninja
 
 ### 3. Advanced Thread Pool Tests (10 tests)
 ```bash
-./bin/CoreCxxTests --gtest_filter="SmpAdvancedParallelThreadPoolNative.*"
+./bin/CoreCxxTests --gtest_filter="ParallelAdvancedParallelThreadPoolNative.*"
 ```
 
 **What it tests:**
@@ -52,7 +52,7 @@ cd build_ninja
 
 ### 4. Thread Naming Tests (9 tests)
 ```bash
-./bin/CoreCxxTests --gtest_filter="SmpAdvancedThreadName.*"
+./bin/CoreCxxTests --gtest_filter="ParallelAdvancedThreadName.*"
 ```
 
 **What it tests:**
@@ -62,7 +62,7 @@ cd build_ninja
 
 ### 5. Thread Pool Core Tests (12 tests)
 ```bash
-./bin/CoreCxxTests --gtest_filter="SmpAdvancedThreadPool.*"
+./bin/CoreCxxTests --gtest_filter="ParallelAdvancedThreadPool.*"
 ```
 
 **What it tests:**
@@ -115,9 +115,9 @@ cd ../build_ninja
 |------|----------|-------|
 | TestSMPComprehensive.cpp | Library/Core/Testing/Cxx/ | 18 |
 | TestSMPTransformFillSort.cpp | Library/Core/Testing/Cxx/ | 21 |
-| TestSmpAdvancedParallelThreadPoolNative.cpp | Library/Core/Testing/Cxx/ | 10 |
-| TestSmpAdvancedThreadName.cpp | Library/Core/Testing/Cxx/ | 9 |
-| TestSmpAdvancedThreadPool.cpp | Library/Core/Testing/Cxx/ | 12 |
+| TestParallelAdvancedParallelThreadPoolNative.cpp | Library/Core/Testing/Cxx/ | 10 |
+| TestParallelAdvancedThreadName.cpp | Library/Core/Testing/Cxx/ | 9 |
+| TestParallelAdvancedThreadPool.cpp | Library/Core/Testing/Cxx/ | 12 |
 | BenchmarkSMP.cpp | Library/Core/Testing/Benchmark/ | 13 |
 
 ---
@@ -262,7 +262,7 @@ python3 setup.py config.build.test.ninja.clang.python -DXSIGMA_ENABLE_COVERAGE=O
 
 # Run tests
 cd ../build_ninja
-./bin/CoreCxxTests --gtest_filter="SMP*:Smp*"
+./bin/CoreCxxTests --gtest_filter="SMP*:Parallel*"
 
 # Generate coverage report
 llvm-cov show ./bin/CoreCxxTests -instr-profile=default.profdata
@@ -305,7 +305,7 @@ llvm-cov show ./bin/CoreCxxTests -instr-profile=default.profdata
 ### 2. Write Tests
 ```cpp
 #include "Testing/xsigmaTest.h"
-#include "smp/tools.h"
+#include "parallel/tools.h"
 
 namespace xsigma
 {
@@ -341,7 +341,7 @@ cd ../build_ninja
     cd Scripts
     python3 setup.py config.build.test.ninja.clang.python
     cd ../build_ninja
-    ./bin/CoreCxxTests --gtest_filter="SMP*:Smp*" --gtest_output=xml:smp_test_results.xml
+    ./bin/CoreCxxTests --gtest_filter="SMP*:Parallel*" --gtest_output=xml:parallel_test_results.xml
 ```
 
 ### Jenkins Example
@@ -352,7 +352,7 @@ stage('Test SMP Module') {
             cd Scripts
             python3 setup.py config.build.test.ninja.clang.python
             cd ../build_ninja
-            ./bin/CoreCxxTests --gtest_filter="SMP*:Smp*"
+            ./bin/CoreCxxTests --gtest_filter="SMP*:Parallel*"
         '''
     }
 }
@@ -362,9 +362,9 @@ stage('Test SMP Module') {
 
 ## Resources
 
-- **Full Documentation:** `Docs/SMP_TESTING_SUMMARY.md`
-- **Final Report:** `Docs/SMP_TESTING_FINAL_REPORT.md`
-- **Source Code:** `Library/Core/smp/`
+- **Full Documentation:** `Docs/PARALLEL_TESTING_SUMMARY.md`
+- **Final Report:** `Docs/PARALLEL_TESTING_FINAL_REPORT.md`
+- **Source Code:** `Library/Core/parallel/`
 - **Tests:** `Library/Core/Testing/Cxx/TestSMP*.cpp`
 - **Benchmarks:** `Library/Core/Testing/Benchmark/BenchmarkSMP.cpp`
 

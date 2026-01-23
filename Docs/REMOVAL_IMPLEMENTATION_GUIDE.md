@@ -1,21 +1,21 @@
-# Implementation Guide: Removing `smp_thread_local`
+# Implementation Guide: Removing `parallel_thread_local`
 
 ## Pre-Removal Verification Checklist
 
 ### 1. Verify No External Dependencies
 ```bash
-# Check if smp_thread_local is used outside smp_tools.h
-grep -r "smp_thread_local" --include="*.h" --include="*.cpp" \
+# Check if parallel_thread_local is used outside parallel_tools.h
+grep -r "parallel_thread_local" --include="*.h" --include="*.cpp" \
   Library/Core Tests --exclude-dir=ThirdParty | \
-  grep -v "smp_tools.h" | grep -v "smp_thread_local_"
+  grep -v "parallel_tools.h" | grep -v "parallel_thread_local_"
 ```
 
-**Expected Result**: Only matches in smp_thread_local_* files themselves
+**Expected Result**: Only matches in parallel_thread_local_* files themselves
 
 ### 2. Check for Iteration Usage
 ```bash
 # Look for .begin(), .end(), or iteration patterns
-grep -r "\.begin()\|\.end()" Library/Core/smp/smp_tools.h
+grep -r "\.begin()\|\.end()" Library/Core/parallel/parallel_tools.h
 ```
 
 **Expected Result**: No matches (iteration not used)
@@ -23,7 +23,7 @@ grep -r "\.begin()\|\.end()" Library/Core/smp/smp_tools.h
 ### 3. Check for Exemplar Pattern
 ```bash
 # Look for constructor calls with parameters
-grep -r "smp_thread_local<.*>(" Library/Core/smp/smp_tools.h
+grep -r "parallel_thread_local<.*>(" Library/Core/parallel/parallel_tools.h
 ```
 
 **Expected Result**: Only `initialized_(0)` (single parameter)
@@ -32,15 +32,15 @@ grep -r "smp_thread_local<.*>(" Library/Core/smp/smp_tools.h
 
 ## Step-by-Step Removal (Option 1: `thread_local`)
 
-### Step 1: Update smp_tools.h
+### Step 1: Update parallel_tools.h
 ```cpp
-// REMOVE: #include "smp_thread_local.h"
+// REMOVE: #include "parallel_thread_local.h"
 
 // CHANGE FROM:
-struct smp_tools_functor_internal<Functor, true> {
+struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
-    smp_thread_local<unsigned char> initialized_;
-    smp_tools_functor_internal(Functor& f) : f_(f), initialized_(0) {}
+    parallel_thread_local<unsigned char> initialized_;
+    parallel_tools_functor_internal(Functor& f) : f_(f), initialized_(0) {}
     void Execute(size_t first, size_t last) {
         unsigned char& inited = this->initialized_.local();
         if (!inited) {
@@ -52,9 +52,9 @@ struct smp_tools_functor_internal<Functor, true> {
 };
 
 // CHANGE TO:
-struct smp_tools_functor_internal<Functor, true> {
+struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
-    smp_tools_functor_internal(Functor& f) : f_(f) {}
+    parallel_tools_functor_internal(Functor& f) : f_(f) {}
     void Execute(size_t first, size_t last) {
         thread_local unsigned char initialized = 0;
         if (!initialized) {
@@ -68,20 +68,20 @@ struct smp_tools_functor_internal<Functor, true> {
 
 ### Step 2: Remove Files
 ```bash
-rm Library/Core/smp/smp_thread_local.h
-rm Library/Core/smp/common/smp_thread_local_api.h
-rm Library/Core/smp/common/smp_thread_local_impl_abstract.h
-rm Library/Core/smp/std_thread/smp_thread_local_impl.h
-rm Library/Core/smp/std_thread/smp_thread_local_backend.h
-rm Library/Core/smp/std_thread/smp_thread_local_backend.cpp
-rm Library/Core/smp/openmp/smp_thread_local_impl.h
-rm Library/Core/smp/openmp/smp_thread_local_backend.h
-rm Library/Core/smp/openmp/smp_thread_local_backend.cpp
-rm Library/Core/smp/tbb/smp_thread_local_impl.h
+rm Library/Core/parallel/parallel_thread_local.h
+rm Library/Core/parallel/common/parallel_thread_local_api.h
+rm Library/Core/parallel/common/parallel_thread_local_impl_abstract.h
+rm Library/Core/parallel/std_thread/parallel_thread_local_impl.h
+rm Library/Core/parallel/std_thread/parallel_thread_local_backend.h
+rm Library/Core/parallel/std_thread/parallel_thread_local_backend.cpp
+rm Library/Core/parallel/openmp/parallel_thread_local_impl.h
+rm Library/Core/parallel/openmp/parallel_thread_local_backend.h
+rm Library/Core/parallel/openmp/parallel_thread_local_backend.cpp
+rm Library/Core/parallel/tbb/parallel_thread_local_impl.h
 ```
 
 ### Step 3: Update CMakeLists.txt
-Remove smp_thread_local files from build configuration
+Remove parallel_thread_local files from build configuration
 
 ### Step 4: Verify Build
 ```bash
@@ -100,7 +100,7 @@ ctest -V
 ## Validation Checklist
 
 - [ ] All 11 files removed
-- [ ] smp_tools.h updated
+- [ ] parallel_tools.h updated
 - [ ] CMakeLists.txt updated
 - [ ] Build succeeds
 - [ ] All tests pass
@@ -113,7 +113,7 @@ ctest -V
 
 If issues arise:
 ```bash
-git checkout HEAD -- Library/Core/smp/
+git checkout HEAD -- Library/Core/parallel/
 git checkout HEAD -- Docs/
 ```
 

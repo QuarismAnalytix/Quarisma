@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * Comprehensive unit tests for smp_thread_pool (std_thread backend)
+ * Comprehensive unit tests for parallel_thread_pool (std_thread backend)
  *
  * Tests cover:
  * - Thread pool singleton and lifecycle
@@ -29,7 +29,7 @@
 // Only compile these tests for std_thread backend
 #if !XSIGMA_HAS_OPENMP && !XSIGMA_HAS_TBB
 
-#include "smp/std_thread/smp_thread_pool.h"
+#include "parallel/std_thread/parallel_thread_pool.h"
 
 namespace xsigma
 {
@@ -37,18 +37,18 @@ namespace xsigma
 // Consolidated Test 1: Singleton, Lifecycle, and Initial State
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, singleton_lifecycle_and_state)
+XSIGMATEST(ParallelThreadPool, singleton_lifecycle_and_state)
 {
     // Test 1: Singleton access - ensure same instance is returned
-    detail::smp::smp_thread_pool& pool1 = detail::smp::smp_thread_pool::instance();
-    detail::smp::smp_thread_pool& pool2 = detail::smp::smp_thread_pool::instance();
+    detail::parallel::parallel_thread_pool& pool1 = detail::parallel::parallel_thread_pool::instance();
+    detail::parallel::parallel_thread_pool& pool2 = detail::parallel::parallel_thread_pool::instance();
     EXPECT_EQ(&pool1, &pool2);
 
     // Test 2: Initial state - should not be in parallel scope
     EXPECT_FALSE(pool1.is_parallel_scope());
 
     // Test 3: Thread ID should be external_thread_id (1)
-    EXPECT_EQ(pool1.get_thread_id(), detail::smp::smp_thread_pool::external_thread_id);
+    EXPECT_EQ(pool1.get_thread_id(), detail::parallel::parallel_thread_pool::external_thread_id);
 
     // Test 4: Thread count should be reasonable
     size_t count = pool1.thread_count();
@@ -60,9 +60,9 @@ XSIGMATEST(SmpThreadPool, singleton_lifecycle_and_state)
 // Consolidated Test 2: Thread Allocation and Proxy Management
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, thread_allocation_and_proxy_management)
+XSIGMATEST(ParallelThreadPool, thread_allocation_and_proxy_management)
 {
-    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
+    detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
     // Test 1: Allocate with default thread count (0 = auto)
     {
@@ -126,9 +126,9 @@ XSIGMATEST(SmpThreadPool, thread_allocation_and_proxy_management)
 // Consolidated Test 3: Job Execution and Distribution
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, job_execution_and_distribution)
+XSIGMATEST(ParallelThreadPool, job_execution_and_distribution)
 {
-    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
+    detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
     // Test 1: Basic job execution
     {
@@ -200,16 +200,16 @@ XSIGMATEST(SmpThreadPool, job_execution_and_distribution)
 // Consolidated Test 4: Thread Identification
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, thread_identification)
+XSIGMATEST(ParallelThreadPool, thread_identification)
 {
-    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
+    detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
     // Test 1: Verify external_thread_id constant
-    EXPECT_EQ(detail::smp::smp_thread_pool::external_thread_id, 1u);
+    EXPECT_EQ(detail::parallel::parallel_thread_pool::external_thread_id, 1u);
 
     // Test 2: Get thread ID outside parallel region
     size_t thread_id = pool.get_thread_id();
-    EXPECT_EQ(thread_id, detail::smp::smp_thread_pool::external_thread_id);
+    EXPECT_EQ(thread_id, detail::parallel::parallel_thread_pool::external_thread_id);
 
     // Test 3: Get thread ID inside job
     std::atomic<size_t> internal_thread_id{0};
@@ -234,9 +234,9 @@ XSIGMATEST(SmpThreadPool, thread_identification)
 // Consolidated Test 5: Parallel Scope Detection
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, parallel_scope_detection)
+XSIGMATEST(ParallelThreadPool, parallel_scope_detection)
 {
-    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
+    detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
     // Test 1: Outside parallel region should return false
     EXPECT_FALSE(pool.is_parallel_scope());
@@ -264,9 +264,9 @@ XSIGMATEST(SmpThreadPool, parallel_scope_detection)
 // Consolidated Test 6: Nested Proxies and Top-Level Detection
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, nested_proxies_and_top_level)
+XSIGMATEST(ParallelThreadPool, nested_proxies_and_top_level)
 {
-    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
+    detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
     std::atomic<int> outer_counter{0};
     std::atomic<int> inner_counter{0};
@@ -309,9 +309,9 @@ XSIGMATEST(SmpThreadPool, nested_proxies_and_top_level)
 // Consolidated Test 7: Thread Reuse and Sequential Allocation
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, thread_reuse_and_sequential_allocation)
+XSIGMATEST(ParallelThreadPool, thread_reuse_and_sequential_allocation)
 {
-    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
+    detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
     std::atomic<int> counter{0};
 
@@ -332,9 +332,9 @@ XSIGMATEST(SmpThreadPool, thread_reuse_and_sequential_allocation)
 // Consolidated Test 8: Edge Cases and Error Handling
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, edge_cases_and_error_handling)
+XSIGMATEST(ParallelThreadPool, edge_cases_and_error_handling)
 {
-    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
+    detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
     // Test 1: Allocate zero threads (should use default)
     {
@@ -380,9 +380,9 @@ XSIGMATEST(SmpThreadPool, edge_cases_and_error_handling)
 // Consolidated Test 9: Thread Safety and Concurrency
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, thread_safety_and_concurrency)
+XSIGMATEST(ParallelThreadPool, thread_safety_and_concurrency)
 {
-    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
+    detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
     // Test 1: Concurrent job execution
     {
@@ -462,9 +462,9 @@ XSIGMATEST(SmpThreadPool, thread_safety_and_concurrency)
 // Consolidated Test 10: Integration Tests
 // ============================================================================
 
-XSIGMATEST(SmpThreadPool, integration_tests)
+XSIGMATEST(ParallelThreadPool, integration_tests)
 {
-    detail::smp::smp_thread_pool& pool = detail::smp::smp_thread_pool::instance();
+    detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
     // Test 1: Full workflow - typical parallel computation
     {

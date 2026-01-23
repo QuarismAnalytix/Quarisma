@@ -26,13 +26,13 @@ The codebase uses **function-level conditional compilation** with these flags:
 
 ## Changes Required for Option 3
 
-### 1. Update `Library/Core/smp/smp_tools.h`
+### 1. Update `Library/Core/parallel/parallel_tools.h`
 
 #### Current Implementation (Option 1)
 ```cpp
-struct smp_tools_functor_internal<Functor, true> {
+struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
-    smp_tools_functor_internal(Functor& f) : f_(f) {}
+    parallel_tools_functor_internal(Functor& f) : f_(f) {}
     void Execute(size_t first, size_t last) {
         thread_local unsigned char initialized = 0;
         if (!initialized) {
@@ -46,7 +46,7 @@ struct smp_tools_functor_internal<Functor, true> {
 
 #### Option 3 Implementation
 ```cpp
-struct smp_tools_functor_internal<Functor, true> {
+struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
     
 #if XSIGMA_HAS_OPENMP
@@ -61,7 +61,7 @@ struct smp_tools_functor_internal<Functor, true> {
     // (no member needed - use local thread_local in Execute)
 #endif
     
-    smp_tools_functor_internal(Functor& f) : f_(f)
+    parallel_tools_functor_internal(Functor& f) : f_(f)
 #if XSIGMA_HAS_TBB
         , initialized_(0)
 #endif
@@ -98,7 +98,7 @@ struct smp_tools_functor_internal<Functor, true> {
 #include <type_traits>  // For std::enable_if
 
 #include "common/export.h"
-#include "smp/common/smp_tools_api.h"
+#include "parallel/common/parallel_tools_api.h"
 
 #if XSIGMA_HAS_TBB
 #include <tbb/enumerable_thread_specific.h>
@@ -110,14 +110,14 @@ struct smp_tools_functor_internal<Functor, true> {
 For OpenMP's `threadprivate`, need to define static storage outside the struct:
 
 ```cpp
-// In smp_tools.h or separate file
+// In parallel_tools.h or separate file
 #if XSIGMA_HAS_OPENMP
 namespace xsigma {
 namespace detail {
-namespace smp {
+namespace parallel {
     // Static storage for OpenMP threadprivate
-    thread_local unsigned char smp_tools_functor_initialized = 0;
-    #pragma omp threadprivate(smp_tools_functor_initialized)
+    thread_local unsigned char parallel_tools_functor_initialized = 0;
+    #pragma omp threadprivate(parallel_tools_functor_initialized)
 }
 }
 }
@@ -147,13 +147,13 @@ namespace smp {
 **Implementation**:
 ```cpp
 // Global static with threadprivate
-thread_local unsigned char smp_tools_functor_initialized = 0;
-#pragma omp threadprivate(smp_tools_functor_initialized)
+thread_local unsigned char parallel_tools_functor_initialized = 0;
+#pragma omp threadprivate(parallel_tools_functor_initialized)
 
 // In Execute():
-if (!smp_tools_functor_initialized) {
+if (!parallel_tools_functor_initialized) {
     this->f_.Initialize();
-    smp_tools_functor_initialized = 1;
+    parallel_tools_functor_initialized = 1;
 }
 ```
 
@@ -177,11 +177,11 @@ if (!smp_tools_functor_initialized) {
 
 **Implementation**:
 ```cpp
-struct smp_tools_functor_internal<Functor, true> {
+struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
     mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
     
-    smp_tools_functor_internal(Functor& f) 
+    parallel_tools_functor_internal(Functor& f) 
         : f_(f), initialized_(0) {}
     
     void Execute(size_t first, size_t last) {
@@ -229,7 +229,7 @@ void Execute(size_t first, size_t last) {
 
 | File | Changes |
 |------|---------|
-| `Library/Core/smp/smp_tools.h` | Add conditional compilation, includes, and backend-specific implementations |
+| `Library/Core/parallel/parallel_tools.h` | Add conditional compilation, includes, and backend-specific implementations |
 
 ---
 

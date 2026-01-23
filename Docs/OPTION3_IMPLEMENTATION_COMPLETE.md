@@ -8,7 +8,7 @@ Successfully implemented **Option 3: Backend-Specific Thread-Local Storage Solut
 
 ## What Was Changed
 
-### Single File Modified: `Library/Core/smp/smp_tools.h`
+### Single File Modified: `Library/Core/parallel/parallel_tools.h`
 
 #### Change 1: Added TBB Include (Lines 23-25)
 ```cpp
@@ -22,8 +22,8 @@ Successfully implemented **Option 3: Backend-Specific Thread-Local Storage Solut
 #if XSIGMA_HAS_OPENMP
 // Static storage for OpenMP threadprivate
 // Each thread gets its own copy automatically
-thread_local unsigned char smp_tools_functor_initialized = 0;
-#pragma omp threadprivate(smp_tools_functor_initialized)
+thread_local unsigned char parallel_tools_functor_initialized = 0;
+#pragma omp threadprivate(parallel_tools_functor_initialized)
 #endif
 ```
 
@@ -87,7 +87,7 @@ thread_local unsigned char smp_tools_functor_initialized = 0;
 - Clear comments for each backend
 
 ✅ **No Orphaned References**
-- Verified no remaining references to old `smp_thread_local`
+- Verified no remaining references to old `parallel_thread_local`
 - All old files already removed in Option 1
 - Clean codebase
 
@@ -133,7 +133,7 @@ thread_local unsigned char smp_tools_functor_initialized = 0;
 
 | File | Changes | Lines |
 |------|---------|-------|
-| `Library/Core/smp/smp_tools.h` | 3 changes | ~70 |
+| `Library/Core/parallel/parallel_tools.h` | 3 changes | ~70 |
 | **Total** | | **~70** |
 
 ---
@@ -190,7 +190,7 @@ None - Already removed in Option 1 implementation
 - TestParallelReduce
 - TestNestedParallelism
 - TestAsyncParallel
-- TestSmpAdvancedThreadName
+- TestParallelAdvancedThreadName
 
 All tests verify correct initialization behavior across backends.
 
@@ -217,10 +217,10 @@ If needed, revert to Option 1:
 
 ```bash
 # Revert to Option 1 (standard C++ thread_local)
-git checkout HEAD~1 -- Library/Core/smp/smp_tools.h
+git checkout HEAD~1 -- Library/Core/parallel/parallel_tools.h
 
-# Or revert to original smp_thread_local
-git checkout HEAD~2 -- Library/Core/smp/
+# Or revert to original parallel_thread_local
+git checkout HEAD~2 -- Library/Core/parallel/
 ```
 
 ---
@@ -239,7 +239,7 @@ git checkout HEAD~2 -- Library/Core/smp/
 **Option 3 implementation is complete and ready for production.**
 
 The implementation successfully:
-- ✅ Removes the custom `smp_thread_local` abstraction
+- ✅ Removes the custom `parallel_thread_local` abstraction
 - ✅ Implements backend-specific thread-local storage
 - ✅ Maintains backward compatibility
 - ✅ Passes all tests

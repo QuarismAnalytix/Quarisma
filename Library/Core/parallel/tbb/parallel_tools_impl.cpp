@@ -21,7 +21,7 @@
  *   Licensed under BSD-3-Clause
  */
 
-#include "smp/common/smp_tools_impl.h"
+#include "parallel/common/parallel_tools_impl.h"
 
 #include <charconv>
 #include <cstdlib>  // For std::getenv()
@@ -30,7 +30,7 @@
 #include <stack>    // For std::stack
 #include <string>
 
-#include "smp/tbb/smp_tools_impl.h"
+#include "parallel/tbb/parallel_tools_impl.h"
 
 #ifdef _MSC_VER
 #pragma push_macro("__TBB_NO_IMPLICIT_LINKAGE")
@@ -47,11 +47,11 @@ namespace xsigma
 {
 namespace detail
 {
-namespace smp
+namespace parallel
 {
 
 static std::unique_ptr<tbb::task_arena> task_arena;
-static std::unique_ptr<std::mutex>      xsigma_smp_tools_cs;
+static std::unique_ptr<std::mutex>      xsigma_parallel_tools_cs;
 static std::unique_ptr<std::stack<int>> thread_id_stack;
 static std::unique_ptr<std::mutex>      thread_id_stack_lock;
 static int                              specified_num_threads_tbb;  // Default initialized to zero
@@ -60,23 +60,23 @@ static int                              specified_num_threads_tbb;  // Default i
 // Must NOT be initialized. Default initialization to zero is necessary.
 // NOTE: This variable must NOT be static - it needs to be visible across
 // translation units for proper initialization/deinitialization tracking.
-static unsigned int smp_tools_impl_tbb_initialize_count;
+static unsigned int parallel_tools_impl_tbb_initialize_count;
 
 //------------------------------------------------------------------------------
-smp_tools_impl_tbb_initialize::smp_tools_impl_tbb_initialize()
+parallel_tools_impl_tbb_initialize::parallel_tools_impl_tbb_initialize()
 {
-    if (++smp_tools_impl_tbb_initialize_count == 1)
+    if (++parallel_tools_impl_tbb_initialize_count == 1)
     {
         task_arena           = std::make_unique<tbb::task_arena>();
-        xsigma_smp_tools_cs  = std::make_unique<std::mutex>();
+        xsigma_parallel_tools_cs  = std::make_unique<std::mutex>();
         thread_id_stack      = std::make_unique<std::stack<int>>();
         thread_id_stack_lock = std::make_unique<std::mutex>();
     }
 }
 
 //------------------------------------------------------------------------------
-smp_tools_impl_tbb_initialize::
-    ~smp_tools_impl_tbb_initialize()  // NOLINT(modernize-use-equals-default)
+parallel_tools_impl_tbb_initialize::
+    ~parallel_tools_impl_tbb_initialize()  // NOLINT(modernize-use-equals-default)
 {
     // Empty destructor - cleanup is handled by unique_ptr members
     // Cannot use = default due to DLL export issues on Windows
@@ -84,22 +84,22 @@ smp_tools_impl_tbb_initialize::
 
 //------------------------------------------------------------------------------
 template <>
-smp_tools_impl<backend_type::TBB>::smp_tools_impl() : nested_activated_(true)
+parallel_tools_impl<backend_type::TBB>::parallel_tools_impl() : nested_activated_(true)
 {
 }
 
 //------------------------------------------------------------------------------
 template <>
-void smp_tools_impl<backend_type::TBB>::initialize(int num_threads)
+void parallel_tools_impl<backend_type::TBB>::initialize(int num_threads)
 {
-    xsigma_smp_tools_cs->lock();
+    xsigma_parallel_tools_cs->lock();
 
     if (num_threads == 0)
     {
-        const char* smp_num_threads = std::getenv("SMP_MAX_THREADS");
-        if (smp_num_threads != nullptr)
+        const char* parallel_num_threads = std::getenv("PARALLEL_MAX_THREADS");
+        if (parallel_num_threads != nullptr)
         {
-            std::string str(smp_num_threads);
+            std::string str(parallel_num_threads);
             auto        result = std::from_chars(str.data(), str.data() + str.size(), num_threads);
             if (result.ec != std::errc())
             {
@@ -113,7 +113,7 @@ void smp_tools_impl<backend_type::TBB>::initialize(int num_threads)
         }
     }
     if (num_threads > 0 &&
-        num_threads <= smp_tools_impl<backend_type::TBB>::estimated_default_number_of_threads())
+        num_threads <= parallel_tools_impl<backend_type::TBB>::estimated_default_number_of_threads())
     {
         if (task_arena->is_active())
         {
@@ -123,28 +123,28 @@ void smp_tools_impl<backend_type::TBB>::initialize(int num_threads)
         specified_num_threads_tbb = num_threads;
     }
 
-    xsigma_smp_tools_cs->unlock();
+    xsigma_parallel_tools_cs->unlock();
 }
 
 //------------------------------------------------------------------------------
 template <>
-int smp_tools_impl<backend_type::TBB>::estimated_number_of_threads()
+int parallel_tools_impl<backend_type::TBB>::estimated_number_of_threads()
 {
     return specified_num_threads_tbb > 0
                ? specified_num_threads_tbb
-               : smp_tools_impl<backend_type::TBB>::estimated_default_number_of_threads();
+               : parallel_tools_impl<backend_type::TBB>::estimated_default_number_of_threads();
 }
 
 //------------------------------------------------------------------------------
 template <>
-int smp_tools_impl<backend_type::TBB>::estimated_default_number_of_threads()
+int parallel_tools_impl<backend_type::TBB>::estimated_default_number_of_threads()
 {
     return task_arena->max_concurrency();
 }
 
 //------------------------------------------------------------------------------
 template <>
-bool smp_tools_impl<backend_type::TBB>::single_thread()
+bool parallel_tools_impl<backend_type::TBB>::single_thread()
 {
     // Check if we're inside a parallel region
     // If the stack is empty, we're not in a parallel region
@@ -165,7 +165,7 @@ bool smp_tools_impl<backend_type::TBB>::single_thread()
 }
 
 //------------------------------------------------------------------------------
-void smp_tools_impl_for_tbb(
+void parallel_tools_impl_for_tbb(
     size_t                   first,
     size_t                   last,
     size_t                   grain,
@@ -190,6 +190,6 @@ void smp_tools_impl_for_tbb(
     thread_id_stack_lock->unlock();
 }
 
-}  // namespace smp
+}  // namespace parallel
 }  // namespace detail
 }  // namespace xsigma

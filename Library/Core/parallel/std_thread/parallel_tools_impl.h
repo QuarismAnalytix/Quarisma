@@ -21,21 +21,21 @@
  *   Licensed under BSD-3-Clause
  */
 
-#ifndef STDTHREAD_SMP_TOOLS_IMPL_H
-#define STDTHREAD_SMP_TOOLS_IMPL_H
+#ifndef STDTHREAD_PARALLEL_TOOLS_IMPL_H
+#define STDTHREAD_PARALLEL_TOOLS_IMPL_H
 
 #include <algorithm>   // For std::sort
 #include <functional>  // For std::bind
 
 #include "common/export.h"
-#include "smp/common/smp_tools_impl.h"
-#include "smp/std_thread/smp_thread_pool.h"  // For smp_thread_pool
+#include "parallel/common/parallel_tools_impl.h"
+#include "parallel/std_thread/parallel_thread_pool.h"  // For parallel_thread_pool
 
 namespace xsigma
 {
 namespace detail
 {
-namespace smp
+namespace parallel
 {
 
 int XSIGMA_API number_of_threads_stdthread();
@@ -43,7 +43,7 @@ int XSIGMA_API number_of_threads_stdthread();
 //--------------------------------------------------------------------------------
 template <>
 template <typename FunctorInternal>
-void smp_tools_impl<backend_type::std_thread>::parallel_for(
+void parallel_tools_impl<backend_type::std_thread>::parallel_for(
     size_t first, size_t last, size_t grain, FunctorInternal& fi)
 {
     size_t n = last - first;
@@ -52,7 +52,7 @@ void smp_tools_impl<backend_type::std_thread>::parallel_for(
         return;
     }
 
-    if (grain >= n || (!nested_activated_ && smp_thread_pool::instance().is_parallel_scope()))
+    if (grain >= n || (!nested_activated_ && parallel_thread_pool::instance().is_parallel_scope()))
     {
         fi.Execute(first, last);
     }
@@ -66,7 +66,7 @@ void smp_tools_impl<backend_type::std_thread>::parallel_for(
             grain                 = (estimate_grain > 0) ? estimate_grain : 1;
         }
 
-        auto proxy = detail::smp::smp_thread_pool::instance().allocate_threads(thread_number);
+        auto proxy = detail::parallel::parallel_thread_pool::instance().allocate_threads(thread_number);
 
         for (size_t from = first; from < last; from += grain)
         {
@@ -80,25 +80,25 @@ void smp_tools_impl<backend_type::std_thread>::parallel_for(
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API void smp_tools_impl<backend_type::std_thread>::initialize(int);
+XSIGMA_API void parallel_tools_impl<backend_type::std_thread>::initialize(int);
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int smp_tools_impl<backend_type::std_thread>::estimated_number_of_threads();
+XSIGMA_API int parallel_tools_impl<backend_type::std_thread>::estimated_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int smp_tools_impl<backend_type::std_thread>::estimated_default_number_of_threads();
+XSIGMA_API int parallel_tools_impl<backend_type::std_thread>::estimated_default_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API bool smp_tools_impl<backend_type::std_thread>::single_thread();
+XSIGMA_API bool parallel_tools_impl<backend_type::std_thread>::single_thread();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API bool smp_tools_impl<backend_type::std_thread>::is_parallel_scope();
+XSIGMA_API bool parallel_tools_impl<backend_type::std_thread>::is_parallel_scope();
 
-}  // namespace smp
+}  // namespace parallel
 }  // namespace detail
 }  // namespace xsigma
 

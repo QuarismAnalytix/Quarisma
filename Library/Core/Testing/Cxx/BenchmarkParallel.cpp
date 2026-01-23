@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * Benchmark suite for SMP (Symmetric Multi-Processing) module
+ * Benchmark suite for PARALLEL (Symmetric Multi-Processing) module
  * Measures performance of parallel operations across different workload sizes
  */
 
@@ -13,7 +13,7 @@
 #include <numeric>
 #include <vector>
 
-#include "smp/smp_tools.h"
+#include "parallel/parallel_tools.h"
 
 namespace xsigma
 {
@@ -26,7 +26,7 @@ static void BM_ParallelFor_Small(benchmark::State& state)
 
     for (auto _ : state)
     {
-        smp_tools::parallel_for(
+        parallel_tools::parallel_for(
             0,
             size,
             10,
@@ -51,7 +51,7 @@ static void BM_ParallelFor_Medium(benchmark::State& state)
 
     for (auto _ : state)
     {
-        smp_tools::parallel_for(
+        parallel_tools::parallel_for(
             0,
             size,
             100,
@@ -76,7 +76,7 @@ static void BM_ParallelFor_Large(benchmark::State& state)
 
     for (auto _ : state)
     {
-        smp_tools::parallel_for(
+        parallel_tools::parallel_for(
             0,
             size,
             10000,
@@ -102,7 +102,7 @@ static void BM_ParallelFor_Computation(benchmark::State& state)
 
     for (auto _ : state)
     {
-        smp_tools::parallel_for(
+        parallel_tools::parallel_for(
             0,
             size,
             1000,
@@ -130,7 +130,7 @@ static void BM_ParallelFor_GrainSize(benchmark::State& state)
 
     for (auto _ : state)
     {
-        smp_tools::parallel_for(
+        parallel_tools::parallel_for(
             0,
             size,
             grain_size,
@@ -156,7 +156,7 @@ static void BM_MemoryBound(benchmark::State& state)
 
     for (auto _ : state)
     {
-        smp_tools::parallel_for(
+        parallel_tools::parallel_for(
             0,
             size,
             10000,
@@ -182,7 +182,7 @@ static void BM_ComputeBound(benchmark::State& state)
 
     for (auto _ : state)
     {
-        smp_tools::parallel_for(
+        parallel_tools::parallel_for(
             0,
             size,
             1000,

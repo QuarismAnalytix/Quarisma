@@ -1,10 +1,10 @@
-# Final Summary: `smp_thread_local` Removal - COMPLETE ✅
+# Final Summary: `parallel_thread_local` Removal - COMPLETE ✅
 
 ## Executive Summary
 
 **Option 1 (Standard C++ `thread_local`) has been successfully implemented.**
 
-The `smp_thread_local` abstraction has been completely removed from the XSigma codebase and replaced with standard C++ `thread_local`. All tests pass, no regressions detected, and the codebase is now simpler and more maintainable.
+The `parallel_thread_local` abstraction has been completely removed from the XSigma codebase and replaced with standard C++ `thread_local`. All tests pass, no regressions detected, and the codebase is now simpler and more maintainable.
 
 ---
 
@@ -12,25 +12,25 @@ The `smp_thread_local` abstraction has been completely removed from the XSigma c
 
 ### Changes Made
 
-**1. Modified File: `Library/Core/smp/smp_tools.h`**
-- Removed include: `#include "smp_thread_local.h"` (line 26)
+**1. Modified File: `Library/Core/parallel/parallel_tools.h`**
+- Removed include: `#include "parallel_thread_local.h"` (line 26)
 - Updated documentation (removed @sa references)
-- Modified `smp_tools_functor_internal<Functor, true>` struct:
-  - Removed member: `smp_thread_local<unsigned char> initialized_;`
+- Modified `parallel_tools_functor_internal<Functor, true>` struct:
+  - Removed member: `parallel_thread_local<unsigned char> initialized_;`
   - Removed constructor initialization: `initialized_(0)`
   - Updated `Execute()` method to use `thread_local unsigned char initialized = 0;`
 
 **2. Removed Files: 10 total (~1000 lines)**
-- `Library/Core/smp/smp_thread_local.h`
-- `Library/Core/smp/common/smp_thread_local_api.h`
-- `Library/Core/smp/common/smp_thread_local_impl_abstract.h`
-- `Library/Core/smp/std_thread/smp_thread_local_impl.h`
-- `Library/Core/smp/std_thread/smp_thread_local_backend.h`
-- `Library/Core/smp/std_thread/smp_thread_local_backend.cpp`
-- `Library/Core/smp/openmp/smp_thread_local_impl.h`
-- `Library/Core/smp/openmp/smp_thread_local_backend.h`
-- `Library/Core/smp/openmp/smp_thread_local_backend.cpp`
-- `Library/Core/smp/tbb/smp_thread_local_impl.h`
+- `Library/Core/parallel/parallel_thread_local.h`
+- `Library/Core/parallel/common/parallel_thread_local_api.h`
+- `Library/Core/parallel/common/parallel_thread_local_impl_abstract.h`
+- `Library/Core/parallel/std_thread/parallel_thread_local_impl.h`
+- `Library/Core/parallel/std_thread/parallel_thread_local_backend.h`
+- `Library/Core/parallel/std_thread/parallel_thread_local_backend.cpp`
+- `Library/Core/parallel/openmp/parallel_thread_local_impl.h`
+- `Library/Core/parallel/openmp/parallel_thread_local_backend.h`
+- `Library/Core/parallel/openmp/parallel_thread_local_backend.cpp`
+- `Library/Core/parallel/tbb/parallel_thread_local_impl.h`
 
 **3. No Changes: `Library/Core/CMakeLists.txt`**
 - Uses GLOB_RECURSE - automatically excludes deleted files
@@ -39,7 +39,7 @@ The `smp_thread_local` abstraction has been completely removed from the XSigma c
 
 ## Verification Results
 
-✅ **Code References**: No remaining references to `smp_thread_local`
+✅ **Code References**: No remaining references to `parallel_thread_local`
 ✅ **Build**: Succeeded with NO ERRORS and NO WARNINGS
 ✅ **Build Targets**: All 170 targets completed successfully
 ✅ **Tests**: All tests passed (2/2)
@@ -79,10 +79,10 @@ The `smp_thread_local` abstraction has been completely removed from the XSigma c
 
 ### Before
 ```cpp
-struct smp_tools_functor_internal<Functor, true> {
+struct parallel_tools_functor_internal<Functor, true> {
     Functor&                        f_;
-    smp_thread_local<unsigned char> initialized_;
-    smp_tools_functor_internal(Functor& f) : f_(f), initialized_(0) {}
+    parallel_thread_local<unsigned char> initialized_;
+    parallel_tools_functor_internal(Functor& f) : f_(f), initialized_(0) {}
     void Execute(size_t first, size_t last) {
         unsigned char& inited = this->initialized_.local();
         if (!inited) {
@@ -96,9 +96,9 @@ struct smp_tools_functor_internal<Functor, true> {
 
 ### After
 ```cpp
-struct smp_tools_functor_internal<Functor, true> {
+struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
-    smp_tools_functor_internal(Functor& f) : f_(f) {}
+    parallel_tools_functor_internal(Functor& f) : f_(f) {}
     void Execute(size_t first, size_t last) {
         thread_local unsigned char initialized = 0;
         if (!initialized) {

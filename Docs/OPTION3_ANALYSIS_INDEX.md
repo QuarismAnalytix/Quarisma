@@ -85,7 +85,7 @@
 **Time**: 10 minutes
 **Contains**:
 - Overview
-- File to modify (smp_tools.h)
+- File to modify (parallel_tools.h)
 - Change 1: Add TBB include (3 lines)
 - Change 2: Add OpenMP threadprivate (5 lines)
 - Change 3: Update struct (60 lines)
@@ -129,7 +129,7 @@
 
 ### What Changes Are Needed?
 
-**Single File**: `Library/Core/smp/smp_tools.h`
+**Single File**: `Library/Core/parallel/parallel_tools.h`
 
 **Three Changes**:
 1. Add TBB include (3 lines)
@@ -198,7 +198,7 @@
 
 ✅ **Option 1**: Fully implemented
 - All 10 files removed
-- smp_tools.h updated
+- parallel_tools.h updated
 - All tests passing
 - No regressions
 

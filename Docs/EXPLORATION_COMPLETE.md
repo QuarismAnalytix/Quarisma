@@ -1,8 +1,8 @@
-# Complete Exploration: Removing `smp_thread_local` from XSigma
+# Complete Exploration: Removing `parallel_thread_local` from XSigma
 
 ## Overview
 
-This exploration provides a comprehensive analysis of all viable options for completely removing `smp_thread_local` from the XSigma codebase.
+This exploration provides a comprehensive analysis of all viable options for completely removing `parallel_thread_local` from the XSigma codebase.
 
 ---
 
@@ -10,9 +10,9 @@ This exploration provides a comprehensive analysis of all viable options for com
 
 ### 1. Current State Analysis
 - **11 files** implementing thread-local storage abstraction
-- **1 active usage** in `smp_tools.h` (line 93)
+- **1 active usage** in `parallel_tools.h` (line 93)
 - **~1000 lines** of code across 3 backend implementations
-- **No external dependencies** outside smp module
+- **No external dependencies** outside parallel module
 
 ### 2. Four Viable Options
 
@@ -39,8 +39,8 @@ Each option includes:
 
 ### Usage Pattern
 ```cpp
-// smp_tools.h, line 93
-smp_thread_local<unsigned char> initialized_;
+// parallel_tools.h, line 93
+parallel_thread_local<unsigned char> initialized_;
 
 // Purpose: Track per-thread initialization state
 // Pattern: Lazy initialization (Initialize() called once per thread)
@@ -53,7 +53,7 @@ smp_thread_local<unsigned char> initialized_;
 - ❌ No external dependencies
 
 ### Impact Assessment
-- **Files affected**: 1 (smp_tools.h)
+- **Files affected**: 1 (parallel_tools.h)
 - **API changes**: 0 (with Option 1)
 - **Test changes**: 0
 - **User impact**: 0
@@ -71,10 +71,10 @@ smp_thread_local<unsigned char> initialized_;
 
 ### Implementation
 ```cpp
-// Remove: #include "smp_thread_local.h"
+// Remove: #include "parallel_thread_local.h"
 
 // Change from:
-smp_thread_local<unsigned char> initialized_;
+parallel_thread_local<unsigned char> initialized_;
 unsigned char& inited = this->initialized_.local();
 
 // Change to:
@@ -97,7 +97,7 @@ unsigned char& inited = initialized;
 ### 1. REMOVAL_SUMMARY.md
 Executive summary with quick decision guide
 
-### 2. REMOVE_SMP_THREAD_LOCAL_OPTIONS.md
+### 2. REMOVE_PARALLEL_THREAD_LOCAL_OPTIONS.md
 Detailed analysis of all 4 options with trade-offs
 
 ### 3. OPTION_COMPARISON_DETAILED.md
@@ -134,7 +134,7 @@ This document
 4. Follow corresponding implementation guide
 
 ### If You Need More Analysis:
-1. Review REMOVE_SMP_THREAD_LOCAL_OPTIONS.md
+1. Review REMOVE_PARALLEL_THREAD_LOCAL_OPTIONS.md
 2. Ask specific questions
 3. Provide additional context
 
@@ -161,7 +161,7 @@ This document
 
 After implementation:
 - [ ] All 11 files removed
-- [ ] smp_tools.h updated
+- [ ] parallel_tools.h updated
 - [ ] CMakeLists.txt updated
 - [ ] Build succeeds
 - [ ] All tests pass
@@ -195,7 +195,7 @@ A: Better - zero overhead vs abstraction layer
 
 ## Conclusion
 
-**`smp_thread_local` can be safely and easily removed using Option 1 (standard C++ `thread_local`).**
+**`parallel_thread_local` can be safely and easily removed using Option 1 (standard C++ `thread_local`).**
 
 This is the recommended approach due to:
 - Minimal code changes

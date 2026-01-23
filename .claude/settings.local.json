@@ -32,7 +32,7 @@
       "Bash(/Users/toufikbellaj/XSigma/build_ninja/bin/benchmark_parallelbackends:*)",
       "Bash(./build_ninja/bin/CoreCxxTests:*)",
       "Bash(timeout 60 ./build_ninja/bin/CoreCxxTests:*)",
-      "Bash(./build_ninja_smp_tbb/bin/CoreCxxTests:*)",
+      "Bash(./build_ninja_parallel_tbb/bin/CoreCxxTests:*)",
       "Bash(nm:*)",
       "Bash(/tmp/test_enzyme:*)",
       "Bash(echo:*)",
@@ -48,7 +48,14 @@
       "Bash(timeout 300 bash -c \"python3 setup.py CONFIG.build.test.vv --sanitizer.address 2>&1 | tail -400\":*)",
       "Bash(xargs:*)",
       "Bash(git checkout:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(if [ -f Experimental/xsigma_tensorexpr/llvm_codegen.cpp ])",
+      "Bash(fi)",
+      "Bash(if [ -f Scripts/setup.py ])",
+      "Bash(if [ -f .vscode/launch.json ])",
+      "Bash(if [ -f .claude/settings.local.json ])",
+      "Bash(if [ -f /Users/toufikbellaj/Pictures/teste.cpp ])",
+      "Bash(else echo \"teste.cpp not found\")"
     ],
     "deny": [],
     "ask": []

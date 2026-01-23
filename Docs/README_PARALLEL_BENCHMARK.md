@@ -2,12 +2,12 @@
 
 ## Overview
 
-This guide explains how to run comprehensive benchmarks comparing all four SMP (Symmetric Multi-Processing) execution modes in XSigma:
+This guide explains how to run comprehensive benchmarks comparing all four PARALLEL (Symmetric Multi-Processing) execution modes in XSigma:
 
 1. **Sequential execution** - No parallelism, single thread
-2. **`--smp.std`** - C++ standard library threading (std::thread)
-3. **`--smp.openmp`** - OpenMP backend
-4. **`--smp.tbb`** - Intel TBB (Threading Building Blocks) backend
+2. **`--parallel.std`** - C++ standard library threading (std::thread)
+3. **`--parallel.openmp`** - OpenMP backend
+4. **`--parallel.tbb`** - Intel TBB (Threading Building Blocks) backend
 
 ## Benchmark File
 
@@ -62,7 +62,7 @@ The benchmark includes seven computationally heavy workloads designed to demonst
 
 ```bash
 # Configure for std::thread backend
-python3 Scripts/setup.py config --smp.std
+python3 Scripts/setup.py config --parallel.std
 
 # Build with benchmarks enabled
 python3 Scripts/setup.py config.build
@@ -79,7 +79,7 @@ python3 Scripts/setup.py config.build
 python3 Scripts/setup.py clean
 
 # Configure for OpenMP backend
-python3 Scripts/setup.py config --smp.openmp
+python3 Scripts/setup.py config --parallel.openmp
 
 # Build
 python3 Scripts/setup.py config.build
@@ -96,7 +96,7 @@ python3 Scripts/setup.py config.build
 python3 Scripts/setup.py clean
 
 # Configure for TBB backend
-python3 Scripts/setup.py config --smp.tbb
+python3 Scripts/setup.py config --parallel.tbb
 
 # Build
 python3 Scripts/setup.py config.build
@@ -111,21 +111,21 @@ python3 Scripts/setup.py config.build
 ```bash
 # Build with std::thread backend
 mkdir -p build_std && cd build_std
-cmake -DXSIGMA_SMP_BACKEND=std -DXSIGMA_ENABLE_BENCHMARK=ON ..
+cmake -DXSIGMA_PARALLEL_BACKEND=std -DXSIGMA_ENABLE_BENCHMARK=ON ..
 cmake --build . --target benchmark_parallelbackends
 ./bin/benchmark_parallelbackends > ../results_std.txt
 
 # Build with OpenMP backend
 cd ..
 mkdir -p build_openmp && cd build_openmp
-cmake -DXSIGMA_SMP_BACKEND=openmp -DXSIGMA_ENABLE_BENCHMARK=ON ..
+cmake -DXSIGMA_PARALLEL_BACKEND=openmp -DXSIGMA_ENABLE_BENCHMARK=ON ..
 cmake --build . --target benchmark_parallelbackends
 ./bin/benchmark_parallelbackends > ../results_openmp.txt
 
 # Build with TBB backend
 cd ..
 mkdir -p build_tbb && cd build_tbb
-cmake -DXSIGMA_SMP_BACKEND=tbb -DXSIGMA_ENABLE_BENCHMARK=ON ..
+cmake -DXSIGMA_PARALLEL_BACKEND=tbb -DXSIGMA_ENABLE_BENCHMARK=ON ..
 cmake --build . --target benchmark_parallelbackends
 ./bin/benchmark_parallelbackends > ../results_tbb.txt
 ```
@@ -228,7 +228,7 @@ for backend in "${BACKENDS[@]}"; do
 
     # Clean and configure
     python3 Scripts/setup.py clean
-    python3 Scripts/setup.py config --smp.$backend
+    python3 Scripts/setup.py config --parallel.$backend
 
     # Build
     python3 Scripts/setup.py config.build
@@ -322,7 +322,7 @@ export TBB_NUM_THREADS=8
 
 #### std::thread
 ```bash
-export SMP_MAX_THREADS=8
+export PARALLEL_MAX_THREADS=8
 ```
 
 ## Expected Results

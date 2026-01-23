@@ -1,8 +1,8 @@
-# Options for Removing `smp_thread_local` from XSigma
+# Options for Removing `parallel_thread_local` from XSigma
 
 ## Executive Summary
 
-This document explores all viable options for completely removing `smp_thread_local` from the codebase, including trade-offs, implementation complexity, and impact analysis.
+This document explores all viable options for completely removing `parallel_thread_local` from the codebase, including trade-offs, implementation complexity, and impact analysis.
 
 ---
 
@@ -10,23 +10,23 @@ This document explores all viable options for completely removing `smp_thread_lo
 
 ### Files to Remove (11 files)
 ```
-Library/Core/smp/smp_thread_local.h
-Library/Core/smp/common/smp_thread_local_api.h
-Library/Core/smp/common/smp_thread_local_impl_abstract.h
-Library/Core/smp/std_thread/smp_thread_local_impl.h
-Library/Core/smp/std_thread/smp_thread_local_backend.h
-Library/Core/smp/std_thread/smp_thread_local_backend.cpp
-Library/Core/smp/openmp/smp_thread_local_impl.h
-Library/Core/smp/openmp/smp_thread_local_backend.h
-Library/Core/smp/openmp/smp_thread_local_backend.cpp
-Library/Core/smp/tbb/smp_thread_local_impl.h
+Library/Core/parallel/parallel_thread_local.h
+Library/Core/parallel/common/parallel_thread_local_api.h
+Library/Core/parallel/common/parallel_thread_local_impl_abstract.h
+Library/Core/parallel/std_thread/parallel_thread_local_impl.h
+Library/Core/parallel/std_thread/parallel_thread_local_backend.h
+Library/Core/parallel/std_thread/parallel_thread_local_backend.cpp
+Library/Core/parallel/openmp/parallel_thread_local_impl.h
+Library/Core/parallel/openmp/parallel_thread_local_backend.h
+Library/Core/parallel/openmp/parallel_thread_local_backend.cpp
+Library/Core/parallel/tbb/parallel_thread_local_impl.h
 ```
 
 ### Active Usage (1 location)
-- **`Library/Core/smp/smp_tools.h` (line 93)**
-  - Used in `smp_tools_functor_internal<Functor, true>` template specialization
+- **`Library/Core/parallel/parallel_tools.h` (line 93)**
+  - Used in `parallel_tools_functor_internal<Functor, true>` template specialization
   - Purpose: Track per-thread initialization state
-  - Current: `smp_thread_local<unsigned char> initialized_;`
+  - Current: `parallel_thread_local<unsigned char> initialized_;`
 
 ---
 
@@ -35,7 +35,7 @@ Library/Core/smp/tbb/smp_thread_local_impl.h
 ### Implementation
 ```cpp
 // Before
-smp_thread_local<unsigned char> initialized_;
+parallel_thread_local<unsigned char> initialized_;
 unsigned char& inited = initialized_.local();
 
 // After
@@ -57,7 +57,7 @@ unsigned char& inited = initialized;
 
 ### Complexity: **LOW** (1-2 hours)
 - Remove 11 files
-- Update 1 include in smp_tools.h
+- Update 1 include in parallel_tools.h
 - Update 1 variable declaration
 - No test changes needed
 
@@ -94,11 +94,11 @@ struct thread_local_storage {
 ❌ **Requires synchronization** (mutex overhead)
 ❌ **More complex code**
 ❌ **Memory overhead** (map per instance)
-❌ **Slower than smp_thread_local**
+❌ **Slower than parallel_thread_local**
 
 ### Complexity: **MEDIUM** (3-4 hours)
 - Create new helper class
-- Update smp_tools.h
+- Update parallel_tools.h
 - Add synchronization logic
 - Test thread safety
 
@@ -144,13 +144,13 @@ Use native backend facilities:
 ## Option 4: Refactor to Eliminate Need
 
 ### Implementation
-Redesign `smp_tools_functor_internal` to not need per-thread state:
+Redesign `parallel_tools_functor_internal` to not need per-thread state:
 
 ```cpp
 // Instead of per-thread initialization flag,
 // use a single initialization call before parallel loop
 template <typename Functor>
-struct smp_tools_functor_internal<Functor, true> {
+struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
     bool initialized = false;
     
@@ -177,7 +177,7 @@ struct smp_tools_functor_internal<Functor, true> {
 ❌ **Potential thread safety issues** if Initialize() is not thread-safe
 
 ### Complexity: **MEDIUM** (2-3 hours)
-- Refactor smp_tools_functor_internal
+- Refactor parallel_tools_functor_internal
 - Update documentation
 - Review user code patterns
 - Test with existing code

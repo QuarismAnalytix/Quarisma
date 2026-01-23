@@ -21,18 +21,18 @@
  */
 
 /**
- * @class smp_thread_pool
+ * @class parallel_thread_pool
  * @brief A thread pool implementation using std::thread
  *
- * smp_thread_pool class creates a thread pool of std::thread, the number
+ * parallel_thread_pool class creates a thread pool of std::thread, the number
  * of thread must be specified at the initialization of the class.
  * The do_job() method is used attributes the job to a free thread, if all
- * threads are working, the job is kept in a queue. Note that smp_thread_pool
+ * threads are working, the job is kept in a queue. Note that parallel_thread_pool
  * destructor joins threads and finish the jobs in the queue.
  */
 
-#ifndef SMP_THREAD_POOL_H
-#define SMP_THREAD_POOL_H
+#ifndef PARALLEL_THREAD_POOL_H
+#define PARALLEL_THREAD_POOL_H
 
 #include <atomic>      // For std::atomic
 #include <functional>  // For std::function
@@ -46,7 +46,7 @@ namespace xsigma
 {
 namespace detail
 {
-namespace smp
+namespace parallel
 {
 
 /**
@@ -57,7 +57,7 @@ namespace smp
  * the pool, which enable support for SMP local scopes.
  * You need to have a Proxy to submit job to the pool.
  */
-class XSIGMA_VISIBILITY smp_thread_pool
+class XSIGMA_VISIBILITY parallel_thread_pool
 {
     // Internal data structures
     struct thread_job;
@@ -99,17 +99,17 @@ public:
         XSIGMA_API bool is_top_level() const noexcept;
 
     private:
-        friend class smp_thread_pool;
+        friend class parallel_thread_pool;
 
         proxy(std::unique_ptr<proxy_data>&& data);
 
         std::unique_ptr<proxy_data> data_;
     };
 
-    XSIGMA_API smp_thread_pool();
-    XSIGMA_API ~smp_thread_pool();
-    smp_thread_pool(const smp_thread_pool&)            = delete;
-    smp_thread_pool& operator=(const smp_thread_pool&) = delete;
+    XSIGMA_API parallel_thread_pool();
+    XSIGMA_API ~parallel_thread_pool();
+    parallel_thread_pool(const parallel_thread_pool&)            = delete;
+    parallel_thread_pool& operator=(const parallel_thread_pool&) = delete;
 
     /**
    * @brief Create a proxy
@@ -141,7 +141,7 @@ public:
    */
     XSIGMA_API std::size_t thread_count() const noexcept;
 
-    XSIGMA_API static smp_thread_pool& instance();
+    XSIGMA_API static parallel_thread_pool& instance();
 
 private:
     static void run_job(
@@ -159,7 +159,7 @@ private:
     std::atomic<std::size_t>                  next_proxy_thread_id_{1};
 };
 
-}  // namespace smp
+}  // namespace parallel
 }  // namespace detail
 }  // namespace xsigma
 

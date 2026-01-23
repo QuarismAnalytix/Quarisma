@@ -198,7 +198,7 @@ if(XSIGMA_ENABLE_BENCHMARK)
     get_filename_component(bench_name "${_bench_source}" NAME_WE)
 
     # Create executable target with consistent naming: benchmark_<name>
-    # Example: BenchmarkSMP.cpp -> benchmark_smp
+    # Example: BenchmarkSMP.cpp -> benchmark_parallel
     string(REPLACE "Benchmark" "" bench_suffix "${bench_name}")
     string(TOLOWER "${bench_suffix}" bench_suffix_lower)
     set(target_name "benchmark_${bench_suffix_lower}")
@@ -235,7 +235,7 @@ if(XSIGMA_ENABLE_BENCHMARK)
 
     # Register with CTest for integrated test execution
     # This allows running benchmarks via: ctest -R benchmark_
-    # Or specific benchmark: ctest -R benchmark_smp
+    # Or specific benchmark: ctest -R benchmark_parallel
     add_test(
       NAME ${target_name}
       COMMAND ${target_name} --benchmark_min_time=0.01s

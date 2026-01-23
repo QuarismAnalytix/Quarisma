@@ -21,23 +21,23 @@
  *   Licensed under BSD-3-Clause
  */
 
-#ifndef SMP_TOOLS_IMPL_H
-#define SMP_TOOLS_IMPL_H
+#ifndef PARALLEL_TOOLS_IMPL_H
+#define PARALLEL_TOOLS_IMPL_H
 
 #include <atomic>
 
 #include "common/export.h"
-#include "smp/smp.h"
+#include "parallel/parallel.h"
 
 namespace xsigma
 {
 namespace detail
 {
-namespace smp
+namespace parallel
 {
 
 template <backend_type Backend>
-class smp_tools_impl
+class parallel_tools_impl
 {
 public:
     //--------------------------------------------------------------------------------
@@ -66,13 +66,13 @@ public:
     void parallel_for(size_t first, size_t last, size_t grain, FunctorInternal& fi);
 
     //--------------------------------------------------------------------------------
-    smp_tools_impl();
+    parallel_tools_impl();
 
     //--------------------------------------------------------------------------------
-    smp_tools_impl(const smp_tools_impl& other);
+    parallel_tools_impl(const parallel_tools_impl& other);
 
     //--------------------------------------------------------------------------------
-    void operator=(const smp_tools_impl& other);
+    void operator=(const parallel_tools_impl& other);
 
 private:
     bool              nested_activated_ = false;
@@ -80,36 +80,36 @@ private:
 };
 
 template <backend_type Backend>
-void smp_tools_impl<Backend>::set_nested_parallelism(bool is_nested)
+void parallel_tools_impl<Backend>::set_nested_parallelism(bool is_nested)
 {
     nested_activated_ = is_nested;
 }
 
 template <backend_type Backend>
-bool smp_tools_impl<Backend>::nested_parallelism()
+bool parallel_tools_impl<Backend>::nested_parallelism()
 {
     return nested_activated_;
 }
 
 template <backend_type Backend>
-bool smp_tools_impl<Backend>::is_parallel_scope()
+bool parallel_tools_impl<Backend>::is_parallel_scope()
 {
     return is_parallel_;
 }
 
 template <backend_type Backend>
-smp_tools_impl<Backend>::smp_tools_impl() : nested_activated_(true), is_parallel_(false)
+parallel_tools_impl<Backend>::parallel_tools_impl() : nested_activated_(true), is_parallel_(false)
 {
 }
 
 template <backend_type Backend>
-smp_tools_impl<Backend>::smp_tools_impl(const smp_tools_impl& other)
+parallel_tools_impl<Backend>::parallel_tools_impl(const parallel_tools_impl& other)
     : nested_activated_(other.nested_activated_), is_parallel_(other.is_parallel_.load())
 {
 }
 
 template <backend_type Backend>
-void smp_tools_impl<Backend>::operator=(const smp_tools_impl& other)
+void parallel_tools_impl<Backend>::operator=(const parallel_tools_impl& other)
 {
     nested_activated_ = other.nested_activated_;
     is_parallel_      = other.is_parallel_.load();
@@ -117,7 +117,7 @@ void smp_tools_impl<Backend>::operator=(const smp_tools_impl& other)
 
 using execute_functor_ptr_type = void (*)(void*, size_t, size_t, size_t);
 
-}  // namespace smp
+}  // namespace parallel
 }  // namespace detail
 }  // namespace xsigma
 

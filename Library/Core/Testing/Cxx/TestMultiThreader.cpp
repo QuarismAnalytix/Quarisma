@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "Testing/xsigmaTest.h"
-#include "smp/multi_threader.h"
+#include "parallel/multi_threader.h"
 
 namespace xsigma
 {

@@ -21,24 +21,24 @@
  *   Licensed under BSD-3-Clause
  */
 
-#include "smp/common/smp_tools_api.h"
+#include "parallel/common/parallel_tools_api.h"
 
 #include <algorithm>  // For std::toupper
 #include <cstdlib>    // For std::getenv
 #include <iostream>   // For std::cerr
 #include <string>     // For std::string
 
-#include "smp/smp.h"
+#include "parallel/parallel.h"
 
 namespace xsigma
 {
 namespace detail
 {
-namespace smp
+namespace parallel
 {
 
 //------------------------------------------------------------------------------
-smp_tools_api::smp_tools_api()
+parallel_tools_api::parallel_tools_api()
 {
     // Single backend instance is created as member variable (no dynamic allocation needed)
     // Set max thread number from env
@@ -47,26 +47,26 @@ smp_tools_api::smp_tools_api()
 
 //------------------------------------------------------------------------------
 // Singleton instance
-static smp_tools_api* smp_tools_api_instance = nullptr;
+static parallel_tools_api* parallel_tools_api_instance = nullptr;
 
 //------------------------------------------------------------------------------
-smp_tools_api& smp_tools_api::instance()
+parallel_tools_api& parallel_tools_api::instance()
 {
-    if (smp_tools_api_instance == nullptr)
+    if (parallel_tools_api_instance == nullptr)
     {
-        smp_tools_api_instance = new smp_tools_api();
+        parallel_tools_api_instance = new parallel_tools_api();
     }
-    return *smp_tools_api_instance;
+    return *parallel_tools_api_instance;
 }
 
 //------------------------------------------------------------------------------
-backend_type smp_tools_api::get_backend_type()
+backend_type parallel_tools_api::get_backend_type()
 {
     return selected_backend_tools;
 }
 
 //------------------------------------------------------------------------------
-const char* smp_tools_api::get_backend()
+const char* parallel_tools_api::get_backend()
 {
     switch (selected_backend_tools)
     {
@@ -82,7 +82,7 @@ const char* smp_tools_api::get_backend()
 }
 
 //------------------------------------------------------------------------------
-bool smp_tools_api::set_backend(const char* type)
+bool parallel_tools_api::set_backend(const char* type)
 {
     // Check for null pointer
     if (type == nullptr)
@@ -115,55 +115,55 @@ bool smp_tools_api::set_backend(const char* type)
 }
 
 //------------------------------------------------------------------------------
-void smp_tools_api::initialize(int num_threads)
+void parallel_tools_api::initialize(int num_threads)
 {
     this->desired_number_of_thread_ = num_threads;
     this->refresh_number_of_thread();
 }
 
 //------------------------------------------------------------------------------
-void smp_tools_api::refresh_number_of_thread()
+void parallel_tools_api::refresh_number_of_thread()
 {
     const int num_threads = this->desired_number_of_thread_;
     backend_impl_.initialize(num_threads);
 }
 
 //------------------------------------------------------------------------------
-int smp_tools_api::estimated_default_number_of_threads()
+int parallel_tools_api::estimated_default_number_of_threads()
 {
     return backend_impl_.estimated_default_number_of_threads();
 }
 
 //------------------------------------------------------------------------------
-int smp_tools_api::estimated_number_of_threads()
+int parallel_tools_api::estimated_number_of_threads()
 {
     return backend_impl_.estimated_number_of_threads();
 }
 
 //------------------------------------------------------------------------------
-void smp_tools_api::set_nested_parallelism(bool is_nested)
+void parallel_tools_api::set_nested_parallelism(bool is_nested)
 {
     backend_impl_.set_nested_parallelism(is_nested);
 }
 
 //------------------------------------------------------------------------------
-bool smp_tools_api::nested_parallelism()
+bool parallel_tools_api::nested_parallelism()
 {
     return backend_impl_.nested_parallelism();
 }
 
 //------------------------------------------------------------------------------
-bool smp_tools_api::is_parallel_scope()
+bool parallel_tools_api::is_parallel_scope()
 {
     return backend_impl_.is_parallel_scope();
 }
 
 //------------------------------------------------------------------------------
-bool smp_tools_api::single_thread()
+bool parallel_tools_api::single_thread()
 {
     return backend_impl_.single_thread();
 }
 
-}  // namespace smp
+}  // namespace parallel
 }  // namespace detail
 }  // namespace xsigma

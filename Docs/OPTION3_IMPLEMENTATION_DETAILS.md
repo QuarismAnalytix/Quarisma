@@ -2,7 +2,7 @@
 
 ## Code Changes Overview
 
-### File: `Library/Core/smp/smp_tools.h`
+### File: `Library/Core/parallel/parallel_tools.h`
 
 #### Location 1: Includes (Lines 23-25)
 
@@ -24,8 +24,8 @@
 #if XSIGMA_HAS_OPENMP
 // Static storage for OpenMP threadprivate
 // Each thread gets its own copy automatically
-thread_local unsigned char smp_tools_functor_initialized = 0;
-#pragma omp threadprivate(smp_tools_functor_initialized)
+thread_local unsigned char parallel_tools_functor_initialized = 0;
+#pragma omp threadprivate(parallel_tools_functor_initialized)
 #endif
 ```
 
@@ -38,10 +38,10 @@ thread_local unsigned char smp_tools_functor_initialized = 0;
 **Before** (Option 1):
 ```cpp
 template <typename Functor>
-struct smp_tools_functor_internal<Functor, true>
+struct parallel_tools_functor_internal<Functor, true>
 {
     Functor& f_;
-    smp_tools_functor_internal(Functor& f) : f_(f) {}
+    parallel_tools_functor_internal(Functor& f) : f_(f) {}
     void Execute(size_t first, size_t last)
     {
         thread_local unsigned char initialized = 0;
@@ -59,7 +59,7 @@ struct smp_tools_functor_internal<Functor, true>
 **After** (Option 3):
 ```cpp
 template <typename Functor>
-struct smp_tools_functor_internal<Functor, true>
+struct parallel_tools_functor_internal<Functor, true>
 {
     Functor& f_;
 
@@ -68,7 +68,7 @@ struct smp_tools_functor_internal<Functor, true>
     mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 #endif
 
-    smp_tools_functor_internal(Functor& f) : f_(f)
+    parallel_tools_functor_internal(Functor& f) : f_(f)
 #if XSIGMA_HAS_TBB
         , initialized_(0)
 #endif
@@ -78,10 +78,10 @@ struct smp_tools_functor_internal<Functor, true>
     {
 #if XSIGMA_HAS_OPENMP
         // OpenMP backend: Use threadprivate static
-        if (!smp_tools_functor_initialized)
+        if (!parallel_tools_functor_initialized)
         {
             this->f_.Initialize();
-            smp_tools_functor_initialized = 1;
+            parallel_tools_functor_initialized = 1;
         }
 #elif XSIGMA_HAS_TBB
         // TBB backend: Use enumerable_thread_specific
@@ -130,14 +130,14 @@ struct smp_tools_functor_internal<Functor, true>
 **Code**:
 ```cpp
 #if XSIGMA_HAS_OPENMP
-thread_local unsigned char smp_tools_functor_initialized = 0;
-#pragma omp threadprivate(smp_tools_functor_initialized)
+thread_local unsigned char parallel_tools_functor_initialized = 0;
+#pragma omp threadprivate(parallel_tools_functor_initialized)
 
 // In Execute():
-if (!smp_tools_functor_initialized)
+if (!parallel_tools_functor_initialized)
 {
     this->f_.Initialize();
-    smp_tools_functor_initialized = 1;
+    parallel_tools_functor_initialized = 1;
 }
 #endif
 ```
@@ -168,7 +168,7 @@ if (!smp_tools_functor_initialized)
 mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 #endif
 
-smp_tools_functor_internal(Functor& f) : f_(f)
+parallel_tools_functor_internal(Functor& f) : f_(f)
 #if XSIGMA_HAS_TBB
     , initialized_(0)
 #endif
@@ -316,7 +316,7 @@ All existing tests verify correct behavior:
 
 3. **Thread Safety Tests**
    - TestAsyncParallel
-   - TestSmpAdvancedThreadName
+   - TestParallelAdvancedThreadName
 
 4. **Backend-Specific Tests**
    - Each backend tested independently

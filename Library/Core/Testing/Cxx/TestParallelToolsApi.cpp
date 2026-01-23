@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * Comprehensive unit tests for smp_tools_api (Internal API)
+ * Comprehensive unit tests for parallel_tools_api (Internal API)
  *
  * Tests cover:
  * - Singleton pattern
@@ -23,14 +23,14 @@
 #include <vector>
 
 #include "Testing/xsigmaTest.h"
-#include "smp/common/smp_tools_api.h"
-#include "smp/smp.h"
+#include "parallel/common/parallel_tools_api.h"
+#include "parallel/parallel.h"
 
 namespace xsigma
 {
 namespace detail
 {
-namespace smp
+namespace parallel
 {
 
 // ============================================================================
@@ -68,7 +68,7 @@ public:
 
     void Execute(size_t, size_t)
     {
-        bool is_parallel = smp_tools_api::instance().is_parallel_scope();
+        bool is_parallel = parallel_tools_api::instance().is_parallel_scope();
         was_in_parallel_scope_.store(is_parallel, std::memory_order_relaxed);
     }
 };
@@ -77,25 +77,25 @@ public:
 // Consolidated Test 1: Singleton and Backend Identification
 // ============================================================================
 
-XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
+XSIGMATEST(ParallelToolsApi, singleton_and_backend_identification)
 {
     {
         // Test 1: Singleton instance verification
         // Ensure singleton pattern returns same instance
-        smp_tools_api& api1 = smp_tools_api::instance();
-        smp_tools_api& api2 = smp_tools_api::instance();
+        parallel_tools_api& api1 = parallel_tools_api::instance();
+        parallel_tools_api& api2 = parallel_tools_api::instance();
         EXPECT_EQ(&api1, &api2);
 
         // Test 2: Backend type validation
         // Verify backend type is one of the valid types
-        backend_type type = smp_tools_api::get_backend_type();
+        backend_type type = parallel_tools_api::get_backend_type();
         EXPECT_TRUE(
             type == backend_type::std_thread || type == backend_type::TBB ||
             type == backend_type::OpenMP);
 
         // Test 3: Backend name validation
         // Verify backend name is non-null and valid
-        const char* backend_name = smp_tools_api::get_backend();
+        const char* backend_name = parallel_tools_api::get_backend();
         ASSERT_NE(backend_name, nullptr);
         std::string name_str(backend_name);
         EXPECT_TRUE(name_str == "std" || name_str == "tbb" || name_str == "openmp");
@@ -121,8 +121,8 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
     // ============================================================================
 
     {
-        smp_tools_api& api             = smp_tools_api::instance();
-        const char*    current_backend = smp_tools_api::get_backend();
+        parallel_tools_api& api             = parallel_tools_api::instance();
+        const char*    current_backend = parallel_tools_api::get_backend();
 
         // Test 1: Setting to current backend should succeed
         bool result = api.set_backend(current_backend);
@@ -139,7 +139,7 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
 
 #if XSIGMA_HAS_OPENMP
     {
-        smp_tools_api& api = smp_tools_api::instance();
+        parallel_tools_api& api = parallel_tools_api::instance();
 
         // Only OpenMP should succeed
         EXPECT_TRUE(api.set_backend("openmp"));
@@ -150,7 +150,7 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
 
 #if XSIGMA_HAS_TBB
     {
-        smp_tools_api& api = smp_tools_api::instance();
+        parallel_tools_api& api = parallel_tools_api::instance();
 
         // Only TBB should succeed
         EXPECT_TRUE(api.set_backend("tbb"));
@@ -161,7 +161,7 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
 
 #if !XSIGMA_HAS_OPENMP && !XSIGMA_HAS_TBB
     {
-        smp_tools_api& api = smp_tools_api::instance();
+        parallel_tools_api& api = parallel_tools_api::instance();
 
         // Only std_thread should succeed
         EXPECT_TRUE(api.set_backend("std"));
@@ -175,7 +175,7 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
     // ============================================================================
 
     {
-        smp_tools_api& api = smp_tools_api::instance();
+        parallel_tools_api& api = parallel_tools_api::instance();
 
         // Test 1: Initialize with default (0 = auto)
         api.initialize(0);
@@ -220,7 +220,7 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
     // ============================================================================
 
     {
-        smp_tools_api& api = smp_tools_api::instance();
+        parallel_tools_api& api = parallel_tools_api::instance();
 
         // Test 1: Set nested parallelism to false
         api.set_nested_parallelism(false);
@@ -245,7 +245,7 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
     // ============================================================================
 
     {
-        smp_tools_api& api = smp_tools_api::instance();
+        parallel_tools_api& api = parallel_tools_api::instance();
 
         // Test 1: Outside any parallel region
         bool is_parallel = api.is_parallel_scope();
@@ -272,7 +272,7 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
     // ============================================================================
 
     {
-        smp_tools_api& api = smp_tools_api::instance();
+        parallel_tools_api& api = parallel_tools_api::instance();
 
         // Test 1: Basic parallel_for execution
         {
@@ -376,7 +376,7 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
     // Consolidated Test 7: Thread Configuration Persistence
     // ============================================================================
     {
-        smp_tools_api& api = smp_tools_api::instance();
+        parallel_tools_api& api = parallel_tools_api::instance();
 
         // Test 1: Refresh number of threads
         api.initialize(4);
@@ -390,15 +390,15 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
         EXPECT_EQ(threads1, threads2);
     }
 
-    // Note: local_scope tests are better suited for the smp_tools level
-    // and are comprehensively tested in TestSmpTools.cpp
+    // Note: local_scope tests are better suited for the parallel_tools level
+    // and are comprehensively tested in TestParallelTools.cpp
 
     // ============================================================================
     // Consolidated Test 8: Thread Safety
     // ============================================================================
 
     {
-        smp_tools_api& api = smp_tools_api::instance();
+        parallel_tools_api& api = parallel_tools_api::instance();
 
         // Test 1: Concurrent parallel_for calls
         {
@@ -456,7 +456,7 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
     // ============================================================================
 
     {
-        smp_tools_api& api = smp_tools_api::instance();
+        parallel_tools_api& api = parallel_tools_api::instance();
 
         // Test 1: Multiple initializations
         {
@@ -501,7 +501,7 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
     // ============================================================================
 
     {
-        smp_tools_api& api = smp_tools_api::instance();
+        parallel_tools_api& api = parallel_tools_api::instance();
 
         // Reset configuration
         api.initialize(4);
@@ -534,11 +534,11 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
     }
 
     {
-        smp_tools_api& api = smp_tools_api::instance();
+        parallel_tools_api& api = parallel_tools_api::instance();
 
         // Verify backend
-        backend_type type = smp_tools_api::get_backend_type();
-        const char*  name = smp_tools_api::get_backend();
+        backend_type type = parallel_tools_api::get_backend_type();
+        const char*  name = parallel_tools_api::get_backend();
 
         ASSERT_NE(name, nullptr);
 
@@ -564,6 +564,6 @@ XSIGMATEST(SmpToolsApi, singleton_and_backend_identification)
         }
     }
 }
-}  // namespace smp
+}  // namespace parallel
 }  // namespace detail
 }  // namespace xsigma

@@ -33,8 +33,8 @@ filegroup(
             "memory/**/*.h",
             "profiler/*.h",
             "profiler/**/*.h",
-            "smp/*.h",
-            "smp/**/*.h",
+            "parallel/*.h",
+            "parallel/**/*.h",
             "c17/*.h",
         ],
         allow_empty = True,
@@ -53,8 +53,8 @@ filegroup(
             "memory/**/*.hxx",
             "profiler/*.hxx",
             "profiler/**/*.hxx",
-            "smp/*.hxx",
-            "smp/**/*.hxx",
+            "parallel/*.hxx",
+            "parallel/**/*.hxx",
         ],
         allow_empty = True,
     ),
@@ -72,8 +72,8 @@ filegroup(
             "memory/**/*.cpp",
             "profiler/*.cpp",
             "profiler/**/*.cpp",
-            "smp/*.cpp",
-            "smp/**/*.cpp",
+            "parallel/*.cpp",
+            "parallel/**/*.cpp",
         ],
         exclude = [
             # Exclude GPU files if CUDA/HIP not enabled
@@ -84,8 +84,8 @@ filegroup(
             # Exclude common profiler files (require kineto/native)
             "profiler/common/**/*.cpp",
             # Exclude TBB or STDThread based on configuration
-            "smp/TBB/*.cpp",
-            "smp/STDThread/*.cpp",
+            "parallel/TBB/*.cpp",
+            "parallel/STDThread/*.cpp",
             # Exclude Kineto files if not enabled
             "profiler/kineto_*.cpp",
             "profiler/kineto/**/*.cpp",
@@ -113,8 +113,8 @@ cc_library(
         "//bazel:enable_native_profiler": glob(["profiler/native/**/*.cpp"], allow_empty = True),
         "//conditions:default": [],
     }) + select({
-        "//bazel:enable_tbb": glob(["smp/TBB/*.cpp"], allow_empty = True),
-        "//conditions:default": glob(["smp/STDThread/*.cpp"], allow_empty = True),
+        "//bazel:enable_tbb": glob(["parallel/TBB/*.cpp"], allow_empty = True),
+        "//conditions:default": glob(["parallel/STDThread/*.cpp"], allow_empty = True),
     }) + select({
         "//bazel:enable_kineto": glob(
             [
@@ -140,8 +140,8 @@ cc_library(
         "//bazel:enable_native_profiler": glob(["profiler/native/**/*.h", "profiler/native/**/*.hxx"], allow_empty = True),
         "//conditions:default": [],
     }) + select({
-        "//bazel:enable_tbb": glob(["smp/TBB/*.h", "smp/TBB/*.hxx"], allow_empty = True),
-        "//conditions:default": glob(["smp/STDThread/*.h", "smp/STDThread/*.hxx"], allow_empty = True),
+        "//bazel:enable_tbb": glob(["parallel/TBB/*.h", "parallel/TBB/*.hxx"], allow_empty = True),
+        "//conditions:default": glob(["parallel/STDThread/*.h", "parallel/STDThread/*.hxx"], allow_empty = True),
     }) + select({
         "//bazel:enable_kineto": glob(["profiler/kineto_*.h", "profiler/native/**/*.h", "profiler/native/**/*.hxx"], allow_empty = True),
         "//conditions:default": [],

@@ -6,7 +6,7 @@
 
 ## What Was Done
 
-**Removed**: Custom `smp_thread_local` abstraction
+**Removed**: Custom `parallel_thread_local` abstraction
 **Replaced With**: Backend-specific native implementations
 
 ### Three Backend Solutions
@@ -34,7 +34,7 @@
 ## Implementation Summary
 
 ### File Modified
-- **Library/Core/smp/smp_tools.h** (~70 lines)
+- **Library/Core/parallel/parallel_tools.h** (~70 lines)
 
 ### Changes Made
 1. Added TBB include (3 lines)
@@ -65,13 +65,13 @@
 ### OpenMP Backend
 ```cpp
 #if XSIGMA_HAS_OPENMP
-thread_local unsigned char smp_tools_functor_initialized = 0;
-#pragma omp threadprivate(smp_tools_functor_initialized)
+thread_local unsigned char parallel_tools_functor_initialized = 0;
+#pragma omp threadprivate(parallel_tools_functor_initialized)
 
 // In Execute():
-if (!smp_tools_functor_initialized) {
+if (!parallel_tools_functor_initialized) {
     this->f_.Initialize();
-    smp_tools_functor_initialized = 1;
+    parallel_tools_functor_initialized = 1;
 }
 #endif
 ```
@@ -153,7 +153,7 @@ if (!initialized) {
 - TestParallelReduce
 - TestNestedParallelism
 - TestAsyncParallel
-- TestSmpAdvancedThreadName
+- TestParallelAdvancedThreadName
 
 ---
 
@@ -183,7 +183,7 @@ if (!initialized) {
 If needed, revert to Option 1:
 
 ```bash
-git checkout HEAD~1 -- Library/Core/smp/smp_tools.h
+git checkout HEAD~1 -- Library/Core/parallel/parallel_tools.h
 ```
 
 ---

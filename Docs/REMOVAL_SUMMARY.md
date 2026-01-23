@@ -1,8 +1,8 @@
-# `smp_thread_local` Removal - Executive Summary
+# `parallel_thread_local` Removal - Executive Summary
 
 ## Current State
 - **11 files** implementing thread-local storage abstraction
-- **1 active usage** in `smp_tools.h` (line 93)
+- **1 active usage** in `parallel_tools.h` (line 93)
 - **~1000 lines** of code
 - **3 backend implementations** (TBB, OpenMP, std_thread)
 
@@ -67,8 +67,8 @@ API Change:  ⚠️ YES (Initialize semantics)
 
 ### Usage Analysis
 ```
-smp_tools.h (line 93):
-  smp_thread_local<unsigned char> initialized_;
+parallel_tools.h (line 93):
+  parallel_thread_local<unsigned char> initialized_;
   
 Purpose: Track per-thread initialization state
 Pattern: Lazy initialization (Initialize() called once per thread)
@@ -80,7 +80,7 @@ Pattern: Lazy initialization (Initialize() called once per thread)
 - ✅ No external dependencies
 
 ### Impact Assessment
-- **Files affected**: 1 (smp_tools.h)
+- **Files affected**: 1 (parallel_tools.h)
 - **API changes**: 0 (with Option 1)
 - **Test changes**: 0
 - **User impact**: 0
@@ -101,8 +101,8 @@ Pattern: Lazy initialization (Initialize() called once per thread)
 
 **Implementation:**
 ```cpp
-// Remove: #include "smp_thread_local.h"
-// Change: smp_thread_local<unsigned char> initialized_;
+// Remove: #include "parallel_thread_local.h"
+// Change: parallel_thread_local<unsigned char> initialized_;
 // To:     thread_local unsigned char initialized = 0;
 ```
 
@@ -124,7 +124,7 @@ Pattern: Lazy initialization (Initialize() called once per thread)
 ## Success Criteria
 
 - [ ] All 11 files removed
-- [ ] smp_tools.h updated
+- [ ] parallel_tools.h updated
 - [ ] CMakeLists.txt updated
 - [ ] Build succeeds
 - [ ] All tests pass
@@ -136,7 +136,7 @@ Pattern: Lazy initialization (Initialize() called once per thread)
 
 ## Documents Provided
 
-1. **REMOVE_SMP_THREAD_LOCAL_OPTIONS.md** - Detailed option analysis
+1. **REMOVE_PARALLEL_THREAD_LOCAL_OPTIONS.md** - Detailed option analysis
 2. **OPTION_COMPARISON_DETAILED.md** - Code examples & comparison
 3. **REMOVAL_IMPLEMENTATION_GUIDE.md** - Step-by-step instructions
 4. **DECISION_MATRIX_AND_NEXT_STEPS.md** - Decision guide & next steps

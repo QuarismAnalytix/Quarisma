@@ -21,28 +21,28 @@
  *   Licensed under BSD-3-Clause
  */
 
-#ifndef SMP_TOOLS_API_H
-#define SMP_TOOLS_API_H
+#ifndef PARALLEL_TOOLS_API_H
+#define PARALLEL_TOOLS_API_H
 
 #include <memory>
 
 #include "common/export.h"
-#include "smp/common/smp_tools_impl.h"
-#include "smp/smp.h"
+#include "parallel/common/parallel_tools_impl.h"
+#include "parallel/parallel.h"
 
 #if XSIGMA_HAS_TBB
-#include "smp/tbb/smp_tools_impl.h"
+#include "parallel/tbb/parallel_tools_impl.h"
 #elif XSIGMA_HAS_OPENMP
-#include "smp/openmp/smp_tools_impl.h"
+#include "parallel/openmp/parallel_tools_impl.h"
 #else
-#include "smp/std_thread/smp_tools_impl.h"
+#include "parallel/std_thread/parallel_tools_impl.h"
 #endif
 
 namespace xsigma
 {
 namespace detail
 {
-namespace smp
+namespace parallel
 {
 
 // Compile-time backend selection based on availability
@@ -55,13 +55,13 @@ constexpr backend_type selected_backend_tools = backend_type::OpenMP;
 constexpr backend_type selected_backend_tools = backend_type::std_thread;
 #endif
 
-using selected_smp_tools_impl = smp_tools_impl<selected_backend_tools>;
+using selected_parallel_tools_impl = parallel_tools_impl<selected_backend_tools>;
 
-class XSIGMA_VISIBILITY smp_tools_api
+class XSIGMA_VISIBILITY parallel_tools_api
 {
 public:
     //--------------------------------------------------------------------------------
-    XSIGMA_API static smp_tools_api& instance();
+    XSIGMA_API static parallel_tools_api& instance();
 
     //--------------------------------------------------------------------------------
     XSIGMA_API static backend_type get_backend_type();
@@ -124,19 +124,19 @@ public:
     }
 
     // disable copying
-    smp_tools_api(smp_tools_api const&)  = delete;
-    void operator=(smp_tools_api const&) = delete;
+    parallel_tools_api(parallel_tools_api const&)  = delete;
+    void operator=(parallel_tools_api const&) = delete;
 
 private:
     //--------------------------------------------------------------------------------
-    XSIGMA_API smp_tools_api();
+    XSIGMA_API parallel_tools_api();
 
     //--------------------------------------------------------------------------------
     XSIGMA_API void refresh_number_of_thread();
 
     //--------------------------------------------------------------------------------
     template <typename Config>
-    smp_tools_api& operator<<(Config const& config)
+    parallel_tools_api& operator<<(Config const& config)
     {
         this->initialize(config.max_number_of_threads_);
         this->set_backend(config.backend_.c_str());
@@ -152,10 +152,10 @@ private:
     /**
    * Single backend implementation selected at compile-time
    */
-    selected_smp_tools_impl backend_impl_;
+    selected_parallel_tools_impl backend_impl_;
 };
 
-}  // namespace smp
+}  // namespace parallel
 }  // namespace detail
 }  // namespace xsigma
 

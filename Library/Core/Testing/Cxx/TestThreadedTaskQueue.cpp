@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "Testing/xsigmaTest.h"
-#include "smp/threaded_task_queue.h"
+#include "parallel/threaded_task_queue.h"
 
 namespace xsigma
 {

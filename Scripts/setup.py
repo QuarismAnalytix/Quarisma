@@ -627,7 +627,7 @@ class XsigmaFlags:
             "fix",
             "cache_type",
             "enzyme",
-            "smp_backend",
+            "parallel_backend",
         ]
         self.__description = [
             # Valid CMake options
@@ -696,7 +696,7 @@ class XsigmaFlags:
             "fix": "XSIGMA_ENABLE_FIX",
             "cache_type": "XSIGMA_CACHE_BACKEND",
             "enzyme": "XSIGMA_ENABLE_ENZYME",
-            "smp_backend": "XSIGMA_SMP_BACKEND",
+            "parallel_backend": "XSIGMA_PARALLEL_BACKEND",
             # Non-CMake flags (for internal use, not passed to CMake)
             "mkl_threading": "MKL_THREADING",
             "mkl_link": "MKL_LINK",
@@ -718,7 +718,7 @@ class XsigmaFlags:
         self.__value.update(
             {
                 "vectorisation": "avx2",  # Special case: string value
-                "smp_backend": "std",  # Special case: string value
+                "parallel_backend": "std",  # Special case: string value
                 "javasourceversion": 1.8,  # Special case: numeric value
                 "javatargetversion": 1.8,  # Special case: numeric value
                 "cxxstd": "cxx20",  # Special case: let CMake decide
@@ -748,7 +748,7 @@ class XsigmaFlags:
                 "cxxstd": "",  # Special case: let CMake decide
                 "logging_backend": "LOGURU",  # Default logging backend
                 "cache_type": "none",  # Default cache type is none
-                "smp_backend": "std",  # Default SMP backend is std_thread for maximum compatibility
+                "parallel_backend": "std",  # Default SMP backend is std_thread for maximum compatibility
                 # CMake options with default OFF - keep OFF in setup.py
                 "lto": self.OFF,  # XSIGMA_ENABLE_LTO default is OFF
                 "gtest": self.ON,  # XSIGMA_ENABLE_GTEST default is ON
@@ -779,7 +779,7 @@ class XsigmaFlags:
         logging_backend_list = ["native", "loguru", "glog"]
         profiler_choices = {"kineto": "KINETO", "native": "NATIVE", "itt": "ITT"}
         cache_type_list = ["none", "ccache", "sccache", "buildcache"]
-        smp_backend_list = ["std", "openmp", "tbb"]
+        parallel_backend_list = ["std", "openmp", "tbb"]
 
         # Set default values for special flags
         self.__value["mkl_link"] = "static"
@@ -828,8 +828,8 @@ class XsigmaFlags:
                 self.__value["cache_type"] = arg
                 self.builder_suffix += f"_{arg}"
                 print_status(f"Setting cache type to {arg}", "INFO")
-            elif arg.startswith("smp."):
-                # Handle SMP backend selection (--smp.std, --smp.openmp, --smp.tbb)
+            elif arg.startswith("parallel."):
+                # Handle SMP backend selection (--parallel.std, --parallel.openmp, --parallel.tbb)
                 # This flag controls which parallel processing backend is used:
                 # - std:     Standard C++ threads (std_thread) - default, maximum compatibility
                 # - openmp:  OpenMP parallel processing - optimized for OpenMP-aware code
@@ -837,17 +837,17 @@ class XsigmaFlags:
                 # Only one backend can be active at a time. The selected backend affects:
                 # - XSIGMA_HAS_TBB compile definition (1 if tbb selected, 0 otherwise)
                 # - XSIGMA_HAS_OPENMP compile definition (1 if openmp selected, 0 otherwise)
-                # - Build directory suffix (e.g., build_ninja_smp_tbb)
+                # - Build directory suffix (e.g., build_ninja_parallel_tbb)
                 backend_value = arg.split(".", 1)[1].lower()
-                if backend_value in smp_backend_list:
-                    self.__value["smp_backend"] = backend_value
-                    self.builder_suffix += f"_smp_{backend_value}"
+                if backend_value in parallel_backend_list:
+                    self.__value["parallel_backend"] = backend_value
+                    self.builder_suffix += f"_parallel_{backend_value}"
                     print_status(
                         f"Selecting SMP backend: {backend_value}", "INFO"
                     )
                 else:
                     print_status(
-                        f"Invalid SMP backend '{backend_value}'. Valid options: {', '.join(smp_backend_list)}",
+                        f"Invalid SMP backend '{backend_value}'. Valid options: {', '.join(parallel_backend_list)}",
                         "ERROR",
                     )
                     sys.exit(1)
@@ -919,11 +919,11 @@ class XsigmaFlags:
             )
 
         # Validate SMP backend selection
-        smp_backend = self.__value.get("smp_backend", "std")
+        parallel_backend = self.__value.get("parallel_backend", "std")
         valid_backends = ["std", "openmp", "tbb"]
-        if smp_backend not in valid_backends:
+        if parallel_backend not in valid_backends:
             print_status(
-                f"Invalid SMP backend '{smp_backend}'. Valid options: {', '.join(valid_backends)}",
+                f"Invalid SMP backend '{parallel_backend}'. Valid options: {', '.join(valid_backends)}",
                 "ERROR",
             )
             sys.exit(1)
@@ -1003,10 +1003,10 @@ class XsigmaFlags:
 
     def helper(self):
         for key, description in zip(self.__key, self.__description):
-            if key == "smp":
+            if key == "parallel":
                 key = "std, openmp or tbb"
-            elif key == "smp_backend":
-                key = "smp.std, smp.openmp, or smp.tbb"
+            elif key == "parallel_backend":
+                key = "parallel.std, parallel.openmp, or parallel.tbb"
             elif key == "vectorisation":
                 key = "sse, avx, avx2 or avx512"
             elif key == "cxxstd":
@@ -1613,16 +1613,16 @@ def parse_args(args):
                     "ERROR",
                 )
                 sys.exit(1)
-        elif arg.startswith("--smp."):
-            # Parse SMP backend selection flag (--smp.std, --smp.openmp, --smp.tbb)
+        elif arg.startswith("--parallel."):
+            # Parse SMP backend selection flag (--parallel.std, --parallel.openmp, --parallel.tbb)
             # This is the first stage of argument parsing that converts command-line flags
             # into internal argument format. The actual backend selection happens later
             # in XsigmaFlags.__process_arg_list() which sets CMake variables.
             #
             # Supported backends:
-            # - --smp.std:     Use standard C++ threads (std_thread)
-            # - --smp.openmp:  Use OpenMP for parallel processing
-            # - --smp.tbb:     Use Intel Threading Building Blocks
+            # - --parallel.std:     Use standard C++ threads (std_thread)
+            # - --parallel.openmp:  Use OpenMP for parallel processing
+            # - --parallel.tbb:     Use Intel Threading Building Blocks
             #
             # The selected backend controls which CMake options are enabled:
             # - std:     XSIGMA_ENABLE_TBB=OFF, XSIGMA_ENABLE_OPENMP=OFF
@@ -1632,7 +1632,7 @@ def parse_args(args):
             valid_backends = ["std", "openmp", "tbb"]
             if backend_value in valid_backends:
                 # Pass the backend selection to the next processing stage
-                processed_args.append(f"smp.{backend_value}")
+                processed_args.append(f"parallel.{backend_value}")
                 print_status(f"SMP backend set to {backend_value}", "INFO")
             else:
                 print_status(

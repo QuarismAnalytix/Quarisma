@@ -1,4 +1,4 @@
-# `smp_thread_local` Removal - Complete Documentation Index
+# `parallel_thread_local` Removal - Complete Documentation Index
 
 ## 📋 Start Here
 
@@ -17,7 +17,7 @@
    - Timeline
 
 ### For Detailed Analysis
-3. **REMOVE_SMP_THREAD_LOCAL_OPTIONS.md** (20 min read)
+3. **REMOVE_PARALLEL_THREAD_LOCAL_OPTIONS.md** (20 min read)
    - Current usage analysis
    - Option 1: Standard C++ `thread_local`
    - Option 2: `std::vector<T>` + Thread ID
@@ -101,7 +101,7 @@
 3. REMOVAL_CHECKLIST.md
 
 **Architect:**
-1. REMOVE_SMP_THREAD_LOCAL_OPTIONS.md
+1. REMOVE_PARALLEL_THREAD_LOCAL_OPTIONS.md
 2. OPTION_COMPARISON_DETAILED.md
 3. DECISION_MATRIX_AND_NEXT_STEPS.md
 
@@ -154,7 +154,7 @@
 |----------|---------|----------|
 | QUICK_REFERENCE.md | Fast lookup | Everyone |
 | REMOVAL_SUMMARY.md | Executive overview | Managers, Leads |
-| REMOVE_SMP_THREAD_LOCAL_OPTIONS.md | Detailed analysis | Architects |
+| REMOVE_PARALLEL_THREAD_LOCAL_OPTIONS.md | Detailed analysis | Architects |
 | OPTION_COMPARISON_DETAILED.md | Code examples | Developers |
 | DECISION_MATRIX_AND_NEXT_STEPS.md | Decision support | Leads |
 | REMOVAL_IMPLEMENTATION_GUIDE.md | How-to guide | Developers |
@@ -176,14 +176,14 @@
 
 ### For Review
 1. OPTION_COMPARISON_DETAILED.md
-2. REMOVE_SMP_THREAD_LOCAL_OPTIONS.md
+2. REMOVE_PARALLEL_THREAD_LOCAL_OPTIONS.md
 
 ---
 
 ## Questions?
 
 Refer to:
-- **"What are the options?"** → REMOVE_SMP_THREAD_LOCAL_OPTIONS.md
+- **"What are the options?"** → REMOVE_PARALLEL_THREAD_LOCAL_OPTIONS.md
 - **"Which option is best?"** → DECISION_MATRIX_AND_NEXT_STEPS.md
 - **"How do I implement it?"** → REMOVAL_IMPLEMENTATION_GUIDE.md
 - **"What do I need to do?"** → REMOVAL_CHECKLIST.md

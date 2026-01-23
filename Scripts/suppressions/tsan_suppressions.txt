@@ -72,7 +72,7 @@ race:*Test*
 
 # Suppress races in SMP (Symmetric Multi-Processing) components
 # These may be intentional or require careful analysis
-race:*smp*
+race:*parallel*
 race:*thread_pool*
 race:*multi_threader*
 

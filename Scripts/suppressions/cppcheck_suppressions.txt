@@ -29,16 +29,16 @@ missingInclude:*
 # Intentional design patterns
 
 # Conversion constructors - explicit keyword not wanted for implicit conversions
-noExplicitConstructor:Library/Core/smp/smp_tools.h
-noExplicitConstructor:Library/Core/smp/std_thread/smp_thread_pool.cpp
-noExplicitConstructor:Library/Core/smp/threaded_callback_queue.h
+noExplicitConstructor:Library/Core/parallel/parallel_tools.h
+noExplicitConstructor:Library/Core/parallel/std_thread/parallel_thread_pool.cpp
+noExplicitConstructor:Library/Core/parallel/threaded_callback_queue.h
 noExplicitConstructor:Library/Core/profiler/kineto/profiler_kineto.cpp
 
 # Destructor deletes members - making loop variable const would be misleading
-constVariableReference:Library/Core/smp/multi_threader.cpp:145
+constVariableReference:Library/Core/parallel/multi_threader.cpp:145
 
 # False positive - num is used after reassignment in std::min
-redundantAssignment:Library/Core/smp/multi_threader.cpp:107
+redundantAssignment:Library/Core/parallel/multi_threader.cpp:107
 
 # Padding/alignment structs - members intentionally unused
 unusedStructMember:Library/Core/util/small_vector.cpp
@@ -48,19 +48,19 @@ unusedStructMember:Library/Core/profiler/common/standalone/execution_trace_obser
 unusedStructMember:Library/Core/profiler/common/standalone/execution_trace_observer.cpp:178
 
 # Intentional state machine condition
-knownConditionTrueFalse:Library/Core/smp/threaded_callback_queue.h:108
+knownConditionTrueFalse:Library/Core/parallel/threaded_callback_queue.h:108
 knownConditionTrueFalse:Library/Core/profiler/common/standalone/execution_trace_observer.cpp:851
 
 # Functor may need to modify state - cannot be const
-constVariableReference:Library/Core/smp/threaded_callback_queue.h:584
+constVariableReference:Library/Core/parallel/threaded_callback_queue.h:584
 
 # Template returns non-const reference - parameter cannot be const
-constParameterReference:Library/Core/smp/threaded_callback_queue.h:513
+constParameterReference:Library/Core/parallel/threaded_callback_queue.h:513
 
 # Style suggestions - raw loops preferred for clarity in these cases
-useStlAlgorithm:Library/Core/smp/std_thread/smp_thread_pool.cpp:457
-useStlAlgorithm:Library/Core/smp/std_thread/smp_thread_pool.cpp:615
-useStlAlgorithm:Library/Core/smp/threaded_callback_queue.h:671
+useStlAlgorithm:Library/Core/parallel/std_thread/parallel_thread_pool.cpp:457
+useStlAlgorithm:Library/Core/parallel/std_thread/parallel_thread_pool.cpp:615
+useStlAlgorithm:Library/Core/parallel/threaded_callback_queue.h:671
 
 # Profiler code - const correctness suggestions for imported/adapted code
 constVariableReference:Library/Core/profiler/common/collection.cpp

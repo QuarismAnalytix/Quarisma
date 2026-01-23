@@ -20,9 +20,9 @@
 ### Implementation
 
 ```cpp
-struct smp_tools_functor_internal<Functor, true> {
+struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
-    smp_tools_functor_internal(Functor& f) : f_(f) {}
+    parallel_tools_functor_internal(Functor& f) : f_(f) {}
     void Execute(size_t first, size_t last) {
         thread_local unsigned char initialized = 0;
         if (!initialized) {
@@ -67,7 +67,7 @@ struct smp_tools_functor_internal<Functor, true> {
 ### Implementation
 
 ```cpp
-struct smp_tools_functor_internal<Functor, true> {
+struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
 #if XSIGMA_HAS_OPENMP
     // OpenMP: threadprivate static
@@ -78,7 +78,7 @@ struct smp_tools_functor_internal<Functor, true> {
     // Native: thread_local
 #endif
     
-    smp_tools_functor_internal(Functor& f) : f_(f)
+    parallel_tools_functor_internal(Functor& f) : f_(f)
 #if XSIGMA_HAS_TBB
         , initialized_(0)
 #endif
@@ -143,7 +143,7 @@ if (!initialized) {
 ```cpp
 // Three implementations
 #if XSIGMA_HAS_OPENMP
-    if (!smp_tools_functor_initialized) { ... }
+    if (!parallel_tools_functor_initialized) { ... }
 #elif XSIGMA_HAS_TBB
     unsigned char& inited = initialized_.local();
     if (!inited) { ... }

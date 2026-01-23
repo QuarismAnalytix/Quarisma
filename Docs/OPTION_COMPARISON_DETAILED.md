@@ -4,12 +4,12 @@
 
 ### Code Example
 ```cpp
-// smp_tools.h - Line 93
-struct smp_tools_functor_internal<Functor, true> {
+// parallel_tools.h - Line 93
+struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
-    // REMOVE: smp_thread_local<unsigned char> initialized_;
+    // REMOVE: parallel_thread_local<unsigned char> initialized_;
     
-    smp_tools_functor_internal(Functor& f) : f_(f) {}
+    parallel_tools_functor_internal(Functor& f) : f_(f) {}
     
     void Execute(size_t first, size_t last) {
         thread_local unsigned char initialized = 0;
@@ -128,11 +128,11 @@ unsigned char& inited = initialized.get();
 
 ### Code Example
 ```cpp
-struct smp_tools_functor_internal<Functor, true> {
+struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
     bool initialized = false;
     
-    smp_tools_functor_internal(Functor& f) : f_(f) {}
+    parallel_tools_functor_internal(Functor& f) : f_(f) {}
     
     void parallel_for(size_t first, size_t last, size_t grain) {
         if (!initialized) {

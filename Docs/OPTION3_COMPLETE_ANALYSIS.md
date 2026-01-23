@@ -14,17 +14,17 @@
 
 All changes from Option 1 are already implemented:
 - ✅ 10 files removed (~1000 lines)
-- ✅ `smp_tools.h` updated with standard `thread_local`
+- ✅ `parallel_tools.h` updated with standard `thread_local`
 - ✅ All tests passing
 - ✅ No regressions
 
-**To implement Option 3**, we would revert `smp_tools.h` to use backend-specific implementations.
+**To implement Option 3**, we would revert `parallel_tools.h` to use backend-specific implementations.
 
 ---
 
 ## What Changes Are Needed for Option 3?
 
-### Single File to Modify: `Library/Core/smp/smp_tools.h`
+### Single File to Modify: `Library/Core/parallel/parallel_tools.h`
 
 #### Change 1: Add TBB Include (3 lines)
 ```cpp
@@ -36,8 +36,8 @@ All changes from Option 1 are already implemented:
 #### Change 2: Add OpenMP Threadprivate Static (5 lines)
 ```cpp
 #if XSIGMA_HAS_OPENMP
-thread_local unsigned char smp_tools_functor_initialized = 0;
-#pragma omp threadprivate(smp_tools_functor_initialized)
+thread_local unsigned char parallel_tools_functor_initialized = 0;
+#pragma omp threadprivate(parallel_tools_functor_initialized)
 #endif
 ```
 
@@ -57,13 +57,13 @@ Replace the simple `thread_local` implementation with:
 
 ```cpp
 #if XSIGMA_HAS_OPENMP
-thread_local unsigned char smp_tools_functor_initialized = 0;
-#pragma omp threadprivate(smp_tools_functor_initialized)
+thread_local unsigned char parallel_tools_functor_initialized = 0;
+#pragma omp threadprivate(parallel_tools_functor_initialized)
 
 // In Execute():
-if (!smp_tools_functor_initialized) {
+if (!parallel_tools_functor_initialized) {
     this->f_.Initialize();
-    smp_tools_functor_initialized = 1;
+    parallel_tools_functor_initialized = 1;
 }
 #endif
 ```
@@ -86,7 +86,7 @@ if (!smp_tools_functor_initialized) {
 mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 
 // In constructor:
-smp_tools_functor_internal(Functor& f) : f_(f), initialized_(0) {}
+parallel_tools_functor_internal(Functor& f) : f_(f), initialized_(0) {}
 
 // In Execute():
 unsigned char& inited = initialized_.local();
@@ -231,7 +231,7 @@ if (!initialized) {
 
 | File | Changes | Lines |
 |------|---------|-------|
-| `Library/Core/smp/smp_tools.h` | 3 changes | ~70 |
+| `Library/Core/parallel/parallel_tools.h` | 3 changes | ~70 |
 | **Total** | | **~70** |
 
 ---

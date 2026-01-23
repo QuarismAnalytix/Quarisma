@@ -17,7 +17,7 @@
 - **TBB Backend**: Uses `tbb::enumerable_thread_specific` (minimal overhead)
 - **Native Backend**: Uses standard C++ `thread_local` (zero overhead)
 
-**Single File Modified**: `Library/Core/smp/smp_tools.h` (~70 lines)
+**Single File Modified**: `Library/Core/parallel/parallel_tools.h` (~70 lines)
 
 ---
 
@@ -64,7 +64,7 @@
 
 ### What Changed
 
-**File**: `Library/Core/smp/smp_tools.h`
+**File**: `Library/Core/parallel/parallel_tools.h`
 
 **Change 1**: Added TBB include (3 lines)
 ```cpp
@@ -76,8 +76,8 @@
 **Change 2**: Added OpenMP threadprivate static (5 lines)
 ```cpp
 #if XSIGMA_HAS_OPENMP
-thread_local unsigned char smp_tools_functor_initialized = 0;
-#pragma omp threadprivate(smp_tools_functor_initialized)
+thread_local unsigned char parallel_tools_functor_initialized = 0;
+#pragma omp threadprivate(parallel_tools_functor_initialized)
 #endif
 ```
 
@@ -179,7 +179,7 @@ thread_local unsigned char smp_tools_functor_initialized = 0;
 
 | File | Changes | Lines |
 |------|---------|-------|
-| `Library/Core/smp/smp_tools.h` | 3 | ~70 |
+| `Library/Core/parallel/parallel_tools.h` | 3 | ~70 |
 | **Total** | | **~70** |
 
 ---
@@ -202,7 +202,7 @@ None - Already removed in Option 1 implementation
 - TestParallelReduce
 - TestNestedParallelism
 - TestAsyncParallel
-- TestSmpAdvancedThreadName
+- TestParallelAdvancedThreadName
 
 All tests verify correct initialization behavior across backends.
 
@@ -214,10 +214,10 @@ If needed, revert to Option 1:
 
 ```bash
 # Revert to Option 1 (standard C++ thread_local)
-git checkout HEAD~1 -- Library/Core/smp/smp_tools.h
+git checkout HEAD~1 -- Library/Core/parallel/parallel_tools.h
 
-# Or revert to original smp_thread_local
-git checkout HEAD~2 -- Library/Core/smp/
+# Or revert to original parallel_thread_local
+git checkout HEAD~2 -- Library/Core/parallel/
 ```
 
 ---
@@ -236,7 +236,7 @@ git checkout HEAD~2 -- Library/Core/smp/
 **Option 3 implementation is COMPLETE and READY FOR PRODUCTION.**
 
 The implementation successfully:
-- ✅ Removes the custom `smp_thread_local` abstraction
+- ✅ Removes the custom `parallel_thread_local` abstraction
 - ✅ Implements backend-specific thread-local storage
 - ✅ Maintains backward compatibility
 - ✅ Passes all tests

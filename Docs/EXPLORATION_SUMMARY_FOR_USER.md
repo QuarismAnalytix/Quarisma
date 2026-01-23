@@ -1,8 +1,8 @@
-# Complete Exploration Summary: Removing `smp_thread_local`
+# Complete Exploration Summary: Removing `parallel_thread_local`
 
 ## What I've Done
 
-I've completed a **comprehensive exploration** of all viable options for completely removing `smp_thread_local` from the XSigma codebase. Here's what you now have:
+I've completed a **comprehensive exploration** of all viable options for completely removing `parallel_thread_local` from the XSigma codebase. Here's what you now have:
 
 ---
 
@@ -14,7 +14,7 @@ I've completed a **comprehensive exploration** of all viable options for complet
 
 ### Decision Making
 3. **DECISION_MATRIX_AND_NEXT_STEPS.md** - Decision guide with recommendation
-4. **REMOVE_SMP_THREAD_LOCAL_OPTIONS.md** - Detailed analysis of all 4 options
+4. **REMOVE_PARALLEL_THREAD_LOCAL_OPTIONS.md** - Detailed analysis of all 4 options
 
 ### Implementation
 5. **REMOVAL_IMPLEMENTATION_GUIDE.md** - Step-by-step how-to guide
@@ -23,7 +23,7 @@ I've completed a **comprehensive exploration** of all viable options for complet
 
 ### Reference
 8. **EXPLORATION_COMPLETE.md** - Complete summary of findings
-9. **SMP_THREAD_LOCAL_REMOVAL_INDEX.md** - Navigation guide for all docs
+9. **PARALLEL_THREAD_LOCAL_REMOVAL_INDEX.md** - Navigation guide for all docs
 
 ---
 
@@ -31,14 +31,14 @@ I've completed a **comprehensive exploration** of all viable options for complet
 
 ### Current State
 - **11 files** to remove
-- **1 file** to modify (smp_tools.h)
-- **1 active usage** (line 93 in smp_tools.h)
+- **1 file** to modify (parallel_tools.h)
+- **1 active usage** (line 93 in parallel_tools.h)
 - **~1000 lines** of code
 - **0 external dependencies**
 
 ### Usage Pattern
 ```cpp
-smp_thread_local<unsigned char> initialized_;  // Track per-thread init state
+parallel_thread_local<unsigned char> initialized_;  // Track per-thread init state
 ```
 
 ### No Advanced Features Used
@@ -71,10 +71,10 @@ smp_thread_local<unsigned char> initialized_;  // Track per-thread init state
 
 ### Implementation (Option 1)
 ```cpp
-// Remove: #include "smp_thread_local.h"
+// Remove: #include "parallel_thread_local.h"
 
 // Change from:
-smp_thread_local<unsigned char> initialized_;
+parallel_thread_local<unsigned char> initialized_;
 unsigned char& inited = this->initialized_.local();
 
 // Change to:
@@ -88,7 +88,7 @@ unsigned char& inited = initialized;
 
 | Aspect | Impact |
 |--------|--------|
-| **Files affected** | 1 (smp_tools.h) |
+| **Files affected** | 1 (parallel_tools.h) |
 | **API changes** | 0 |
 | **Test changes** | 0 |
 | **User impact** | 0 |
@@ -119,7 +119,7 @@ unsigned char& inited = initialized;
 5. Commit changes
 
 ### To Explore Other Options:
-1. Read **REMOVE_SMP_THREAD_LOCAL_OPTIONS.md**
+1. Read **REMOVE_PARALLEL_THREAD_LOCAL_OPTIONS.md**
 2. Read **OPTION_COMPARISON_DETAILED.md**
 3. Read **DECISION_MATRIX_AND_NEXT_STEPS.md**
 4. Choose preferred option
@@ -131,7 +131,7 @@ unsigned char& inited = initialized;
 
 After implementation:
 - [ ] All 11 files removed
-- [ ] smp_tools.h updated
+- [ ] parallel_tools.h updated
 - [ ] CMakeLists.txt updated
 - [ ] Build succeeds
 - [ ] All tests pass
@@ -145,7 +145,7 @@ After implementation:
 
 If issues arise:
 ```bash
-git checkout HEAD -- Library/Core/smp/
+git checkout HEAD -- Library/Core/parallel/
 ```
 
 ---
@@ -157,13 +157,13 @@ All documents are in `Docs/` folder:
 - **REMOVAL_SUMMARY.md** - Overview (10 min)
 - **REMOVAL_IMPLEMENTATION_GUIDE.md** - How-to (10 min)
 - **REMOVAL_CHECKLIST.md** - Checklist (5 min)
-- **SMP_THREAD_LOCAL_REMOVAL_INDEX.md** - Navigation guide
+- **PARALLEL_THREAD_LOCAL_REMOVAL_INDEX.md** - Navigation guide
 
 ---
 
 ## ✨ Summary
 
-**`smp_thread_local` can be safely and easily removed using Option 1 (standard C++ `thread_local`).**
+**`parallel_thread_local` can be safely and easily removed using Option 1 (standard C++ `thread_local`).**
 
 This is the recommended approach due to minimal code changes, fastest implementation, lowest risk, and best performance.
 

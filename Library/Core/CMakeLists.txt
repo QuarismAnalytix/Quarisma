@@ -19,7 +19,7 @@ file(
   "${CMAKE_CURRENT_SOURCE_DIR}/memory/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/profiler/*.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/c17/*.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/smp/*.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/parallel/*.h"
   ${xsigma_headers}
 )
 
@@ -32,7 +32,7 @@ file(
   "${CMAKE_CURRENT_SOURCE_DIR}/memory/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/profiler/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/c17/*.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/smp/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/parallel/*.cpp"
   ${xsigma_sources}
 )
 
@@ -102,10 +102,10 @@ endif()
 # The TBB backend requires TBB headers and libraries, so we must exclude these files
 # when TBB is disabled to avoid compilation errors (missing tbb/blocked_range.h, etc.)
 if(NOT XSIGMA_ENABLE_TBB)
-  file(GLOB_RECURSE TBB_SMP_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/smp/tbb/*.cpp")
-  file(GLOB_RECURSE TBB_SMP_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/smp/tbb/*.h")
-  list(REMOVE_ITEM sources ${TBB_SMP_SOURCE_FILES})
-  list(REMOVE_ITEM headers ${TBB_SMP_HEADER_FILES})
+  file(GLOB_RECURSE TBB_PARALLEL_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/parallel/tbb/*.cpp")
+  file(GLOB_RECURSE TBB_PARALLEL_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/parallel/tbb/*.h")
+  list(REMOVE_ITEM sources ${TBB_PARALLEL_SOURCE_FILES})
+  list(REMOVE_ITEM headers ${TBB_PARALLEL_HEADER_FILES})
   message(STATUS "TBB disabled: Excluding TBB SMP source files from build")
 endif()
 
@@ -113,10 +113,10 @@ endif()
 # The OpenMP backend requires OpenMP headers and libraries, so we must exclude these files
 # when OpenMP is disabled to avoid compilation errors (missing omp.h, etc.)
 if(NOT XSIGMA_ENABLE_OPENMP)
-  file(GLOB_RECURSE OPENMP_SMP_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/smp/openmp/*.cpp")
-  file(GLOB_RECURSE OPENMP_SMP_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/smp/openmp/*.h")
-  list(REMOVE_ITEM sources ${OPENMP_SMP_SOURCE_FILES})
-  list(REMOVE_ITEM headers ${OPENMP_SMP_HEADER_FILES})
+  file(GLOB_RECURSE OPENMP_PARALLEL_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/parallel/openmp/*.cpp")
+  file(GLOB_RECURSE OPENMP_PARALLEL_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/parallel/openmp/*.h")
+  list(REMOVE_ITEM sources ${OPENMP_PARALLEL_SOURCE_FILES})
+  list(REMOVE_ITEM headers ${OPENMP_PARALLEL_HEADER_FILES})
   message(STATUS "OpenMP disabled: Excluding OpenMP SMP source files from build")
 endif()
 

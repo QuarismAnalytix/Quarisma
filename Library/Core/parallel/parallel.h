@@ -22,21 +22,21 @@
  */
 
 /**
- * @file smp.h
- * @brief SMP (Shared Memory Parallelism) configuration and backend definitions
+ * @file parallel.h
+ * @brief PARALLEL (Shared Memory Parallelism) configuration and backend definitions
  */
 
-#ifndef SMP_H
-#define SMP_H
+#ifndef PARALLEL_H
+#define PARALLEL_H
 
 // Maximum number of backends
-#define SMP_MAX_BACKENDS_NB 3
+#define PARALLEL_MAX_BACKENDS_NB 3
 
 namespace xsigma
 {
 namespace detail
 {
-namespace smp
+namespace parallel
 {
 
 /**
@@ -60,8 +60,8 @@ constexpr backend_type default_backend = backend_type::OpenMP;
 constexpr backend_type default_backend = backend_type::std_thread;
 #endif
 
-}  // namespace smp
+}  // namespace parallel
 }  // namespace detail
 }  // namespace xsigma
 
-#endif  // SMP_H
+#endif  // PARALLEL_H

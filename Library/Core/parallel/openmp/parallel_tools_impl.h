@@ -21,24 +21,24 @@
  *   Licensed under BSD-3-Clause
  */
 
-#ifndef OPENMP_SMP_TOOLS_IMPL_H
-#define OPENMP_SMP_TOOLS_IMPL_H
+#ifndef OPENMP_PARALLEL_TOOLS_IMPL_H
+#define OPENMP_PARALLEL_TOOLS_IMPL_H
 
 #include <algorithm>  // For std::sort
 
 #include "common/export.h"
-#include "smp/common/smp_tools_impl.h"
+#include "parallel/common/parallel_tools_impl.h"
 
 namespace xsigma
 {
 namespace detail
 {
-namespace smp
+namespace parallel
 {
 
 int XSIGMA_API  number_of_threads_openmp();
 bool XSIGMA_API single_thread_openmp();
-void XSIGMA_API smp_tools_impl_for_openmp(
+void XSIGMA_API parallel_tools_impl_for_openmp(
     size_t                   first,
     size_t                   last,
     size_t                   grain,
@@ -49,18 +49,18 @@ void XSIGMA_API smp_tools_impl_for_openmp(
 //------------------------------------------------------------------------------
 // Address the static initialization order 'fiasco' by implementing
 // the schwarz counter idiom.
-class XSIGMA_VISIBILITY smp_tools_impl_openmp_initialize
+class XSIGMA_VISIBILITY parallel_tools_impl_openmp_initialize
 {
 public:
-    smp_tools_impl_openmp_initialize();
-    ~smp_tools_impl_openmp_initialize();
+    parallel_tools_impl_openmp_initialize();
+    ~parallel_tools_impl_openmp_initialize();
 };
 
 //--------------------------------------------------------------------------------
-// This instance will show up in any translation unit that uses smp_tools_impl.
-// It will make sure smp_tools_impl statics are initialized before there are used
+// This instance will show up in any translation unit that uses parallel_tools_impl.
+// It will make sure parallel_tools_impl statics are initialized before there are used
 // and finalized when they are done being used.
-static smp_tools_impl_openmp_initialize smp_tools_impl_openmp_initializer;
+static parallel_tools_impl_openmp_initialize parallel_tools_impl_openmp_initializer;
 
 //--------------------------------------------------------------------------------
 template <typename FunctorInternal>
@@ -75,7 +75,7 @@ void execute_functor_openmp(void* functor, size_t from, size_t grain, size_t las
 //--------------------------------------------------------------------------------
 template <>
 template <typename FunctorInternal>
-void smp_tools_impl<backend_type::OpenMP>::parallel_for(
+void parallel_tools_impl<backend_type::OpenMP>::parallel_for(
     size_t first, size_t last, size_t grain, FunctorInternal& fi)
 {
     size_t n = last - first;
@@ -94,7 +94,7 @@ void smp_tools_impl<backend_type::OpenMP>::parallel_for(
         // (e.g only the 2 first nested For are in parallel)
         bool from_parallel_code = is_parallel_.exchange(true);
 
-        smp_tools_impl_for_openmp(
+        parallel_tools_impl_for_openmp(
             first, last, grain, execute_functor_openmp<FunctorInternal>, &fi, nested_activated_);
 
         // Atomic contortion to achieve is_parallel_ &= from_parallel_code.
@@ -113,21 +113,21 @@ void smp_tools_impl<backend_type::OpenMP>::parallel_for(
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API void smp_tools_impl<backend_type::OpenMP>::initialize(int);
+XSIGMA_API void parallel_tools_impl<backend_type::OpenMP>::initialize(int);
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int smp_tools_impl<backend_type::OpenMP>::estimated_number_of_threads();
+XSIGMA_API int parallel_tools_impl<backend_type::OpenMP>::estimated_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int smp_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads();
+XSIGMA_API int parallel_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API bool smp_tools_impl<backend_type::OpenMP>::single_thread();
+XSIGMA_API bool parallel_tools_impl<backend_type::OpenMP>::single_thread();
 
-}  // namespace smp
+}  // namespace parallel
 }  // namespace detail
 }  // namespace xsigma
 

@@ -21,7 +21,7 @@
  *   Licensed under BSD-3-Clause
  */
 
-#include "smp/common/smp_tools_impl.h"
+#include "parallel/common/parallel_tools_impl.h"
 
 #include <omp.h>
 
@@ -31,13 +31,13 @@
 #include <stack>    // For std::stack
 #include <string>
 
-#include "smp/openmp/smp_tools_impl.h"
+#include "parallel/openmp/parallel_tools_impl.h"
 
 namespace xsigma
 {
 namespace detail
 {
-namespace smp
+namespace parallel
 {
 
 static int                              specified_num_threads_omp;  // Default initialized to zero
@@ -47,21 +47,21 @@ static std::unique_ptr<std::stack<int>> thread_id_stack;
 // Must NOT be initialized. Default initialization to zero is necessary.
 // NOTE: This variable must NOT be static - it needs to be visible across
 // translation units for proper initialization/deinitialization tracking.
-static unsigned int smp_tools_impl_openmp_initialize_count;
+static unsigned int parallel_tools_impl_openmp_initialize_count;
 
 //------------------------------------------------------------------------------
-smp_tools_impl_openmp_initialize::smp_tools_impl_openmp_initialize()
+parallel_tools_impl_openmp_initialize::parallel_tools_impl_openmp_initialize()
 {
-    if (++smp_tools_impl_openmp_initialize_count == 1)
+    if (++parallel_tools_impl_openmp_initialize_count == 1)
     {
         thread_id_stack = std::make_unique<std::stack<int>>();
     }
 }
 
 //------------------------------------------------------------------------------
-smp_tools_impl_openmp_initialize::~smp_tools_impl_openmp_initialize()
+parallel_tools_impl_openmp_initialize::~parallel_tools_impl_openmp_initialize()
 {
-    if (--smp_tools_impl_openmp_initialize_count == 0)
+    if (--parallel_tools_impl_openmp_initialize_count == 0)
     {
         // std::unique_ptr automatically deletes the managed object when destroyed.
         // Explicit reset() call is unnecessary and adds function call overhead.
@@ -71,16 +71,16 @@ smp_tools_impl_openmp_initialize::~smp_tools_impl_openmp_initialize()
 
 //------------------------------------------------------------------------------
 template <>
-void smp_tools_impl<backend_type::OpenMP>::initialize(int num_threads)
+void parallel_tools_impl<backend_type::OpenMP>::initialize(int num_threads)
 {
     const int max_threads =
-        smp_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads();
+        parallel_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads();
     if (num_threads == 0)
     {
-        const char* smp_num_threads = std::getenv("SMP_MAX_THREADS");
-        if (smp_num_threads != nullptr)
+        const char* parallel_num_threads = std::getenv("PARALLEL_MAX_THREADS");
+        if (parallel_num_threads != nullptr)
         {
-            std::string str(smp_num_threads);
+            std::string str(parallel_num_threads);
             auto        result = std::from_chars(str.data(), str.data() + str.size(), num_threads);
             if (result.ec != std::errc())
             {
@@ -107,7 +107,7 @@ int number_of_threads_openmp()
 {
     return (specified_num_threads_omp > 0)
                ? specified_num_threads_omp
-               : smp_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads();
+               : parallel_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads();
 }
 
 //------------------------------------------------------------------------------
@@ -118,27 +118,27 @@ bool single_thread_openmp()
 
 //------------------------------------------------------------------------------
 template <>
-int smp_tools_impl<backend_type::OpenMP>::estimated_number_of_threads()
+int parallel_tools_impl<backend_type::OpenMP>::estimated_number_of_threads()
 {
     return number_of_threads_openmp();
 }
 
 //------------------------------------------------------------------------------
 template <>
-int smp_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads()
+int parallel_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads()
 {
     return omp_get_max_threads();
 }
 
 //------------------------------------------------------------------------------
 template <>
-bool smp_tools_impl<backend_type::OpenMP>::single_thread()
+bool parallel_tools_impl<backend_type::OpenMP>::single_thread()
 {
     return single_thread_openmp();
 }
 
 //------------------------------------------------------------------------------
-void smp_tools_impl_for_openmp(
+void parallel_tools_impl_for_openmp(
     size_t                   first,
     size_t                   last,
     size_t                   grain,
@@ -168,6 +168,6 @@ void smp_tools_impl_for_openmp(
     thread_id_stack->pop();
 }
 
-}  // namespace smp
+}  // namespace parallel
 }  // namespace detail
 }  // namespace xsigma

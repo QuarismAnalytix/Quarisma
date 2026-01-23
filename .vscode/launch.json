@@ -13,7 +13,7 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build_ninja/bin/CoreCxxTests",
-            "args": ["--gtest_filter=SmpTools.parallel_for_basic"],
+            "args": ["--gtest_filter=ParallelTools.parallel_for_basic"],
             "cwd": "${workspaceFolder}",
             "stopOnEntry": false,
             "console": "integratedTerminal",

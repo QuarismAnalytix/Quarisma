@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * Comprehensive unit tests for smp_tools public API
+ * Comprehensive unit tests for parallel_tools public API
  *
  * Tests cover:
  * - Thread initialization and configuration
@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "Testing/xsigmaTest.h"
-#include "smp/smp_tools.h"
+#include "parallel/parallel_tools.h"
 
 namespace xsigma
 {
@@ -92,7 +92,7 @@ public:
     }
 };
 
-XSIGMATEST(SmpTools, test)
+XSIGMATEST(ParallelTools, test)
 {
     // ============================================================================
     // Consolidated Test 1: Thread Initialization and Configuration
@@ -100,39 +100,39 @@ XSIGMATEST(SmpTools, test)
 
     {
         // Test 1: Initialize with default thread count (0 = auto-detect)
-        smp_tools::initialize(0);
-        int num_threads = smp_tools::estimated_number_of_threads();
+        parallel_tools::initialize(0);
+        int num_threads = parallel_tools::estimated_number_of_threads();
         EXPECT_GE(num_threads, 1);
         EXPECT_LE(num_threads, static_cast<int>(std::thread::hardware_concurrency()));
 
         // Test 2: Initialize with custom thread count
-        smp_tools::initialize(4);
-        num_threads = smp_tools::estimated_number_of_threads();
+        parallel_tools::initialize(4);
+        num_threads = parallel_tools::estimated_number_of_threads();
         EXPECT_GE(num_threads, 1);  // Backend might adjust the count
 
         // Test 3: Initialize with single thread
-        smp_tools::initialize(1);
-        num_threads = smp_tools::estimated_number_of_threads();
+        parallel_tools::initialize(1);
+        num_threads = parallel_tools::estimated_number_of_threads();
         EXPECT_GE(num_threads, 1);
 
         // Test 4: Verify estimated_number_of_threads returns reasonable values
-        smp_tools::initialize(0);
-        num_threads = smp_tools::estimated_number_of_threads();
+        parallel_tools::initialize(0);
+        num_threads = parallel_tools::estimated_number_of_threads();
         EXPECT_GT(num_threads, 0);
         EXPECT_LE(num_threads, 1024);  // Reasonable upper bound
 
         // Test 5: Verify estimated_default_number_of_threads
-        int default_threads = smp_tools::estimated_default_number_of_threads();
+        int default_threads = parallel_tools::estimated_default_number_of_threads();
         EXPECT_GT(default_threads, 0);
         EXPECT_LE(default_threads, static_cast<int>(std::thread::hardware_concurrency() * 2));
 
         // Test 6: Multiple initializations should be safe
-        smp_tools::initialize(2);
-        int threads1 = smp_tools::estimated_number_of_threads();
-        smp_tools::initialize(4);
-        int threads2 = smp_tools::estimated_number_of_threads();
-        smp_tools::initialize(0);
-        int threads3 = smp_tools::estimated_number_of_threads();
+        parallel_tools::initialize(2);
+        int threads1 = parallel_tools::estimated_number_of_threads();
+        parallel_tools::initialize(4);
+        int threads2 = parallel_tools::estimated_number_of_threads();
+        parallel_tools::initialize(0);
+        int threads3 = parallel_tools::estimated_number_of_threads();
         EXPECT_GT(threads1, 0);
         EXPECT_GT(threads2, 0);
         EXPECT_GT(threads3, 0);
@@ -154,17 +154,17 @@ XSIGMATEST(SmpTools, test)
             elem.store(-1, std::memory_order_relaxed);
         }
 
-        smp_tools::local_scope(
-            smp_tools::config("std"),
-            [&data, size, &func]() { smp_tools::parallel_for(0, size, 100, func); });
+        parallel_tools::local_scope(
+            parallel_tools::config("std"),
+            [&data, size, &func]() { parallel_tools::parallel_for(0, size, 100, func); });
 
-        smp_tools::local_scope(
-            smp_tools::config("tbb"),
-            [&data, size, &func]() { smp_tools::parallel_for(0, size, 100, func); });
+        parallel_tools::local_scope(
+            parallel_tools::config("tbb"),
+            [&data, size, &func]() { parallel_tools::parallel_for(0, size, 100, func); });
 
-        smp_tools::local_scope(
-            smp_tools::config("openmp"),
-            [&data, size, &func]() { smp_tools::parallel_for(0, size, 100, func); });
+        parallel_tools::local_scope(
+            parallel_tools::config("openmp"),
+            [&data, size, &func]() { parallel_tools::parallel_for(0, size, 100, func); });
 
         // Verify all elements were processed
         for (size_t i = 0; i < size; ++i)
@@ -176,14 +176,14 @@ XSIGMATEST(SmpTools, test)
         // Test 2: Const functor
         std::atomic<int> counter{0};
         const_functor    const_func(counter);
-        smp_tools::parallel_for(0, size, 100, const_func);
+        parallel_tools::parallel_for(0, size, 100, const_func);
         EXPECT_EQ(counter.load(std::memory_order_relaxed), static_cast<int>(size));
 
         // Test 3: Functor with Initialize method
         std::vector<std::atomic<int>> init_data(size);
         std::atomic<int>              init_count{0};
         functor_with_initialize       init_func(init_data, init_count);
-        smp_tools::parallel_for(0, size, 100, init_func);
+        parallel_tools::parallel_for(0, size, 100, init_func);
 
         for (size_t i = 0; i < size; ++i)
         {
@@ -201,12 +201,12 @@ XSIGMATEST(SmpTools, test)
         simple_functor                func(data);
 
         // Test 1: Empty range (first == last)
-        smp_tools::parallel_for(5, 5, 10, func);
+        parallel_tools::parallel_for(5, 5, 10, func);
         SUCCEED();  // No crash expected
 
         // Test 2: Single element range
         data[5].store(-1, std::memory_order_relaxed);
-        smp_tools::parallel_for(5, 6, 10, func);
+        parallel_tools::parallel_for(5, 6, 10, func);
         EXPECT_EQ(data[5].load(std::memory_order_relaxed), 10);  // 5 * 2
 
         // Test 3: Grain size larger than range - should execute sequentially
@@ -214,14 +214,14 @@ XSIGMATEST(SmpTools, test)
         {
             elem.store(-1, std::memory_order_relaxed);
         }
-        smp_tools::parallel_for(0, 100, 1000, func);
+        parallel_tools::parallel_for(0, 100, 1000, func);
         for (size_t i = 0; i < 100; ++i)
         {
             EXPECT_EQ(data[i].load(std::memory_order_relaxed), static_cast<int>(i * 2));
         }
 
         // Test 4: Reversed range (first > last) - should handle gracefully
-        smp_tools::parallel_for(10, 0, 5, func);
+        parallel_tools::parallel_for(10, 0, 5, func);
         SUCCEED();  // Should not crash
 
         // Test 5: Zero grain size - backend should handle appropriately
@@ -229,7 +229,7 @@ XSIGMATEST(SmpTools, test)
         {
             elem.store(-1, std::memory_order_relaxed);
         }
-        smp_tools::parallel_for(0, 100, 0, func);
+        parallel_tools::parallel_for(0, 100, 0, func);
         SUCCEED();  // Should handle gracefully
     }
 
@@ -252,7 +252,7 @@ XSIGMATEST(SmpTools, test)
             }
 
             simple_functor func(data);
-            smp_tools::parallel_for(0, size, grain, func);
+            parallel_tools::parallel_for(0, size, grain, func);
 
             // Verify
             for (size_t i = 0; i < size; ++i)
@@ -272,7 +272,7 @@ XSIGMATEST(SmpTools, test)
             elem.store(0, std::memory_order_relaxed);
         }
 
-        smp_tools::parallel_for(0, large_size, 1000, large_func);
+        parallel_tools::parallel_for(0, large_size, 1000, large_func);
 
         // Spot check some elements
         EXPECT_EQ(large_data[0].load(std::memory_order_relaxed), 0);
@@ -288,39 +288,39 @@ XSIGMATEST(SmpTools, test)
 
     {
         // Test 1: Set nested parallelism to false
-        smp_tools::set_nested_parallelism(false);
-        bool nested = smp_tools::nested_parallelism();
+        parallel_tools::set_nested_parallelism(false);
+        bool nested = parallel_tools::nested_parallelism();
         EXPECT_FALSE(nested);
 
         // Test 2: Set nested parallelism to true (may or may not be supported)
-        smp_tools::set_nested_parallelism(true);
+        parallel_tools::set_nested_parallelism(true);
         SUCCEED();  // Just ensure no crash
 
         // Test 3: Toggle nested parallelism multiple times
-        smp_tools::set_nested_parallelism(false);
-        EXPECT_FALSE(smp_tools::nested_parallelism());
-        smp_tools::set_nested_parallelism(true);
-        smp_tools::set_nested_parallelism(false);
-        EXPECT_FALSE(smp_tools::nested_parallelism());
+        parallel_tools::set_nested_parallelism(false);
+        EXPECT_FALSE(parallel_tools::nested_parallelism());
+        parallel_tools::set_nested_parallelism(true);
+        parallel_tools::set_nested_parallelism(false);
+        EXPECT_FALSE(parallel_tools::nested_parallelism());
 
         // Test 4: Check parallel scope outside parallel region
-        bool is_parallel = smp_tools::is_parallel_scope();
+        bool is_parallel = parallel_tools::is_parallel_scope();
         EXPECT_FALSE(is_parallel);
 
         // Test 5: Check parallel scope inside parallel region
         std::atomic<bool> inside_scope_result{false};
         auto              check_scope = [&inside_scope_result](size_t, size_t)
-        { inside_scope_result.store(smp_tools::is_parallel_scope(), std::memory_order_relaxed); };
-        smp_tools::parallel_for(0, 10, 5, check_scope);
+        { inside_scope_result.store(parallel_tools::is_parallel_scope(), std::memory_order_relaxed); };
+        parallel_tools::parallel_for(0, 10, 5, check_scope);
         SUCCEED();  // Backend-dependent, just ensure no crash
 
         // Test 6: Single thread detection outside parallel region
-        bool is_single = smp_tools::single_thread();
+        bool is_single = parallel_tools::single_thread();
         SUCCEED();  // Backend-specific behavior
 
         // Test 7: Single thread detection with one thread
-        smp_tools::initialize(1);
-        is_single = smp_tools::single_thread();
+        parallel_tools::initialize(1);
+        is_single = parallel_tools::single_thread();
         SUCCEED();  // Backend-dependent
     }
 
@@ -330,21 +330,21 @@ XSIGMATEST(SmpTools, test)
 
     {
         // Test 1: Default configuration values
-        smp_tools::config cfg;
+        parallel_tools::config cfg;
         EXPECT_EQ(cfg.max_number_of_threads_, 0);
         EXPECT_FALSE(cfg.nested_parallelism_);
 
         // Test 2: Configuration with thread count
-        smp_tools::config cfg_threads(4);
+        parallel_tools::config cfg_threads(4);
         EXPECT_EQ(cfg_threads.max_number_of_threads_, 4);
 
         // Test 3: Configuration with nested parallelism
-        smp_tools::config cfg_nested(true);
+        parallel_tools::config cfg_nested(true);
         EXPECT_TRUE(cfg_nested.nested_parallelism_);
 
         // Test 4: Verify THRESHOLD constant
-        EXPECT_GT(smp_tools::THRESHOLD, 0u);
-        EXPECT_LE(smp_tools::THRESHOLD, 1000000u);
+        EXPECT_GT(parallel_tools::THRESHOLD, 0u);
+        EXPECT_LE(parallel_tools::THRESHOLD, 1000000u);
     }
 
     // ============================================================================
@@ -353,18 +353,18 @@ XSIGMATEST(SmpTools, test)
 
     {
         // Test 1: Initialize with zero threads (should use default)
-        smp_tools::initialize(0);
-        int num_threads = smp_tools::estimated_number_of_threads();
+        parallel_tools::initialize(0);
+        int num_threads = parallel_tools::estimated_number_of_threads();
         EXPECT_GT(num_threads, 0);
 
         // Test 2: Initialize with negative threads (should handle gracefully)
-        smp_tools::initialize(-1);
-        num_threads = smp_tools::estimated_number_of_threads();
+        parallel_tools::initialize(-1);
+        num_threads = parallel_tools::estimated_number_of_threads();
         EXPECT_GT(num_threads, 0);
 
         // Test 3: Initialize with excessive thread count (backend should cap it)
-        smp_tools::initialize(10000);
-        num_threads = smp_tools::estimated_number_of_threads();
+        parallel_tools::initialize(10000);
+        num_threads = parallel_tools::estimated_number_of_threads();
         EXPECT_GT(num_threads, 0);
         EXPECT_LT(num_threads, 10000);  // Should be capped
     }
@@ -392,9 +392,9 @@ XSIGMATEST(SmpTools, test)
         };
 
         // Run multiple parallel_for calls
-        smp_tools::parallel_for(0, size, 100, increment_func);
-        smp_tools::parallel_for(0, size, 100, increment_func);
-        smp_tools::parallel_for(0, size, 100, increment_func);
+        parallel_tools::parallel_for(0, size, 100, increment_func);
+        parallel_tools::parallel_for(0, size, 100, increment_func);
+        parallel_tools::parallel_for(0, size, 100, increment_func);
 
         // Each element should be incremented exactly 3 times
         for (size_t i = 0; i < size; ++i)
@@ -417,14 +417,14 @@ XSIGMATEST(SmpTools, test)
             [&data1, concurrent_size]()
             {
                 simple_functor func(data1);
-                smp_tools::parallel_for(0, concurrent_size, 100, func);
+                parallel_tools::parallel_for(0, concurrent_size, 100, func);
             });
 
         std::thread t2(
             [&data2, concurrent_size]()
             {
                 simple_functor func(data2);
-                smp_tools::parallel_for(0, concurrent_size, 100, func);
+                parallel_tools::parallel_for(0, concurrent_size, 100, func);
             });
 
         t1.join();
@@ -461,7 +461,7 @@ XSIGMATEST(SmpTools, test)
             }
         };
 
-        smp_tools::parallel_for(0, size, 1000, process_func);
+        parallel_tools::parallel_for(0, size, 1000, process_func);
 
         // Verify correctness
         for (size_t i = 0; i < size; ++i)
@@ -491,7 +491,7 @@ XSIGMATEST(SmpTools, test)
         // Run 10 times
         for (int iter = 0; iter < 10; ++iter)
         {
-            smp_tools::parallel_for(0, race_size, 100, increment_counters);
+            parallel_tools::parallel_for(0, race_size, 100, increment_counters);
         }
 
         // Each counter should be exactly 10

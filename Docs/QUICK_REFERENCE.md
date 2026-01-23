@@ -3,40 +3,40 @@
 ## Files to Remove (11 total)
 
 ```
-Library/Core/smp/smp_thread_local.h
-Library/Core/smp/common/smp_thread_local_api.h
-Library/Core/smp/common/smp_thread_local_impl_abstract.h
-Library/Core/smp/std_thread/smp_thread_local_impl.h
-Library/Core/smp/std_thread/smp_thread_local_backend.h
-Library/Core/smp/std_thread/smp_thread_local_backend.cpp
-Library/Core/smp/openmp/smp_thread_local_impl.h
-Library/Core/smp/openmp/smp_thread_local_backend.h
-Library/Core/smp/openmp/smp_thread_local_backend.cpp
-Library/Core/smp/tbb/smp_thread_local_impl.h
+Library/Core/parallel/parallel_thread_local.h
+Library/Core/parallel/common/parallel_thread_local_api.h
+Library/Core/parallel/common/parallel_thread_local_impl_abstract.h
+Library/Core/parallel/std_thread/parallel_thread_local_impl.h
+Library/Core/parallel/std_thread/parallel_thread_local_backend.h
+Library/Core/parallel/std_thread/parallel_thread_local_backend.cpp
+Library/Core/parallel/openmp/parallel_thread_local_impl.h
+Library/Core/parallel/openmp/parallel_thread_local_backend.h
+Library/Core/parallel/openmp/parallel_thread_local_backend.cpp
+Library/Core/parallel/tbb/parallel_thread_local_impl.h
 ```
 
 ---
 
 ## File to Modify (1 total)
 
-### Library/Core/smp/smp_tools.h
+### Library/Core/parallel/parallel_tools.h
 
 **Line 26 - REMOVE:**
 ```cpp
-#include "smp_thread_local.h"
+#include "parallel_thread_local.h"
 ```
 
 **Lines 92-94 - CHANGE FROM:**
 ```cpp
 Functor&                        f_;
-smp_thread_local<unsigned char> initialized_;
-smp_tools_functor_internal(Functor& f) : f_(f), initialized_(0) {}
+parallel_thread_local<unsigned char> initialized_;
+parallel_tools_functor_internal(Functor& f) : f_(f), initialized_(0) {}
 ```
 
 **CHANGE TO:**
 ```cpp
 Functor& f_;
-smp_tools_functor_internal(Functor& f) : f_(f) {}
+parallel_tools_functor_internal(Functor& f) : f_(f) {}
 ```
 
 **Lines 97-98 - CHANGE FROM:**
@@ -69,12 +69,12 @@ unsigned char& inited = initialized;
 
 ### 1. Verify (15 min)
 ```bash
-grep -r "smp_thread_local" Library/Core Tests --include="*.h" --include="*.cpp" | \
-  grep -v "smp_thread_local_" | grep -v "smp_tools.h"
+grep -r "parallel_thread_local" Library/Core Tests --include="*.h" --include="*.cpp" | \
+  grep -v "parallel_thread_local_" | grep -v "parallel_tools.h"
 # Expected: No matches
 ```
 
-### 2. Update smp_tools.h (30 min)
+### 2. Update parallel_tools.h (30 min)
 - Remove include
 - Remove member variable
 - Remove constructor initialization
@@ -82,20 +82,20 @@ grep -r "smp_thread_local" Library/Core Tests --include="*.h" --include="*.cpp" 
 
 ### 3. Remove Files (10 min)
 ```bash
-rm Library/Core/smp/smp_thread_local.h
-rm Library/Core/smp/common/smp_thread_local_api.h
-rm Library/Core/smp/common/smp_thread_local_impl_abstract.h
-rm Library/Core/smp/std_thread/smp_thread_local_impl.h
-rm Library/Core/smp/std_thread/smp_thread_local_backend.h
-rm Library/Core/smp/std_thread/smp_thread_local_backend.cpp
-rm Library/Core/smp/openmp/smp_thread_local_impl.h
-rm Library/Core/smp/openmp/smp_thread_local_backend.h
-rm Library/Core/smp/openmp/smp_thread_local_backend.cpp
-rm Library/Core/smp/tbb/smp_thread_local_impl.h
+rm Library/Core/parallel/parallel_thread_local.h
+rm Library/Core/parallel/common/parallel_thread_local_api.h
+rm Library/Core/parallel/common/parallel_thread_local_impl_abstract.h
+rm Library/Core/parallel/std_thread/parallel_thread_local_impl.h
+rm Library/Core/parallel/std_thread/parallel_thread_local_backend.h
+rm Library/Core/parallel/std_thread/parallel_thread_local_backend.cpp
+rm Library/Core/parallel/openmp/parallel_thread_local_impl.h
+rm Library/Core/parallel/openmp/parallel_thread_local_backend.h
+rm Library/Core/parallel/openmp/parallel_thread_local_backend.cpp
+rm Library/Core/parallel/tbb/parallel_thread_local_impl.h
 ```
 
 ### 4. Update CMakeLists.txt (10 min)
-Remove all smp_thread_local* files from build configuration
+Remove all parallel_thread_local* files from build configuration
 
 ### 5. Build & Test (30 min)
 ```bash
@@ -110,7 +110,7 @@ ctest -V
 ## Success Checklist
 
 - [ ] All 11 files removed
-- [ ] smp_tools.h updated
+- [ ] parallel_tools.h updated
 - [ ] CMakeLists.txt updated
 - [ ] Build succeeds
 - [ ] All tests pass
@@ -121,8 +121,8 @@ ctest -V
 
 ## Key Facts
 
-- **Active Usage**: 1 location (smp_tools.h line 93)
-- **Files Affected**: 1 (smp_tools.h)
+- **Active Usage**: 1 location (parallel_tools.h line 93)
+- **Files Affected**: 1 (parallel_tools.h)
 - **API Changes**: 0
 - **Test Changes**: 0
 - **External Dependencies**: 0
@@ -145,7 +145,7 @@ ctest -V
 
 If anything goes wrong:
 ```bash
-git checkout HEAD -- Library/Core/smp/
+git checkout HEAD -- Library/Core/parallel/
 ```
 
 

@@ -278,7 +278,7 @@ include(compression)
 include(threads)
 
 # Configure SMP backend selection (must be before openmp and tbb includes)
-include(smp_backend)
+include(parallel_backend)
 
 # Create build interface target for common settings FIRST
 # This target is needed by sanitize.cmake and other modules
