@@ -75,6 +75,7 @@ function(print_configuration_summary)
   message("    TBB                 : ${XSIGMA_ENABLE_TBB}")
   message("    CUDA                : ${XSIGMA_ENABLE_CUDA}")
   message("    HIP                 : ${XSIGMA_ENABLE_HIP}")
+  message("    Enzyme              : ${XSIGMA_ENABLE_ENZYME}")
   message("    Documentation       : ${XSIGMA_BUILD_DOCUMENTATION}")
   message("    External libraries  : ${XSIGMA_ENABLE_EXTERNAL}")
 
