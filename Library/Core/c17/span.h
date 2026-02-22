@@ -29,11 +29,8 @@ public:
     using const_iterator         = const_pointer;
     using reverse_iterator       = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-
-#ifndef __QUARISMA_WRAP__
     // Static constant for dynamic extent
     static constexpr size_type dynamic_extent = static_cast<size_type>(-1);
-#endif  // DEBUG
 
     // Constructors
     constexpr span() noexcept : data_(nullptr), size_(0) {}
@@ -145,7 +142,6 @@ private:
     size_type size_;
 };
 
-#ifndef __QUARISMA_WRAP__
 // Deduction guides
 template <typename T, size_t N>
 span(T (&)[N]) -> span<T>;
@@ -192,6 +188,5 @@ struct is_span<span<T> > : std::true_type
 
 template <typename T>
 inline constexpr bool is_span_v = is_span<T>::value;
-#endif
 }  // namespace std
 #endif

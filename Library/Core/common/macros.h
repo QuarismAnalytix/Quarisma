@@ -102,11 +102,7 @@ inline constexpr int QUARISMA_COMPILE_TIME_MAX_GPUS = 16;
 
 //------------------------------------------------------------------------
 /* Various compiler-specific performance hints. keep compiler order! */
-#ifdef __QUARISMA_WRAP__
-#define QUARISMA_VECTORCALL
-#define QUARISMA_FORCE_INLINE inline
-
-#elif defined(_MSC_VER)
+#if defined(_MSC_VER)
 #define QUARISMA_VECTORCALL __vectorcall
 #define QUARISMA_FORCE_INLINE __forceinline
 

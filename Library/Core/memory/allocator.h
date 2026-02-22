@@ -19,8 +19,6 @@
 
 #pragma once
 
-#ifndef __QUARISMA_WRAP__
-
 #include <cstddef>
 #include <cstddef>    // for size_t, ptrdiff_t
 #include <cstdint>    // for uintptr_t
@@ -431,4 +429,3 @@ inline constexpr bool has_gpu_support()
 }
 
 }  // namespace quarisma
-#endif

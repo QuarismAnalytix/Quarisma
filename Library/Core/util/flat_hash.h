@@ -15,7 +15,6 @@
 //    (See http://www.boost.org/LICENSE_1_0.txt)
 #pragma once
 
-#ifndef __QUARISMA_WRAP__
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -1767,4 +1766,3 @@ using forecast_map_t = container_map_t;
 #pragma warning(pop)
 #endif
 
-#endif  // 0

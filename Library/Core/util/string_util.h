@@ -13,8 +13,6 @@
 
 #pragma once
 
-#ifndef __QUARISMA_WRAP__
-
 #include <stdarg.h>  // for va_list
 
 #include <algorithm>  // for transform
@@ -415,5 +413,3 @@ QUARISMA_FORCE_INLINE std::string to_lower(std::string_view input)
 }
 }  // namespace strings
 }  // namespace quarisma
-
-#endif  // __QUARISMA_WRAP__

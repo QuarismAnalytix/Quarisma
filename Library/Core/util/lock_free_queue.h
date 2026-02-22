@@ -33,8 +33,6 @@ limitations under the License.
 ==============================================================================*/
 #pragma once
 
-#ifndef __QUARISMA_WRAP__
-
 #include <stddef.h>
 
 #include <algorithm>
@@ -380,4 +378,3 @@ public:
 };
 
 }  // namespace quarisma
-#endif

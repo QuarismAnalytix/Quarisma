@@ -1,7 +1,5 @@
 #pragma once
 
-#ifndef __QUARISMA_WRAP__
-
 /**
  * Simple registry implementation that uses static variables to
  * register object creators during program initialization time.
@@ -224,4 +222,3 @@ public:
         RegistryName, std::string, ObjectType, std::shared_ptr, ##__VA_ARGS__)
 
 }  // namespace quarisma
-#endif  // ! __QUARISMA_WRAP__
