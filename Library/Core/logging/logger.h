@@ -202,29 +202,23 @@ public:
    * Not intended for public use, please use the logging macros instead.
    */
     QUARISMA_API static void Log(
-        logger_verbosity_enum       verbosity,
-        const char* fname,
-        unsigned int                lineno,
-        const char*                 txt);
+        logger_verbosity_enum verbosity, const char* fname, unsigned int lineno, const char* txt);
     QUARISMA_API static void StartScope(
-        logger_verbosity_enum       verbosity,
-        const char*                 id,
-        const char* fname,
-        unsigned int                lineno);
+        logger_verbosity_enum verbosity, const char* id, const char* fname, unsigned int lineno);
     QUARISMA_API static void EndScope(const char* id);
 #if !defined(__WRAP__)
     QUARISMA_API static void LogF(
         logger_verbosity_enum       verbosity,
-        const char* fname,
+        const char*                 fname,
         unsigned int                lineno,
-        QUARISMA_FORMAT_STRING_TYPE   format,
+        QUARISMA_FORMAT_STRING_TYPE format,
         ...) QUARISMA_PRINTF_LIKE(4, 5);
     QUARISMA_API static void StartScopeF(
         logger_verbosity_enum       verbosity,
         const char*                 id,
-        const char* fname,
+        const char*                 fname,
         unsigned int                lineno,
-        QUARISMA_FORMAT_STRING_TYPE   format,
+        QUARISMA_FORMAT_STRING_TYPE format,
         ...) QUARISMA_PRINTF_LIKE(5, 6);
 
     class QUARISMA_VISIBILITY LogScopeRAII
@@ -232,9 +226,9 @@ public:
     public:
         QUARISMA_API LogScopeRAII();
         QUARISMA_API LogScopeRAII(
-            logger_verbosity_enum     verbosity,
-            const char*               fname,
-            unsigned int              lineno,
+            logger_verbosity_enum       verbosity,
+            const char*                 fname,
+            unsigned int                lineno,
             QUARISMA_FORMAT_STRING_TYPE format,
             ...) QUARISMA_PRINTF_LIKE(5, 6);
         QUARISMA_API ~LogScopeRAII();
@@ -303,14 +297,14 @@ private:
  * @param format_string Format string with {} placeholders
  * @param ... Optional arguments to format
  */
-#define QUARISMA_LOG(verbosity_name, format_string, ...)                          \
+#define QUARISMA_LOG(verbosity_name, format_string, ...)                        \
     do                                                                          \
     {                                                                           \
-        if (quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name <=        \
-            quarisma::logger::GetCurrentVerbosityCutoff())                        \
+        if (quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name <=      \
+            quarisma::logger::GetCurrentVerbosityCutoff())                      \
         {                                                                       \
-            quarisma::logger::Log(                                                \
-                quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name,      \
+            quarisma::logger::Log(                                              \
+                quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name,    \
                 __FILE__,                                                       \
                 __LINE__,                                                       \
                 fmt::format(FMT_STRING(format_string), ##__VA_ARGS__).c_str()); \
@@ -347,14 +341,14 @@ private:
  * @param format_string Format string with {} placeholders
  * @param ... Optional arguments to format
  */
-#define QUARISMA_VLOG_IF(level, cond, format_string, ...)                         \
+#define QUARISMA_VLOG_IF(level, cond, format_string, ...)                       \
     do                                                                          \
     {                                                                           \
-        if ((cond) && static_cast<quarisma::logger_verbosity_enum>(level) <=      \
-                          quarisma::logger::GetCurrentVerbosityCutoff())          \
+        if ((cond) && static_cast<quarisma::logger_verbosity_enum>(level) <=    \
+                          quarisma::logger::GetCurrentVerbosityCutoff())        \
         {                                                                       \
-            quarisma::logger::Log(                                                \
-                static_cast<quarisma::logger_verbosity_enum>(level),              \
+            quarisma::logger::Log(                                              \
+                static_cast<quarisma::logger_verbosity_enum>(level),            \
                 __FILE__,                                                       \
                 __LINE__,                                                       \
                 fmt::format(FMT_STRING(format_string), ##__VA_ARGS__).c_str()); \
@@ -369,17 +363,17 @@ private:
  * @param ... Optional arguments to format
  */
 #define QUARISMA_LOG_IF(verbosity_name, cond, format_string, ...)                    \
-    do                                                                             \
-    {                                                                              \
+    do                                                                               \
+    {                                                                                \
         if ((cond) && quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name <= \
                           quarisma::logger::GetCurrentVerbosityCutoff())             \
-        {                                                                          \
+        {                                                                            \
             quarisma::logger::Log(                                                   \
                 quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name,         \
-                __FILE__,                                                          \
-                __LINE__,                                                          \
-                fmt::format(FMT_STRING(format_string), ##__VA_ARGS__).c_str());    \
-        }                                                                          \
+                __FILE__,                                                            \
+                __LINE__,                                                            \
+                fmt::format(FMT_STRING(format_string), ##__VA_ARGS__).c_str());      \
+        }                                                                            \
     } while (0)
 ///@}
 
@@ -419,9 +413,9 @@ private:
             ? quarisma::logger::LogScopeRAII()                                 \
             : quarisma::logger::LogScopeRAII(                                  \
                   quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name, \
-                  __FILE__,                                                  \
-                  __LINE__,                                                  \
-                  "%s",                                                      \
+                  __FILE__,                                                    \
+                  __LINE__,                                                    \
+                  "%s",                                                        \
                   __func__)
 
 /**
@@ -435,9 +429,9 @@ private:
             ? quarisma::logger::LogScopeRAII()                         \
             : quarisma::logger::LogScopeRAII(                          \
                   static_cast<quarisma::logger_verbosity_enum>(level), \
-                  __FILE__,                                          \
-                  __LINE__,                                          \
-                  "%s",                                              \
+                  __FILE__,                                            \
+                  __LINE__,                                            \
+                  "%s",                                                \
                   __func__)
 
 /**
@@ -454,7 +448,8 @@ private:
  * @param level Numeric verbosity level
  * @param id Unique identifier for the scope
  */
-#define QUARISMA_VLOG_START_SCOPE(level, id) quarisma::logger::StartScope(level, id, __FILE__, __LINE__)
+#define QUARISMA_VLOG_START_SCOPE(level, id) \
+    quarisma::logger::StartScope(level, id, __FILE__, __LINE__)
 
 /**
  * @brief Explicitly mark the end of a log scope.
@@ -521,19 +516,19 @@ private:
  * Convenience macros to start and end logging to a file. provide a file name
  * with the full path and extension.
  */
-#define START_LOG_TO_FILE(file_name)                                                        \
-    if (!file_name.empty())                                                                 \
-    {                                                                                       \
+#define START_LOG_TO_FILE(file_name)                                                            \
+    if (!file_name.empty())                                                                     \
+    {                                                                                           \
         quarisma::logger::SetStderrVerbosity(quarisma::logger_verbosity_enum::VERBOSITY_TRACE); \
-        quarisma::logger::LogToFile(                                                          \
-            file_name.c_str(),                                                              \
-            quarisma::logger::FileMode::TRUNCATE,                                             \
-            quarisma::logger_verbosity_enum::VERBOSITY_TRACE);                                \
+        quarisma::logger::LogToFile(                                                            \
+            file_name.c_str(),                                                                  \
+            quarisma::logger::FileMode::TRUNCATE,                                               \
+            quarisma::logger_verbosity_enum::VERBOSITY_TRACE);                                  \
     }
 
-#define END_LOG_TO_FILE(file_name)                       \
-    if (!file_name.empty())                              \
-    {                                                    \
+#define END_LOG_TO_FILE(file_name)                         \
+    if (!file_name.empty())                                \
+    {                                                      \
         quarisma::logger::EndLogToFile(file_name.c_str()); \
     }
 
