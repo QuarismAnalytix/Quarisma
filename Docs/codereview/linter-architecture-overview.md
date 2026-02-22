@@ -1,4 +1,4 @@
-# XSigma Linter Architecture Overview
+# Quarisma Linter Architecture Overview
 
 **Document Version:** 1.0  
 **Date:** 2025-10-28  
@@ -18,7 +18,7 @@
 
 ## Executive Summary
 
-The XSigma linting infrastructure is a comprehensive, modular system built around the `lintrunner` framework. It provides:
+The Quarisma linting infrastructure is a comprehensive, modular system built around the `lintrunner` framework. It provides:
 
 - **30+ specialized linters** covering Python, C++, CMake, YAML, and shell scripts
 - **Cross-platform support** for Linux, macOS, and Windows
@@ -106,7 +106,7 @@ Tools/linter/
 └── config/                        # Configuration management
     ├── __init__.py
     ├── config_loader.py           # YAML config loader
-    └── xsigma_linter_config.yaml  # Centralized config
+    └── quarisma_linter_config.yaml  # Centralized config
 ```
 
 ---
@@ -128,7 +128,7 @@ Tools/linter/
 
 #### Configuration System
 - **Primary Config:** `.lintrunner.toml` (TOML format)
-- **Centralized Config:** `Tools/linter/config/xsigma_linter_config.yaml`
+- **Centralized Config:** `Tools/linter/config/quarisma_linter_config.yaml`
 - **Purpose:** Avoid hardcoded paths, enable cross-platform compatibility
 
 **Key Configuration Files:**
@@ -189,7 +189,7 @@ pyproject.toml            # Python project metadata
 
 #### Configuration Management
 - **`config_loader.py`**: Loads YAML configuration
-- **`xsigma_linter_config.yaml`**: Centralized path/pattern definitions
+- **`quarisma_linter_config.yaml`**: Centralized path/pattern definitions
 
 ---
 
@@ -373,5 +373,5 @@ All adapters emit JSON conforming to this schema:
 - **Main Documentation**: `Docs/readme/linter.md`
 - **Adapter Guidelines**: `Tools/linter/adapters/README.md`
 - **Configuration**: `.lintrunner.toml`
-- **Centralized Config**: `Tools/linter/config/xsigma_linter_config.yaml`
+- **Centralized Config**: `Tools/linter/config/quarisma_linter_config.yaml`
 

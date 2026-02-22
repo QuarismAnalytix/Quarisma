@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,12 +18,12 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -38,7 +38,7 @@
 #include "common/macros.h"
 #include "memory/cpu/allocator.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -51,7 +51,7 @@ namespace xsigma
  * **Performance**: Adds ~1-2% overhead to allocation operations
  * **Use Cases**: Debugging, memory leak detection, performance profiling
  */
-XSIGMA_API void EnableCPUAllocatorStats() noexcept;
+QUARISMA_API void EnableCPUAllocatorStats() noexcept;
 
 /**
  * @brief Disables CPU allocator statistics collection for optimal performance.
@@ -60,7 +60,7 @@ XSIGMA_API void EnableCPUAllocatorStats() noexcept;
  * **Performance**: Eliminates statistics overhead
  * **Use Cases**: Production deployments, performance-critical applications
  */
-XSIGMA_API void DisableCPUAllocatorStats() noexcept;
+QUARISMA_API void DisableCPUAllocatorStats() noexcept;
 
 /**
  * @brief Checks if CPU allocator statistics collection is enabled.
@@ -70,7 +70,7 @@ XSIGMA_API void DisableCPUAllocatorStats() noexcept;
  * **Thread Safety**: Thread-safe atomic read
  * **Performance**: O(1) - simple atomic load
  */
-//XSIGMA_API bool CPUAllocatorStatsEnabled() noexcept;
+//QUARISMA_API bool CPUAllocatorStatsEnabled() noexcept;
 
 /**
  * @brief High-performance CPU memory allocator with comprehensive monitoring.
@@ -98,7 +98,7 @@ XSIGMA_API void DisableCPUAllocatorStats() noexcept;
  * **Design Principles**:
  * - Minimal overhead when statistics disabled
  * - Comprehensive monitoring when statistics enabled
- * - Integration with XSigma profiling ecosystem
+ * - Integration with Quarisma profiling ecosystem
  * - Robust warning system for memory pressure detection
  *
  * **Use Cases**:
@@ -107,7 +107,7 @@ XSIGMA_API void DisableCPUAllocatorStats() noexcept;
  * - General-purpose memory management
  * - Development and debugging with statistics
  */
-class XSIGMA_VISIBILITY allocator_cpu : public Allocator
+class QUARISMA_VISIBILITY allocator_cpu : public Allocator
 {
 public:
     /**
@@ -117,7 +117,7 @@ public:
      * **Performance**: O(1) - minimal initialization overhead
      * **Thread Safety**: Constructor is not thread-safe
      */
-    XSIGMA_API allocator_cpu();
+    QUARISMA_API allocator_cpu();
 
     /**
      * @brief Destructor with automatic cleanup.
@@ -125,7 +125,7 @@ public:
      * **Cleanup**: No explicit cleanup needed - uses RAII
      * **Thread Safety**: Destructor is not thread-safe
      */
-    XSIGMA_API ~allocator_cpu() override;
+    QUARISMA_API ~allocator_cpu() override;
 
     /**
      * @brief Returns allocator name for identification and debugging.
@@ -136,7 +136,7 @@ public:
      * **Performance**: O(1) - returns static string
      * **Use Cases**: Logging, debugging, allocator identification
      */
-    XSIGMA_API std::string Name() const override;
+    QUARISMA_API std::string Name() const override;
 
     /**
      * @brief Allocates aligned memory block with comprehensive monitoring.
@@ -167,7 +167,7 @@ public:
      * **Error Handling**: Returns nullptr on allocation failure
      * **Alignment**: Guaranteed to meet or exceed requested alignment
      */
-    XSIGMA_API void* allocate_raw(size_t alignment, size_t num_bytes) override;
+    QUARISMA_API void* allocate_raw(size_t alignment, size_t num_bytes) override;
 
     /**
      * @brief Deallocates memory block with statistics tracking.
@@ -189,7 +189,7 @@ public:
      *
      * **Profiling Integration**: Records deallocation events for analysis
      */
-    XSIGMA_API void deallocate_raw(void* ptr) override;
+    QUARISMA_API void deallocate_raw(void* ptr) override;
 
     /**
      * @brief Deallocates memory block with size and alignment hints.
@@ -207,7 +207,7 @@ public:
      * **Thread Safety**: Thread-safe with fine-grained locking
      * **Future**: May be optimized to use size/alignment hints
      */
-    XSIGMA_API void deallocate_raw(void* ptr, size_t alignment, size_t num_bytes) override;
+    QUARISMA_API void deallocate_raw(void* ptr, size_t alignment, size_t num_bytes) override;
 
     /**
      * @brief Retrieves current allocator statistics.
@@ -226,7 +226,7 @@ public:
      * - Largest single allocation size
      * - Reserved bytes (always 0 for CPU allocator)
      */
-    XSIGMA_API std::optional<allocator_stats> GetStats() const override;
+    QUARISMA_API std::optional<allocator_stats> GetStats() const override;
 
     /**
      * @brief Resets statistics counters while preserving current state.
@@ -243,7 +243,7 @@ public:
      * - largest_alloc_size → 0
      * - bytes_in_use remains unchanged
      */
-    XSIGMA_API bool ClearStats() override;
+    QUARISMA_API bool ClearStats() override;
 
     /**
      * @brief Returns memory type managed by this allocator.
@@ -255,18 +255,18 @@ public:
      * **Thread Safety**: Thread-safe (returns constant)
      * **Use Cases**: Memory type identification, NUMA awareness, optimization
      */
-    XSIGMA_API allocator_memory_enum GetMemoryType() const noexcept override;
+    QUARISMA_API allocator_memory_enum GetMemoryType() const noexcept override;
 
     // Prevent copying to avoid complex state duplication
     allocator_cpu(const allocator_cpu&)            = delete;
     allocator_cpu& operator=(const allocator_cpu&) = delete;
 
 private:
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
     /**
      * @brief Adds comprehensive profiling trace for memory operations.
      *
-     * Integrates with XSigma's profiling system to record detailed memory
+     * Integrates with Quarisma's profiling system to record detailed memory
      * operation traces including allocator state, operation context, and
      * memory usage statistics.
      *
@@ -277,7 +277,7 @@ private:
      *
      * **Performance**: Minimal overhead - only called when statistics enabled
      * **Thread Safety**: Thread-safe - captures consistent snapshot
-     * **Integration**: Works with XSigma profiling and debugging tools
+     * **Integration**: Works with Quarisma profiling and debugging tools
      *
      * **Trace Information**:
      * - Allocator identification and current state
@@ -350,4 +350,4 @@ private:
     int total_allocation_warning_count_;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

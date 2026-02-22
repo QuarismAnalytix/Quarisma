@@ -101,21 +101,21 @@ Library/Core/profiler/native/session/
 
 ```cpp
 // Test self CPU time calculation
-XSIGMATEST(profiler_report_test, self_cpu_time_calculation) { ... }
+QUARISMATEST(profiler_report_test, self_cpu_time_calculation) { ... }
 
 // Test percentage calculations
-XSIGMATEST(profiler_report_test, cpu_percentage_calculation) { ... }
+QUARISMATEST(profiler_report_test, cpu_percentage_calculation) { ... }
 
 // Test aggregation
-XSIGMATEST(profiler_report_test, operation_aggregation) { ... }
+QUARISMATEST(profiler_report_test, operation_aggregation) { ... }
 
 // Test table formatting
-XSIGMATEST(profiler_report_test, pytorch_table_format) { ... }
+QUARISMATEST(profiler_report_test, pytorch_table_format) { ... }
 
 // Test edge cases
-XSIGMATEST(profiler_report_test, single_call_aggregation) { ... }
-XSIGMATEST(profiler_report_test, nested_scopes) { ... }
-XSIGMATEST(profiler_report_test, zero_time_operations) { ... }
+QUARISMATEST(profiler_report_test, single_call_aggregation) { ... }
+QUARISMATEST(profiler_report_test, nested_scopes) { ... }
+QUARISMATEST(profiler_report_test, zero_time_operations) { ... }
 ```
 
 ## 📖 Documentation Files

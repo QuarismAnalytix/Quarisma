@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -31,11 +31,11 @@
 #include "memory/gpu/gpu_memory_pool.h"
 #include "memory/gpu/gpu_resource_tracker.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -135,7 +135,7 @@ enum class pool_ownership_mode
  * ```
  */
 template <typename T = void>
-class XSIGMA_VISIBILITY gpu_memory_wrapper
+class QUARISMA_VISIBILITY gpu_memory_wrapper
 {
 public:
     using element_type  = T;
@@ -220,8 +220,8 @@ private:
      */
     static bool is_pool_compatible_with_device(
         std::shared_ptr<gpu_memory_pool> pool,
-        XSIGMA_UNUSED device_enum        device_type,
-        XSIGMA_UNUSED int                device_index)
+        QUARISMA_UNUSED device_enum        device_type,
+        QUARISMA_UNUSED int                device_index)
     {
         if (!pool)
             return false;
@@ -276,7 +276,7 @@ private:
     {
         switch (device_.type())
         {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         case device_enum::CUDA:
             cudaFree(ptr_);
             break;
@@ -314,7 +314,7 @@ private:
             case deallocation_strategy::USE_ALLOCATOR:
             {
                 // Direct CUDA deallocation (gpu_allocator removed)
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
                 if (device_.type() == device_enum::CUDA)
                 {
                     cudaError_t result = cudaSetDevice(device_.index());
@@ -511,12 +511,12 @@ public:
      * @param tag Tag for resource tracking
      * @return GPU memory wrapper managing the allocated memory
      */
-    XSIGMA_NODISCARD static gpu_memory_wrapper allocate(
+    QUARISMA_NODISCARD static gpu_memory_wrapper allocate(
         size_type                        count,
         device_enum                      device_type,
         int                              device_index = 0,
         std::shared_ptr<gpu_memory_pool> pool         = nullptr,
-        XSIGMA_UNUSED const std::string& tag          = "")
+        QUARISMA_UNUSED const std::string& tag          = "")
     {
         if (count == 0)
         {
@@ -544,7 +544,7 @@ public:
         case allocation_strategy::USE_DIRECT:
         {
             // Direct CUDA allocation (gpu_allocator removed)
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
             if (device_type == device_enum::CUDA)
             {
                 cudaError_t cuda_result = cudaSetDevice(device_index);
@@ -568,7 +568,7 @@ public:
         case allocation_strategy::FALLBACK_DIRECT:
         {
             // Pool was requested but not suitable, use direct allocation
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
             if (device_type == device_enum::CUDA)
             {
                 cudaError_t cuda_result = cudaSetDevice(device_index);
@@ -604,13 +604,13 @@ public:
      * @param tag Tag for resource tracking
      * @return GPU memory wrapper managing the existing memory
      */
-    XSIGMA_NODISCARD static gpu_memory_wrapper wrap(
+    QUARISMA_NODISCARD static gpu_memory_wrapper wrap(
         pointer             ptr,
         size_type           count,
         device_enum         device_type,
         int                 device_index     = 0,
         deleter_type        deleter          = nullptr,
-        XSIGMA_UNUSED const std::string& tag = "")
+        QUARISMA_UNUSED const std::string& tag = "")
     {
         device_option device(device_type, device_index);
         return gpu_memory_wrapper(ptr, count, device, nullptr, gpu_memory_block{}, deleter, true);
@@ -624,7 +624,7 @@ public:
      * @param device_index Device index
      * @return Non-owning GPU memory wrapper
      */
-    XSIGMA_NODISCARD static gpu_memory_wrapper non_owning(
+    QUARISMA_NODISCARD static gpu_memory_wrapper non_owning(
         pointer ptr, size_type count, device_enum device_type, int device_index = 0)
     {
         device_option device(device_type, device_index);
@@ -635,49 +635,49 @@ public:
      * @brief Get raw pointer
      * @return Raw pointer to GPU memory
      */
-    XSIGMA_NODISCARD pointer get() const noexcept { return ptr_; }
+    QUARISMA_NODISCARD pointer get() const noexcept { return ptr_; }
 
     /**
      * @brief Get const pointer
      * @return Const pointer to GPU memory
      */
-    XSIGMA_NODISCARD const_pointer get_const() const noexcept { return ptr_; }
+    QUARISMA_NODISCARD const_pointer get_const() const noexcept { return ptr_; }
 
     /**
      * @brief Get number of elements
      * @return Number of elements in the array
      */
-    XSIGMA_NODISCARD size_type size() const noexcept { return count_; }
+    QUARISMA_NODISCARD size_type size() const noexcept { return count_; }
 
     /**
      * @brief Get size in bytes
      * @return Size in bytes
      */
-    XSIGMA_NODISCARD size_type size_bytes() const noexcept { return count_ * sizeof(T); }
+    QUARISMA_NODISCARD size_type size_bytes() const noexcept { return count_ * sizeof(T); }
 
     /**
      * @brief Get device information
      * @return Device where memory is allocated
      */
-    XSIGMA_NODISCARD const device_option& device() const noexcept { return device_; }
+    QUARISMA_NODISCARD const device_option& device() const noexcept { return device_; }
 
     /**
      * @brief Check if wrapper is empty
      * @return True if wrapper does not manage any memory
      */
-    XSIGMA_NODISCARD bool empty() const noexcept { return ptr_ == nullptr; }
+    QUARISMA_NODISCARD bool empty() const noexcept { return ptr_ == nullptr; }
 
     /**
      * @brief Check if wrapper owns the memory
      * @return True if wrapper will delete memory on destruction
      */
-    XSIGMA_NODISCARD bool owns_memory() const noexcept { return owns_memory_; }
+    QUARISMA_NODISCARD bool owns_memory() const noexcept { return owns_memory_; }
 
     /**
      * @brief Release ownership of memory
      * @return Raw pointer to released memory
      */
-    XSIGMA_NODISCARD pointer release() noexcept
+    QUARISMA_NODISCARD pointer release() noexcept
     {
         pointer result = ptr_;
         ptr_           = nullptr;
@@ -855,14 +855,14 @@ public:
      * @brief Boolean conversion operator
      * @return True if wrapper manages memory
      */
-    XSIGMA_NODISCARD explicit operator bool() const noexcept { return ptr_ != nullptr; }
+    QUARISMA_NODISCARD explicit operator bool() const noexcept { return ptr_ != nullptr; }
 
     /**
      * @brief Equality comparison
      * @param other Other wrapper to compare with
      * @return True if both wrappers manage the same memory
      */
-    XSIGMA_NODISCARD bool operator==(const gpu_memory_wrapper& other) const noexcept
+    QUARISMA_NODISCARD bool operator==(const gpu_memory_wrapper& other) const noexcept
     {
         return ptr_ == other.ptr_;
     }
@@ -872,7 +872,7 @@ public:
      * @param other Other wrapper to compare with
      * @return True if wrappers manage different memory
      */
-    XSIGMA_NODISCARD bool operator!=(const gpu_memory_wrapper& other) const noexcept
+    QUARISMA_NODISCARD bool operator!=(const gpu_memory_wrapper& other) const noexcept
     {
         return ptr_ != other.ptr_;
     }
@@ -882,7 +882,7 @@ public:
  * @brief Specialization for void type (raw memory)
  */
 template <>
-class XSIGMA_VISIBILITY gpu_memory_wrapper<void>
+class QUARISMA_VISIBILITY gpu_memory_wrapper<void>
 {
 public:
     using element_type  = void;
@@ -918,7 +918,7 @@ private:
             {
                 switch (device_.type())
                 {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
                 case device_enum::CUDA:
                     cudaFree(ptr_);
                     break;
@@ -1109,24 +1109,24 @@ void swap(gpu_memory_wrapper<T>& a, gpu_memory_wrapper<T>& b) noexcept
 }
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma
 
 // C++17 structured binding support for allocation_result
 namespace std
 {
 template <>
-struct tuple_size<xsigma::gpu::allocation_result> : std::integral_constant<std::size_t, 2>
+struct tuple_size<quarisma::gpu::allocation_result> : std::integral_constant<std::size_t, 2>
 {
 };
 
 template <>
-struct tuple_element<0, xsigma::gpu::allocation_result>
+struct tuple_element<0, quarisma::gpu::allocation_result>
 {
-    using type = xsigma::gpu::allocation_strategy;
+    using type = quarisma::gpu::allocation_strategy;
 };
 
 template <>
-struct tuple_element<1, xsigma::gpu::allocation_result>
+struct tuple_element<1, quarisma::gpu::allocation_result>
 {
     using type = std::string;
 };

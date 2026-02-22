@@ -1,7 +1,7 @@
 #pragma once
-#include <XSigma/core/Tensor.h>
-#include <XSigma/native/IndexingUtils.h>
-#include <XSigma/native/TensorIterator.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/native/IndexingUtils.h>
+#include <Quarisma/native/TensorIterator.h>
 
 namespace at::native
 {

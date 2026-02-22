@@ -5,7 +5,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                  CMAKE FORMAT INTEGRATION                        │
-│                    XSigma Project                                │
+│                    Quarisma Project                                │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                   │
 │  Phase 1: Foundation              ✅ COMPLETED                  │
@@ -33,7 +33,7 @@ CMake Linting                    CMake Linting + Formatting
 ## File Structure
 
 ```
-XSigma/
+Quarisma/
 ├── .cmake-format.yaml                          [NEW]
 ├── .lintrunner.toml                            [MODIFIED]
 ├── Scripts/
@@ -126,7 +126,7 @@ Commit (properly formatted)
 │              TOOL COMPARISON MATRIX                           │
 ├─────────────────────────────────────────────────────────────┤
 │                                                               │
-│ Feature          │ cmakelint │ cmake-format │ XSigma        │
+│ Feature          │ cmakelint │ cmake-format │ Quarisma        │
 │ ─────────────────┼───────────┼──────────────┼──────────────│
 │ Linting          │ ✅        │ ❌           │ ✅ (cmakelint)│
 │ Formatting       │ ❌        │ ✅           │ ✅ (new)      │

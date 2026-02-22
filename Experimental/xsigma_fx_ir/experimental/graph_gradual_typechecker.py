@@ -116,7 +116,7 @@ def broadcast_types(t1, t2):
             elif y == 1:
                 new_t2[i] = x
 
-        # xsigma this point our tensors should be consistent
+        # quarisma this point our tensors should be consistent
         # and we can apply the element-wise operation and find the right dimension
         # for the output of the operation
         (t1, t2) = TensorType(tuple(new_t1)), TensorType(tuple(new_t2))
@@ -193,7 +193,7 @@ def add_inference_rule(n: Node):
     # we bring the new types to the point where
     # we can check for consistency
     # any inconsistency would not have been caused
-    # by broadcasting xsigma this point
+    # by broadcasting quarisma this point
     (new_t1, new_t2) = broadcast_types(t1, t2)
 
     if new_t1 != t1 or new_t2 != t2:

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <XSigma/XSigma.h>
-#include <XSigma/core/ivalue.h>
-#include <XSigma/core/jit_type.h>
-#include <XSigma/core/stack.h>
+#include <Quarisma/Quarisma.h>
+#include <Quarisma/core/ivalue.h>
+#include <Quarisma/core/jit_type.h>
+#include <Quarisma/core/stack.h>
 #include <torch/csrc/Export.h>
 #include <torch/csrc/jit/ir/ir.h>
 
@@ -14,7 +14,7 @@ namespace torch::jit
 {
 
 // Replaces prim::Guard nodes with prim::BailOut nodes and
-// computes sets of inputs needed to resume execution xsigma
+// computes sets of inputs needed to resume execution quarisma
 // bailout points
 TORCH_API void InsertBailOuts(std::shared_ptr<Graph> graph);
 

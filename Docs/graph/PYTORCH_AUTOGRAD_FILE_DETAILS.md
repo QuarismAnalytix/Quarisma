@@ -1,4 +1,4 @@
-# XSigma Autograd: Detailed File Reference
+# Quarisma Autograd: Detailed File Reference
 
 **In-depth information about key source files in the autograd system**
 
@@ -6,7 +6,7 @@
 
 ## CORE GRAPH STRUCTURE FILES
 
-### xsigma/csrc/autograd/function.h (Lines 113-792)
+### quarisma/csrc/autograd/function.h (Lines 113-792)
 
 **Purpose:** Defines the `Node` class, the fundamental building block of the computational graph.
 
@@ -32,7 +32,7 @@
 
 ---
 
-### xsigma/csrc/autograd/edge.h (Lines 1-57)
+### quarisma/csrc/autograd/edge.h (Lines 1-57)
 
 **Purpose:** Defines the `Edge` structure representing data dependencies between nodes.
 
@@ -47,7 +47,7 @@
 
 ---
 
-### xsigma/csrc/autograd/graph_task.h (Lines 17-230)
+### quarisma/csrc/autograd/graph_task.h (Lines 17-230)
 
 **Purpose:** Defines `GraphTask`, the metadata container for a single backward execution.
 
@@ -76,7 +76,7 @@
 
 ---
 
-### xsigma/csrc/autograd/input_buffer.h/cpp
+### quarisma/csrc/autograd/input_buffer.h/cpp
 
 **Purpose:** Implements `InputBuffer` for accumulating gradients from multiple edges.
 
@@ -96,7 +96,7 @@
 
 ---
 
-### xsigma/csrc/autograd/variable.h/cpp
+### quarisma/csrc/autograd/variable.h/cpp
 
 **Purpose:** Manages tensor autograd metadata and grad_fn connections.
 
@@ -122,7 +122,7 @@
 
 ## GRAPH BUILDING FILES
 
-### xsigma/csrc/autograd/functions/utils.h (Lines 66-91)
+### quarisma/csrc/autograd/functions/utils.h (Lines 66-91)
 
 **Purpose:** Implements `set_history()`, the critical function connecting tensors to their grad_fn.
 
@@ -144,7 +144,7 @@ void set_history(
 
 ---
 
-### xsigma/csrc/autograd/functions/accumulate_grad.h/cpp
+### quarisma/csrc/autograd/functions/accumulate_grad.h/cpp
 
 **Purpose:** Implements `AccumulateGrad`, the special leaf node that accumulates gradients.
 
@@ -161,7 +161,7 @@ void set_history(
 
 ---
 
-### xsigma/csrc/autograd/functions/basic_ops.h/cpp
+### quarisma/csrc/autograd/functions/basic_ops.h/cpp
 
 **Purpose:** Implements basic operation nodes used in graph execution.
 
@@ -177,7 +177,7 @@ void set_history(
 
 ## GRAPH EXECUTION FILES
 
-### xsigma/csrc/autograd/engine.h (Lines 86-125)
+### quarisma/csrc/autograd/engine.h (Lines 86-125)
 
 **Purpose:** Defines the `Engine` class and `ReadyQueue` for backward execution.
 
@@ -200,7 +200,7 @@ void set_history(
 
 ---
 
-### xsigma/csrc/autograd/engine.cpp (Lines 1288-1380)
+### quarisma/csrc/autograd/engine.cpp (Lines 1288-1380)
 
 **Purpose:** Implements the backward execution algorithm.
 
@@ -226,7 +226,7 @@ void set_history(
 
 ---
 
-### xsigma/csrc/autograd/python_engine.h/cpp
+### quarisma/csrc/autograd/python_engine.h/cpp
 
 **Purpose:** Python bindings for the backward engine.
 
@@ -241,7 +241,7 @@ void set_history(
 
 ## SUPPORTING INFRASTRUCTURE FILES
 
-### xsigma/csrc/autograd/saved_variable.h/cpp
+### quarisma/csrc/autograd/saved_variable.h/cpp
 
 **Purpose:** Implements `SavedVariable` for storing tensors in backward.
 
@@ -259,7 +259,7 @@ void set_history(
 
 ---
 
-### xsigma/csrc/autograd/anomaly_mode.h/cpp
+### quarisma/csrc/autograd/anomaly_mode.h/cpp
 
 **Purpose:** Implements anomaly detection for debugging.
 
@@ -276,7 +276,7 @@ void set_history(
 
 ---
 
-### xsigma/csrc/autograd/custom_function.h/cpp
+### quarisma/csrc/autograd/custom_function.h/cpp
 
 **Purpose:** Implements custom autograd function support.
 
@@ -290,7 +290,7 @@ void set_history(
 
 ---
 
-### xsigma/csrc/autograd/forward_grad.h/cpp
+### quarisma/csrc/autograd/forward_grad.h/cpp
 
 **Purpose:** Implements forward-mode AD (tangent computation).
 
@@ -306,7 +306,7 @@ void set_history(
 
 ## PYTHON API FILES
 
-### xsigma/autograd/function.py (Lines 472-566)
+### quarisma/autograd/function.py (Lines 472-566)
 
 **Purpose:** Python API for custom autograd functions.
 
@@ -337,7 +337,7 @@ class MyFunc(Function):
 
 ---
 
-### xsigma/autograd/graph.py
+### quarisma/autograd/graph.py
 
 **Purpose:** Graph inspection and manipulation API.
 
@@ -360,7 +360,7 @@ class MyFunc(Function):
 
 ---
 
-### xsigma/autograd/grad_mode.py
+### quarisma/autograd/grad_mode.py
 
 **Purpose:** Control gradient computation mode.
 
@@ -372,16 +372,16 @@ class MyFunc(Function):
 
 **Usage:**
 ```python
-with xsigma.no_grad():
+with quarisma.no_grad():
     y = model(x)  # No gradients computed
 
-with xsigma.enable_grad():
+with quarisma.enable_grad():
     y = model(x)  # Gradients computed
 ```
 
 ---
 
-### xsigma/autograd/gradcheck.py
+### quarisma/autograd/gradcheck.py
 
 **Purpose:** Gradient checking utilities for testing.
 
@@ -403,7 +403,7 @@ with xsigma.enable_grad():
 2. VariableType methods (gen_variable_type.py)
 3. Python bindings (gen_python_functions.py)
 
-**Output:** `xsigma/csrc/autograd/generated/` directory
+**Output:** `quarisma/csrc/autograd/generated/` directory
 
 ---
 
@@ -422,8 +422,8 @@ with xsigma.enable_grad():
 | Custom functions | `custom_function.h` | `class CustomFunction` |
 | Anomaly detection | `anomaly_mode.h` | `class AnomalyMode` |
 | Forward AD | `forward_grad.h` | `class ForwardGrad` |
-| Python API | `xsigma/autograd/function.py` | `class Function` |
-| Graph inspection | `xsigma/autograd/graph.py` | `class Node` |
-| Grad modes | `xsigma/autograd/grad_mode.py` | `no_grad`, `enable_grad` |
+| Python API | `quarisma/autograd/function.py` | `class Function` |
+| Graph inspection | `quarisma/autograd/graph.py` | `class Node` |
+| Grad modes | `quarisma/autograd/grad_mode.py` | `no_grad`, `enable_grad` |
 
 

@@ -278,7 +278,7 @@ def bucket_all_gather_by_mb(
         gm (torch.fx.GraphModule): GraphModule where to bucket all_gathers.
         bucket_cap_mb_by_bucket_idx (Callable[[int], float]): Callable to specify cap of the bucket
             in megabytes by bucket idx.  The idea of `bucket_cap_mb_by_bucket_idx` is to allow
-            to specify different sizes of the buckets xsigma the start,
+            to specify different sizes of the buckets quarisma the start,
             as first all_gather is usually exposed.  Interface of bucket_cap_mb_by_bucket_idx
             is `bucket_cap_mb_by_bucket_idx_default` function that is default value for `bucket_cap_mb_by_bucket_idx`.
         filter_wait_node (Callable[[torch.fx.Node], bool] | None): If specified,

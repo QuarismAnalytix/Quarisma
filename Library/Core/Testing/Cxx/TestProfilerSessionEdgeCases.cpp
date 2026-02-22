@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
@@ -13,9 +13,9 @@
 
 #include "profiler/native/session/profiler.h"
 #include "profiler/native/session/profiler_report.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // ============================================================================
 // Profiler Session Edge Cases and Error Handling Tests (Consolidated)
@@ -24,7 +24,7 @@ using namespace xsigma;
 // Test 1: Session State Management and Lifecycle
 // Tests: double start, stop without start, double stop, is_active, current_session,
 //        destructor behavior, and multiple sequential sessions
-XSIGMATEST(Profiler, session_state_management_and_lifecycle)
+QUARISMATEST(Profiler, session_state_management_and_lifecycle)
 {
     // Test double start fails
     {
@@ -129,7 +129,7 @@ XSIGMATEST(Profiler, session_state_management_and_lifecycle)
 // Test 2: Scope Edge Cases
 // Tests: scope without session, scope after session stop, empty name, very long name,
 //        immediate destruction, and scopes with various naming scenarios
-XSIGMATEST(Profiler, scope_edge_cases)
+QUARISMATEST(Profiler, scope_edge_cases)
 {
     // Test scope without active session
     {
@@ -198,7 +198,7 @@ XSIGMATEST(Profiler, scope_edge_cases)
 // Test 3: Session Configuration Options
 // Tests: disabled features, memory tracking, statistical analysis,
 //        hierarchical profiling disabled, timing disabled, thread safety disabled
-XSIGMATEST(Profiler, session_configuration_options)
+QUARISMATEST(Profiler, session_configuration_options)
 {
     // Test with all features disabled
     {
@@ -309,7 +309,7 @@ XSIGMATEST(Profiler, session_configuration_options)
 
 // Test 4: Threading and Concurrency
 // Tests: many concurrent scopes with thread safety
-XSIGMATEST(Profiler, threading_and_concurrency)
+QUARISMATEST(Profiler, threading_and_concurrency)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -341,7 +341,7 @@ XSIGMATEST(Profiler, threading_and_concurrency)
 
 // Test 5: Advanced Scope Features
 // Tests: duration calculations, deeply nested hierarchies
-XSIGMATEST(Profiler, advanced_scope_features)
+QUARISMATEST(Profiler, advanced_scope_features)
 {
     // Test duration calculations
     {
@@ -390,7 +390,7 @@ XSIGMATEST(Profiler, advanced_scope_features)
 // Test 6: Session Methods and Data Access
 // Tests: create_scope, generate_report, export_report, print_report,
 //        collected_xspace, has_collected_xspace
-XSIGMATEST(Profiler, session_methods_and_data_access)
+QUARISMATEST(Profiler, session_methods_and_data_access)
 {
     // Test create_scope method
     {
@@ -473,7 +473,7 @@ XSIGMATEST(Profiler, session_methods_and_data_access)
 
         EXPECT_TRUE(session->stop());
 
-        XSIGMA_UNUSED const auto& xspace = session->collected_xspace();
+        QUARISMA_UNUSED const auto& xspace = session->collected_xspace();
         EXPECT_TRUE(true);
     }
 
@@ -500,7 +500,7 @@ XSIGMATEST(Profiler, session_methods_and_data_access)
 
 // Test 7: Chrome Trace Operations
 // Tests: write_chrome_trace with invalid path, generate before stop
-XSIGMATEST(Profiler, chrome_trace_operations)
+QUARISMATEST(Profiler, chrome_trace_operations)
 {
     // Test write_chrome_trace with invalid path
     {
@@ -543,7 +543,7 @@ XSIGMATEST(Profiler, chrome_trace_operations)
 // Test 8: Report Generation with Data
 // Tests: comprehensive report generation with multiple scopes,
 //        all report formats (console, JSON, CSV, XML)
-XSIGMATEST(Profiler, report_generation_with_data)
+QUARISMATEST(Profiler, report_generation_with_data)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -582,7 +582,7 @@ XSIGMATEST(Profiler, report_generation_with_data)
 
 // Test 9: Report Customization - Display Options
 // Tests: precision, time_unit, memory_unit settings
-XSIGMATEST(Profiler, report_customization_display_options)
+QUARISMATEST(Profiler, report_customization_display_options)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -617,7 +617,7 @@ XSIGMATEST(Profiler, report_customization_display_options)
 
 // Test 10: Report Customization - Data Inclusion Options
 // Tests: thread_info, hierarchical_data inclusion settings
-XSIGMATEST(Profiler, report_customization_data_inclusion)
+QUARISMATEST(Profiler, report_customization_data_inclusion)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -647,4 +647,4 @@ XSIGMATEST(Profiler, report_customization_data_inclusion)
     std::string output2 = report->generate_console_report();
     EXPECT_FALSE(output2.empty());
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

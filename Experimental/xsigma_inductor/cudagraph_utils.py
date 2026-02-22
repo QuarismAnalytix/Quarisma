@@ -373,7 +373,7 @@ def get_partition_cudagraph_metadata(
     metadata: CudagraphMetadata,
 ) -> CudagraphMetadata:
     """
-    Convert the cudagraph metadata xsigma the graph level to the graph partition level,
+    Convert the cudagraph metadata quarisma the graph level to the graph partition level,
     given the graph partition info (i.e., mapping from partition input/output index
     to graph input/output index).
     """

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/XSigma.h>
+#include <Quarisma/Quarisma.h>
 
 namespace at::caching
 {

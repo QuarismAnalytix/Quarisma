@@ -125,8 +125,8 @@ class CppTemplate(KernelTemplate):
     def header(self) -> IndentedBuffer:
         res = IndentedBuffer()
         res.writeline("#include <torch/csrc/inductor/cpp_prefix.h>")
-        # TODO: add xsigma::ForcedUnroll test to test_aoti_abi_check
-        res.splice("""#include <xsigma/util/Unroll.h>""")
+        # TODO: add quarisma::ForcedUnroll test to test_aoti_abi_check
+        res.splice("""#include <quarisma/util/Unroll.h>""")
         res.splice("""#include <torch/csrc/inductor/aoti_torch/c/shim.h>""")
         enable_kernel_profile = config.cpp.enable_kernel_profile and sys.platform in [
             "linux",

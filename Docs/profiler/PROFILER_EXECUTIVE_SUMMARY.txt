@@ -1,5 +1,5 @@
 ================================================================================
-XSIGMA PROFILER INVESTIGATION - EXECUTIVE SUMMARY
+QUARISMA PROFILER INVESTIGATION - EXECUTIVE SUMMARY
 ================================================================================
 
 INVESTIGATION COMPLETED: ✅
@@ -82,7 +82,7 @@ MISSING COMPONENTS SPECIFICATION
 4. record_function_api (functions)
    - High-level record_function() function
    - record_function_scope RAII class
-   - XSIGMA_RECORD_FUNCTION macro
+   - QUARISMA_RECORD_FUNCTION macro
 
 5. profiler_session Integration (modifications)
    - Add event_recorder member
@@ -184,7 +184,7 @@ This investigation includes:
 CONCLUSION
 ================================================================================
 
-The XSigma profiler has strong backend infrastructure but lacks the C++ API
+The Quarisma profiler has strong backend infrastructure but lacks the C++ API
 layer for practical code instrumentation. The investigation identified 7 missing
 components and 2 files requiring modification to bridge the gap between
 low-level callbacks and high-level profiling.

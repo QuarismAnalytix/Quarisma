@@ -3,7 +3,7 @@
 #include <torch/csrc/jit/tensorexpr/ir_mutator.h>
 #include <torch/csrc/jit/tensorexpr/ir_simplifier.h>
 #include <torch/csrc/jit/tensorexpr/reduction.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit::tensorexpr
 {
@@ -216,7 +216,7 @@ ExprPtr IRMutator::mutate(const BufPtr& v)
     bool                 dims_changed = false;
     std::vector<ExprPtr> dims_old     = v->dims();
     std::vector<ExprPtr> dims_new(dims_old.size());
-    for (const auto i : xsigma::irange(dims_old.size()))
+    for (const auto i : quarisma::irange(dims_old.size()))
     {
         dims_new[i] = dims_old[i]->accept_mutator(this);
         dims_changed |= (dims_new[i] != dims_old[i]);

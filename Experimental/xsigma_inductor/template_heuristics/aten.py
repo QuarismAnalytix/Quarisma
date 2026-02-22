@@ -37,11 +37,11 @@ if TYPE_CHECKING:
 @register_template_heuristic(aten_bmm_dtype.uid, "cuda")
 class ATenConfigHeuristics(TemplateConfigHeuristics):
     """
-    Pseudo heuristic to make XSigma choices go through the same flow as other templates
+    Pseudo heuristic to make Quarisma choices go through the same flow as other templates
 
     This is a single choice without kwargs
 
-    If you want to use this with an XSigma choice that has kwargs, just subclass
+    If you want to use this with an Quarisma choice that has kwargs, just subclass
     """
 
     def _get_template_configs_impl(

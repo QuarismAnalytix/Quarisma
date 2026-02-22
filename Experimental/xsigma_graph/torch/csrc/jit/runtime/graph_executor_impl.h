@@ -1,5 +1,5 @@
 #pragma once
-#include <XSigma/core/ivalue.h>
+#include <Quarisma/core/ivalue.h>
 #include <torch/csrc/autograd/edge.h>
 #include <torch/csrc/autograd/function.h>
 #include <torch/csrc/autograd/grad_mode.h>
@@ -71,8 +71,8 @@ struct GraphExecutorImplBase
 
     // entry point where execution begins
     void                          run(Stack& stack);
-    xsigma::intrusive_ptr<Future> runAsync(
-        Stack& stack, TaskLauncher taskLauncher = xsigma::launch);
+    quarisma::intrusive_ptr<Future> runAsync(
+        Stack& stack, TaskLauncher taskLauncher = quarisma::launch);
 
     virtual const ExecutionPlan& getPlanFor(
         Stack& stack, std::optional<size_t> remaining_bailout_depth = std::nullopt) = 0;
@@ -86,7 +86,7 @@ protected:
 
     // The unoptimized starting graph. This field is effectively const, but we
     // can't make it so because Graph::copy() is not const (and making it const is
-    // not that easy xsigma this point).
+    // not that easy quarisma this point).
     // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
     std::shared_ptr<Graph> graph;
     // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)

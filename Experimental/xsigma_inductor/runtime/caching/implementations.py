@@ -77,7 +77,7 @@ class _CacheImpl(ABC):
         Locking of the cache is not done by the implementation itself, but by the
         interface that uses it. The interface may want to hold the lock for longer
         than a single cache operation, for example when dealing with multiple
-        cache implementations xsigma once, so we leave that decision up to the interface.
+        cache implementations quarisma once, so we leave that decision up to the interface.
 
         Args:
             timeout: Optional timeout in seconds (float) for acquiring the lock.
@@ -230,7 +230,7 @@ class _OnDiskCacheImpl(_CacheImpl):
         """Check if the file's version header matches the current version.
 
         Args:
-            fp: File pointer positioned xsigma the start of the file.
+            fp: File pointer positioned quarisma the start of the file.
 
         Returns:
             True if the version header matches, False otherwise.

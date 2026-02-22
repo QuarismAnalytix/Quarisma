@@ -1,5 +1,5 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -12,10 +12,10 @@
 #include <thread>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "parallel/threaded_task_queue.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 // ============================================================================
@@ -23,7 +23,7 @@ namespace xsigma
 // ============================================================================
 
 // Test 1: Simple task with int return type
-XSIGMATEST(ThreadedTaskQueue, Test)
+QUARISMATEST(ThreadedTaskQueue, Test)
 {
     {
         auto                          worker = [](int x) { return x * 2; };
@@ -488,4 +488,4 @@ XSIGMATEST(ThreadedTaskQueue, Test)
     }
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

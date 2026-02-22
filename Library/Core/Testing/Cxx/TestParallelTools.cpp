@@ -1,5 +1,5 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -20,10 +20,10 @@
 #include <numeric>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "parallel/parallel_tools.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 // ============================================================================
@@ -92,7 +92,7 @@ public:
     }
 };
 
-XSIGMATEST(ParallelTools, test)
+QUARISMATEST(ParallelTools, test)
 {
     // ============================================================================
     // Consolidated Test 1: Thread Initialization and Configuration
@@ -503,4 +503,4 @@ XSIGMATEST(ParallelTools, test)
     }
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

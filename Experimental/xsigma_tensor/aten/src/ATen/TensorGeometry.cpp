@@ -1,4 +1,4 @@
-#include <XSigma/TensorGeometry.h>
+#include <Quarisma/TensorGeometry.h>
 #include <c10/util/overflows.h>
 
 namespace at

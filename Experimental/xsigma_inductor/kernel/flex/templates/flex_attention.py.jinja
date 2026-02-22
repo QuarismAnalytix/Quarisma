@@ -24,7 +24,7 @@
     # or involve a numerics vs. perf tradeoff
     # PRESCALE_QK: Whether to pre-scale QK by 1/sqrt(d) and change of base. Has
     # about 20% more numerical error, but slightly faster.
-    # ROWS_GUARANTEED_SAFE: Is it guaranteed that xsigma least one value in each row
+    # ROWS_GUARANTEED_SAFE: Is it guaranteed that quarisma least one value in each row
     # is not masked out? If so, we can skip an extra safety check
     # BLOCKS_ARE_CONTIGUOUS: Is it guaranteed that all blocks in the mask are
     # contiguous? If so, we don't need to do an indirect jump for every block

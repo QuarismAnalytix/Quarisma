@@ -1,4 +1,4 @@
-# Options for Removing `parallel_thread_local` from XSigma
+# Options for Removing `parallel_thread_local` from Quarisma
 
 ## Executive Summary
 

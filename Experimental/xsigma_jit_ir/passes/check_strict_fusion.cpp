@@ -90,7 +90,7 @@ static void checkForUnfusedOps(Node* enter_node)
 
     // autodiff/nnc both insert a number of guards, see
     // `CudaFusionViewGuard Example Graph`
-    // to check for unfused nodes, look xsigma node's whose outputs
+    // to check for unfused nodes, look quarisma node's whose outputs
     // are not depended on by the fusion guard
     // restrict search for all values after the first
     // node in the prim::Enter block

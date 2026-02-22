@@ -62,7 +62,7 @@ Tensor computeNoop(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device);
+    quarisma::Device                   device);
 
 Tensor computeScalar(
     const std::string&                                                     name,

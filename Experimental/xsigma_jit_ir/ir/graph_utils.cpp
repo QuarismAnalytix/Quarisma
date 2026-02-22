@@ -3,7 +3,7 @@
 namespace torch::jit
 {
 
-TypePtr getTensorType(const xsigma::Tensor& t, bool complete)
+TypePtr getTensorType(const quarisma::Tensor& t, bool complete)
 {
     auto r = TensorType::create(t);
     if (!complete)
@@ -58,7 +58,7 @@ TypePtr inferShapeAndTypeForInput(
 void setInputTensorTypes(
     Graph& g, const Stack& stack, bool complete, const std::vector<int>& param_count_list)
 {
-    xsigma::ArrayRef<Value*> input_values = g.inputs();
+    quarisma::ArrayRef<Value*> input_values = g.inputs();
     auto                     s_iter       = stack.begin();
     size_t                   list_idx     = 0;
     if (!param_count_list.empty())
@@ -75,7 +75,7 @@ void setInputTensorTypes(
         // Leave packed param types alone. This is needed for downstream passes
         // (like alias analysis) to work properly. This will be unpacked later
         // in unpackQuantizedWeights.
-        if (auto named_type = v->type()->cast<xsigma::NamedType>())
+        if (auto named_type = v->type()->cast<quarisma::NamedType>())
         {
             if (auto qualname = named_type->name())
             {

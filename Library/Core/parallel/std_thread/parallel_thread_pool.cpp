@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * Portions of this code are based on VTK (Visualization Toolkit):
 
@@ -31,7 +31,7 @@
 
 #include "parallel/common/parallel_tools_impl.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace detail
 {
@@ -693,4 +693,4 @@ parallel_thread_pool& parallel_thread_pool::instance()
 
 }  // namespace parallel
 }  // namespace detail
-}  // namespace xsigma
+}  // namespace quarisma

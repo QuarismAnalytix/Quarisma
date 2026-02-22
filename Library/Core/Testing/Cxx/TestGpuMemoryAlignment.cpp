@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,15 +13,15 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "common/configure.h"
 #include "common/macros.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 
 #include <string>
 #include <vector>
@@ -30,13 +30,13 @@
 #include "memory/device.h"
 #include "memory/gpu/gpu_memory_alignment.h"
 
-using namespace xsigma;
-using namespace xsigma::gpu;
+using namespace quarisma;
+using namespace quarisma::gpu;
 
 /**
  * @brief Test alignment configuration validation
  */
-XSIGMATEST(GpuMemoryAlignment, validates_alignment_configuration)
+QUARISMATEST(GpuMemoryAlignment, validates_alignment_configuration)
 {
     // Test valid configuration
     alignment_config valid_config;
@@ -54,13 +54,13 @@ XSIGMATEST(GpuMemoryAlignment, validates_alignment_configuration)
 
     EXPECT_FALSE(gpu_memory_alignment::validate_config(invalid_config));
 
-    XSIGMA_LOG_INFO("GPU memory alignment configuration validation test passed");
+    QUARISMA_LOG_INFO("GPU memory alignment configuration validation test passed");
 }
 
 /**
  * @brief Test basic size alignment functionality
  */
-XSIGMATEST(GpuMemoryAlignment, aligns_sizes_correctly)
+QUARISMATEST(GpuMemoryAlignment, aligns_sizes_correctly)
 {
     // Test size alignment
     size_t size         = 100;
@@ -80,13 +80,13 @@ XSIGMATEST(GpuMemoryAlignment, aligns_sizes_correctly)
     EXPECT_EQ(16, gpu_memory_alignment::align_size(9, 16));
     EXPECT_EQ(32, gpu_memory_alignment::align_size(17, 32));
 
-    XSIGMA_LOG_INFO("GPU memory alignment size alignment test passed");
+    QUARISMA_LOG_INFO("GPU memory alignment size alignment test passed");
 }
 
 /**
  * @brief Test pointer alignment functionality
  */
-XSIGMATEST(GpuMemoryAlignment, aligns_pointers_correctly)
+QUARISMATEST(GpuMemoryAlignment, aligns_pointers_correctly)
 {
     // Test pointer alignment
     char  buffer[256];
@@ -107,13 +107,13 @@ XSIGMATEST(GpuMemoryAlignment, aligns_pointers_correctly)
 
     delete[] int_buffer;
 
-    XSIGMA_LOG_INFO("GPU memory alignment pointer alignment test passed");
+    QUARISMA_LOG_INFO("GPU memory alignment pointer alignment test passed");
 }
 
 /**
  * @brief Test coalesced memory access alignment
  */
-XSIGMATEST(GpuMemoryAlignment, optimizes_for_coalesced_access)
+QUARISMATEST(GpuMemoryAlignment, optimizes_for_coalesced_access)
 {
     alignment_config config;
     config.base_alignment    = 128;
@@ -141,13 +141,13 @@ XSIGMATEST(GpuMemoryAlignment, optimizes_for_coalesced_access)
         gpu_memory_alignment::align_size_for_coalescing<float>(float_count, config);
     EXPECT_EQ(unaligned_size, float_count * sizeof(float));
 
-    XSIGMA_LOG_INFO("GPU memory alignment coalesced access test passed");
+    QUARISMA_LOG_INFO("GPU memory alignment coalesced access test passed");
 }
 
 /**
  * @brief Test optimal stride calculation for 2D arrays
  */
-XSIGMATEST(GpuMemoryAlignment, calculates_optimal_strides)
+QUARISMATEST(GpuMemoryAlignment, calculates_optimal_strides)
 {
     alignment_config config;
     config.base_alignment       = 128;
@@ -170,13 +170,13 @@ XSIGMATEST(GpuMemoryAlignment, calculates_optimal_strides)
     size_t simple_stride = gpu_memory_alignment::calculate_optimal_stride<float>(width, config);
     EXPECT_GE(simple_stride, width);
 
-    XSIGMA_LOG_INFO("GPU memory alignment stride calculation test passed");
+    QUARISMA_LOG_INFO("GPU memory alignment stride calculation test passed");
 }
 
 /**
  * @brief Test padded width calculation for bank conflict avoidance
  */
-XSIGMATEST(GpuMemoryAlignment, calculates_padded_widths)
+QUARISMATEST(GpuMemoryAlignment, calculates_padded_widths)
 {
     alignment_config config;
     config.base_alignment       = 128;
@@ -198,13 +198,13 @@ XSIGMATEST(GpuMemoryAlignment, calculates_padded_widths)
         EXPECT_GT(padded_width, original_width);
     }
 
-    XSIGMA_LOG_INFO("GPU memory alignment padded width test passed");
+    QUARISMA_LOG_INFO("GPU memory alignment padded width test passed");
 }
 
 /**
  * @brief Test SIMD alignment requirements
  */
-XSIGMATEST(GpuMemoryAlignment, provides_simd_alignment)
+QUARISMATEST(GpuMemoryAlignment, provides_simd_alignment)
 {
     // Test SIMD alignment for different vector sizes
     size_t float_simd_8 = gpu_memory_alignment::get_simd_alignment<float>(8);
@@ -220,13 +220,13 @@ XSIGMATEST(GpuMemoryAlignment, provides_simd_alignment)
     EXPECT_GT(default_simd, 0);
     EXPECT_EQ(default_simd & (default_simd - 1), 0);  // Should be power of 2
 
-    XSIGMA_LOG_INFO("GPU memory alignment SIMD alignment test passed");
+    QUARISMA_LOG_INFO("GPU memory alignment SIMD alignment test passed");
 }
 
 /**
  * @brief Test optimal memory layout calculation for multi-dimensional arrays
  */
-XSIGMATEST(GpuMemoryAlignment, calculates_optimal_layouts)
+QUARISMATEST(GpuMemoryAlignment, calculates_optimal_layouts)
 {
     alignment_config config;
     config.base_alignment       = 128;
@@ -255,13 +255,13 @@ XSIGMATEST(GpuMemoryAlignment, calculates_optimal_layouts)
         gpu_memory_alignment::calculate_optimal_layout<float>(empty_dimensions, config);
     EXPECT_TRUE(empty_strides.empty());
 
-    XSIGMA_LOG_INFO("GPU memory alignment layout calculation test passed");
+    QUARISMA_LOG_INFO("GPU memory alignment layout calculation test passed");
 }
 
 /**
  * @brief Test GPU architecture detection
  */
-XSIGMATEST(GpuMemoryAlignment, detects_gpu_architecture)
+QUARISMATEST(GpuMemoryAlignment, detects_gpu_architecture)
 {
     // Test CUDA architecture detection
     auto arch_75 = gpu_memory_alignment::detect_architecture(device_enum::CUDA, 7, 5, "");
@@ -277,13 +277,13 @@ XSIGMATEST(GpuMemoryAlignment, detects_gpu_architecture)
     auto arch_35 = gpu_memory_alignment::detect_architecture(device_enum::CUDA, 3, 5, "");
     EXPECT_EQ(gpu_architecture::CUDA_COMPUTE_35, arch_35);
 
-    XSIGMA_LOG_INFO("GPU memory alignment architecture detection test passed");
+    QUARISMA_LOG_INFO("GPU memory alignment architecture detection test passed");
 }
 
 /**
  * @brief Test optimal configuration for different architectures and access patterns
  */
-XSIGMATEST(GpuMemoryAlignment, provides_optimal_configurations)
+QUARISMATEST(GpuMemoryAlignment, provides_optimal_configurations)
 {
     // Test configuration for different architectures and access patterns
     auto sequential_config = gpu_memory_alignment::get_optimal_config(
@@ -303,13 +303,13 @@ XSIGMATEST(GpuMemoryAlignment, provides_optimal_configurations)
     EXPECT_GT(stencil_config.base_alignment, 0);
     EXPECT_TRUE(stencil_config.avoid_bank_conflicts);
 
-    XSIGMA_LOG_INFO("GPU memory alignment optimal configuration test passed");
+    QUARISMA_LOG_INFO("GPU memory alignment optimal configuration test passed");
 }
 
 /**
  * @brief Test alignment report generation
  */
-XSIGMATEST(GpuMemoryAlignment, generates_alignment_reports)
+QUARISMATEST(GpuMemoryAlignment, generates_alignment_reports)
 {
     alignment_config config;
     config.base_alignment       = 128;
@@ -329,9 +329,9 @@ XSIGMATEST(GpuMemoryAlignment, generates_alignment_reports)
     EXPECT_TRUE(report.find("32") != std::string::npos);   // vector_alignment
     EXPECT_TRUE(report.find("512") != std::string::npos);  // texture_alignment
 
-    XSIGMA_LOG_INFO("Alignment report length: {} characters", report.length());
+    QUARISMA_LOG_INFO("Alignment report length: {} characters", report.length());
 
-    XSIGMA_LOG_INFO("GPU memory alignment report generation test passed");
+    QUARISMA_LOG_INFO("GPU memory alignment report generation test passed");
 }
 
-#endif  // XSIGMA_HAS_CUDA
+#endif  // QUARISMA_HAS_CUDA

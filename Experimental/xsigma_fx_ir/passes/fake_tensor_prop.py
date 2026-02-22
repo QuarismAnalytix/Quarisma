@@ -21,7 +21,7 @@ class FakeTensorProp(torch.fx.Interpreter):
     is cheap--it does the propagation with meta tensors which do not actually
     store data, and (2) the fake tensors have much more fine grained information,
     e.g., they have accurate alias information that can be consulted by looking
-    xsigma the storages.
+    quarisma the storages.
 
     Args:
          module (GraphModule): The module to be executed

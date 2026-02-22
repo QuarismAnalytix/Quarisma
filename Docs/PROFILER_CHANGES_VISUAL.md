@@ -1,4 +1,4 @@
-# XSigma Profiler - Visual Changes Overview
+# Quarisma Profiler - Visual Changes Overview
 
 ## File: profiler_kineto.cpp
 
@@ -39,7 +39,7 @@ struct AddGenericMetadata : public MetadataBase
 {
     AddGenericMetadata(
         std::shared_ptr<Result>& result,
-        const xsigma::profiler::impl::ProfilerConfig* config)
+        const quarisma::profiler::impl::ProfilerConfig* config)
         : MetadataBase(result), config_(config)
     {
         result->visit(*this);
@@ -124,7 +124,7 @@ void operator()(ExtraFields<EventType::TorchOp>& op_event)
 +   {
 +       if (key == "stream" && !val.isInt())
 +       {
-+           XSIGMA_LOG_WARNING(
++           QUARISMA_LOG_WARNING(
 +               "Inputted stream is not an int for op: {} skipping", op_event.name_);
             continue;
         }
@@ -139,7 +139,7 @@ void operator()(ExtraFields<EventType::TorchOp>& op_event)
 -           << op_event.name_ << " skipping";
 +       if (!isValidType && !isStringList)
 +       {
-+           XSIGMA_LOG_WARNING(
++           QUARISMA_LOG_WARNING(
 +               "Inputted kwarg: {} is not an int, double, string, bool, or list of strings "
 +               "for op: {} skipping",
 +               key,
@@ -171,7 +171,7 @@ void operator()(ExtraFields<EventType::TorchOp>& op_event)
 -   if (config_ && !config_->experimental_config.performance_events.empty())
 -   {
 -       auto& event_names = config_->experimental_config.performance_events;
--       for (const auto i : xsigma::irange(op_event.perf_event_counters_->size()))
+-       for (const auto i : quarisma::irange(op_event.perf_event_counters_->size()))
 -       {
 -           addMetadata(event_names[i], std::to_string((*op_event.perf_event_counters_)[i]));
 -       }
@@ -179,7 +179,7 @@ void operator()(ExtraFields<EventType::TorchOp>& op_event)
 +   if (config_ && !config_->experimental_config.performance_events.empty())
 +   {
 +       auto& event_names = config_->experimental_config.performance_events;
-+       for (const auto i : xsigma::irange(op_event.perf_event_counters_->size()))
++       for (const auto i : quarisma::irange(op_event.perf_event_counters_->size()))
 +       {
 +           addMetadata(event_names[i], std::to_string((*op_event.perf_event_counters_)[i]));
 +       }
@@ -416,8 +416,8 @@ std::string stacksToStr(const std::vector<std::string>&, const char* delim);
 std::string variantShapesToStr(const std::vector<shape>& shapes);
 std::string shapesToStr(const std::vector<std::vector<int64_t>>& shapes);
 std::string strListToStr(const std::vector<std::string>& types);
-std::string ivalueToStr(const xsigma::IValue& val, bool isString);
-std::string ivalueListToStr(const std::vector<xsigma::IValue>& list);
+std::string ivalueToStr(const quarisma::IValue& val, bool isString);
+std::string ivalueListToStr(const std::vector<quarisma::IValue>& list);
 ```
 
 Local helper (in profiler_kineto.cpp):

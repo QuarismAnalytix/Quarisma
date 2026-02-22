@@ -32,16 +32,16 @@ TORCH_API Node* addNodeToBlock(Block* block, Symbol kind, ArrayRef<Value*> input
 
 TORCH_API Value* addInputToBlock(Block* block);
 
-TORCH_API std::optional<xsigma::ScalarType> ONNXTypeToATenType(int32_t onnx_type);
+TORCH_API std::optional<quarisma::ScalarType> ONNXTypeToATenType(int32_t onnx_type);
 
 // Use int return type as no sable way exists to forward declare protobuf enum
-TORCH_API int ATenTypeToOnnxType(xsigma::ScalarType at_type);
+TORCH_API int ATenTypeToOnnxType(quarisma::ScalarType at_type);
 
 TORCH_API void ONNXLintGraph(const std::shared_ptr<Graph>& graph);
 
 Node* createONNXUnsqueeze(
     Graph* graph, Node* n_to_insert_before, Value* input, int axis, int opset_version);
-Node* createONNXConstant(Graph* graph, Node* n_to_insert_before, xsigma::Tensor value);
+Node* createONNXConstant(Graph* graph, Node* n_to_insert_before, quarisma::Tensor value);
 
 bool isValidToTransformToONNXConcatNode(Node* lc_node);
 
@@ -51,7 +51,7 @@ Node* transformToONNXConcatNode(
 class ScalarTypeHashFunction
 {
 public:
-    size_t operator()(const xsigma::ScalarType& type) const { return static_cast<size_t>(type); }
+    size_t operator()(const quarisma::ScalarType& type) const { return static_cast<size_t>(type); }
 };
 
 }  // namespace torch::jit

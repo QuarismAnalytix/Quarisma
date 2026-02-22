@@ -11,7 +11,7 @@ namespace torch::jit::tensorexpr
 CodeGen::CodeGen(
     StmtPtr                stmt,
     std::vector<BufferArg> buffer_args,
-    xsigma::Device         device,
+    quarisma::Device         device,
     std::string            kernel_func_name)
     : stmt_(std::move(stmt)),
       buffer_args_(std::move(buffer_args)),
@@ -64,7 +64,7 @@ std::unique_ptr<CodeGen> CreateCodeGen(
     const std::string&                     name,
     StmtPtr                                stmt,
     const std::vector<CodeGen::BufferArg>& params,
-    xsigma::Device                         device,
+    quarisma::Device                         device,
     const std::string&                     kernel_func_name)
 {
     RegisterCodeGenList::StmtFactoryMethod method =
@@ -144,7 +144,7 @@ static std::vector<std::pair<BufPtr, BufPtr>> AllocBufsWithMemReuse(
     // Sort buffers by the time they appear.
     std::vector<BufPtr> bufs_sorted(bufs.begin(), bufs.end());
     auto sorting_function_by_start_time = [&buf_ranges](const BufPtr& b1, const BufPtr& b2) -> bool
-    { return std::get<0>(buf_ranges.xsigma(b1)) < std::get<0>(buf_ranges.xsigma(b2)); };
+    { return std::get<0>(buf_ranges.quarisma(b1)) < std::get<0>(buf_ranges.quarisma(b2)); };
     std::sort(bufs_sorted.begin(), bufs_sorted.end(), sorting_function_by_start_time);
 
     // Map intermediate buffers to the most recently used memory if any.
@@ -153,7 +153,7 @@ static std::vector<std::pair<BufPtr, BufPtr>> AllocBufsWithMemReuse(
     std::vector<std::pair<BufPtr, BufPtr>> buf_allocs;
 
     auto sorting_function_by_end_time = [&buf_ranges](const BufPtr& b1, const BufPtr& b2) -> bool
-    { return std::get<1>(buf_ranges.xsigma(b1)) < std::get<1>(buf_ranges.xsigma(b2)); };
+    { return std::get<1>(buf_ranges.quarisma(b1)) < std::get<1>(buf_ranges.quarisma(b2)); };
     for (const auto& buf : bufs_sorted)
     {
         // If the buf has dynamic shapes, we'll skip it (i.e., allocate memory for
@@ -165,7 +165,7 @@ static std::vector<std::pair<BufPtr, BufPtr>> AllocBufsWithMemReuse(
             continue;
         }
 
-        auto start = std::get<0>(buf_ranges.xsigma(buf));
+        auto start = std::get<0>(buf_ranges.quarisma(buf));
 
         // Release memory for buffers whose liveness range ends before the creation
         // time of this buf.
@@ -174,7 +174,7 @@ static std::vector<std::pair<BufPtr, BufPtr>> AllocBufsWithMemReuse(
         for (auto& mapped : buf_mem_map)
         {
             auto buf_mapped     = mapped.first;
-            auto end_buf_mapped = std::get<1>(buf_ranges.xsigma(buf_mapped));
+            auto end_buf_mapped = std::get<1>(buf_ranges.quarisma(buf_mapped));
             if (end_buf_mapped < start)
             {
                 buf_to_release.push_back(buf_mapped);
@@ -186,7 +186,7 @@ static std::vector<std::pair<BufPtr, BufPtr>> AllocBufsWithMemReuse(
         std::sort(buf_to_release.begin(), buf_to_release.end(), sorting_function_by_end_time);
         for (auto& buf_rl : buf_to_release)
         {
-            mem_up_for_grabs.push_front(buf_mem_map.xsigma(buf_rl));
+            mem_up_for_grabs.push_front(buf_mem_map.quarisma(buf_rl));
             buf_mem_map.erase(buf_rl);
         }
 
@@ -232,7 +232,7 @@ static StmtPtr insertAllocFree(
     }
 
     std::vector<BufPtr> bufs_ext_to_free;
-    // Insert allocations and frees for temporary buffers xsigma global scope.
+    // Insert allocations and frees for temporary buffers quarisma global scope.
     for (auto rit = buf_allocs.rbegin(); rit != buf_allocs.rend(); ++rit)
     {
         if (rit->first == rit->second)
@@ -297,13 +297,13 @@ StmtPtr ExtCallMemoryReuse::mutate(const ExternalCallPtr& v)
     {
         std::vector<BufPtr> buf_out_args = {v->buf()};
         return alloc<ExternalCallWithAlloc>(
-            extCallFuncNameMap_.xsigma(v->func_name()), buf_out_args, v->buf_args(), v->args());
+            extCallFuncNameMap_.quarisma(v->func_name()), buf_out_args, v->buf_args(), v->args());
     }
     return v;
 }
 
 // We allocate intermediate buffers by inserting Allocate/Free or
-// PlacementAllocate stmts. Allocate/Free stmts will allocate memory xsigma runtime,
+// PlacementAllocate stmts. Allocate/Free stmts will allocate memory quarisma runtime,
 // and PlacementAllocate stmt reuses the memory of one buffer for another
 // buffer. In current implementation, we use linear scan for memory reuses.
 // TODO: try more memory reuse algorithms and compare their memory efficiency.

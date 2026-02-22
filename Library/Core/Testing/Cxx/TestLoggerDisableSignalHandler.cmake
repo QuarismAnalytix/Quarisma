@@ -11,7 +11,7 @@
 #
 # ==========================================================================
 
-message(STATUS "Testing disabling of stack trace printing by XSIGMALogger")
+message(STATUS "Testing disabling of stack trace printing by QUARISMALogger")
 execute_process(COMMAND ${EXECUTABLE_PATH} OUTPUT_VARIABLE error_output RESULT_VARIABLE result_var)
 
 if(error_output MATCHES "Stack trace")

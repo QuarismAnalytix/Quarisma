@@ -1,7 +1,7 @@
 #pragma once
 
-#include <XSigma/Config.h>
-#include <XSigma/Functions.h>
+#include <Quarisma/Config.h>
+#include <Quarisma/Functions.h>
 #include <torch/csrc/Export.h>
 
 #include <cstdint>
@@ -67,9 +67,9 @@ struct QIData final
 {
     double             scale;
     int64_t            zero;
-    xsigma::ScalarType scalarType;
+    quarisma::ScalarType scalarType;
 };
-std::vector<xsigma::Tensor> constructTensors(
+std::vector<quarisma::Tensor> constructTensors(
     int64_t                                               bufs_num,
     void**                                                buf_data,
     int64_t*                                              buf_ranks,
@@ -78,7 +78,7 @@ std::vector<xsigma::Tensor> constructTensors(
     int8_t*                                               buf_dtypes,
     std::optional<std::vector<std::pair<size_t, QIData>>> qdataArg = std::nullopt);
 
-std::vector<xsigma::Tensor> constructTensors2(
+std::vector<quarisma::Tensor> constructTensors2(
     int64_t                                               bufs_in_num,
     void**                                                buf_data,
     int64_t*                                              buf_ranks,
@@ -88,7 +88,7 @@ std::vector<xsigma::Tensor> constructTensors2(
     std::optional<std::vector<std::pair<size_t, QIData>>> qdataArg     = std::nullopt,
     size_t                                                bufs_out_num = 0);
 
-#ifdef XSIGMA_MOBILE
+#ifdef QUARISMA_MOBILE
 extern "C"
 {
 #endif
@@ -101,7 +101,7 @@ extern "C"
 
     TORCH_API void nnc_aten_free(size_t bufs_num, void** ptrs) noexcept;
 
-#ifdef XSIGMA_MOBILE
+#ifdef QUARISMA_MOBILE
 }  // extern "C"
 #endif
 

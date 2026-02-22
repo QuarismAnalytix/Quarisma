@@ -1,6 +1,6 @@
 /*
- * XSigma: High-Performance Quantitative Library
- * Copyright 2025 XSigma Contributors
+ * Quarisma: High-Performance Quantitative Library
+ * Copyright 2025 Quarisma Contributors
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
 
@@ -10,17 +10,17 @@
 #include <thread>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "memory/gpu/allocator_gpu.h"
 #include "memory/gpu/cuda_caching_allocator.h"
 #include "memory/helper/memory_allocator.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 #endif
 
-using namespace xsigma;
-using namespace xsigma::gpu;
+using namespace quarisma;
+using namespace quarisma::gpu;
 
 namespace
 {
@@ -30,7 +30,7 @@ namespace
  */
 int get_cuda_device_count()
 {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     int         device_count = 0;
     cudaError_t error        = cudaGetDeviceCount(&device_count);
     if (error != cudaSuccess)
@@ -51,7 +51,7 @@ class cuda_memory_validator
 public:
     explicit cuda_memory_validator(void* ptr, size_t size) : ptr_(ptr), size_(size)
     {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         if (ptr_ != nullptr)
         {
             // Verify pointer is valid GPU memory
@@ -66,7 +66,7 @@ public:
 
     bool test_memory_access() const
     {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         if (!valid_ || ptr_ == nullptr || size_ == 0)
         {
             return false;
@@ -102,7 +102,7 @@ private:
 /**
  * @brief Test basic CUDA allocator functionality
  */
-XSIGMATEST(AllocatorCuda, BasicFunctionality)
+QUARISMATEST(AllocatorCuda, BasicFunctionality)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -144,7 +144,7 @@ XSIGMATEST(AllocatorCuda, BasicFunctionality)
 /**
  * @brief Test allocator properties and metadata
  */
-XSIGMATEST(AllocatorCuda, AllocatorProperties)
+QUARISMATEST(AllocatorCuda, AllocatorProperties)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -184,7 +184,7 @@ XSIGMATEST(AllocatorCuda, AllocatorProperties)
 /**
  * @brief Test statistics collection
  */
-XSIGMATEST(AllocatorCuda, Statistics)
+QUARISMATEST(AllocatorCuda, Statistics)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -231,7 +231,7 @@ XSIGMATEST(AllocatorCuda, Statistics)
 /**
  * @brief Test multi-threaded allocation
  */
-XSIGMATEST(AllocatorCuda, MultiThreaded)
+QUARISMATEST(AllocatorCuda, MultiThreaded)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -301,7 +301,7 @@ XSIGMATEST(AllocatorCuda, MultiThreaded)
 /**
  * @brief Test large allocation handling
  */
-XSIGMATEST(AllocatorCuda, LargeAllocations)
+QUARISMATEST(AllocatorCuda, LargeAllocations)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -338,7 +338,7 @@ XSIGMATEST(AllocatorCuda, LargeAllocations)
         else
         {
             // Large allocation failure is acceptable if device memory is limited
-            XSIGMA_LOG_WARNING("Failed to allocate {} bytes - device memory may be limited", size);
+            QUARISMA_LOG_WARNING("Failed to allocate {} bytes - device memory may be limited", size);
         }
     }
 }
@@ -346,7 +346,7 @@ XSIGMATEST(AllocatorCuda, LargeAllocations)
 /**
  * @brief Test error handling and edge cases
  */
-XSIGMATEST(AllocatorCuda, ErrorHandling)
+QUARISMATEST(AllocatorCuda, ErrorHandling)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -378,7 +378,7 @@ XSIGMATEST(AllocatorCuda, ErrorHandling)
 /**
  * @brief Compare performance between BFC and Pool strategies
  */
-XSIGMATEST(AllocatorCuda, StrategyComparison)
+QUARISMATEST(AllocatorCuda, StrategyComparison)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -435,7 +435,7 @@ XSIGMATEST(AllocatorCuda, StrategyComparison)
 /**
  * @brief Test basic_gpu_allocator Free method directly
  */
-XSIGMATEST(AllocatorCuda, basic_gpu_allocator_free_method)
+QUARISMATEST(AllocatorCuda, basic_gpu_allocator_free_method)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -479,7 +479,7 @@ XSIGMATEST(AllocatorCuda, basic_gpu_allocator_free_method)
 /**
  * @brief Test allocate_gpu_memory and deallocate_gpu_memory functions directly
  */
-XSIGMATEST(AllocatorCuda, gpu_memory_allocation_functions)
+QUARISMATEST(AllocatorCuda, gpu_memory_allocation_functions)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -488,11 +488,11 @@ XSIGMATEST(AllocatorCuda, gpu_memory_allocation_functions)
     }
 
     // Test gpu::memory_allocator::allocate function
-    void* ptr1 = xsigma::gpu::memory_allocator::allocate(1024, 0);
+    void* ptr1 = quarisma::gpu::memory_allocator::allocate(1024, 0);
     EXPECT_NE(ptr1, nullptr);
 
     // Test gpu::memory_allocator::free function
-    xsigma::gpu::memory_allocator::free(ptr1, 1024, 0);
+    quarisma::gpu::memory_allocator::free(ptr1, 1024, 0);
 
     // Test with different sizes
     std::vector<size_t> test_sizes = {256, 1024, 4096, 16384, 65536};
@@ -500,7 +500,7 @@ XSIGMATEST(AllocatorCuda, gpu_memory_allocation_functions)
 
     for (size_t size : test_sizes)
     {
-        void* ptr = xsigma::gpu::memory_allocator::allocate(size, 0);
+        void* ptr = quarisma::gpu::memory_allocator::allocate(size, 0);
         EXPECT_NE(ptr, nullptr);
         ptrs.push_back(ptr);
     }
@@ -508,18 +508,18 @@ XSIGMATEST(AllocatorCuda, gpu_memory_allocation_functions)
     // Deallocate all
     for (size_t i = 0; i < ptrs.size(); ++i)
     {
-        xsigma::gpu::memory_allocator::free(ptrs[i], test_sizes[i], 0);
+        quarisma::gpu::memory_allocator::free(ptrs[i], test_sizes[i], 0);
     }
 
     // Test error case - invalid device
-    void* invalid_ptr = xsigma::gpu::memory_allocator::allocate(1024, 999);
+    void* invalid_ptr = quarisma::gpu::memory_allocator::allocate(1024, 999);
     EXPECT_EQ(invalid_ptr, nullptr);  // Should fail for invalid device
 }
 
 /**
  * @brief Test set_device_context function
  */
-XSIGMATEST(AllocatorCuda, set_device_context_function)
+QUARISMATEST(AllocatorCuda, set_device_context_function)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -528,17 +528,17 @@ XSIGMATEST(AllocatorCuda, set_device_context_function)
     }
 
     // Test setting device context
-    bool result1 = xsigma::gpu::memory_allocator::set_device(0);
+    bool result1 = quarisma::gpu::memory_allocator::set_device(0);
     EXPECT_TRUE(result1);
 
     // Test with invalid device
-    bool result2 = xsigma::gpu::memory_allocator::set_device(999);
+    bool result2 = quarisma::gpu::memory_allocator::set_device(999);
     EXPECT_FALSE(result2);  // Should fail for invalid device
 
     // Test setting context multiple times
     for (int i = 0; i < device_count && i < 3; ++i)
     {
-        bool result = xsigma::gpu::memory_allocator::set_device(i);
+        bool result = quarisma::gpu::memory_allocator::set_device(i);
         EXPECT_TRUE(result);
     }
 }
@@ -546,7 +546,7 @@ XSIGMATEST(AllocatorCuda, set_device_context_function)
 /**
  * @brief Test ClearStats method
  */
-XSIGMATEST(AllocatorCuda, clear_stats_method)
+QUARISMATEST(AllocatorCuda, clear_stats_method)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -581,7 +581,7 @@ XSIGMATEST(AllocatorCuda, clear_stats_method)
 /**
  * @brief Test device_id method
  */
-XSIGMATEST(AllocatorCuda, device_id_method)
+QUARISMATEST(AllocatorCuda, device_id_method)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)

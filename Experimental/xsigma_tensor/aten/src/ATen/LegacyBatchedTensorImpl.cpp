@@ -1,5 +1,5 @@
-#include <XSigma/LegacyBatchedTensorImpl.h>
-#include <XSigma/WrapDimUtils.h>
+#include <Quarisma/LegacyBatchedTensorImpl.h>
+#include <Quarisma/WrapDimUtils.h>
 #include <c10/util/Exception.h>
 #include <c10/util/irange.h>
 

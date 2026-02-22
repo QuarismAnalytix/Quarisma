@@ -1,17 +1,17 @@
 /*
- * XSigma ITT API Wrapper
+ * Quarisma ITT API Wrapper
  *
  * This header provides C++ wrapper functions for Intel Instrumentation and
- * Tracing Technology (ITT) API, aligned with XSigma's implementation.
+ * Tracing Technology (ITT) API, aligned with Quarisma's implementation.
  *
  * Features:
- * - Global ITT domain for XSigma
+ * - Global ITT domain for Quarisma
  * - Task range annotations (push/pop)
  * - Event markers
  * - Thread-safe operations
  *
  * Usage:
- *   #if XSIGMA_HAS_ITT
+ *   #if QUARISMA_HAS_ITT
  *   itt_range_push("my_operation");
  *   // ... code to profile ...
  *   itt_range_pop();
@@ -25,16 +25,16 @@
 
 #include "common/export.h"
 
-#if XSIGMA_HAS_ITT
+#if QUARISMA_HAS_ITT
 #include <ittnotify.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace profiler
 {
 
-#if XSIGMA_HAS_ITT
+#if QUARISMA_HAS_ITT
 constexpr bool kITTAvailable{true};
 #else
 constexpr bool kITTAvailable{false};
@@ -44,15 +44,15 @@ constexpr bool kITTAvailable{false};
 // ITT API Wrapper Functions
 // ============================================================================
 
-#if XSIGMA_HAS_ITT
+#if QUARISMA_HAS_ITT
 
 /**
  * @brief Initialize ITT API
  *
- * Creates the global XSigma ITT domain. Should be called once before
+ * Creates the global Quarisma ITT domain. Should be called once before
  * any ITT operations.
  */
-XSIGMA_API void itt_init();
+QUARISMA_API void itt_init();
 
 /**
  * @brief Push a named range onto the ITT stack
@@ -61,14 +61,14 @@ XSIGMA_API void itt_init();
  *
  * @param name Name of the operation (must be a string literal or persistent)
  */
-XSIGMA_API void itt_range_push(const char* name);
+QUARISMA_API void itt_range_push(const char* name);
 
 /**
  * @brief Pop the current range from the ITT stack
  *
  * Marks the end of the current task/operation.
  */
-XSIGMA_API void itt_range_pop();
+QUARISMA_API void itt_range_pop();
 
 /**
  * @brief Mark an event at the current time
@@ -77,18 +77,18 @@ XSIGMA_API void itt_range_pop();
  *
  * @param name Name of the event (must be a string literal or persistent)
  */
-XSIGMA_API void itt_mark(const char* name);
+QUARISMA_API void itt_mark(const char* name);
 
 /**
  * @brief Get the global ITT domain
  *
- * @return Pointer to the global XSigma ITT domain, or nullptr if ITT not available
+ * @return Pointer to the global Quarisma ITT domain, or nullptr if ITT not available
  */
-XSIGMA_API __itt_domain* itt_get_domain();
+QUARISMA_API __itt_domain* itt_get_domain();
 
 #else
 
-// Stub implementations when XSIGMA_HAS_ITT is not defined
+// Stub implementations when QUARISMA_HAS_ITT is not defined
 inline void  itt_init() {}
 inline void  itt_range_push(const char*) {}
 inline void  itt_range_pop() {}
@@ -98,7 +98,7 @@ inline void* itt_get_domain()
     return nullptr;
 }
 
-#endif  // XSIGMA_HAS_ITT
+#endif  // QUARISMA_HAS_ITT
 
 }  // namespace profiler
-}  // namespace xsigma
+}  // namespace quarisma

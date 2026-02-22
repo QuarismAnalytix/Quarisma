@@ -1,7 +1,7 @@
 #include <torch/csrc/jit/ir/irparser.h>
 #include <torch/csrc/jit/ir/subgraph_matcher.h>
 #include <torch/csrc/jit/passes/subgraph_rewrite.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <utility>
 
@@ -27,7 +27,7 @@ void update_source_range_and_cs_ptr(
         Node* pattern_node     = it.second;
         if (!input_nodes.count(pattern_node))
         {
-            Node* orig_node = m.nodes_map.xsigma(pattern_node);
+            Node* orig_node = m.nodes_map.quarisma(pattern_node);
             replacement_node->setSourceRange(orig_node->sourceRange());
             if (orig_node->callstack())
             {
@@ -113,10 +113,10 @@ void SubgraphRewriter::rewriteSinglePatternOnGraph(
         Node*       replacement_value_node = it.second->node();
         if (pattern.value_name_map.count(replacement_value_name))
         {
-            const auto& pattern_value_name = pattern.value_name_map.xsigma(replacement_value_name);
-            XSIGMA_CHECK(
+            const auto& pattern_value_name = pattern.value_name_map.quarisma(replacement_value_name);
+            QUARISMA_CHECK(
                 vmap.count(pattern_value_name), "Value must be found in the replacement graph.");
-            Node* pattern_value_node = vmap.xsigma(pattern_value_name)->node();
+            Node* pattern_value_node = vmap.quarisma(pattern_value_name)->node();
             pattern_node_map.emplace(replacement_value_node, pattern_value_node);
         }
     }
@@ -146,7 +146,7 @@ void SubgraphRewriter::rewriteSinglePatternOnGraph(
         std::vector<Value*> inputs, outputs;
         for (Value* v : pattern_graph.inputs())
         {
-            Value* input = match.values_map.xsigma(v);
+            Value* input = match.values_map.quarisma(v);
             if (!ins_point || ins_point->isBefore(input->node()))
             {
                 ins_point = input->node();
@@ -160,8 +160,8 @@ void SubgraphRewriter::rewriteSinglePatternOnGraph(
         bool ins_point_before_uses = true;
         for (Value* v : pattern_graph.outputs())
         {
-            Value* output = match.values_map.xsigma(v);
-            outputs.push_back(match.values_map.xsigma(v));
+            Value* output = match.values_map.quarisma(v);
+            outputs.push_back(match.values_map.quarisma(v));
 
             for (const Use& u : output->uses())
             {
@@ -192,7 +192,7 @@ void SubgraphRewriter::rewriteSinglePatternOnGraph(
 
         // Record all planned rewritings
         AT_ASSERT(outputs.size() == new_outputs.size());
-        for (const auto idx : xsigma::irange(outputs.size()))
+        for (const auto idx : quarisma::irange(outputs.size()))
         {
             values_to_rewrite.push_back(outputs[idx]);
             rewrite_map[outputs[idx]] = new_outputs[idx]->setType(outputs[idx]->type());
@@ -202,7 +202,7 @@ void SubgraphRewriter::rewriteSinglePatternOnGraph(
         {
             if (match.nodes_map.count(pattern_n))
             {
-                Node* n = match.nodes_map.xsigma(pattern_n);
+                Node* n = match.nodes_map.quarisma(pattern_n);
                 nodes_to_delete_.insert(n);
             }
         }
@@ -211,7 +211,7 @@ void SubgraphRewriter::rewriteSinglePatternOnGraph(
     // Perform planned rewritings
     for (auto v : values_to_rewrite)
     {
-        v->replaceAllUsesWith(rewrite_map.xsigma(v));
+        v->replaceAllUsesWith(rewrite_map.quarisma(v));
     }
 
     // Perform planned deletions

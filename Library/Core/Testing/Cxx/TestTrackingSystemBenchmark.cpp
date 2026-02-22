@@ -1,6 +1,6 @@
 /*
- * XSigma: High-Performance Quantitative Library
- * Copyright 2025 XSigma Contributors
+ * Quarisma: High-Performance Quantitative Library
+ * Copyright 2025 Quarisma Contributors
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
 
@@ -13,14 +13,14 @@
 #include <thread>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "memory/backend/allocator_bfc.h"
 #include "memory/backend/allocator_pool.h"
 #include "memory/backend/allocator_tracking.h"
 #include "memory/cpu/allocator_cpu.h"
 #include "memory/gpu/gpu_allocator_tracking.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 namespace
 {
@@ -232,7 +232,7 @@ tracking_benchmark_results benchmark_gpu_tracking_allocator(const tracking_bench
     tracking_benchmark_results results;
     results.system_name = "GPU-Tracking-" + config.test_name;
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     int         device_count = 0;
     cudaError_t error        = cudaGetDeviceCount(&device_count);
     if (error != cudaSuccess || device_count == 0)
@@ -300,7 +300,7 @@ tracking_benchmark_results benchmark_gpu_tracking_allocator(const tracking_bench
     catch (const std::exception& e)
     {
         results.system_name += "-ERROR";
-        XSIGMA_LOG_WARNING("GPU tracking benchmark failed: {}", e.what());
+        QUARISMA_LOG_WARNING("GPU tracking benchmark failed: {}", e.what());
     }
 #else
     results.system_name += "-CUDA-DISABLED";
@@ -359,7 +359,7 @@ void print_tracking_benchmark_results(const std::vector<tracking_benchmark_resul
 /**
  * @brief Comprehensive tracking system benchmark
  */
-XSIGMATEST(TrackingSystemBenchmark, ComprehensiveTrackingBenchmark)
+QUARISMATEST(TrackingSystemBenchmark, ComprehensiveTrackingBenchmark)
 {
     std::vector<tracking_benchmark_results> all_results;
 

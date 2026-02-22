@@ -1,5 +1,5 @@
-#include <XSigma/Config.h>
-#include <XSigma/code_template.h>
+#include <Quarisma/Config.h>
+#include <Quarisma/code_template.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/constant_propagation.h>
@@ -13,7 +13,7 @@ namespace torch::jit
 
 #if AT_MKLDNN_ENABLED()
 
-static xsigma::VaryingShape<int64_t> getSizesOf(Node* n, size_t idx)
+static quarisma::VaryingShape<int64_t> getSizesOf(Node* n, size_t idx)
 {
     auto tt = n->input(idx)->type()->cast<TensorType>();
     return tt->sizes();
@@ -23,13 +23,13 @@ static void insertPrePackedConvOpForNode(Node* n)
 {
     constexpr int POS_INPUT  = 0;
     constexpr int POS_WEIGHT = 1;
-    if (!tensorexpr::isContiguous(n->input(POS_INPUT), xsigma::MemoryFormat::ChannelsLast))
+    if (!tensorexpr::isContiguous(n->input(POS_INPUT), quarisma::MemoryFormat::ChannelsLast))
     {
         GRAPH_DEBUG("insertPrePackedConvOpForNode: input is not ChannelsLast contiguous");
         return;
     }
 
-    if (!tensorexpr::isContiguous(n->input(POS_WEIGHT), xsigma::MemoryFormat::ChannelsLast))
+    if (!tensorexpr::isContiguous(n->input(POS_WEIGHT), quarisma::MemoryFormat::ChannelsLast))
     {
         GRAPH_DEBUG("insertPrePackedConvOpForNode: weight is not ChannelsLast contiguous");
         return;
@@ -53,7 +53,7 @@ static void insertPrePackedConvOpForNode(Node* n)
         graph->create(Symbol::fromQualString("mkldnn_prepacked::conv2d_prepack"), 1);
 
     // skip input value
-    for (const auto i : xsigma::irange(1, n->inputs().size()))
+    for (const auto i : quarisma::irange(1, n->inputs().size()))
     {
         Value* v = n->input(i);
         prepack_node->addInput(v);
@@ -127,7 +127,7 @@ static void insertMkldnnPrePackedOps(std::shared_ptr<Graph>& graph)
 
 static void FuseReluWithPackedOps(std::shared_ptr<Graph>& graph)
 {
-    auto conv_op_rstring = xsigma::jit::CodeTemplate(R"(
+    auto conv_op_rstring = quarisma::jit::CodeTemplate(R"(
     graph(%input, %weight, %bias, %stride:int[], %padding:int[],
           %dilation:int[], %groups:int, %input_size:int[], %dummy_attr:str):
         %packed_weight_bias = mkldnn_prepacked::conv2d_prepack(
@@ -137,7 +137,7 @@ static void FuseReluWithPackedOps(std::shared_ptr<Graph>& graph)
         %res = aten::${op}(%conv2d_res)
         return (%res))");
 
-    auto conv_op_fused_rstring = xsigma::jit::CodeTemplate(R"(
+    auto conv_op_fused_rstring = quarisma::jit::CodeTemplate(R"(
     graph(%input, %weight, %bias, %stride:int[], %padding:int[],
           %dilation:int[], %groups:int, %input_size:int[], %dummy_attr:str):
         %attr: str = prim::Constant[value="${op_attr}"]()
@@ -155,10 +155,10 @@ static void FuseReluWithPackedOps(std::shared_ptr<Graph>& graph)
             continue;
         }
 
-        xsigma::jit::TemplateEnv env;
+        quarisma::jit::TemplateEnv env;
         env.s("op", op);
 
-        xsigma::jit::TemplateEnv env_fused;
+        quarisma::jit::TemplateEnv env_fused;
         env_fused.s("op_attr", op);
 
         SubgraphRewriter rewriter;
@@ -188,7 +188,7 @@ static void PrePackingOpsFolder(Block* b)
             if (optional_outputs)
             {
                 auto outputs = optional_outputs.value();
-                XSIGMA_CHECK(outputs.size() == 1, "Prepack ops have single output");
+                QUARISMA_CHECK(outputs.size() == 1, "Prepack ops have single output");
                 Value*          prepack_op_value = n->output(0);
                 auto            graph            = n->owningGraph();
                 WithInsertPoint ins(prepack_op_value->node());

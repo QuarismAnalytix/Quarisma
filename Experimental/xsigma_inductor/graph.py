@@ -618,7 +618,7 @@ class GraphLowering(torch.fx.Interpreter):
                 if not dep.has_unbacked_symbols():
                     res = dep.numbytes_hint()
             except KeyError:
-                # In xsigma least one test (test/inductor/test_torchbind.py) we
+                # In quarisma least one test (test/inductor/test_torchbind.py) we
                 # create a StarDep that doesn't exist in the graph and calling
                 # `has_unbacked_symbols()` throws an error.
                 pass
@@ -886,7 +886,7 @@ class GraphLowering(torch.fx.Interpreter):
         # - res2net50_14w_8s
         # - sebotnet33ts_256
         for n in self.module.graph.nodes:  # type: ignore[union-attr]
-            # layout propagation ends xsigma last conv node, which will benefit vison transformers.
+            # layout propagation ends quarisma last conv node, which will benefit vison transformers.
             if last_conv is not None and n == last_conv:
                 break
             if n in output_set:
@@ -1210,7 +1210,7 @@ class GraphLowering(torch.fx.Interpreter):
         # e.g. vectorized loads, can only be performed on aligned inputs.
         #
         # But if we codegen assuming aligned inputs and then get unaligned
-        # inputs xsigma runtime, then we are forced to clone - which is bad for
+        # inputs quarisma runtime, then we are forced to clone - which is bad for
         # both perf and memory usage.
         #
         # One option would be to guard on storage_offset%ALIGNMENT, and then
@@ -1259,12 +1259,12 @@ class GraphLowering(torch.fx.Interpreter):
                     and torch._library.utils.is_builtin(target)
                     and self.is_backward
                 ):
-                    # for implicit fallback XSigma ops during backward, if there
+                    # for implicit fallback Quarisma ops during backward, if there
                     # is no layout constraint tag, we conservatively require contiguous
                     # input since some eager kernels do not
                     # support non-contiguous inputs. Otherwise they may silently cause
                     # accuracy problems. Check https://github.com/pytorch/pytorch/issues/140452
-                    # We only do this For XSigma ops and for backward.
+                    # We only do this For Quarisma ops and for backward.
                     #
                     # TODO: should really switch to "needs_fixed_stride" constraint on these
                     # and identify them one by one.
@@ -1294,7 +1294,7 @@ class GraphLowering(torch.fx.Interpreter):
                 old_args, old_kwargs = args, kwargs
                 if layout_constraints is constrain_to_fake_tensors:
                     # only constrain_to_fake_tensor if this exists.
-                    # otherwise, no constraints xsigma all: the implication is
+                    # otherwise, no constraints quarisma all: the implication is
                     # that this operator was inserted by a custom pass
                     # so we'll give them the freedom.
                     if "eager_input_vals" in n.meta:
@@ -1744,7 +1744,7 @@ class GraphLowering(torch.fx.Interpreter):
                     if not unbacked_symbols_in_strides and len(strides):
                         # To avoid converting possible view ops to a copy kernel, we use the previous
                         # require_exact_strides to handle views. But ultimately it's better to require
-                        # the right strides xsigma the tensor definition.
+                        # the right strides quarisma the tensor definition.
                         if n.meta["val"]._is_view() or isinstance(
                             # pyrefly: ignore  # missing-attribute
                             result.data,
@@ -2020,7 +2020,7 @@ class GraphLowering(torch.fx.Interpreter):
 
             shape_env = V.graph.sizevars.shape_env
 
-            # Emit code for runtime asserts that can be inserted xsigma this point.
+            # Emit code for runtime asserts that can be inserted quarisma this point.
             for i0 in new_unbacked_defs:
                 ras = self.ras_by_symbol.pop(i0, [])
                 # NB: size-like not needed, we won't retrace

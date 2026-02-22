@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
@@ -36,16 +36,16 @@ limitations under the License.
 #include <memory>  // for unique_ptr
 
 #include "profiler/native/core/profiler_interface.h"  // for profiler_interface
-namespace xsigma
+namespace quarisma
 {
 class x_space;
 }
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
- * @brief Decorator for XSigma profiler plugins (REQUIRED COMPONENT)
+ * @brief Decorator for Quarisma profiler plugins (REQUIRED COMPONENT)
  *
  * Tracks that calls to the underlying profiler interface functions are made
  * in the expected order: start, stop and collect_data. Making the calls
@@ -104,4 +104,4 @@ private:
     profiler_status                     status_;             ///< Result of calls to profiler_
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

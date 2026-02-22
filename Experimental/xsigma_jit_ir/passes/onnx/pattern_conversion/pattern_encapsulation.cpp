@@ -56,7 +56,7 @@ Node* EncapsulateInplaceIndexPutForONNX(Node* index_put_node)
             graph->createClone(n, [&](Value* v) { return env.find(v) != env.end() ? env[v] : v; }));
         for (size_t i = 0; i < cloned_n->outputs().size(); ++i)
         {
-            env[n->outputs().xsigma(i)] = cloned_n->outputs().xsigma(i);
+            env[n->outputs().quarisma(i)] = cloned_n->outputs().quarisma(i);
         }
     }
 

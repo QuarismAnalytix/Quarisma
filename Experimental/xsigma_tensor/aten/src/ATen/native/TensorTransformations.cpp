@@ -1,29 +1,29 @@
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
-#include <XSigma/Parallel.h>
-#include <XSigma/TensorIterator.h>
-#include <XSigma/WrapDimUtilsMulti.h>
-#include <XSigma/core/DimVector.h>
-#include <XSigma/native/IndexKernel.h>  // for flip_stub
-#include <XSigma/native/TensorTransformations.h>
+#include <Quarisma/Parallel.h>
+#include <Quarisma/TensorIterator.h>
+#include <Quarisma/WrapDimUtilsMulti.h>
+#include <Quarisma/core/DimVector.h>
+#include <Quarisma/native/IndexKernel.h>  // for flip_stub
+#include <Quarisma/native/TensorTransformations.h>
 #include <c10/util/Exception.h>
 #include <c10/util/irange.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
-#include <XSigma/NativeFunctions.h>
+#include <Quarisma/Functions.h>
+#include <Quarisma/NativeFunctions.h>
 #else
-#include <XSigma/ops/atleast_1d_native.h>
-#include <XSigma/ops/atleast_2d_native.h>
-#include <XSigma/ops/atleast_3d_native.h>
-#include <XSigma/ops/cat.h>
-#include <XSigma/ops/chalf_native.h>
-#include <XSigma/ops/empty_like.h>
-#include <XSigma/ops/flip_native.h>
-#include <XSigma/ops/fliplr_native.h>
-#include <XSigma/ops/flipud_native.h>
-#include <XSigma/ops/roll_native.h>
-#include <XSigma/ops/rot90_native.h>
-#include <XSigma/ops/zeros_like_ops.h>
+#include <Quarisma/ops/atleast_1d_native.h>
+#include <Quarisma/ops/atleast_2d_native.h>
+#include <Quarisma/ops/atleast_3d_native.h>
+#include <Quarisma/ops/cat.h>
+#include <Quarisma/ops/chalf_native.h>
+#include <Quarisma/ops/empty_like.h>
+#include <Quarisma/ops/flip_native.h>
+#include <Quarisma/ops/fliplr_native.h>
+#include <Quarisma/ops/flipud_native.h>
+#include <Quarisma/ops/roll_native.h>
+#include <Quarisma/ops/rot90_native.h>
+#include <Quarisma/ops/zeros_like_ops.h>
 #endif
 
 #include <algorithm>

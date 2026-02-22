@@ -2,7 +2,7 @@
 #include <fmt/ranges.h>
 #include <torch/csrc/utils/generated_serialization_types.h>
 #include <torch/nativert/graph/GraphSignature.h>
-#include <xsigma/util/Logging.h>
+#include <quarisma/util/Logging.h>
 
 #include <algorithm>
 #include <array>
@@ -70,16 +70,16 @@ std::pair<std::string, std::string> getSpecDetails(const torch::_export::InputSp
         }
         else
         {
-            XSIGMA_CHECK(false, "Unsupported USER_INPUT argument type.");
+            QUARISMA_CHECK(false, "Unsupported USER_INPUT argument type.");
         }
         break;
     case torch::_export::InputSpec::Tag::CONSTANT_INPUT:
         return std::make_pair(inputSpec.get_constant_input().get_name(), "CONSTANT_INPUT");
         break;
     case torch::_export::InputSpec::Tag::TOKEN:
-        XSIGMA_CHECK(false, "Token inputs not implemented yet.");
+        QUARISMA_CHECK(false, "Token inputs not implemented yet.");
     default:
-        XSIGMA_CHECK(false, "Unknown InputSpec tag encountered.");
+        QUARISMA_CHECK(false, "Unknown InputSpec tag encountered.");
     }
 }
 
@@ -106,12 +106,12 @@ void checkInputOrders(const std::vector<torch::_export::InputSpec>& inputSpecs)
             tagOrderArray.begin(),
             tagOrderArray.end(),
             [&inputSpec](const auto& pair) { return pair.first == inputSpec.tag(); });
-        XSIGMA_CHECK(it != tagOrderArray.end(), "Unknown InputSpec tag encountered.");
+        QUARISMA_CHECK(it != tagOrderArray.end(), "Unknown InputSpec tag encountered.");
         uint32_t tagIndex = it->second;
         if (tagIndex < currentOrderIndex)
         {
             auto [argName, tagName] = getSpecDetails(inputSpec);
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 false,
                 fmt::format("Input arg {} with InputSpec {} is out of order!", argName, tagName));
         }
@@ -125,7 +125,7 @@ void checkInputOrders(const std::vector<torch::_export::InputSpec>& inputSpecs)
             }
             else
             {
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     !seenNonPersistentBuffer,
                     "Persistent buffers must come before non-persistent buffers.");
             }
@@ -134,7 +134,7 @@ void checkInputOrders(const std::vector<torch::_export::InputSpec>& inputSpecs)
 }
 
 void checkInputNames(
-    const xsigma::FastSet<std::string>& sigNames, const xsigma::FastSet<std::string>& graphNames)
+    const quarisma::FastSet<std::string>& sigNames, const quarisma::FastSet<std::string>& graphNames)
 {
     if (sigNames == graphNames)
     {
@@ -147,12 +147,12 @@ void checkInputNames(
         "Graph node names:\n[{}]",
         fmt::join(sigNames, ", "),
         fmt::join(graphNames, ", "));
-    XSIGMA_CHECK(false, errorMsg);
+    QUARISMA_CHECK(false, errorMsg);
 }
 
 void checkOutputNames(
-    const xsigma::FastSet<std::optional<std::string>>& sigNames,
-    const xsigma::FastSet<std::string>&                graphNames)
+    const quarisma::FastSet<std::optional<std::string>>& sigNames,
+    const quarisma::FastSet<std::string>&                graphNames)
 {
     std::vector<std::string> validNames;
     for (const auto& nameOpt : sigNames)
@@ -173,13 +173,13 @@ void checkOutputNames(
                 "Graph node names:\n[{}]",
                 fmt::join(validNames, ", "),
                 fmt::join(graphNames, ", "));
-            XSIGMA_CHECK(false, errorMsg);
+            QUARISMA_CHECK(false, errorMsg);
         }
     }
 }
 
 void replaceInMap(
-    xsigma::FastMap<std::string, std::string>& map,
+    quarisma::FastMap<std::string, std::string>& map,
     std::string_view                           old,
     std::string_view                           replacement)
 {
@@ -217,7 +217,7 @@ GraphSignature::GraphSignature(const torch::_export::GraphSignature& storage)
             else
             {
                 // TODO: handle other types
-                XSIGMA_CHECK(false, "Non tensor inputs not implemented yet.");
+                QUARISMA_CHECK(false, "Non tensor inputs not implemented yet.");
             }
             break;
         }
@@ -267,10 +267,10 @@ GraphSignature::GraphSignature(const torch::_export::GraphSignature& storage)
         }
         case torch::_export::InputSpec::Tag::TOKEN:
         {
-            XSIGMA_CHECK(false, "Token inputs not implemented yet.");
+            QUARISMA_CHECK(false, "Token inputs not implemented yet.");
         }
         default:
-            XSIGMA_CHECK(false, "Unknown InputSpec tag encountered.");
+            QUARISMA_CHECK(false, "Unknown InputSpec tag encountered.");
             break;
         }
     }
@@ -301,7 +301,7 @@ GraphSignature::GraphSignature(const torch::_export::GraphSignature& storage)
                 }
                 default:
                 {
-                    XSIGMA_CHECK(false, "Unsupported symbolic user output type encountered.");
+                    QUARISMA_CHECK(false, "Unsupported symbolic user output type encountered.");
                 }
                 }
             }
@@ -333,10 +333,10 @@ GraphSignature::GraphSignature(const torch::_export::GraphSignature& storage)
             break;
         case torch::_export::OutputSpec::Tag::TOKEN:
         {
-            XSIGMA_CHECK(false, "Token outputs not implemented yet.");
+            QUARISMA_CHECK(false, "Token outputs not implemented yet.");
         }
         default:
-            XSIGMA_CHECK(false, "Unknown OutputSpec tag encountered.");
+            QUARISMA_CHECK(false, "Unknown OutputSpec tag encountered.");
         }
     }
 
@@ -346,9 +346,9 @@ GraphSignature::GraphSignature(const torch::_export::GraphSignature& storage)
     }
 }
 
-xsigma::FastSet<std::string> GraphSignature::inputNames() const
+quarisma::FastSet<std::string> GraphSignature::inputNames() const
 {
-    xsigma::FastSet<std::string> ret;
+    quarisma::FastSet<std::string> ret;
     size_t numInputs = userInputs().size() + inputsToWeights().size() + inputsToCustomObjs().size();
     ret.reserve(numInputs);
     for (const auto& name : userInputs())
@@ -366,9 +366,9 @@ xsigma::FastSet<std::string> GraphSignature::inputNames() const
     return ret;
 }
 
-xsigma::FastSet<std::optional<std::string>> GraphSignature::outputNames() const
+quarisma::FastSet<std::optional<std::string>> GraphSignature::outputNames() const
 {
-    xsigma::FastSet<std::optional<std::string>> ret;
+    quarisma::FastSet<std::optional<std::string>> ret;
     size_t                                      numOutputs =
         userOutputs().size() + buffersToMutate().size() + userInputsToMutate().size() +
         (hasBackward() ? gradientsToParameters().size() + gradientsToUserInputs().size() +
@@ -412,8 +412,8 @@ xsigma::FastSet<std::optional<std::string>> GraphSignature::outputNames() const
 }
 
 void GraphSignature::lint(
-    const xsigma::FastSet<std::string>& graphInputs,
-    const xsigma::FastSet<std::string>& graphOutputs) const
+    const quarisma::FastSet<std::string>& graphInputs,
+    const quarisma::FastSet<std::string>& graphOutputs) const
 {
     checkInputNames(inputNames(), graphInputs);
     checkOutputNames(outputNames(), graphOutputs);

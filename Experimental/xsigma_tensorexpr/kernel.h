@@ -127,7 +127,7 @@ class TORCH_API TensorExprKernel
     struct ConstantDescr
     {
         BufPtr buf;
-        // Only one of ptr and node is used xsigma a time
+        // Only one of ptr and node is used quarisma a time
         // 1) ptr for the constant tensors
         // 2) node for the constant custom class objects
         void* ptr  = nullptr;
@@ -150,7 +150,7 @@ public:
     explicit TensorExprKernel(
         const std::shared_ptr<Graph>&                           subgraph,
         std::string                                             kernel_func_name,
-        std::unordered_map<xsigma::Symbol, NNCLoweringFunction> custom_lowerings      = {},
+        std::unordered_map<quarisma::Symbol, NNCLoweringFunction> custom_lowerings      = {},
         std::vector<int64_t>                                    symbolic_shape_inputs = {},
         bool                                                    pre_alloc             = false,
         std::unordered_map<const torch::jit::Value*, std::vector<torch::jit::StrideInput>>
@@ -158,7 +158,7 @@ public:
 
     explicit TensorExprKernel(
         const std::shared_ptr<Graph>&                           subgraph,
-        std::unordered_map<xsigma::Symbol, NNCLoweringFunction> custom_lowerings      = {},
+        std::unordered_map<quarisma::Symbol, NNCLoweringFunction> custom_lowerings      = {},
         std::vector<int64_t>                                    symbolic_shape_inputs = {},
         bool                                                    pre_alloc             = false,
         std::unordered_map<const torch::jit::Value*, std::vector<torch::jit::StrideInput>>
@@ -239,13 +239,13 @@ private:
     std::string getCodeGenName(BackendType backendType);
 
     void getStaticOutputSizesAndStrides(
-        const xsigma::ArrayRef<IValue>&    inputs,
+        const quarisma::ArrayRef<IValue>&    inputs,
         std::vector<std::vector<int64_t>>* static_sizes,
         std::vector<std::vector<int64_t>>* static_strides) const;
 
     std::vector<CodeGen::CallArg> prepareRunArgs(
-        const xsigma::ArrayRef<IValue>& inputs, std::vector<xsigma::Tensor>& outputs) const;
-    BackendType inferBackendTypeFromDevice(xsigma::Device device);
+        const quarisma::ArrayRef<IValue>& inputs, std::vector<quarisma::Tensor>& outputs) const;
+    BackendType inferBackendTypeFromDevice(quarisma::Device device);
 
     Tensor   bindInput(const torch::jit::Value* input);
     BlockPtr bindAllInputs();
@@ -271,27 +271,27 @@ private:
         const std::vector<ExprPtr>&    strides,
         BufPtr&                        buf);
 
-    NNCLoweringFunction getCustomLoweringFor(xsigma::Symbol op) const;
-    std::unordered_map<xsigma::Symbol, NNCLoweringFunction> getCustomLowerings() const
+    NNCLoweringFunction getCustomLoweringFor(quarisma::Symbol op) const;
+    std::unordered_map<quarisma::Symbol, NNCLoweringFunction> getCustomLowerings() const
     {
         return custom_lowerings_;
     }
 
-    // Allocate memory for intermediate buffers xsigma compile time.
+    // Allocate memory for intermediate buffers quarisma compile time.
     // Specifically, we pre-allocate memory for intermediate buffers with static
     // size and manage these buffers in the way we manage JIT constant tensors:
-    // push the buf args into the stack so NNC IR can access them xsigma runtime.
+    // push the buf args into the stack so NNC IR can access them quarisma runtime.
     std::vector<BufPtr> preAllocIntermediateBufs(const std::vector<BufPtr>& interm_bufs);
 
     struct UnpackedTensorOptions
     {
-        std::optional<xsigma::ScalarType> dtype;
-        std::optional<xsigma::Layout>     layout;
-        std::optional<xsigma::Device>     device;
+        std::optional<quarisma::ScalarType> dtype;
+        std::optional<quarisma::Layout>     layout;
+        std::optional<quarisma::Device>     device;
         std::optional<bool>               pinned_memory;
 
-        UnpackedTensorOptions(const xsigma::TensorOptions& opts)
-            : dtype(xsigma::optTypeMetaToScalarType(opts.dtype_opt())),
+        UnpackedTensorOptions(const quarisma::TensorOptions& opts)
+            : dtype(quarisma::optTypeMetaToScalarType(opts.dtype_opt())),
               layout(opts.layout_opt()),
               device(opts.device_opt()),
               pinned_memory(opts.pinned_memory_opt())
@@ -299,10 +299,10 @@ private:
         }
     };
 
-    ExprHandle              getVarForShape(const xsigma::ShapeSymbol& ss);
+    ExprHandle              getVarForShape(const quarisma::ShapeSymbol& ss);
     std::vector<ExprHandle> computeInputTensorDims(const torch::jit::Value* input);
     ExprHandle              getStrideArg(size_t tensor_input, size_t stride_index);
-    std::vector<ExprHandle> sizesFromSymbolicShape(const xsigma::SymbolicShape& shape);
+    std::vector<ExprHandle> sizesFromSymbolicShape(const quarisma::SymbolicShape& shape);
     std::vector<ExprHandle> getInputStrides(
         const torch::jit::Value* input, const std::vector<ExprHandle>& inputTensorDims);
     std::vector<torch::jit::StrideInput>& getSymbolicStrideDesc(const torch::jit::Value* value);
@@ -326,7 +326,7 @@ private:
     std::unordered_map<const torch::jit::Value*, VarHandle>   scalars_;
     std::unordered_map<const torch::jit::Value*, std::string> input_name_map_;
     std::unique_ptr<CodeGen>                                  codegen_;
-    xsigma::Device                                            device_ = xsigma::kCPU;
+    quarisma::Device                                            device_ = quarisma::kCPU;
     std::shared_ptr<Graph>                                    graph_;
     Code                                                      code_;
     bool                                                      allow_fallback_{false};
@@ -341,14 +341,14 @@ private:
     std::unordered_map<ExprPtr, size_t>    shapeSymbolInputPos_;
     // List of values corresponding to the ShapeSymbols that are inputs to
     // kernel being compiled. The order of these values correspond to the order
-    // of the symbolic inputs xsigma the end of the list of inputs to the kernel.
+    // of the symbolic inputs quarisma the end of the list of inputs to the kernel.
     std::vector<int64_t> symbolic_shape_inputs_;
     bool                 has_symbolic_shapes_{false};
 
-    std::vector<xsigma::Tensor> unpacked_constant_tensors_;
+    std::vector<quarisma::Tensor> unpacked_constant_tensors_;
     std::vector<ConstantDescr>  constants_;
 
-    std::unordered_map<xsigma::Symbol, NNCLoweringFunction> custom_lowerings_;
+    std::unordered_map<quarisma::Symbol, NNCLoweringFunction> custom_lowerings_;
     StmtPtr                                                 stmt_ = nullptr;
     bool                                                    pre_alloc_{false};
     std::string                                             kernel_func_name_;
@@ -375,11 +375,11 @@ TORCH_API bool  setFallbackAllowed(bool value);
 TORCH_API bool& getCatWoConditionals();
 TORCH_API bool& getOptConditionals();
 
-TORCH_API std::optional<xsigma::Device> pickDeviceType(
-    const xsigma::ArrayRef<torch::jit::Value*>& inputs);
+TORCH_API std::optional<quarisma::Device> pickDeviceType(
+    const quarisma::ArrayRef<torch::jit::Value*>& inputs);
 
 bool isContiguous(
     const torch::jit::Value* v,
-    xsigma::MemoryFormat     memory_format = xsigma::MemoryFormat::Contiguous);
+    quarisma::MemoryFormat     memory_format = quarisma::MemoryFormat::Contiguous);
 
 }  // namespace torch::jit::tensorexpr

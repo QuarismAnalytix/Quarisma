@@ -1,9 +1,9 @@
-#include <XSigma/NativeFunctions.h>
-#include <XSigma/XSigma.h>
-#include <XSigma/core/dispatch/Dispatcher.h>
-#include <XSigma/core/op_registration/op_registration.h>
-#include <XSigma/native/MathBitFallThroughLists.h>
-#include <XSigma/native/UnaryOps.h>
+#include <Quarisma/NativeFunctions.h>
+#include <Quarisma/Quarisma.h>
+#include <Quarisma/core/dispatch/Dispatcher.h>
+#include <Quarisma/core/op_registration/op_registration.h>
+#include <Quarisma/native/MathBitFallThroughLists.h>
+#include <Quarisma/native/UnaryOps.h>
 #include <c10/util/irange.h>
 #include <torch/library.h>
 

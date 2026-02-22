@@ -1,12 +1,12 @@
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
-#include <XSigma/Parallel.h>
-#include <XSigma/TensorIterator.h>
-#include <XSigma/TensorIteratorInternal.h>
+#include <Quarisma/Parallel.h>
+#include <Quarisma/TensorIterator.h>
+#include <Quarisma/TensorIteratorInternal.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/empty.h>
+#include <Quarisma/ops/empty.h>
 #endif
 
 #include <c10/util/irange.h>

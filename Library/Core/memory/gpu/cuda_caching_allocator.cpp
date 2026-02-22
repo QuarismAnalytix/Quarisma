@@ -19,18 +19,18 @@
 #include "util/exception.h"
 #include "util/flat_hash.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
 namespace
 {
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 inline void throw_on_cuda_error(cudaError_t result, const char* what)
 {
     if (result != cudaSuccess)
@@ -91,7 +91,7 @@ struct cuda_caching_allocator::Impl
     {
         void*  ptr  = nullptr;
         size_t size = 0;
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         cudaStream_t last_stream = nullptr;
         cudaEvent_t  event       = nullptr;
 #else
@@ -109,10 +109,10 @@ struct cuda_caching_allocator::Impl
         // Log info (simplified for build compatibility)
 
         // Validate device
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         int device_count = 0;
         throw_on_cuda_error(cudaGetDeviceCount(&device_count), "cudaGetDeviceCount");
-        XSIGMA_CHECK(  //NOLINT
+        QUARISMA_CHECK(  //NOLINT
             device >= 0 && device < device_count,
             "Invalid CUDA device index: " + std::to_string(device) + " (available: 0-" +
                 std::to_string(device_count - 1) + ")");
@@ -127,7 +127,7 @@ struct cuda_caching_allocator::Impl
 
     void* allocate(size_t size, cuda_caching_allocator::stream_type stream)
     {
-        XSIGMA_CHECK(size > 0, "cuda_caching_allocator cannot allocate zero bytes");
+        QUARISMA_CHECK(size > 0, "cuda_caching_allocator cannot allocate zero bytes");
 
         // Debug log (simplified for build compatibility)
 
@@ -177,12 +177,12 @@ struct cuda_caching_allocator::Impl
         std::scoped_lock const lock(mutex_);
         auto                   it = blocks_.find(ptr);
 
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             it != blocks_.end(), "cuda_caching_allocator does not own the provided pointer");
 
         Block* block = it->second.get();
 
-        XSIGMA_CHECK(block->in_use, "cuda_caching_allocator detected a double free");
+        QUARISMA_CHECK(block->in_use, "cuda_caching_allocator detected a double free");
 
         block->in_use = false;
         bytes_in_use_ -= block->size;
@@ -271,7 +271,7 @@ struct cuda_caching_allocator::Impl
     int device() const { return device_; }
 
 private:
-    using BlockMap = xsigma_map<void*, std::unique_ptr<Block>>;
+    using BlockMap = quarisma_map<void*, std::unique_ptr<Block>>;
     using FreeList = std::multimap<size_t, Block*>;
 
     bool should_cache(size_t size) const
@@ -491,7 +491,7 @@ cuda_caching_allocator& cuda_caching_allocator::operator=(cuda_caching_allocator
 void* cuda_caching_allocator::allocate(size_t size, stream_type stream)
 {
     //cppcheck-suppress syntaxError
-    if XSIGMA_UNLIKELY (size == 0)
+    if QUARISMA_UNLIKELY (size == 0)
     {
         return nullptr;
     }
@@ -528,4 +528,4 @@ int cuda_caching_allocator::device() const
     return impl_->device();
 }
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

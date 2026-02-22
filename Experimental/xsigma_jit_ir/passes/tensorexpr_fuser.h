@@ -30,7 +30,7 @@ TORCH_API bool hasTensorTypeSpecialization(Value* v);
 TORCH_API void RemoveTensorTypeSpecializations(std::shared_ptr<Graph>& graph);
 TORCH_API void removeTensorTypeSpecializations(Block* block);
 
-using tensor_type_converter_t = xsigma::function_ref<TensorTypePtr(const TensorTypePtr& t)>;
+using tensor_type_converter_t = quarisma::function_ref<TensorTypePtr(const TensorTypePtr& t)>;
 
 // inserts a TypeCheck pattern
 //
@@ -49,10 +49,10 @@ using tensor_type_converter_t = xsigma::function_ref<TensorTypePtr(const TensorT
 // The Fallback graph will have the same subgraph as the guarded node (with the
 // expectation that the guarded_node's subgraph will then be optimized.
 TORCH_API void insertTypeGuard(
-    Node* guarded_node, tensor_type_converter_t type_converter, xsigma::Symbol kind);
+    Node* guarded_node, tensor_type_converter_t type_converter, quarisma::Symbol kind);
 
 TORCH_API bool   usedOnlyInSize(Value* v);
-TORCH_API Value* broadcastSizes(xsigma::ArrayRef<Value*> sizes, AliasDb* db);
+TORCH_API Value* broadcastSizes(quarisma::ArrayRef<Value*> sizes, AliasDb* db);
 
 namespace tensorexpr
 {
@@ -72,5 +72,5 @@ TORCH_API OperatorSet& getCustomOperatorSet();
 }  // namespace tensorexpr
 }  // namespace torch::jit
 
-XSIGMA_DECLARE_bool(torch_jit_disable_cat);
-XSIGMA_DECLARE_bool(torch_jit_enable_dynamic_shape_fusion);
+QUARISMA_DECLARE_bool(torch_jit_disable_cat);
+QUARISMA_DECLARE_bool(torch_jit_enable_dynamic_shape_fusion);

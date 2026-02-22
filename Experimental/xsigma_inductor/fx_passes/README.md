@@ -7,9 +7,9 @@ The current way we do this is through FakeTensorUpdater (in _inductor/fx_utils.p
 ## Mutations throughout the stack
 The invariant about mutation we have is:
 
-**After AOTDispatch tracing and before Inductor, we have no mutation in our graph, except for a copy_ epilogue xsigma the end of the graph.**
+**After AOTDispatch tracing and before Inductor, we have no mutation in our graph, except for a copy_ epilogue quarisma the end of the graph.**
 
-For example, passes operating on the joint_graph and post_grad graph do not need to worry about mutation xsigma all.
+For example, passes operating on the joint_graph and post_grad graph do not need to worry about mutation quarisma all.
 
 However, we do still have aliasing in the graph. This does not matter most of the time, but it does mean that **our passes are not allowed to cause any additional inputs/outputs to alias if they did not alias in the original graph**.
 

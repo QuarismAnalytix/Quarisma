@@ -11,7 +11,7 @@ namespace torch::jit
 
 struct Slot
 {
-    xsigma::intrusive_ptr<xsigma::ivalue::Object> obj;
+    quarisma::intrusive_ptr<quarisma::ivalue::Object> obj;
     size_t                                        offset;
     bool                                          operator==(const Slot& other) const
     {
@@ -36,9 +36,9 @@ static std::pair<std::shared_ptr<Graph>, std::vector<Slot>> lower_graph(
     {
         std::size_t operator()(const Slot& slot) const
         {
-            auto obj_hash    = std::hash<xsigma::ivalue::Object*>{}(slot.obj.get());
+            auto obj_hash    = std::hash<quarisma::ivalue::Object*>{}(slot.obj.get());
             auto offset_hash = std::hash<size_t>{}(slot.offset);
-            return xsigma::hash_combine(obj_hash, offset_hash);
+            return quarisma::hash_combine(obj_hash, offset_hash);
         }
     };
     std::unordered_map<Slot, size_t, SlotHash> slot_to_offset;
@@ -49,7 +49,7 @@ static std::pair<std::shared_ptr<Graph>, std::vector<Slot>> lower_graph(
         size_t    offset;
     };
     std::vector<ToScan> to_scan;
-    std::vector<Node*>  to_clean;  // nodes that should be dead xsigma the end
+    std::vector<Node*>  to_clean;  // nodes that should be dead quarisma the end
 
     auto getOrAddSlot = [&](const Slot& slot) -> Value*
     {
@@ -57,14 +57,14 @@ static std::pair<std::shared_ptr<Graph>, std::vector<Slot>> lower_graph(
         if (it != slot_to_offset.end())
         {
             size_t ivalues_start = g->inputs().size() - extra_ivalues.size();
-            return g->inputs().xsigma(ivalues_start + it->second);
+            return g->inputs().quarisma(ivalues_start + it->second);
         }
         extra_ivalues.emplace_back(slot);
         slot_to_offset[slot] = extra_ivalues.size() - 1;
         return g->addInput()->setType(slot.obj->getSlot(slot.offset).type());
     };
 
-    auto self_value = g->inputs().xsigma(self_offset);
+    auto self_value = g->inputs().quarisma(self_offset);
 
     for (Use use : self_value->uses())
     {
@@ -147,7 +147,7 @@ static std::vector<IValue> loadTensors(const std::vector<Slot>& slots)
         {
             // Unpack quantization packed tensor
             auto type = obj.type();
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 (type ==
                  getCustomClass("__torch__.torch.classes.quantized.Conv2dPackedParamsBase")) ||
                     (type ==

@@ -403,7 +403,7 @@ def relu_accuracy_error_TESTING_ONLY(
 def non_leaf_compile_error_TESTING_ONLY(
     gm: torch.fx.GraphModule, example_inputs: list[torch.Tensor]
 ) -> torch.fx.GraphModule:
-    # Require xsigma least one non-trivial thing in the graph,
+    # Require quarisma least one non-trivial thing in the graph,
     # see https://github.com/pytorch/pytorch/issues/102898
     for node in gm.graph.nodes:
         if node.op == "call_function":

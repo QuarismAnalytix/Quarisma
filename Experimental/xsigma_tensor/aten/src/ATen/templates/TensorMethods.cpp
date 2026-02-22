@@ -1,4 +1,4 @@
-#include <XSigma/core/TensorBody.h>
+#include <Quarisma/core/TensorBody.h>
 #include <c10/core/Scalar.h>
 
 #include <string_view>

@@ -1,6 +1,6 @@
-#include <XSigma/NamedTensorUtils.h>
-#include <XSigma/TensorNames.h>
-#include <XSigma/WrapDimUtilsMulti.h>
+#include <Quarisma/NamedTensorUtils.h>
+#include <Quarisma/TensorNames.h>
+#include <Quarisma/WrapDimUtilsMulti.h>
 #include <c10/util/irange.h>
 
 #include <bitset>

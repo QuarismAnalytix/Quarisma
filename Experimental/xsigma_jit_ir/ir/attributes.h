@@ -1,7 +1,7 @@
 #pragma once
-#include <XSigma/core/Tensor.h>
-#include <XSigma/core/jit_type_base.h>
-#include <XSigma/core/symbol.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/core/jit_type_base.h>
+#include <Quarisma/core/symbol.h>
 #include <torch/csrc/Export.h>
 
 #include <string>
@@ -10,7 +10,7 @@
 namespace torch::jit
 {
 
-using ::xsigma::Symbol;
+using ::quarisma::Symbol;
 
 constexpr int max_tensor_display_size = 10;
 
@@ -89,19 +89,19 @@ private:
     ValueType value_;
 };
 
-using ComplexAttr     = ScalarAttributeValue<xsigma::complex<double>, AttributeKind::c>;
-using ComplexValsAttr = VectorAttributeValue<xsigma::complex<double>, AttributeKind::cs>;
+using ComplexAttr     = ScalarAttributeValue<quarisma::complex<double>, AttributeKind::c>;
+using ComplexValsAttr = VectorAttributeValue<quarisma::complex<double>, AttributeKind::cs>;
 using FloatAttr       = ScalarAttributeValue<double, AttributeKind::f>;
 using FloatsAttr      = VectorAttributeValue<double, AttributeKind::fs>;
 using IntAttr         = ScalarAttributeValue<int64_t, AttributeKind::i>;
 using IntsAttr        = VectorAttributeValue<int64_t, AttributeKind::is>;
 using StringAttr      = ScalarAttributeValue<std::string, AttributeKind::s>;
 using StringsAttr     = VectorAttributeValue<std::string, AttributeKind::ss>;
-using TensorAttr      = ScalarAttributeValue<xsigma::Tensor, AttributeKind::t>;
-using TensorsAttr     = VectorAttributeValue<xsigma::Tensor, AttributeKind::ts>;
-using TypeAttr        = ScalarAttributeValue<xsigma::TypePtr, AttributeKind::ty>;
-using TypesAttr       = VectorAttributeValue<xsigma::TypePtr, AttributeKind::tys>;
-using IValueAttr      = ScalarAttributeValue<xsigma::IValue, AttributeKind::ival>;
+using TensorAttr      = ScalarAttributeValue<quarisma::Tensor, AttributeKind::t>;
+using TensorsAttr     = VectorAttributeValue<quarisma::Tensor, AttributeKind::ts>;
+using TypeAttr        = ScalarAttributeValue<quarisma::TypePtr, AttributeKind::ty>;
+using TypesAttr       = VectorAttributeValue<quarisma::TypePtr, AttributeKind::tys>;
+using IValueAttr      = ScalarAttributeValue<quarisma::IValue, AttributeKind::ival>;
 
 struct Graph;
 

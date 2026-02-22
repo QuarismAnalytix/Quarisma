@@ -1,4 +1,4 @@
-#include <XSigma/core/symbol.h>
+#include <Quarisma/core/symbol.h>
 #include <torch/csrc/jit/ir/alias_analysis.h>
 #include <torch/csrc/jit/ir/constants.h>
 #include <torch/csrc/jit/ir/ir.h>
@@ -21,7 +21,7 @@
 #include <torch/csrc/jit/passes/tensorexpr_fuser.h>
 #include <torch/csrc/jit/runtime/exception_message.h>
 #include <torch/csrc/jit/runtime/symbolic_shape_registry.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <algorithm>
 #include <memory>
@@ -46,7 +46,7 @@ static bool symbolic_shape_analysis_test_mode = false;
 namespace torch::jit
 {
 
-// This is similar to xsigma::SymbolicShape, but instead of either having
+// This is similar to quarisma::SymbolicShape, but instead of either having
 // a concrete dimension or a symbolic dimension, an argument may be:
 // - A Symbolic Dimension
 // - A Constant Integer
@@ -64,7 +64,7 @@ namespace torch::jit
 // x.view([5, y.size(0), inp])
 // will have inputs equal to [5, SS(-1), std::nullopt]
 
-struct ShapeArg : public std::pair<std::optional<xsigma::ShapeSymbol>, std::optional<int64_t>>
+struct ShapeArg : public std::pair<std::optional<quarisma::ShapeSymbol>, std::optional<int64_t>>
 {
     using pair::pair;
 
@@ -76,7 +76,7 @@ struct ShapeArg : public std::pair<std::optional<xsigma::ShapeSymbol>, std::opti
         this->second = int_value;
     }
 
-    ShapeArg(xsigma::ShapeSymbol ss)
+    ShapeArg(quarisma::ShapeSymbol ss)
     {
         if (ss.is_static())
         {
@@ -92,7 +92,7 @@ struct ShapeArg : public std::pair<std::optional<xsigma::ShapeSymbol>, std::opti
 
     std::optional<int64_t> asConstantInt() const { return this->second; }
 
-    std::optional<xsigma::ShapeSymbol> asShapeSymbol() const { return this->first; }
+    std::optional<quarisma::ShapeSymbol> asShapeSymbol() const { return this->first; }
 
 private:
     ShapeArg()
@@ -124,14 +124,14 @@ struct ShapeArguments
     // Superset of SymbolicShape, with additional support for unknown, nonsymbolic
     // vals
 public:
-    ShapeArguments(const xsigma::SymbolicShape& ss)
+    ShapeArguments(const quarisma::SymbolicShape& ss)
     {
         has_dim_ = ss.rank().has_value();
         if (has_dim_)
         {
             for (size_t i = 0; i < *ss.rank(); ++i)
             {
-                maybe_shape_symbols_.emplace_back(ss.xsigma(i));
+                maybe_shape_symbols_.emplace_back(ss.quarisma(i));
             }
         }
     }
@@ -148,10 +148,10 @@ public:
         return (int64_t)maybe_shape_symbols_.size();
     }
 
-    const ShapeArg xsigma(size_t i) const
+    const ShapeArg quarisma(size_t i) const
     {
         TORCH_INTERNAL_ASSERT(has_dim_, "ShapeArguments has no known dim")
-        return maybe_shape_symbols_.xsigma(i);
+        return maybe_shape_symbols_.quarisma(i);
     }
 
 private:
@@ -168,9 +168,9 @@ static std::ostream& operator<<(std::ostream& os, const ShapeArguments& sa)
     }
 
     os << "(";
-    for (const auto i : xsigma::irange(sa.len()))
+    for (const auto i : quarisma::irange(sa.len()))
     {
-        os << sa.xsigma(i);
+        os << sa.quarisma(i);
     }
     os << ")";
 
@@ -271,20 +271,20 @@ void replaceWithIValue(Value* v, const IValue& val)
     v->replaceAllUsesWith(v->owningGraph()->insertConstant(val));
 }
 
-xsigma::SymbolicShape extractListShape(
+quarisma::SymbolicShape extractListShape(
     Value* list, std::unordered_map<Value*, int64_t>& symbolic_shape_values, const AliasDb& db)
 {
     if (list->node()->kind() == prim::Constant)
     {
         auto int_list = toIValue(list)->toIntVector();
-        return xsigma::SymbolicShape(int_list);
+        return quarisma::SymbolicShape(int_list);
     }
     // We need a list construct or a constant output
     // that is not written to in order to analyze the output shape
     if (list->node()->kind() != prim::ListConstruct || db.hasWriters(list))
     {
         GRAPH_DEBUG("Could not extract shape");
-        return xsigma::SymbolicShape();
+        return quarisma::SymbolicShape();
     }
     Node*                               list_construct = list->node();
     std::vector<std::optional<int64_t>> output_shape;
@@ -299,7 +299,7 @@ xsigma::SymbolicShape extractListShape(
             output_shape.push_back(constant_as<int64_t>(input));
         }
     }
-    return xsigma::SymbolicShape(output_shape);
+    return quarisma::SymbolicShape(output_shape);
 }
 
 // Symbolic Shape Analysis works through iteratively partially evaluating
@@ -314,7 +314,7 @@ xsigma::SymbolicShape extractListShape(
 // will be length 4 with first two dimensions equal to 1 and 2. We can also
 // deduce that the 4th dimension has the same symbolic shape as inp[3], which
 // means that we do know its concrete value statically but we can assign sets
-// of tensor dimensions which must be equal xsigma runtime.
+// of tensor dimensions which must be equal quarisma runtime.
 
 struct SymbolicShapeOpAnalyzer
 {
@@ -333,7 +333,7 @@ struct SymbolicShapeOpAnalyzer
         {
             auto type = parent_graph_node->input(op_in_index)->type();
             if (auto opt_type = shape_compute_graph_->inputs()
-                                    .xsigma(op_in_index)
+                                    .quarisma(op_in_index)
                                     ->type()
                                     ->cast<OptionalType>())
             {
@@ -341,13 +341,13 @@ struct SymbolicShapeOpAnalyzer
                 if (!type->cast<OptionalType>() && !NoneType::get()->isSubtypeOf(*type))
                 {
                     shape_compute_graph_->inputs()
-                        .xsigma(op_in_index)
+                        .quarisma(op_in_index)
                         ->setType(opt_type->getElementType());
                 }
             }
-            else if (shape_compute_graph_->inputs().xsigma(op_in_index)->type()->cast<NumberType>())
+            else if (shape_compute_graph_->inputs().quarisma(op_in_index)->type()->cast<NumberType>())
             {
-                shape_compute_graph_->inputs().xsigma(op_in_index)->setType(type);
+                shape_compute_graph_->inputs().quarisma(op_in_index)->setType(type);
             }
         }
     }
@@ -365,7 +365,7 @@ struct SymbolicShapeOpAnalyzer
         size_t op_in_index = 0;
         while (op_in_index < shape_compute_graph_->inputs().size())
         {
-            Value* graph_in_var = shape_compute_graph_->inputs().xsigma(op_in_index);
+            Value* graph_in_var = shape_compute_graph_->inputs().quarisma(op_in_index);
             if (!isListOfListOfInts(graph_in_var->type()))
             {
                 op_in_index++;
@@ -416,7 +416,7 @@ struct SymbolicShapeOpAnalyzer
              op_in_index++)
         {
             SSArgument& argument     = inputs_[op_in_index];
-            Value*      graph_in_var = shape_compute_graph_->inputs().xsigma(op_in_index);
+            Value*      graph_in_var = shape_compute_graph_->inputs().quarisma(op_in_index);
 
             if (IValue* cur_val = std::get_if<IValue>(&argument))
             {
@@ -465,7 +465,7 @@ struct SymbolicShapeOpAnalyzer
 
         TORCH_INTERNAL_ASSERT(
             inputs_.size() >= shape_compute_graph_->inputs().size(), "Missing Arg for Shape Graph");
-        for (const auto index : xsigma::irange(shape_compute_graph_->inputs().size()))
+        for (const auto index : quarisma::irange(shape_compute_graph_->inputs().size()))
         {
             auto shape_arguments = std::get_if<ShapeArguments>(&inputs_[index]);
             if (!shape_arguments || !shape_arguments->has_dim())
@@ -474,7 +474,7 @@ struct SymbolicShapeOpAnalyzer
             }
             // Add support for testing symbolic shapes with dynamic dims
 
-            for (const Use& use : shape_compute_graph_->inputs().xsigma(index)->uses())
+            for (const Use& use : shape_compute_graph_->inputs().quarisma(index)->uses())
             {
                 // TODO: either decompose composite ops like slice or add handling here
                 switch (use.user->kind())
@@ -487,7 +487,7 @@ struct SymbolicShapeOpAnalyzer
                 break;
                 case aten::__getitem__:
                 {
-                    auto index = constant_as<int64_t>(use.user->inputs().xsigma(1));
+                    auto index = constant_as<int64_t>(use.user->inputs().quarisma(1));
                     if (!index)
                     {
                         continue;
@@ -497,7 +497,7 @@ struct SymbolicShapeOpAnalyzer
                     {
                         continue;
                     }
-                    auto shape_arg = shape_arguments->xsigma(*norm_index);
+                    auto shape_arg = shape_arguments->quarisma(*norm_index);
                     if (auto const_int = shape_arg.asConstantInt())
                     {
                         replaceWithIValue(use.user->output(), const_int);
@@ -599,7 +599,7 @@ struct SymbolicShapeOpAnalyzer
 
         // there are ways to compute this more efficiently but typically number of
         // Values for each symbolic set is low and this is cheap to run
-        for (const auto i : xsigma::irange(symbolic_set.size()))
+        for (const auto i : quarisma::irange(symbolic_set.size()))
         {
             Value* v                = symbolic_set[i];
             Value* dominating_value = v;
@@ -617,7 +617,7 @@ struct SymbolicShapeOpAnalyzer
         }
     }
 
-    std::vector<xsigma::SymbolicShape> propagateShapesInGraph()
+    std::vector<quarisma::SymbolicShape> propagateShapesInGraph()
     {
         bool             made_change  = true;
         constexpr size_t MAX_ATTEMPTS = 8;
@@ -636,20 +636,20 @@ struct SymbolicShapeOpAnalyzer
         return extractOutputShape(symbolic_shape_values);
     }
 
-    std::vector<xsigma::SymbolicShape> extractOutputShape(
+    std::vector<quarisma::SymbolicShape> extractOutputShape(
         std::unordered_map<Value*, int64_t>& symbolic_shape_values)
     {
         TORCH_INTERNAL_ASSERT(shape_compute_graph_->outputs().size() == schema_->returns().size());
-        // TODO: would be nice if there were easy facility to look xsigma uses and see
+        // TODO: would be nice if there were easy facility to look quarisma uses and see
         // if they are all pure instead of instantiating db.
-        auto    res = std::vector<xsigma::SymbolicShape>();
+        auto    res = std::vector<quarisma::SymbolicShape>();
         AliasDb db(shape_compute_graph_);
         for (size_t i = 0; i < shape_compute_graph_->outputs().size(); ++i)
         {
-            auto output = shape_compute_graph_->outputs().xsigma(i);
+            auto output = shape_compute_graph_->outputs().quarisma(i);
             auto type   = output->type();
             TORCH_INTERNAL_ASSERT(isListOfInts(type));
-            xsigma::SymbolicShape ss = extractListShape(output, symbolic_shape_values, db);
+            quarisma::SymbolicShape ss = extractListShape(output, symbolic_shape_values, db);
             GRAPH_DEBUG("Extracted Output: ", ss);
             res.push_back(ss);
         }
@@ -678,7 +678,7 @@ public:
         shape_compute_graph_ = graph->copy();
     }
 
-    std::optional<std::vector<xsigma::SymbolicShape>> run(std::vector<SSArgument>& inputs)
+    std::optional<std::vector<quarisma::SymbolicShape>> run(std::vector<SSArgument>& inputs)
     {
         if (!shape_compute_graph_)
         {
@@ -696,7 +696,7 @@ public:
 SSArgument tensorShapeArg(Value* tensor_v)
 {
     auto                  tt              = tensor_v->type()->expect<TensorType>();
-    xsigma::SymbolicShape symbolic_shapes = tt->symbolic_sizes();
+    quarisma::SymbolicShape symbolic_shapes = tt->symbolic_sizes();
 
     // for testing, we don't insert complete tensor shapes and rely on our
     // partial evaluation pipeline to propagate information.
@@ -708,14 +708,14 @@ SSArgument tensorShapeArg(Value* tensor_v)
     }
     if (toIValue(tensor_v))
     {
-        auto size = constant_as<xsigma::Tensor>(tensor_v)->sizes();
+        auto size = constant_as<quarisma::Tensor>(tensor_v)->sizes();
         if (!symbolic_shape_analysis_test_mode)
         {
             return IValue(size);
         }
         else
         {
-            return xsigma::SymbolicShape(size);
+            return quarisma::SymbolicShape(size);
         }
     }
     return symbolic_shapes;
@@ -749,7 +749,7 @@ std::vector<SSArgument> getNodeInputShapes(Node* n, const AliasDb& db)
                 auto ival = toIValue(n->input(node_index));
                 for (const auto& ten : ival->toTensorVector())
                 {
-                    input_shapes.emplace_back(xsigma::List<int64_t>(ten.sizes()));
+                    input_shapes.emplace_back(quarisma::List<int64_t>(ten.sizes()));
                 }
             }
             else if (
@@ -805,13 +805,13 @@ std::vector<SSArgument> getNodeInputShapes(Node* n, const AliasDb& db)
                             // if we are getting a size of a tensor, it is an unknown
                             // symbolic dimension instead of an unknown integer (must be
                             // >=0)
-                            shape.emplace_back(xsigma::ShapeSymbol::newSymbol());
+                            shape.emplace_back(quarisma::ShapeSymbol::newSymbol());
                             continue;
                         }
                         auto norm_index = normIndex(*const_index, *ss.rank());
                         if (!norm_index)
                         {
-                            shape.emplace_back(xsigma::ShapeSymbol::newSymbol());
+                            shape.emplace_back(quarisma::ShapeSymbol::newSymbol());
                             continue;
                         }
                         shape.emplace_back(ss[*norm_index]);
@@ -833,7 +833,7 @@ std::vector<SSArgument> getNodeInputShapes(Node* n, const AliasDb& db)
             }
         }
         GRAPH_DEBUG("Unhandled input: ", n->kind().toDisplayString(), " arg num: ", node_index);
-        input_shapes.emplace_back(xsigma::SymbolicShape());
+        input_shapes.emplace_back(quarisma::SymbolicShape());
     }
     TORCH_INTERNAL_ASSERT(
         input_shapes.size() >= n->inputs().size(),
@@ -844,13 +844,13 @@ std::vector<SSArgument> getNodeInputShapes(Node* n, const AliasDb& db)
     return input_shapes;
 }
 
-void applyOutputShapeToGraph(Node* node, const std::vector<xsigma::SymbolicShape>& output_shapes)
+void applyOutputShapeToGraph(Node* node, const std::vector<quarisma::SymbolicShape>& output_shapes)
 {
     TORCH_INTERNAL_ASSERT(
         node->outputs().size() == output_shapes.size(), "Output shape size mismatch");
     for (size_t i = 0; i < output_shapes.size(); ++i)
     {
-        auto& ss = output_shapes.xsigma(i);
+        auto& ss = output_shapes.quarisma(i);
         node->output(i)->setType(
             node->output(i)->type()->expect<TensorType>()->withSymbolicShapes(ss));
     }
@@ -879,17 +879,17 @@ std::shared_ptr<Graph> PropagateShapesWithShapeFunction(Node* n, const AliasDb& 
     return op_analyzer.getShapeComputeGraph();
 }
 
-xsigma::SymbolicShape combine_bounds(
-    xsigma::SymbolicShape& lower_bound, xsigma::SymbolicShape& upper_bound)
+quarisma::SymbolicShape combine_bounds(
+    quarisma::SymbolicShape& lower_bound, quarisma::SymbolicShape& upper_bound)
 {
     // TODO: At some point we might want to add support for dynamic dims
     TORCH_INTERNAL_ASSERT(lower_bound.rank() == upper_bound.rank());
     if (lower_bound.rank() == std::nullopt)
     {
-        return xsigma::SymbolicShape();
+        return quarisma::SymbolicShape();
     }
-    std::vector<xsigma::ShapeSymbol> merged_shapes;
-    for (const auto i : xsigma::irange(*lower_bound.rank()))
+    std::vector<quarisma::ShapeSymbol> merged_shapes;
+    for (const auto i : quarisma::irange(*lower_bound.rank()))
     {
         // TODO: Merge equivalent expressions (not needed for current use case)
         if (lower_bound[i] == upper_bound[i])
@@ -898,10 +898,10 @@ xsigma::SymbolicShape combine_bounds(
         }
         else
         {
-            merged_shapes.push_back(xsigma::ShapeSymbol::newSymbol());
+            merged_shapes.push_back(quarisma::ShapeSymbol::newSymbol());
         }
     }
-    return xsigma::SymbolicShape(std::move(merged_shapes));
+    return quarisma::SymbolicShape(std::move(merged_shapes));
 }
 
 struct SymbolicShapeGraphAnalyzer
@@ -992,9 +992,9 @@ struct SymbolicShapeGraphAnalyzer
 
         for (size_t i = 0; i < stitched_shape_compute_graph->outputs().size(); ++i)
         {
-            Value* output = stitched_shape_compute_graph->outputs().xsigma(i);
+            Value* output = stitched_shape_compute_graph->outputs().quarisma(i);
             // this Value is already contained, so the symbolic shape for i must be
-            // equal to the symbolic shape xsigma the existing index
+            // equal to the symbolic shape quarisma the existing index
             if (graph_output_to_symbolic_shape_dim.count(output))
             {
                 auto curr_sym_shape     = output_index_to_symbolic_shape_[i];
@@ -1013,10 +1013,10 @@ struct SymbolicShapeGraphAnalyzer
         }
         for (size_t i = 0; i < stitched_shape_compute_graph->inputs().size();)
         {
-            if (!stitched_shape_compute_graph->inputs().xsigma(i)->hasUses())
+            if (!stitched_shape_compute_graph->inputs().quarisma(i)->hasUses())
             {
                 enclosing_graph_value_to_shape_graph_input_.erase(
-                    stitched_shape_compute_graph->inputs().xsigma(i));
+                    stitched_shape_compute_graph->inputs().quarisma(i));
                 stitched_shape_compute_graph->eraseInput(i);
             }
             else
@@ -1047,10 +1047,10 @@ struct SymbolicShapeGraphAnalyzer
                     continue;
                 }
                 bool                             changed   = false;
-                std::vector<xsigma::ShapeSymbol> shape_vec = *tt->symbolic_sizes().sizes();
-                auto                             new_sizes = xsigma::fmap(
+                std::vector<quarisma::ShapeSymbol> shape_vec = *tt->symbolic_sizes().sizes();
+                auto                             new_sizes = quarisma::fmap(
                     shape_vec,
-                    [&](const xsigma::ShapeSymbol& shape)
+                    [&](const quarisma::ShapeSymbol& shape)
                     {
                         auto value = shape.value();
                         if (sym_shape_equalities.count(value))
@@ -1062,7 +1062,7 @@ struct SymbolicShapeGraphAnalyzer
                     });
                 if (changed)
                 {
-                    output->setType(tt->withSymbolicShapes(xsigma::SymbolicShape(new_sizes)));
+                    output->setType(tt->withSymbolicShapes(quarisma::SymbolicShape(new_sizes)));
                 }
             }
         }
@@ -1077,7 +1077,7 @@ struct SymbolicShapeGraphAnalyzer
         output_index_to_symbolic_shape_[stitched_shape_compute_graph->outputs().size() - 1] =
             symbolic_shape;
         symbolic_shape_value_to_graph_output_[symbolic_shape] =
-            stitched_shape_compute_graph->outputs().xsigma(
+            stitched_shape_compute_graph->outputs().quarisma(
                 stitched_shape_compute_graph->outputs().size() - 1);
     }
 
@@ -1137,7 +1137,7 @@ struct SymbolicShapeGraphAnalyzer
             else
             {
                 Value* shape_graph_input = stitched_shape_compute_graph->addInput()->copyMetadata(
-                    partial_eval_graph->inputs().xsigma(i));
+                    partial_eval_graph->inputs().quarisma(i));
                 enclosing_graph_value_to_shape_graph_input_[node_input] = shape_graph_input;
                 partial_eval_inputs.push_back(shape_graph_input);
             }
@@ -1177,7 +1177,7 @@ struct SymbolicShapeGraphAnalyzer
 
         for (size_t i = 0; i < curr->outputs().size(); ++i)
         {
-            Value* new_list_output = value_map[partial_eval_graph->outputs().xsigma(i)];
+            Value* new_list_output = value_map[partial_eval_graph->outputs().quarisma(i)];
             enclosing_graph_value_to_shape_graph_input_[curr->output(i)] = new_list_output;
 
             TORCH_INTERNAL_ASSERT(
@@ -1269,7 +1269,7 @@ std::optional<ShapeComputeGraphMapping> PropagateShapesAndBuildLargeShapeCompute
     return SymbolicShapeGraphAnalyzer(graph, beg, end).run();
 }
 
-TORCH_API std::optional<std::vector<xsigma::SymbolicShape>> calculateSymbolicShapesOnOp(
+TORCH_API std::optional<std::vector<quarisma::SymbolicShape>> calculateSymbolicShapesOnOp(
     const FunctionSchema* schema, const std::vector<SSAInput>& inputs)
 {
     auto bounded_graphs    = boundedGraphsForSchema(*schema);
@@ -1295,7 +1295,7 @@ TORCH_API std::optional<std::vector<xsigma::SymbolicShape>> calculateSymbolicSha
         }
         else
         {
-            const xsigma::SymbolicShape* ss = std::get_if<xsigma::SymbolicShape>(&arg);
+            const quarisma::SymbolicShape* ss = std::get_if<quarisma::SymbolicShape>(&arg);
             ssa_args.emplace_back(ShapeArguments(*ss));
         }
     }
@@ -1310,11 +1310,11 @@ TORCH_API std::optional<std::vector<xsigma::SymbolicShape>> calculateSymbolicSha
         if (lower_bound_res.has_value() && upper_bound_res.has_value())
         {
             TORCH_INTERNAL_ASSERT(lower_bound_res->size() == upper_bound_res->size());
-            auto merged_res = std::vector<xsigma::SymbolicShape>();
+            auto merged_res = std::vector<quarisma::SymbolicShape>();
             for (size_t i = 0; i < lower_bound_res->size(); i++)
             {
                 merged_res.push_back(
-                    combine_bounds(lower_bound_res->xsigma(i), upper_bound_res->xsigma(i)));
+                    combine_bounds(lower_bound_res->quarisma(i), upper_bound_res->quarisma(i)));
             }
             cache_shape_function(schema, inputs, merged_res);
             return merged_res;

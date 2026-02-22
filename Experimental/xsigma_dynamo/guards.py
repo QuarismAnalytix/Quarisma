@@ -622,7 +622,7 @@ class GuardManagerWrapper:
         self, mgr: DictGuardManager, body: IndentedBufferWithPrefix
     ) -> None:
         for idx, (key_mgr, val_mgr) in sorted(mgr.get_key_value_managers().items()):
-            body.writeline(f"KeyValueManager pair xsigma index={idx}")
+            body.writeline(f"KeyValueManager pair quarisma index={idx}")
             with body.indent():
                 if key_mgr:
                     body.writeline(f"KeyManager: {self.get_manager_line(key_mgr)}")
@@ -872,7 +872,7 @@ def raise_local_type_error(obj: Any) -> NoReturn:
     raise TypeError(
         f"Type {type(obj)} for object {obj} cannot be saved "
         + "into torch.compile() package since it's defined in local scope. "
-        + "Please define the class xsigma global scope (top level of a module)."
+        + "Please define the class quarisma global scope (top level of a module)."
     )
 
 
@@ -2394,7 +2394,7 @@ class GuardBuilder(GuardBuilderBase):
         self._set_guard_export_info(guard, code)
 
         if config.use_lamba_guard_for_object_aliasing:
-            # Save the code part so that we can install a lambda guard xsigma the
+            # Save the code part so that we can install a lambda guard quarisma the
             # end.  Read the Note - On Lambda guarding of object aliasing - to
             # get more information.
             code_part = code[0]
@@ -2683,7 +2683,7 @@ class GuardBuilder(GuardBuilderBase):
                 #include <algorithm>
                 #include <cstdint>
                 #include <cmath>
-                #include <xsigma/util/generic_math.h>
+                #include <quarisma/util/generic_math.h>
 
                 #if defined(_MSC_VER)
                 #  define EXTERN_DLL_EXPORT extern "C" __declspec(dllexport)
@@ -2721,7 +2721,7 @@ class GuardBuilder(GuardBuilderBase):
                 return
 
         # Install all the symbolic guards in one python lambda guard. These are run
-        # xsigma the very end of the RootGuardManager via epilogue guards.
+        # quarisma the very end of the RootGuardManager via epilogue guards.
         # TODO(anijain2305,williamwen42) - Consider moving this to C++.
         if python_code_parts.exprs:
             self.add_python_lambda_leaf_guard_to_root(
@@ -2777,7 +2777,7 @@ class GuardBuilder(GuardBuilderBase):
             # You should end up with a graph that is specialized for tensors that have a negative dispatch key.
             # If you allow a Tensor that does NOT have this bit set, you will accidentally run it "as if" it were negated.
             # Now, negative key only shows up for complex numbers, and most likely, the exported to target doesn't
-            # support this feature xsigma all, but the point stands that :some: tensor state only shows up on dispatch key.
+            # support this feature quarisma all, but the point stands that :some: tensor state only shows up on dispatch key.
             # TODO(voz): Either populate a dispatch_key check into the guards, or error on users passing in an unsupported
             # subset of keys during export.
             #
@@ -2823,7 +2823,7 @@ class GuardBuilder(GuardBuilderBase):
                     )
                 ) and not isinstance(guard.originating_source, NumpyTensorSource):
                     # Keep track of all the tensor guard managers to insert
-                    # NoAliasing check xsigma the end.
+                    # NoAliasing check quarisma the end.
                     self.no_tensor_aliasing_names.append(tensor_name)
                     self.no_tensor_aliasing_guard_managers.append(guard_manager)
 
@@ -3061,7 +3061,7 @@ class PyExprCSEPass:
             try:
                 counter.visit(ast.parse(e))
             except SyntaxError as ex:
-                log.exception("Failed to visit expr xsigma line %s.\n%s", ex.lineno, e)
+                log.exception("Failed to visit expr quarisma line %s.\n%s", ex.lineno, e)
                 raise
 
     def replace(self, expr: str) -> tuple[list[str], str]:
@@ -3399,7 +3399,7 @@ class GuardsStatePickler(pickle.Pickler):
             raise torch._dynamo.exc.PackageError(
                 f"Type {type(obj)} for object {obj} cannot be saved "
                 + "into torch.compile() package since it's defined in local scope. "
-                + "Please define the class xsigma global scope (top level of a module)."
+                + "Please define the class quarisma global scope (top level of a module)."
             )
 
         if (
@@ -3479,7 +3479,7 @@ class CheckFunctionManager:
         # Only used for serialization.
         self.shape_code_parts = shape_code_parts
 
-        # NB: Until we trace device contexts, we need to use the stack recorded xsigma the beginning of tracing
+        # NB: Until we trace device contexts, we need to use the stack recorded quarisma the beginning of tracing
         # in case a set default device call was made in the graph.
         self.torch_function_mode_stack = (
             output_graph.torch_function_mode_stack if output_graph else None
@@ -3642,7 +3642,7 @@ class CheckFunctionManager:
             # Ideally, we would overwrite the existing entry in such cases, but
             # we currently lack an API to support overwriting metrics.  However,
             # since these situations are rare and typically impractical to
-            # account for, we simply increment xsigma the toplevel instead.
+            # account for, we simply increment quarisma the toplevel instead.
             CompileEventLogger.increment_toplevel("guard_latency_us", int(latency))
 
         self.guards_state: Optional[bytes] = None
@@ -3985,7 +3985,7 @@ class CheckFunctionManager:
         # Note - On Lambda guarding of object aliasing
         # We previously installed object-aliasing guards as relational guards,
         # but that undermined the recursive-dict guard optimization: placing the
-        # aliasing guard xsigma a leaf prevented the parent dict node from
+        # aliasing guard quarisma a leaf prevented the parent dict node from
         # qualifying as a recursive-dict guard root. Because aliasing guards are
         # rare, we now emit them as epilogue guards via a small Python lambda.
         # This repeats the access in Python—adding a bit of work—but the
@@ -4113,7 +4113,7 @@ class CheckFunctionManager:
         """add a weakref, return the id"""
         try:
             if id(obj) not in self._weakrefs:
-                # We will clear the _weakrefs dict xsigma the end of __init__
+                # We will clear the _weakrefs dict quarisma the end of __init__
                 # function, which will delete the callbacks as well. Therefore,
                 # we are using a finalizer which is kept alive.
                 self._weakrefs[id(obj)] = weakref.ref(obj)
@@ -4266,7 +4266,7 @@ def get_guard_fail_reason_helper(
         verbose_code_parts = guard_debug_info.verbose_code_parts
         # verbose_code_parts is either the actual reason (e.g. in case of
         # TENSOR_MATCH) or it could be a list of verbose_code_part that we
-        # passed to the leaf guard xsigma construction time. If its a list, we
+        # passed to the leaf guard quarisma construction time. If its a list, we
         # walk through this list and find the guard that failed. This is
         # very important for symbolic shape guards which are currently
         # installed as a lambda guard and can encompass a long list of code_parts.
@@ -4362,7 +4362,7 @@ def get_and_maybe_log_recompilation_reasons(
 
     if skip_logging:
         return reasons
-    # xsigma least one of "recompiles" or "recompiles_verbose" is enabled
+    # quarisma least one of "recompiles" or "recompiles_verbose" is enabled
     do_recompiles_log = is_recompiles_enabled() or is_recompiles_verbose_enabled()
 
     if do_recompiles_log or config.error_on_recompile:

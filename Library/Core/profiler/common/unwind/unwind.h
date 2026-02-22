@@ -6,11 +6,11 @@
 
 #include "common/export.h"
 
-namespace xsigma::unwind
+namespace quarisma::unwind
 {
 // gather current stack, relatively fast.
 // gets faster once the cache of program counter locations is warm.
-XSIGMA_API std::vector<void*> unwind();
+QUARISMA_API std::vector<void*> unwind();
 
 struct Frame
 {
@@ -32,10 +32,10 @@ enum class Mode
 // Callers should first batch up all the unique void* pointers
 // across a number of unwind states and make a single call to
 // symbolize.
-XSIGMA_API std::vector<Frame> symbolize(const std::vector<void*>& frames, Mode mode);
+QUARISMA_API std::vector<Frame> symbolize(const std::vector<void*>& frames, Mode mode);
 
 // returns path to the library, and the offset of the addr inside the library
-XSIGMA_API std::optional<std::pair<std::string, uint64_t>> libraryFor(void* addr);
+QUARISMA_API std::optional<std::pair<std::string, uint64_t>> libraryFor(void* addr);
 
 struct Stats
 {
@@ -46,4 +46,4 @@ struct Stats
 };
 Stats stats();
 
-}  // namespace xsigma::unwind
+}  // namespace quarisma::unwind

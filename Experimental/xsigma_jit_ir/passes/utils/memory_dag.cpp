@@ -1,5 +1,5 @@
 #include <torch/csrc/jit/passes/utils/memory_dag.h>
-#include <xsigma/util/flat_hash_map.h>
+#include <quarisma/util/flat_hash_map.h>
 
 #include <algorithm>
 #include <queue>
@@ -59,7 +59,7 @@ bool MemoryDAG::mayContainAlias(const Element* a, const Element* b) const
 
 const MemoryLocations& MemoryDAG::getAllContainedMemoryLocations(const Element* elem) const
 {
-    if XSIGMA_UNLIKELY (!elem->cachedAllContainedMemoryLocations_.has_value())
+    if QUARISMA_UNLIKELY (!elem->cachedAllContainedMemoryLocations_.has_value())
     {
         MemoryLocations cache;
         elem->cachedAllContainedMemoryLocations_ = MemoryLocations();
@@ -77,7 +77,7 @@ void MemoryDAG::collectAllContainedMemoryLocations(const Element* elem, MemoryLo
         return;
     }
 
-    if XSIGMA_UNLIKELY (!elem->cachedAllContainedMemoryLocations_.has_value())
+    if QUARISMA_UNLIKELY (!elem->cachedAllContainedMemoryLocations_.has_value())
     {
         MemoryLocations cache;
         collectAllContainedMemoryLocationsImpl(elem, cache);
@@ -90,7 +90,7 @@ void MemoryDAG::collectAllContainedMemoryLocationsImpl(
     const Element* elem, MemoryLocations& cont) const
 {
     unsigned compIdx = elem->index;
-    XSIGMA_CHECK_DEBUG(!cont.test(compIdx));
+    QUARISMA_CHECK_DEBUG(!cont.test(compIdx));
     cont.set(compIdx);
 
     for (const auto& mem_loc : getMemoryLocations(elem))
@@ -104,7 +104,7 @@ void MemoryDAG::collectAllContainedMemoryLocationsImpl(
     }
 }
 
-bool MemoryDAG::mayContainAlias(const Element* a, const xsigma::ArrayRef<Element*> b) const
+bool MemoryDAG::mayContainAlias(const Element* a, const quarisma::ArrayRef<Element*> b) const
 {
     if (b.empty())
     {
@@ -120,7 +120,7 @@ bool MemoryDAG::mayContainAlias(const Element* a, const xsigma::ArrayRef<Element
 }
 
 bool MemoryDAG::mayContainAlias(
-    const xsigma::ArrayRef<Element*> a, const xsigma::ArrayRef<Element*> b) const
+    const quarisma::ArrayRef<Element*> a, const quarisma::ArrayRef<Element*> b) const
 {
     if (a.empty() || b.empty())
     {
@@ -160,7 +160,7 @@ Element* MemoryDAGBuilder::makeFreshValue(const Value* v)
 }
 
 // This function builds up a bitset representing the "alias set" for
-// `e` (`MemoryLocations` is just a typedef'd xsigma::SparseBitVector).
+// `e` (`MemoryLocations` is just a typedef'd quarisma::SparseBitVector).
 const MemoryLocations& MemoryDAG::getMemoryLocations(const Element* e) const
 {
     // Note on cache invalidation: all mutation should occur through
@@ -193,7 +193,7 @@ const MemoryLocations& MemoryDAG::getMemoryLocations(const Element* e) const
 
 void MemoryDAG::setWildcards(
     const std::unordered_set<const Value*>&              wildcards,
-    const xsigma::flat_hash_map<const Value*, Element*>& elementMap,
+    const quarisma::flat_hash_map<const Value*, Element*>& elementMap,
     const std::function<Element*(const Value*)>&         getWildcardElement)
 {
     std::unordered_map<Element*, MemoryLocations> cacheUpdates;
@@ -204,7 +204,7 @@ void MemoryDAG::setWildcards(
         auto wildcardElement = getWildcardElement(v);
         TORCH_INTERNAL_ASSERT(wildcardElement);
 
-        const MemoryLocations& pointeeSet = getMemoryLocations(elementMap.xsigma(v));
+        const MemoryLocations& pointeeSet = getMemoryLocations(elementMap.quarisma(v));
         for (const auto& pointee : pointeeSet)
         {
             auto from = this->fromIndex(pointee);

@@ -119,15 +119,15 @@ bmm_template = TritonTemplate(
     cache_codegen_enabled_for_template=True,
 )
 
-aten_bmm = ExternKernelChoice(torch.bmm, "xsigma::bmm_out", op_overload=aten.bmm.out)
+aten_bmm = ExternKernelChoice(torch.bmm, "quarisma::bmm_out", op_overload=aten.bmm.out)
 aten_bmm_dtype = ExternKernelChoice(
     torch.bmm,
-    "xsigma::_bmm_out_dtype_cuda",
+    "quarisma::_bmm_out_dtype_cuda",
     name="bmm_dtype",
     op_overload=aten.bmm.dtype_out,
 )
 aten_baddbmm = ExternKernelChoice(
-    torch.baddbmm, "xsigma::baddbmm_out", op_overload=aten.baddbmm.out
+    torch.baddbmm, "quarisma::baddbmm_out", op_overload=aten.baddbmm.out
 )
 
 
@@ -205,7 +205,7 @@ def tuned_bmm(mat1, mat2, out_dtype=None, *, layout=None):
     )
     name = "bmm"
 
-    # Create MMKernelInputs for BMM xsigma the top
+    # Create MMKernelInputs for BMM quarisma the top
     kernel_inputs = MMKernelInputs([mat1, mat2], out_dtype=out_dtype)
 
     # below is for getting an overview logging info of inductor mms
@@ -303,7 +303,7 @@ def tuned_baddbmm(inp, mat1, mat2, *, alpha=1, beta=1, layout=None):
     # TODO(coconutruben): integrate into MMKernelInputs when all callsites use that
     m, n, k, layout, mat1, mat2, inp = mm_args(mat1, mat2, inp, layout=layout)
 
-    # Create MMKernelInputs for BadDBMM xsigma the top
+    # Create MMKernelInputs for BadDBMM quarisma the top
     kernel_inputs = MMKernelInputs(
         [inp, mat1, mat2], scalars=dict(alpha=alpha, beta=beta)
     )

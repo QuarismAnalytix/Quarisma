@@ -1,8 +1,8 @@
-#include <XSigma/XSigma.h>
+#include <Quarisma/Quarisma.h>
 #include <torch/csrc/autograd/engine.h>
 #include <torch/csrc/autograd/function.h>
 #include <torch/csrc/autograd/variable.h>
-#include <xsigma/util/ThreadLocal.h>
+#include <quarisma/util/ThreadLocal.h>
 
 #include <memory>
 #include <string>
@@ -10,9 +10,9 @@
 #include <vector>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/zeros.h>
+#include <Quarisma/ops/zeros.h>
 #endif
 
 namespace torch::autograd
@@ -21,7 +21,7 @@ namespace torch::autograd
 // The current evaluating node. This is useful to assign the current node as a
 // parent of new nodes created during the evaluation of this node in anomaly
 // mode.
-XSIGMA_DEFINE_TLS_static(std::shared_ptr<Node>, tls_current_evaluating_node);
+QUARISMA_DEFINE_TLS_static(std::shared_ptr<Node>, tls_current_evaluating_node);
 #define current_evaluating_node (tls_current_evaluating_node.get())
 
 NodeGuard::NodeGuard(std::shared_ptr<Node> node)
@@ -47,7 +47,7 @@ void Node::assign_parent()
 
 auto Node::name() const -> std::string
 {
-    return xsigma::demangle(typeid(*this).name());
+    return quarisma::demangle(typeid(*this).name());
 }
 
 AnomalyMetadata* Node::metadata() noexcept
@@ -116,9 +116,9 @@ void deleteNode(Node* function)
     }
 }
 
-xsigma::Tensor TypeAndSize::zeros()
+quarisma::Tensor TypeAndSize::zeros()
 {
-    return xsigma::zeros_symint(sym_sizes, options);
+    return quarisma::zeros_symint(sym_sizes, options);
 }
 
 }  // namespace torch::autograd

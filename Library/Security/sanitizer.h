@@ -8,7 +8,7 @@
 #include "common/export.h"
 #include "common/macros.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace security
 {
@@ -24,7 +24,7 @@ namespace security
  * - Are safe to call with any input
  * - Never throw exceptions
  */
-class XSIGMA_VISIBILITY sanitizer
+class QUARISMA_VISIBILITY sanitizer
 {
 public:
     // ========================================================================
@@ -36,21 +36,21 @@ public:
      * @param str Input string
      * @return String with null bytes removed
      */
-    static XSIGMA_API std::string remove_null_bytes(std::string_view str);
+    static QUARISMA_API std::string remove_null_bytes(std::string_view str);
 
     /**
      * @brief Removes all non-printable ASCII characters
      * @param str Input string
      * @return String with only printable ASCII characters
      */
-    static XSIGMA_API std::string remove_non_printable(std::string_view str);
+    static QUARISMA_API std::string remove_non_printable(std::string_view str);
 
     /**
      * @brief Trims whitespace from both ends of a string
      * @param str Input string
      * @return Trimmed string
      */
-    static XSIGMA_API std::string trim(std::string_view str);
+    static QUARISMA_API std::string trim(std::string_view str);
 
     /**
      * @brief Truncates string to maximum length
@@ -58,7 +58,7 @@ public:
      * @param max_length Maximum allowed length
      * @return Truncated string
      */
-    static XSIGMA_API std::string truncate(std::string_view str, size_t max_length);
+    static QUARISMA_API std::string truncate(std::string_view str, size_t max_length);
 
     // ========================================================================
     // Escape/Unescape Functions
@@ -71,7 +71,7 @@ public:
      *
      * Escapes: < > & " '
      */
-    static XSIGMA_API std::string escape_html(std::string_view str);
+    static QUARISMA_API std::string escape_html(std::string_view str);
 
     /**
      * @brief Escapes SQL special characters to prevent SQL injection
@@ -80,7 +80,7 @@ public:
      *
      * Note: This is a basic escape. Use parameterized queries when possible.
      */
-    static XSIGMA_API std::string escape_sql(std::string_view str);
+    static QUARISMA_API std::string escape_sql(std::string_view str);
 
     /**
      * @brief Escapes shell special characters to prevent command injection
@@ -89,21 +89,21 @@ public:
      *
      * Note: Avoid shell execution when possible. Use direct API calls instead.
      */
-    static XSIGMA_API std::string escape_shell(std::string_view str);
+    static QUARISMA_API std::string escape_shell(std::string_view str);
 
     /**
      * @brief Escapes JSON special characters
      * @param str Input string
      * @return JSON-escaped string
      */
-    static XSIGMA_API std::string escape_json(std::string_view str);
+    static QUARISMA_API std::string escape_json(std::string_view str);
 
     /**
      * @brief Escapes URL special characters (percent encoding)
      * @param str Input string
      * @return URL-encoded string
      */
-    static XSIGMA_API std::string escape_url(std::string_view str);
+    static QUARISMA_API std::string escape_url(std::string_view str);
 
     // ========================================================================
     // Path Sanitization
@@ -116,7 +116,7 @@ public:
      *
      * Removes: .. sequences, leading slashes, drive letters
      */
-    static XSIGMA_API std::string sanitize_path(std::string_view path);
+    static QUARISMA_API std::string sanitize_path(std::string_view path);
 
     /**
      * @brief Sanitizes filename by removing special characters
@@ -125,7 +125,7 @@ public:
      *
      * Keeps: alphanumeric, underscore, hyphen, dot
      */
-    static XSIGMA_API std::string sanitize_filename(std::string_view filename);
+    static QUARISMA_API std::string sanitize_filename(std::string_view filename);
 
     // ========================================================================
     // Numeric Sanitization
@@ -170,4 +170,4 @@ private:
 };
 
 }  // namespace security
-}  // namespace xsigma
+}  // namespace quarisma

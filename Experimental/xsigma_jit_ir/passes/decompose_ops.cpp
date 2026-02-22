@@ -1,4 +1,4 @@
-#include <XSigma/core/symbol.h>
+#include <Quarisma/core/symbol.h>
 #include <torch/csrc/jit/frontend/ir_emitter.h>
 #include <torch/csrc/jit/passes/constant_propagation.h>
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
@@ -13,9 +13,9 @@ namespace torch::jit
 
 namespace
 {
-xsigma::AliasAnalysisKind aliasAnalysisFromSchema()
+quarisma::AliasAnalysisKind aliasAnalysisFromSchema()
 {
-    return xsigma::AliasAnalysisKind::FROM_SCHEMA;
+    return quarisma::AliasAnalysisKind::FROM_SCHEMA;
 }
 }  // namespace
 
@@ -75,9 +75,9 @@ static RegisterOperators reg_ops(
          {
              const int64_t                   ndim = pop(stack).toInt();
              auto                            self = pop(stack).toTensor();
-             xsigma::SmallVector<int64_t, 8> sizes(ndim, 1);
+             quarisma::SmallVector<int64_t, 8> sizes(ndim, 1);
              AT_ASSERT(self.dim() == 1);
-             sizes.xsigma(1) = self.size(0);
+             sizes.quarisma(1) = self.size(0);
              push(stack, self.reshape(sizes));
          },
          aliasAnalysisFromSchema()),
@@ -89,10 +89,10 @@ static RegisterOperators reg_ops(
              auto                            input_shape     = pop(stack).toIntList();
              auto                            self            = pop(stack).toTensor();
              const int64_t                   input_ndim      = input_shape.size();
-             xsigma::SmallVector<int64_t, 8> sizes(input_ndim, 1);
+             quarisma::SmallVector<int64_t, 8> sizes(input_ndim, 1);
              for (int i = 0; i < input_ndim - normalized_ndim; ++i)
              {
-                 sizes.xsigma(i) = input_shape.get(i);
+                 sizes.quarisma(i) = input_shape.get(i);
              }
              push(stack, self.reshape(sizes));
          },
@@ -117,8 +117,8 @@ static bool DecomposeOps(Block* block, CompilationUnit& decompose_funcs)
             // and both of those scalars are equal to 1.0, decompose this into an mm
             // followed by an add so that it can go through the existing optimization
             // (batchmm)
-            if (it->get<xsigma::Scalar>(attr::alpha)->toComplexDouble() != 1.0 ||
-                it->get<xsigma::Scalar>(attr::beta)->toComplexDouble() != 1.0)
+            if (it->get<quarisma::Scalar>(attr::alpha)->toComplexDouble() != 1.0 ||
+                it->get<quarisma::Scalar>(attr::beta)->toComplexDouble() != 1.0)
             {
                 continue;
             }
@@ -127,7 +127,7 @@ static bool DecomposeOps(Block* block, CompilationUnit& decompose_funcs)
             WithInsertPoint        guard(*it);
             std::shared_ptr<Graph> d_graph =
                 toGraphFunction(decompose_funcs.get_function("addmm")).graph();
-            Value* new_output = insertGraph(*it->owningGraph(), *d_graph, it->inputs()).xsigma(0);
+            Value* new_output = insertGraph(*it->owningGraph(), *d_graph, it->inputs()).quarisma(0);
             // Set the output of the decomposed graph to have the same output type as
             // the original op otherwise the canonicalized graph will have TensorType
             // as the output of this node which is incorrect
@@ -160,7 +160,7 @@ static bool DecomposeOps(Block* block, CompilationUnit& decompose_funcs)
             // inline the compiled decomposed batchnorm
             std::shared_ptr<Graph> d_graph =
                 toGraphFunction(decompose_funcs.get_function("batch_norm")).graph();
-            Value* new_output = insertGraph(*graph, *d_graph, inputs).xsigma(0);
+            Value* new_output = insertGraph(*graph, *d_graph, inputs).quarisma(0);
 
             // post processing the graph
             Value* weight = it->namedInput(attr::weight);
@@ -198,7 +198,7 @@ static bool DecomposeOps(Block* block, CompilationUnit& decompose_funcs)
             // inline the compiled decomposed layernorm
             std::shared_ptr<Graph> d_graph =
                 toGraphFunction(decompose_funcs.get_function("layer_norm")).graph();
-            Value* new_output = insertGraph(*graph, *d_graph, inputs).xsigma(0);
+            Value* new_output = insertGraph(*graph, *d_graph, inputs).quarisma(0);
 
             // post processing the graph
             Value* weight = it->namedInput(attr::weight);

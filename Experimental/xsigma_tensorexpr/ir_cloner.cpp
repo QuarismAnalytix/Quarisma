@@ -2,7 +2,7 @@
 #include <torch/csrc/jit/tensorexpr/ir_cloner.h>
 #include <torch/csrc/jit/tensorexpr/ir_simplifier.h>
 #include <torch/csrc/jit/tensorexpr/reduction.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit::tensorexpr
 {
@@ -165,7 +165,7 @@ ExprPtr IRCloner::mutate(const VarPtr& v)
 
 // We do not clone Bufs since the original IR and cloned IR are expected to
 // share the underlying Bufs. In spite of Bufs having expressions as dims and
-// initializers, this is the expected usage of clone xsigma this point.
+// initializers, this is the expected usage of clone quarisma this point.
 //
 // TODO: Revisit this if Bufs need to be cloned as well.
 ExprPtr IRCloner::mutate(const BufPtr& v)

@@ -4,7 +4,7 @@
 
 #include "common/export.h"
 
-namespace xsigma::unwind
+namespace quarisma::unwind
 {
 
 enum
@@ -65,4 +65,4 @@ struct Action
     }
 };
 
-}  // namespace xsigma::unwind
+}  // namespace quarisma::unwind

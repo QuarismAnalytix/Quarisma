@@ -62,7 +62,7 @@ inline bool pinned_memory_or_default(std::optional<bool> pinned_memory)
 ///
 /// WARNING: In PyTorch, there are `torch::` variants of factory functions,
 /// e.g., torch::zeros for at::zeros.  These return Variables (while the
-/// stock XSigma functions return plain Tensors).  If you mix these functions
+/// stock Quarisma functions return plain Tensors).  If you mix these functions
 /// up, you WILL BE SAD.
 ///
 /// Rather than use the constructor of this class directly, you should prefer to
@@ -376,7 +376,7 @@ struct C10_API TensorOptions
         return has_memory_format_ ? std::make_optional(memory_format_) : std::nullopt;
     }
 
-    // Resolves the XSigma backend specified by the current construction axes.
+    // Resolves the Quarisma backend specified by the current construction axes.
     // TODO: Deprecate this
     Backend backend() const { return at::dispatchKeyToBackend(computeDispatchKey()); }
 

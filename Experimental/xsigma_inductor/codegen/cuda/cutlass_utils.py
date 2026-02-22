@@ -132,7 +132,7 @@ def try_import_cutlass() -> bool:
                     )
                     assert os.path.realpath(os.readlink(dst_link)) == os.path.realpath(
                         src_path,
-                    ), f"Symlink xsigma {dst_link} does not point to {src_path}"
+                    ), f"Symlink quarisma {dst_link} does not point to {src_path}"
                 else:
                     os.makedirs(parent_dir, exist_ok=True)
                     os.symlink(src_path, dst_link)

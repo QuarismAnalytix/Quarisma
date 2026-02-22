@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,12 +18,12 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -42,7 +42,7 @@
 
 #include "memory/cpu/allocator.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -72,7 +72,7 @@ namespace xsigma
  * - Log2Ceiling64(9) = 4
  * - Log2Ceiling64(1024) = 10
  */
-XSIGMA_NODISCARD constexpr int Log2Ceiling64(uint64_t x) noexcept
+QUARISMA_NODISCARD constexpr int Log2Ceiling64(uint64_t x) noexcept
 {
     if (x <= 1)
     {
@@ -164,7 +164,7 @@ public:
      * **Thread Safety**: Implementation-dependent (should be thread-safe)
      * **Performance**: Implementation-dependent
      */
-    XSIGMA_NODISCARD virtual size_t RoundUp(size_t num_bytes) = 0;
+    QUARISMA_NODISCARD virtual size_t RoundUp(size_t num_bytes) = 0;
 };
 
 /**
@@ -203,7 +203,7 @@ public:
  *
  * **Thread Safety**: Fully thread-safe with internal mutex protection
  */
-class XSIGMA_VISIBILITY allocator_pool : public Allocator
+class QUARISMA_VISIBILITY allocator_pool : public Allocator
 {
 public:
     /**
@@ -228,10 +228,10 @@ public:
      * **Thread Safety**: Constructor is not thread-safe
      * **Exception Safety**: Strong guarantee - no partial construction
      */
-    XSIGMA_API allocator_pool(
+    QUARISMA_API allocator_pool(
         size_t                                 pool_size_limit,
         bool                                   auto_resize,
-        std::unique_ptr<xsigma::sub_allocator> allocator,
+        std::unique_ptr<quarisma::sub_allocator> allocator,
         std::unique_ptr<round_up_interface>    size_rounder,
         std::string                            name);
 
@@ -242,7 +242,7 @@ public:
      * **Thread Safety**: Destructor is not thread-safe
      * **Exception Safety**: noexcept - logs errors but doesn't throw
      */
-    XSIGMA_API ~allocator_pool() override;
+    QUARISMA_API ~allocator_pool() override;
 
     /**
      * @brief Returns human-readable name of the allocator.
@@ -277,7 +277,7 @@ public:
      * **Thread Safety**: Thread-safe with internal synchronization
      * **Statistics**: Updates allocation counters and hit/miss ratios
      */
-    XSIGMA_API void* allocate_raw(size_t alignment, size_t num_bytes) override;
+    QUARISMA_API void* allocate_raw(size_t alignment, size_t num_bytes) override;
 
     /**
      * @brief Deallocates memory by returning it to pool or backend.
@@ -297,7 +297,7 @@ public:
      * **Thread Safety**: Thread-safe with internal synchronization
      * **LRU Management**: Automatically maintains LRU ordering
      */
-    XSIGMA_API void deallocate_raw(void* ptr) override;
+    QUARISMA_API void deallocate_raw(void* ptr) override;
 
     /**
      * @brief Allocates memory region from pool or backend allocator.
@@ -313,7 +313,7 @@ public:
      * **Performance**: Optimized path for pool-aware allocations
      * **Thread Safety**: Thread-safe with internal synchronization
      */
-    XSIGMA_API void* Get(size_t num_bytes);
+    QUARISMA_API void* Get(size_t num_bytes);
 
     /**
      * @brief Returns memory region to pool for reuse.
@@ -330,7 +330,7 @@ public:
      * **Thread Safety**: Thread-safe with internal synchronization
      * **Auto-Resize**: May trigger pool size increase if enabled
      */
-    XSIGMA_API void Put(void* ptr, size_t num_bytes);
+    QUARISMA_API void Put(void* ptr, size_t num_bytes);
 
     /**
      * @brief Clears all cached buffers from pool.
@@ -344,7 +344,7 @@ public:
      * **Thread Safety**: Thread-safe with internal synchronization
      * **Use Cases**: Memory pressure relief, explicit cleanup, testing
      */
-    XSIGMA_API void Clear();
+    QUARISMA_API void Clear();
 
     // The following accessors permit monitoring the effectiveness of
     // the pool at avoiding repeated malloc/frees on the underlying
@@ -377,28 +377,28 @@ private:
     };
 
     // Remove "pr" from the double-linked LRU list.
-    void RemoveFromList(PtrRecord* pr) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void RemoveFromList(PtrRecord* pr) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     // Add "pr" to the head of the double-linked LRU list.
-    void AddToList(PtrRecord* pr) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void AddToList(PtrRecord* pr) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     // Delete the least recently used record.
-    void EvictOne() XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void EvictOne() QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     const std::string                             name_;
     const bool                                    has_size_limit_;
     const bool                                    auto_resize_;
     size_t                                        pool_size_limit_;
-    std::unique_ptr<xsigma::sub_allocator>        allocator_;
+    std::unique_ptr<quarisma::sub_allocator>        allocator_;
     std::unique_ptr<round_up_interface>           size_rounder_;
     std::mutex                                    mutex_;
-    std::multimap<const size_t, PtrRecord*> pool_ XSIGMA_GUARDED_BY(mutex_);
-    PtrRecord* lru_head_                          XSIGMA_GUARDED_BY(mutex_) = nullptr;
-    PtrRecord* lru_tail_                          XSIGMA_GUARDED_BY(mutex_) = nullptr;
-    int64_t get_from_pool_count_                  XSIGMA_GUARDED_BY(mutex_) = 0;
-    int64_t put_count_                            XSIGMA_GUARDED_BY(mutex_) = 0;
-    int64_t allocated_count_                      XSIGMA_GUARDED_BY(mutex_) = 0;
-    int64_t evicted_count_                        XSIGMA_GUARDED_BY(mutex_) = 0;
+    std::multimap<const size_t, PtrRecord*> pool_ QUARISMA_GUARDED_BY(mutex_);
+    PtrRecord* lru_head_                          QUARISMA_GUARDED_BY(mutex_) = nullptr;
+    PtrRecord* lru_tail_                          QUARISMA_GUARDED_BY(mutex_) = nullptr;
+    int64_t get_from_pool_count_                  QUARISMA_GUARDED_BY(mutex_) = 0;
+    int64_t put_count_                            QUARISMA_GUARDED_BY(mutex_) = 0;
+    int64_t allocated_count_                      QUARISMA_GUARDED_BY(mutex_) = 0;
+    int64_t evicted_count_                        QUARISMA_GUARDED_BY(mutex_) = 0;
 };
 
 // Do-nothing rounder. Passes through sizes unchanged.
@@ -415,7 +415,7 @@ public:
     size_t RoundUp(size_t num_bytes) override { return 1uLL << Log2Ceiling64(num_bytes); }
 };
 
-class XSIGMA_VISIBILITY basic_cpu_allocator : public sub_allocator
+class QUARISMA_VISIBILITY basic_cpu_allocator : public sub_allocator
 {
 public:
     basic_cpu_allocator(
@@ -426,11 +426,11 @@ public:
     {
     }
 
-    XSIGMA_API ~basic_cpu_allocator() override;
+    QUARISMA_API ~basic_cpu_allocator() override;
 
-    XSIGMA_API void* Alloc(size_t alignment, size_t num_bytes, size_t* bytes_received) override;
+    QUARISMA_API void* Alloc(size_t alignment, size_t num_bytes, size_t* bytes_received) override;
 
-    XSIGMA_API void Free(void* ptr, size_t num_bytes) override;
+    QUARISMA_API void Free(void* ptr, size_t num_bytes) override;
 
     bool SupportsCoalescing() const override { return false; }
 
@@ -445,4 +445,4 @@ private:
     basic_cpu_allocator(const basic_cpu_allocator&) = delete;
     void operator=(const basic_cpu_allocator&)      = delete;
 };
-}  // namespace xsigma
+}  // namespace quarisma

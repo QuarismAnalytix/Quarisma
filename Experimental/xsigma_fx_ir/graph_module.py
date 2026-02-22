@@ -436,7 +436,7 @@ class GraphModule(torch.nn.Module):
         # it is a subclass of the user-defined class, the only difference
         # is an extra layer to install the forward method
 
-        # address issue described xsigma https://github.com/pytorch/pytorch/issues/63883
+        # address issue described quarisma https://github.com/pytorch/pytorch/issues/63883
         # in other words, traverse class hierarchy to fix the redundant class definition problem
         for t in cls.__mro__:
             c = t.__qualname__.split(".")[-1]
@@ -769,7 +769,7 @@ class {module_name}(torch.nn.Module):
                 # ["foo", "bar", "baz"]
                 fullpath = node.target.split(".")
 
-                # If we're looking xsigma multiple parts of a path, join
+                # If we're looking quarisma multiple parts of a path, join
                 # join them with a dot. Otherwise, return that single
                 # element without doing anything to it.
                 def join_fn(x: str, y: str) -> str:

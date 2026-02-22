@@ -5,7 +5,7 @@
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/quantization/helper.h>
 #include <torch/csrc/jit/passes/subgraph_rewrite.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <string>
 #include <unordered_map>
@@ -81,7 +81,7 @@ std::string getQuantizeForScalar(const std::string& value)
     quantize_pattern += R"(
           )" + value + "_tensor : Tensor = aten::scalar_tensor(" +
                         value + ", " + value + "_float_scalar_type";
-    for ([[maybe_unused]] const auto i : xsigma::irange(3))
+    for ([[maybe_unused]] const auto i : quarisma::irange(3))
     {
         quantize_pattern += ", " + value + "_none";
     }
@@ -238,7 +238,7 @@ QuantFusionInfo getFixedQParamOpFusionInfo(
 bool input_b_is_scalar(const Match& match, const std::unordered_map<std::string, Value*>& vmap)
 {
     const auto& match_vmap = match.values_map;
-    auto        b_scalar   = match_vmap.xsigma(vmap.xsigma("b_scalar"));
+    auto        b_scalar   = match_vmap.quarisma(vmap.quarisma("b_scalar"));
     return isScalar(b_scalar);
 }
 

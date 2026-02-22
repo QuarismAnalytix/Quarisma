@@ -1,8 +1,8 @@
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/zeros.h>
-#include <XSigma/ops/zeros_like.h>
+#include <Quarisma/ops/zeros.h>
+#include <Quarisma/ops/zeros_like.h>
 #endif
 
 #include <torch/csrc/autograd/variable.h>
@@ -24,21 +24,21 @@ VariableInfo::VariableInfo(const Variable& var, bool use_zeros_like)
 
 VariableInfo::VariableInfo() : requires_grad(false), is_empty(true) {}
 
-Variable VariableInfo::zeros(xsigma::OptionalDeviceGuard& device_guard) const
+Variable VariableInfo::zeros(quarisma::OptionalDeviceGuard& device_guard) const
 {
     if (is_empty)
     {
         // Return undefined tensor.
-        return xsigma::Tensor();
+        return quarisma::Tensor();
     }
     else if (the_var.has_value())
     {
-        return xsigma::zeros_like(*the_var);
+        return quarisma::zeros_like(*the_var);
     }
     else
     {
-        return xsigma::zeros_symint(
-            size, xsigma::TensorOptions(scalar_type).device(device).layout(layout));
+        return quarisma::zeros_symint(
+            size, quarisma::TensorOptions(scalar_type).device(device).layout(layout));
     }
 }
 

@@ -1,4 +1,4 @@
-# Windows Enablement Guide for XSigma Linter
+# Windows Enablement Guide for Quarisma Linter
 
 **Document Version:** 1.0  
 **Date:** 2025-10-28  
@@ -20,7 +20,7 @@
 
 ## Executive Summary
 
-The XSigma linting infrastructure has **good but incomplete** Windows support. Most linters work out-of-the-box on Windows, but some require Unix tools (grep, sed) that need special setup.
+The Quarisma linting infrastructure has **good but incomplete** Windows support. Most linters work out-of-the-box on Windows, but some require Unix tools (grep, sed) that need special setup.
 
 ### Compatibility Summary
 
@@ -197,7 +197,7 @@ node --version
 
 ```powershell
 # Navigate to repository root
-cd C:\path\to\XSigma
+cd C:\path\to\Quarisma
 
 # Install lintrunner
 pip install lintrunner==0.12.7
@@ -448,7 +448,7 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
   -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
 
 # Or use shorter paths
-# Move repository closer to root: C:\XSigma
+# Move repository closer to root: C:\Quarisma
 ```
 
 ### Issue 7: Line ending issues

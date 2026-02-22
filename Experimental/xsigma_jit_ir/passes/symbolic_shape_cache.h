@@ -12,12 +12,12 @@ struct TORCH_API CanonicalizedSymbolicShape
     // merge code with SymbolicShape or VaryingShape while keeping
     // the two not implicitly convertible (and cause bugs).
     CanonicalizedSymbolicShape(
-        const xsigma::SymbolicShape& orig_shape, std::unordered_map<int64_t, int64_t>& ss_map)
+        const quarisma::SymbolicShape& orig_shape, std::unordered_map<int64_t, int64_t>& ss_map)
     {
         init(orig_shape, ss_map);
     }
 
-    CanonicalizedSymbolicShape(xsigma::SymbolicShape& orig_shape)
+    CanonicalizedSymbolicShape(quarisma::SymbolicShape& orig_shape)
     {
         std::unordered_map<int64_t, int64_t> new_ssmap;
         init(orig_shape, new_ssmap);
@@ -25,7 +25,7 @@ struct TORCH_API CanonicalizedSymbolicShape
 
     size_t hash() const;
 
-    xsigma::SymbolicShape toSymbolicShape(
+    quarisma::SymbolicShape toSymbolicShape(
         std::unordered_map<int64_t, int64_t>& inverse_ss_map) const;
 
     TORCH_API friend bool operator==(
@@ -35,17 +35,17 @@ private:
     std::optional<std::vector<int64_t>> values_;
 
     void init(
-        const xsigma::SymbolicShape& orig_shape, std::unordered_map<int64_t, int64_t>& ss_map);
+        const quarisma::SymbolicShape& orig_shape, std::unordered_map<int64_t, int64_t>& ss_map);
 };
 
 // SHAPE CACHE API
-TORCH_API std::optional<std::vector<xsigma::SymbolicShape>> get_cached_shape_function(
+TORCH_API std::optional<std::vector<quarisma::SymbolicShape>> get_cached_shape_function(
     const FunctionSchema* schema, const std::vector<SSAInput>& arg_vec);
 
 TORCH_API void cache_shape_function(
     const FunctionSchema*                     schema,
     const std::vector<SSAInput>&              arg_vec,
-    const std::vector<xsigma::SymbolicShape>& ret_vec);
+    const std::vector<quarisma::SymbolicShape>& ret_vec);
 
 // For use in test code
 TORCH_API void   clear_shape_cache();

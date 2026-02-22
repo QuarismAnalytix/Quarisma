@@ -1,8 +1,8 @@
 # Security module CMakeLists.txt
 cmake_minimum_required(VERSION 3.16)
 
-set(xsigma_security_headers)
-set(xsigma_security_sources)
+set(quarisma_security_headers)
+set(quarisma_security_sources)
 
 # Collect all header and source files
 file(GLOB_RECURSE headers LIST_DIRECTORIES false "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
@@ -18,20 +18,20 @@ add_library(Security ${sources} ${headers})
 
 # Set appropriate compile definitions based on library type
 if(BUILD_SHARED_LIBS)
-  target_compile_definitions(Security PUBLIC XSIGMA_SHARED_DEFINE PRIVATE XSIGMA_BUILDING_DLL)
-  # Set output directories using XSigma's standardized approach
-  if(COMMAND xsigma_set_target_output_directories)
-    xsigma_set_target_output_directories(Security)
+  target_compile_definitions(Security PUBLIC QUARISMA_SHARED_DEFINE PRIVATE QUARISMA_BUILDING_DLL)
+  # Set output directories using Quarisma's standardized approach
+  if(COMMAND quarisma_set_target_output_directories)
+    quarisma_set_target_output_directories(Security)
   endif()
 else()
-  target_compile_definitions(Security PUBLIC XSIGMA_STATIC_DEFINE)
+  target_compile_definitions(Security PUBLIC QUARISMA_STATIC_DEFINE)
 endif()
 
 # Create alias for consistent naming
-add_library(XSigma::Security ALIAS Security)
+add_library(Quarisma::Security ALIAS Security)
 
 # Enable Link Time Optimization (LTO) for Security library if enabled
-if(XSIGMA_ENABLE_LTO)
+if(QUARISMA_ENABLE_LTO)
   set_target_properties(Security PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
   message(STATUS "Security library: Link Time Optimization (LTO) enabled")
 else()
@@ -39,16 +39,16 @@ else()
 endif()
 
 # Apply IWYU to the Security target (if available)
-if(COMMAND xsigma_apply_iwyu)
-  xsigma_apply_iwyu(Security)
+if(COMMAND quarisma_apply_iwyu)
+  quarisma_apply_iwyu(Security)
 endif()
 
 # Configure Visual Studio source groups to preserve directory structure
-xsigma_module_create_filters("${CMAKE_CURRENT_SOURCE_DIR}")
+quarisma_module_create_filters("${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Set target properties
 set_target_properties(
-  Security PROPERTIES CXX_STANDARD ${XSIGMA_CXX_STANDARD} CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS
+  Security PROPERTIES CXX_STANDARD ${QUARISMA_CXX_STANDARD} CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS
                                                                                    OFF
 )
 
@@ -64,8 +64,8 @@ endif()
 
 target_include_directories(
   Security
-  PUBLIC $<BUILD_INTERFACE:${XSIGMA_SOURCE_DIR}/Library>
-         $<BUILD_INTERFACE:${XSIGMA_SOURCE_DIR}/Library/Core>
+  PUBLIC $<BUILD_INTERFACE:${QUARISMA_SOURCE_DIR}/Library>
+         $<BUILD_INTERFACE:${QUARISMA_SOURCE_DIR}/Library/Core>
          $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/Library/Core>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
@@ -74,25 +74,25 @@ target_include_directories(
 )
 
 # Add centralized third-party include directories as PUBLIC
-if(XSIGMA_DEPENDENCY_INCLUDE_DIRS)
-  target_include_directories(Security PUBLIC ${XSIGMA_DEPENDENCY_INCLUDE_DIRS})
-  message(STATUS "Security library include directories: ${XSIGMA_DEPENDENCY_INCLUDE_DIRS}")
+if(QUARISMA_DEPENDENCY_INCLUDE_DIRS)
+  target_include_directories(Security PUBLIC ${QUARISMA_DEPENDENCY_INCLUDE_DIRS})
+  message(STATUS "Security library include directories: ${QUARISMA_DEPENDENCY_INCLUDE_DIRS}")
 endif()
 
 # Link with build interface target
-target_link_libraries(Security PUBLIC XSigma::build)
+target_link_libraries(Security PUBLIC Quarisma::build)
 
-if(COMMAND xsigma_target_clang_tidy)
-  xsigma_target_clang_tidy(Security)
+if(COMMAND quarisma_target_clang_tidy)
+  quarisma_target_clang_tidy(Security)
 endif()
 
 # ============================================================================= Link with
 # Centralized Dependencies
 # =============================================================================
 # Link with centralized dependency list (if needed)
-if(XSIGMA_DEPENDENCY_LIBS)
-  target_link_libraries(Security PUBLIC ${XSIGMA_DEPENDENCY_LIBS})
-  message(STATUS "Security library linked with centralized dependencies: ${XSIGMA_DEPENDENCY_LIBS}")
+if(QUARISMA_DEPENDENCY_LIBS)
+  target_link_libraries(Security PUBLIC ${QUARISMA_DEPENDENCY_LIBS})
+  message(STATUS "Security library linked with centralized dependencies: ${QUARISMA_DEPENDENCY_LIBS}")
 endif()
 
 # Platform-specific libraries for security module
@@ -108,15 +108,15 @@ endif()
 # for Optional Features
 # =============================================================================
 # Apply centralized compile definitions
-if(XSIGMA_DEPENDENCY_COMPILE_DEFINITIONS)
-  target_compile_definitions(Security PUBLIC ${XSIGMA_DEPENDENCY_COMPILE_DEFINITIONS})
-  message(STATUS "Security library compile definitions: ${XSIGMA_DEPENDENCY_COMPILE_DEFINITIONS}")
+if(QUARISMA_DEPENDENCY_COMPILE_DEFINITIONS)
+  target_compile_definitions(Security PUBLIC ${QUARISMA_DEPENDENCY_COMPILE_DEFINITIONS})
+  message(STATUS "Security library compile definitions: ${QUARISMA_DEPENDENCY_COMPILE_DEFINITIONS}")
 endif()
 
 # Install targets
 install(
   TARGETS Security
-  EXPORT XSigmaTargets
+  EXPORT QuarismaTargets
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
@@ -125,9 +125,9 @@ install(
 )
 
 # Install headers
-install(FILES ${headers} DESTINATION include/XSigma/Security COMPONENT Development)
+install(FILES ${headers} DESTINATION include/Quarisma/Security COMPONENT Development)
 
 # Configure testing
-if(XSIGMA_BUILD_TESTING STREQUAL "ON" OR XSIGMA_BUILD_TESTING STREQUAL "WANT")
+if(QUARISMA_BUILD_TESTING STREQUAL "ON" OR QUARISMA_BUILD_TESTING STREQUAL "WANT")
   add_subdirectory(Testing/Cxx)
 endif()

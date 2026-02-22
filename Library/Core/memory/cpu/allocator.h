@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,12 +18,12 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -37,13 +37,13 @@
 #include <string>      // for string
 #include <vector>      // for vector
 
-#include "common/export.h"                // for XSIGMA_API
-#include "common/macros.h"                // for XSIGMA_UNUSED
+#include "common/export.h"                // for QUARISMA_API
+#include "common/macros.h"                // for QUARISMA_UNUSED
 #include "memory/sub_allocator.h"         // for sub_allocator, allocator_memory_enum
 #include "memory/unified_memory_stats.h"  // for allocator_stats
-#include "util/exception.h"               // for check_msg_impl, XSIGMA_CHECK
+#include "util/exception.h"               // for check_msg_impl, QUARISMA_CHECK
 
-namespace xsigma
+namespace quarisma
 {
 constexpr int NUMANOAFFINITY = -1;
 /**
@@ -171,7 +171,7 @@ struct allocation_attributes
  *
  * @note Implementations must be thread-safe unless explicitly documented otherwise.
  */
-class XSIGMA_VISIBILITY Allocator
+class QUARISMA_VISIBILITY Allocator
 {
 public:
     /**
@@ -273,7 +273,7 @@ public:
     virtual void* allocate_raw(
         size_t                                     alignment,
         size_t                                     num_bytes,
-        XSIGMA_UNUSED const allocation_attributes& allocation_attr)
+        QUARISMA_UNUSED const allocation_attributes& allocation_attr)
     {
         // Default implementation ignores attributes and delegates to simple version
         return allocate_raw(alignment, num_bytes);
@@ -413,9 +413,9 @@ public:
      * }
      * ```
      */
-    virtual size_t RequestedSize(XSIGMA_UNUSED const void* ptr) const
+    virtual size_t RequestedSize(QUARISMA_UNUSED const void* ptr) const
     {
-        //XSIGMA_LOG_ERROR("Allocator '" << Name() << "' doesn't track allocation sizes");
+        //QUARISMA_LOG_ERROR("Allocator '" << Name() << "' doesn't track allocation sizes");
         return size_t{0};
     }
 
@@ -481,7 +481,7 @@ public:
      * assert(id1 != id2);  // IDs are unique
      * ```
      */
-    virtual int64_t AllocationId(XSIGMA_UNUSED const void* ptr) const { return 0; }
+    virtual int64_t AllocationId(QUARISMA_UNUSED const void* ptr) const { return 0; }
 
     /**
      * @brief Returns allocated size with potentially slow computation.
@@ -604,7 +604,7 @@ public:
      *
      * @warning This is an experimental feature subject to change
      */
-    virtual void SetSafeFrontier(XSIGMA_UNUSED uint64_t count) noexcept {}
+    virtual void SetSafeFrontier(QUARISMA_UNUSED uint64_t count) noexcept {}
 
     /**
      * @brief Returns the type of memory managed by this allocator.
@@ -676,7 +676,7 @@ public:
  * Allocator* gpu_alloc = device->GetAllocator(gpu_attrs);
  * ```
  */
-struct XSIGMA_VISIBILITY allocator_attributes
+struct QUARISMA_VISIBILITY allocator_attributes
 {
     /**
      * @brief Sets whether memory should be allocated on host (CPU).
@@ -759,7 +759,7 @@ struct XSIGMA_VISIBILITY allocator_attributes
         value |= other.value;
         if (scope_id != other.scope_id)
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 scope_id == 0 || other.scope_id == 0,
                 "Cannot merge allocator_attributes with conflicting scope_ids: ",
                 scope_id,
@@ -886,7 +886,7 @@ Allocator* allocator_cpu_base();
  * Allocator* node_alloc = cpu_allocator(1);
  * ```
  */
-XSIGMA_API Allocator* cpu_allocator(int numa_node = NUMANOAFFINITY);
+QUARISMA_API Allocator* cpu_allocator(int numa_node = NUMANOAFFINITY);
 
 /**
  * @brief Enables statistics collection in the default CPU allocator.
@@ -906,7 +906,7 @@ XSIGMA_API Allocator* cpu_allocator(int numa_node = NUMANOAFFINITY);
  * auto stats = cpu_allocator()->GetStats();
  * ```
  */
-XSIGMA_API void EnableCPUAllocatorStats() noexcept;
+QUARISMA_API void EnableCPUAllocatorStats() noexcept;
 
 /**
  * @brief Disables statistics collection in the default CPU allocator.
@@ -918,7 +918,7 @@ XSIGMA_API void EnableCPUAllocatorStats() noexcept;
  * **Thread Safety**: Safe to call from any thread
  * **Global Effect**: Affects all CPU allocator instances
  */
-XSIGMA_API void DisableCPUAllocatorStats() noexcept;
+QUARISMA_API void DisableCPUAllocatorStats() noexcept;
 
 /**
  * @brief Checks if CPU allocator statistics collection is enabled.
@@ -928,7 +928,7 @@ XSIGMA_API void DisableCPUAllocatorStats() noexcept;
  * **Thread Safety**: Safe to call from any thread
  * **Performance**: O(1) - simple flag check
  */
-XSIGMA_API bool CPUAllocatorStatsEnabled() noexcept;
+QUARISMA_API bool CPUAllocatorStatsEnabled() noexcept;
 
 /**
  * @brief Enables comprehensive statistics collection in CPU allocators.
@@ -953,4 +953,4 @@ void EnableCPUAllocatorFullStats();
  */
 bool CPUAllocatorFullStatsEnabled();
 
-}  // namespace xsigma
+}  // namespace quarisma

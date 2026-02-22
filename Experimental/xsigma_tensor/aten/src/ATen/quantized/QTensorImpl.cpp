@@ -1,4 +1,4 @@
-#include <XSigma/quantized/QTensorImpl.h>
+#include <Quarisma/quantized/QTensorImpl.h>
 
 namespace at
 {

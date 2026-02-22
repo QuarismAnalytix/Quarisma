@@ -4,14 +4,14 @@
 // NB: The implementing C++ file is RegisterDispatchKey.cpp
 
 // The only #includes we need are for custom classes that have defaults in the C++ API
-#include <XSigma/core/Reduction.h>
+#include <Quarisma/core/Reduction.h>
 #include <c10/core/MemoryFormat.h>
 #include <c10/core/Scalar.h>
 
 // Forward declarations of any types needed in the operator signatures.
 // We can't directly include these classes because it will cause circular include dependencies.
 // This file is included by TensorBody.h, which defines the Tensor class.
-#include <XSigma/core/ATen_fwd.h>
+#include <Quarisma/core/ATen_fwd.h>
 
 namespace at
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/Config.h>
+#include <Quarisma/Config.h>
 #include <torch/csrc/jit/api/module.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/passes/subgraph_rewrite.h>

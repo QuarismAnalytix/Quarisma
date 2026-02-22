@@ -33,7 +33,7 @@ This document summarizes all changes needed to implement Option 3 (Backend-Speci
 #include "common/export.h"
 #include "parallel/common/parallel_tools_api.h"
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 #include <tbb/enumerable_thread_specific.h>
 #endif
 ```
@@ -46,14 +46,14 @@ This document summarizes all changes needed to implement Option 3 (Backend-Speci
 
 **New Code**:
 ```cpp
-namespace xsigma
+namespace quarisma
 {
 namespace detail
 {
 namespace parallel
 {
 
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
 // Static storage for OpenMP threadprivate
 // Each thread gets its own copy automatically
 thread_local unsigned char parallel_tools_functor_initialized = 0;
@@ -103,27 +103,27 @@ struct parallel_tools_functor_internal<Functor, true>
 {
     Functor& f_;
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
     // TBB backend: Use enumerable_thread_specific
     mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 #endif
 
     parallel_tools_functor_internal(Functor& f) : f_(f)
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
         , initialized_(0)
 #endif
     {}
 
     void Execute(size_t first, size_t last)
     {
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
         // OpenMP backend: Use threadprivate static
         if (!parallel_tools_functor_initialized)
         {
             this->f_.Initialize();
             parallel_tools_functor_initialized = 1;
         }
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
         // TBB backend: Use enumerable_thread_specific
         unsigned char& inited = initialized_.local();
         if (!inited)
@@ -182,12 +182,12 @@ struct parallel_tools_functor_internal<Functor, true>
 ## Conditional Compilation Branches
 
 ```
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
     // Branch 1: OpenMP backend
     // Uses: #pragma omp threadprivate
     // Storage: Static thread_local
     // Overhead: Zero
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
     // Branch 2: TBB backend
     // Uses: tbb::enumerable_thread_specific
     // Storage: Member variable
@@ -205,8 +205,8 @@ struct parallel_tools_functor_internal<Functor, true>
 ## Build Requirements
 
 **No new dependencies**:
-- ✅ TBB already available (XSIGMA_HAS_TBB flag)
-- ✅ OpenMP already available (XSIGMA_HAS_OPENMP flag)
+- ✅ TBB already available (QUARISMA_HAS_TBB flag)
+- ✅ OpenMP already available (QUARISMA_HAS_OPENMP flag)
 - ✅ Standard C++ already available
 
 ---

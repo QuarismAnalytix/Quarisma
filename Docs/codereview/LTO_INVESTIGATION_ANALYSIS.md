@@ -1,28 +1,28 @@
-# Link-Time Optimization (LTO) Investigation & Analysis for XSigma
+# Link-Time Optimization (LTO) Investigation & Analysis for Quarisma
 
 **Date**: November 2024  
 **Status**: Comprehensive Analysis  
-**Scope**: XSigma C++ Project with Shared Library Architecture
+**Scope**: Quarisma C++ Project with Shared Library Architecture
 
 ---
 
 ## Executive Summary
 
-Link-Time Optimization (LTO) is **currently enabled by default** in XSigma Release builds via `XSIGMA_ENABLE_LTO=ON`. This analysis examines the advantages, disadvantages, and specific implications for XSigma's architecture.
+Link-Time Optimization (LTO) is **currently enabled by default** in Quarisma Release builds via `QUARISMA_ENABLE_LTO=ON`. This analysis examines the advantages, disadvantages, and specific implications for Quarisma's architecture.
 
 **Key Finding**: LTO provides significant performance benefits (5-15%) but introduces notable trade-offs, particularly with shared libraries, cross-platform compatibility, and build times. The current implementation has known limitations with faster linkers.
 
 ---
 
-## 1. Current LTO Configuration in XSigma
+## 1. Current LTO Configuration in Quarisma
 
 ### Configuration Files
 
 **CMakeLists.txt (Root)**
 ```cmake
-option(XSIGMA_ENABLE_LTO "Enable Link Time Optimization" ON)  # Default: ON
+option(QUARISMA_ENABLE_LTO "Enable Link Time Optimization" ON)  # Default: ON
 
-if(XSIGMA_ENABLE_LTO)
+if(QUARISMA_ENABLE_LTO)
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 endif()
@@ -30,7 +30,7 @@ endif()
 
 **Library/Core/CMakeLists.txt**
 ```cmake
-if(XSIGMA_ENABLE_LTO)
+if(QUARISMA_ENABLE_LTO)
   set_target_properties(Core PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 ```
@@ -46,8 +46,8 @@ endif()
 
 **Cmake/tools/coverage.cmake**
 ```cmake
-if(XSIGMA_ENABLE_COVERAGE)
-  set(XSIGMA_ENABLE_LTO OFF)  # LTO disabled for coverage builds
+if(QUARISMA_ENABLE_COVERAGE)
+  set(QUARISMA_ENABLE_LTO OFF)  # LTO disabled for coverage builds
 endif()
 ```
 
@@ -64,35 +64,35 @@ python setup.py config.build.ninja.clang.release.lto
 
 ---
 
-## 2. Advantages of LTO for XSigma
+## 2. Advantages of LTO for Quarisma
 
 ### 2.1 Performance Improvements
 
 **Optimization Across Translation Units**
 - **Benefit**: 5-15% runtime performance improvement (typical)
 - **Mechanism**: Compiler can inline functions across module boundaries
-- **XSigma Impact**: Core library functions called from multiple modules benefit significantly
+- **Quarisma Impact**: Core library functions called from multiple modules benefit significantly
 - **Example**: Profiler hooks, memory allocator functions, utility functions
 
 **Dead Code Elimination**
 - **Benefit**: Removes unused code paths across entire program
-- **XSigma Impact**: Conditional features (CUDA, HIP, profiling) can eliminate unused code
+- **Quarisma Impact**: Conditional features (CUDA, HIP, profiling) can eliminate unused code
 - **Measurement**: Typically 2-5% binary size reduction
 
 **Inlining Opportunities**
 - **Benefit**: Cross-module inlining enables aggressive optimizations
-- **XSigma Impact**: Template instantiations and small utility functions benefit most
+- **Quarisma Impact**: Template instantiations and small utility functions benefit most
 - **Example**: STL algorithms, memory management wrappers
 
 ### 2.2 Binary Size Reduction
 
 - **Typical Reduction**: 5-10% smaller binaries
-- **XSigma Benefit**: Shared libraries (DLLs) are smaller, faster to load
+- **Quarisma Benefit**: Shared libraries (DLLs) are smaller, faster to load
 - **Trade-off**: Larger intermediate object files during compilation
 
 ### 2.3 Compiler Support
 
-All XSigma-supported compilers have mature LTO support:
+All Quarisma-supported compilers have mature LTO support:
 - **GCC 7.0+**: `-flto` flag, `gcc-ar`/`gcc-ranlib` tools
 - **Clang 5.0+**: `-flto` flag, optional `llvm-ar`/`llvm-ranlib`
 - **Apple Clang 9.0+**: `-flto` flag, system tools
@@ -100,33 +100,33 @@ All XSigma-supported compilers have mature LTO support:
 
 ---
 
-## 3. Disadvantages of LTO for XSigma
+## 3. Disadvantages of LTO for Quarisma
 
 ### 3.1 Build Time Impact
 
 **Compilation Phase**
 - **Overhead**: 10-30% longer compilation time
 - **Reason**: Compiler generates intermediate representation (IR) instead of native code
-- **XSigma Impact**: Affects all developers during daily builds
+- **Quarisma Impact**: Affects all developers during daily builds
 
 **Linking Phase**
 - **Overhead**: 20-50% longer linking time (can be severe)
 - **Reason**: Linker performs full program optimization
-- **XSigma Impact**: Particularly problematic with large Core library
+- **Quarisma Impact**: Particularly problematic with large Core library
 
 **Incremental Builds**
 - **Problem**: LTO invalidates incremental build caches
 - **Impact**: Changing one file requires re-optimizing entire program
-- **XSigma Impact**: Development workflow significantly slower
+- **Quarisma Impact**: Development workflow significantly slower
 
 ### 3.2 Memory Usage During Linking
 
 **Peak Memory Consumption**
 - **Typical**: 2-4x higher than non-LTO builds
 - **Reason**: Linker must load and optimize entire program IR
-- **XSigma Impact**: Can cause OOM errors on memory-constrained systems
+- **Quarisma Impact**: Can cause OOM errors on memory-constrained systems
 
-**Known Issue in XSigma**
+**Known Issue in Quarisma**
 ```cmake
 # From linker.cmake (lines 29-34)
 # LTO with faster linkers (especially gold) can cause out-of-memory errors
@@ -144,7 +144,7 @@ endif()
 **Symbol Information Loss**
 - **Problem**: LTO optimizations can obscure stack traces
 - **Impact**: Debugging optimized binaries becomes difficult
-- **XSigma Impact**: Production debugging requires RelWithDebInfo builds
+- **Quarisma Impact**: Production debugging requires RelWithDebInfo builds
 
 **Breakpoint Reliability**
 - **Issue**: Inlined functions may not have breakpoints
@@ -158,7 +158,7 @@ endif()
 
 **Clang on Windows**
 - **Issue**: LTO with Clang on Windows requires careful linker selection
-- **Current Workaround**: XSigma skips faster linkers when LTO is enabled
+- **Current Workaround**: Quarisma skips faster linkers when LTO is enabled
 - **Impact**: Linking performance degraded when LTO is enabled
 
 **MSVC Specific**
@@ -172,7 +172,7 @@ endif()
 
 ### 3.5 Shared Library Complications
 
-**XSigma Requirement**: All libraries built as shared (DLLs on Windows)
+**Quarisma Requirement**: All libraries built as shared (DLLs on Windows)
 
 **LTO with Shared Libraries**
 - **Problem**: LTO optimization boundaries at DLL boundaries
@@ -180,7 +180,7 @@ endif()
 - **Benefit Reduction**: 30-50% less optimization benefit than static linking
 
 **Symbol Visibility**
-- **Issue**: LTO may interact unexpectedly with `XSIGMA_API` and `XSIGMA_VISIBILITY` macros
+- **Issue**: LTO may interact unexpectedly with `QUARISMA_API` and `QUARISMA_VISIBILITY` macros
 - **Risk**: Potential symbol visibility issues on Linux/macOS
 
 **Windows DLL Export**
@@ -189,7 +189,7 @@ endif()
 
 ---
 
-## 4. XSigma-Specific Interactions
+## 4. Quarisma-Specific Interactions
 
 ### 4.1 Cross-Platform Compatibility
 
@@ -211,7 +211,7 @@ endif()
 ### 4.2 Shared Library Architecture Impact
 
 **Current Architecture**
-- All XSigma libraries built as shared (DLLs/SOs)
+- All Quarisma libraries built as shared (DLLs/SOs)
 - Multiple interdependent libraries (Core, profiler, etc.)
 
 **LTO Limitations**
@@ -226,7 +226,7 @@ endif()
 
 ### 4.3 Compiler Support Matrix
 
-| Compiler | LTO Support | Maturity | XSigma Status |
+| Compiler | LTO Support | Maturity | Quarisma Status |
 |----------|-------------|----------|---------------|
 | GCC 7.0+ | ✅ Full | Mature | ✅ Supported |
 | Clang 5.0+ | ✅ Full | Mature | ✅ Supported |
@@ -308,7 +308,7 @@ endif()
 
 #### Option 2: Make LTO Optional (Alternative)
 - **LTO Default**: OFF globally
-- **Enable via**: `-DXSIGMA_ENABLE_LTO=ON` for final releases
+- **Enable via**: `-DQUARISMA_ENABLE_LTO=ON` for final releases
 - **Benefit**: Faster development builds by default
 - **Trade-off**: Requires explicit flag for optimized builds
 
@@ -366,7 +366,7 @@ python setup.py config.build.ninja.clang.release
 
 ## 7. Performance Impact Summary
 
-| Aspect | Impact | Severity | XSigma Relevance |
+| Aspect | Impact | Severity | Quarisma Relevance |
 |--------|--------|----------|------------------|
 | Runtime Performance | +5-15% | Positive | High |
 | Binary Size | -5-10% | Positive | Medium |
@@ -381,7 +381,7 @@ python setup.py config.build.ninja.clang.release
 
 ## 8. Conclusion
 
-**LTO is beneficial for XSigma Release builds** but requires careful management:
+**LTO is beneficial for Quarisma Release builds** but requires careful management:
 
 ✅ **Enable LTO for**:
 - Release builds (production deployments)

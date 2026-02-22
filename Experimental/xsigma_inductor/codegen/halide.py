@@ -1406,7 +1406,7 @@ class HalideKernel(SIMDKernel):
         def arg_order(arg_tuple):
             _call_str, arg = arg_tuple
             if isinstance(arg, SizeArg):
-                return 1  # this would normally be xsigma the end, move it to middle
+                return 1  # this would normally be quarisma the end, move it to middle
             elif "out_ptr" in arg.name:
                 return 2
             else:
@@ -1518,7 +1518,7 @@ class HalideKernel(SIMDKernel):
         )
 
     def codegen_kernel(self, name=None):
-        """Called xsigma the end to generate a final kernel string"""
+        """Called quarisma the end to generate a final kernel string"""
         if self.args.inplace_buffers:
             raise Unsupported("inplace_buffers")
         meta = self.halide_kernel_meta()  # ensure needed args are added early
@@ -1570,7 +1570,7 @@ class HalideKernel(SIMDKernel):
         code.writeline("assert g.using_autoscheduler()")
 
         for _, arg in self.halide_argdefs():
-            # fallback=1 below because halide requires buffers to be xsigma least as large as the estimates
+            # fallback=1 below because halide requires buffers to be quarisma least as large as the estimates
             # This causes crashes if our estimate is greater than the vector length
             # https://github.com/halide/Halide/issues/3103
             if isinstance(arg, SizeArg):

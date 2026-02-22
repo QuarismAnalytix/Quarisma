@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -28,7 +28,7 @@
 
 #include "common/macros.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace internal
 {
@@ -47,7 +47,7 @@ namespace internal
  * **Thread Safety**: Atomic operations ensure thread-safe access
  * **Performance**: Lock-free design enables sub-nanosecond access times
  */
-XSIGMA_API extern std::atomic<int> g_trace_level;
+QUARISMA_API extern std::atomic<int> g_trace_level;
 
 /**
  * @brief Global atomic filter bitmap for selective trace event recording.
@@ -63,7 +63,7 @@ XSIGMA_API extern std::atomic<int> g_trace_level;
  * **Thread Safety**: Atomic operations ensure thread-safe access
  * **Performance**: Lock-free design enables fast filtering checks
  */
-XSIGMA_API extern std::atomic<uint64_t> g_trace_filter_bitmap;
+QUARISMA_API extern std::atomic<uint64_t> g_trace_filter_bitmap;
 
 }  // namespace internal
 
@@ -100,7 +100,7 @@ XSIGMA_API extern std::atomic<uint64_t> g_trace_filter_bitmap;
  * **Thread Safety**: All methods are thread-safe. Recording can occur concurrently
  * with start/stop operations, though events recorded during stop may be discarded.
  */
-class XSIGMA_VISIBILITY traceme_recorder
+class QUARISMA_VISIBILITY traceme_recorder
 {
 public:
     /**
@@ -191,7 +191,7 @@ public:
      *
      * **Example**: `traceme_recorder::start(2)` records CRITICAL and INFO level events
      */
-    XSIGMA_API static bool start(int level);
+    QUARISMA_API static bool start(int level);
 
     /**
      * @brief Starts trace event recording with level and filter mask.
@@ -209,7 +209,7 @@ public:
      *
      * **Example**: `traceme_recorder::start(2, 0x0F)` records level 1-2 events matching mask
      */
-    XSIGMA_API static bool start(int level, uint64_t filter_mask);
+    QUARISMA_API static bool start(int level, uint64_t filter_mask);
 
     /**
      * @brief Stops trace recording and returns all collected events.
@@ -225,7 +225,7 @@ public:
      * **Performance**: Collection time scales with number of events and active threads
      * **Race Conditions**: Events recorded during stop() may be dropped
      */
-    XSIGMA_API static Events stop();
+    QUARISMA_API static Events stop();
 
     /**
      * @brief Fast, lock-free check if tracing is active for the specified level.
@@ -278,7 +278,7 @@ public:
      * **Memory**: Events are stored in thread-local buffers until collection
      * **Blocking**: Never blocks - uses lock-free data structures
      */
-    XSIGMA_API static void record(Event&& event);
+    QUARISMA_API static void record(Event&& event);
 
     /**
      * @brief Generates a globally unique activity ID for manual activity tracking.
@@ -294,7 +294,7 @@ public:
      * **Performance**: Very fast - uses thread-local counters to avoid contention
      * **Capacity**: Supports up to 2 billion threads, each with 4 billion activities
      */
-    XSIGMA_API static int64_t new_activity_id();
+    QUARISMA_API static int64_t new_activity_id();
 
 private:
     /// Deleted constructor - this is a singleton with only static methods
@@ -313,7 +313,7 @@ private:
      * **Thread Safety**: Safe to call during start() - coordinates with active threads
      * **Performance**: Scales with number of active threads
      */
-    XSIGMA_API static void clear();
+    QUARISMA_API static void clear();
 
     /**
      * @brief Collects and processes events from all thread-local buffers.
@@ -327,7 +327,7 @@ private:
      * **Performance**: Time scales with number of events and threads
      * **Memory**: Clears thread-local buffers after collection
      */
-    XSIGMA_API static Events consume();
+    QUARISMA_API static Events consume();
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

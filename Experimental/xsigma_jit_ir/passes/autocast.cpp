@@ -1,10 +1,10 @@
 
-#include <XSigma/autocast_mode.h>
+#include <Quarisma/autocast_mode.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/autocast.h>
 #include <torch/csrc/jit/passes/quantization/helper.h>
-#include <xsigma/core/ScalarType.h>
+#include <quarisma/core/ScalarType.h>
 
 #include <atomic>
 #include <optional>
@@ -26,8 +26,8 @@ struct AutocastContext
 {
     bool               gpu_enabled     = false;
     bool               cpu_enabled     = false;
-    xsigma::ScalarType gpu_scalar_type = xsigma::ScalarType::Undefined;
-    xsigma::ScalarType cpu_scalar_type = xsigma::ScalarType::Undefined;
+    quarisma::ScalarType gpu_scalar_type = quarisma::ScalarType::Undefined;
+    quarisma::ScalarType cpu_scalar_type = quarisma::ScalarType::Undefined;
 
     operator bool() const { return gpu_enabled || cpu_enabled; }
 };
@@ -77,7 +77,7 @@ std::optional<AutocastScope> parseAutocast(Value* value, const AutocastContext& 
         scope.context  = context;
         std::optional<bool> enabled;
         std::string         device;
-        xsigma::ScalarType  dtype = xsigma::ScalarType::Undefined;
+        quarisma::ScalarType  dtype = quarisma::ScalarType::Undefined;
         for (Use use : value->uses())
         {
             // TODO: support runtime flag
@@ -85,33 +85,33 @@ std::optional<AutocastScope> parseAutocast(Value* value, const AutocastContext& 
             {
                 // Search for `prim::SetAttr[name="_enabled"]`
                 enabled = constant_as<bool>(use.user->input(1));
-                XSIGMA_CHECK(enabled.has_value(), "Autocast _enabled argument must be a constant");
+                QUARISMA_CHECK(enabled.has_value(), "Autocast _enabled argument must be a constant");
             }
             else if (use.user->kind() == prim::SetAttr && use.user->s(attr::name) == "device")
             {
                 // Search for `prim::SetAttr[name="device"]`
                 auto ret = constant_as<std::string>(use.user->input(1));
-                XSIGMA_CHECK(ret.has_value(), "Autocast device argument must be a constant");
+                QUARISMA_CHECK(ret.has_value(), "Autocast device argument must be a constant");
                 device = ret.value();
             }
             else if (use.user->kind() == prim::SetAttr && use.user->s(attr::name) == "fast_dtype")
             {
                 // Search for `prim::SetAttr[name="fast_dtype"]`
-                auto ret = constant_as<xsigma::ScalarType>(use.user->input(1));
+                auto ret = constant_as<quarisma::ScalarType>(use.user->input(1));
                 if (ret.has_value())
                 {
                     dtype = ret.value();
                 }
             }
         }
-        XSIGMA_CHECK(enabled.has_value(), "Autocast missing _enabled attribute");
-        XSIGMA_CHECK(!device.empty(), "Autocast missing device attribute");
-        if (dtype == xsigma::ScalarType::Undefined)
+        QUARISMA_CHECK(enabled.has_value(), "Autocast missing _enabled attribute");
+        QUARISMA_CHECK(!device.empty(), "Autocast missing device attribute");
+        if (dtype == quarisma::ScalarType::Undefined)
         {
-            dtype = xsigma::autocast::get_autocast_dtype(xsigma::Device(device).type());
+            dtype = quarisma::autocast::get_autocast_dtype(quarisma::Device(device).type());
         }
-        XSIGMA_CHECK(
-            dtype != xsigma::ScalarType::Undefined, "Autocast has invalid fast_dtype attribute");
+        QUARISMA_CHECK(
+            dtype != quarisma::ScalarType::Undefined, "Autocast has invalid fast_dtype attribute");
         if (device == "cuda" || device == "mps")
         {
             scope.context.gpu_enabled     = enabled.value();
@@ -141,7 +141,7 @@ std::optional<AutocastScope> parseAutocast(Value* value, const AutocastContext& 
         //
         // TODO: better error message
         //
-        XSIGMA_CHECK(false, "Unsupported autocast syntax");
+        QUARISMA_CHECK(false, "Unsupported autocast syntax");
     }
 
     return std::nullopt;
@@ -231,7 +231,7 @@ void castInputsToWidestType(Node* node, const AutocastContext& context)
         if (auto tensor_type = input->type()->cast<TensorType>())
         {
             const auto dtype = tensor_type->scalarType();
-            if (!dtype.has_value() || *dtype == xsigma::ScalarType::Float)
+            if (!dtype.has_value() || *dtype == quarisma::ScalarType::Float)
             {
                 castTensorInputs(node, aten::_autocast_to_full_precision, context);
                 return;
@@ -256,7 +256,7 @@ void castInputsToWidestType(Node* node, const AutocastContext& context)
 // implemented in this file, which makes changes to the graph to insert casting
 // ops in order to achieve the same behavior as eager autocasting.
 //
-// If eager autocasting is enabled xsigma the time when a JIT-scripted function is
+// If eager autocasting is enabled quarisma the time when a JIT-scripted function is
 // invoked, then autocasting will occur regardless of what the JIT-autocasting
 // settings are.
 void updateAutocastEnabledCheck(Node* node, bool is_jit_enabled)
@@ -277,7 +277,7 @@ void updateAutocastEnabledCheck(Node* node, bool is_jit_enabled)
 
 // [Note: implicit type promotion in Autocast]
 //
-// Casting policy below mostly follows pytorch/aten/src/XSigma/autocast.cpp, with
+// Casting policy below mostly follows pytorch/aten/src/Quarisma/autocast.cpp, with
 // a few exceptions, e.g. `aten::add`, which is needed to be put to promotion
 // list for JIT autocast.
 // The reason is that in eager amp, some binary ops promote inputs implicitly
@@ -364,7 +364,7 @@ void handleBlock(Block* block, AutocastContext initial_state)
                 if (node->hasUses())
                 {
                     // TODO: better error message
-                    XSIGMA_CHECK(false, "`with autocast() as ...` is not supported");
+                    QUARISMA_CHECK(false, "`with autocast() as ...` is not supported");
                 }
                 TORCH_INTERNAL_ASSERT(
                     !incompatible_amp.has_value() || !incompatible_amp.value(),
@@ -530,7 +530,7 @@ void handleBlock(Block* block, AutocastContext initial_state)
         case aten::binary_cross_entropy:
             if (current_state())
             {
-                XSIGMA_CHECK(false, "Unsafe to autocast");
+                QUARISMA_CHECK(false, "Unsafe to autocast");
             }
         }
 
@@ -563,10 +563,10 @@ void Autocast(const std::shared_ptr<Graph>& graph)
     if (autocastEnabled())
     {
         AutocastContext init = {
-            xsigma::autocast::is_autocast_enabled(xsigma::kCUDA),
-            xsigma::autocast::is_autocast_enabled(xsigma::kCPU),
-            xsigma::autocast::get_autocast_dtype(xsigma::kCUDA),
-            xsigma::autocast::get_autocast_dtype(xsigma::kCPU)};
+            quarisma::autocast::is_autocast_enabled(quarisma::kCUDA),
+            quarisma::autocast::is_autocast_enabled(quarisma::kCPU),
+            quarisma::autocast::get_autocast_dtype(quarisma::kCUDA),
+            quarisma::autocast::get_autocast_dtype(quarisma::kCPU)};
         handleBlock(graph->block(), init);
     }
     GRAPH_DUMP("\nAfter Autocast: ", graph);

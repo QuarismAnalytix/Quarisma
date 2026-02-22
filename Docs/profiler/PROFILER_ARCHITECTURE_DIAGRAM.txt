@@ -1,5 +1,5 @@
 ================================================================================
-XSIGMA PROFILER ARCHITECTURE - CURRENT vs. DESIRED
+QUARISMA PROFILER ARCHITECTURE - CURRENT vs. DESIRED
 ================================================================================
 
 CURRENT STATE (Incomplete)
@@ -7,7 +7,7 @@ CURRENT STATE (Incomplete)
 
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                          USER CODE                                      │
-│  XSIGMA_PROFILE_SCOPE("op")  |  RecordFunction(scope)                  │
+│  QUARISMA_PROFILE_SCOPE("op")  |  RecordFunction(scope)                  │
 └──────────────────┬──────────────────────────────────────────────────────┘
                    │
         ┌──────────┴──────────┐
@@ -56,7 +56,7 @@ DESIRED STATE (After Implementation)
 
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                          USER CODE                                      │
-│  XSIGMA_RECORD_FUNCTION("op")  |  record_function("op")                │
+│  QUARISMA_RECORD_FUNCTION("op")  |  record_function("op")                │
 └──────────────────┬──────────────────────────────────────────────────────┘
                    │
                    ▼
@@ -65,7 +65,7 @@ DESIRED STATE (After Implementation)
 │                                                                          │
 │ ✅ record_function() function                                           │
 │ ✅ record_function_scope RAII class                                     │
-│ ✅ XSIGMA_RECORD_FUNCTION macro                                         │
+│ ✅ QUARISMA_RECORD_FUNCTION macro                                         │
 └──────────────────┬──────────────────────────────────────────────────────┘
                    │
                    ▼

@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -15,18 +15,18 @@
 #include <string>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "profiler/native/core/timespan.h"
 #include "profiler/native/exporters/xplane/xplane.h"
 #include "profiler/native/exporters/xplane/xplane_builder.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // ============================================================================
 // simple_atoi Tests - Consolidated
 // ============================================================================
 
-XSIGMATEST(XPlaneBuilder, simple_atoi_valid_inputs)
+QUARISMATEST(XPlaneBuilder, simple_atoi_valid_inputs)
 {
     // Test valid positive integer
     int64_t result = 0;
@@ -67,7 +67,7 @@ XSIGMATEST(XPlaneBuilder, simple_atoi_valid_inputs)
     EXPECT_EQ(result, 0);
 }
 
-XSIGMATEST(XPlaneBuilder, simple_atoi_invalid_inputs)
+QUARISMATEST(XPlaneBuilder, simple_atoi_invalid_inputs)
 {
     int64_t result = 0;
 
@@ -88,7 +88,7 @@ XSIGMATEST(XPlaneBuilder, simple_atoi_invalid_inputs)
     EXPECT_FALSE(simple_atoi("123 ", &result));
 }
 
-XSIGMATEST(XPlaneBuilder, simple_atoi_overflow_and_limits)
+QUARISMATEST(XPlaneBuilder, simple_atoi_overflow_and_limits)
 {
     int64_t result = 0;
 
@@ -108,7 +108,7 @@ XSIGMATEST(XPlaneBuilder, simple_atoi_overflow_and_limits)
 // simple_atod Tests - Consolidated
 // ============================================================================
 
-XSIGMATEST(XPlaneBuilder, simple_atod_valid_inputs)
+QUARISMATEST(XPlaneBuilder, simple_atod_valid_inputs)
 {
     // Test valid positive double
     double result = 0.0;
@@ -146,7 +146,7 @@ XSIGMATEST(XPlaneBuilder, simple_atod_valid_inputs)
     EXPECT_DOUBLE_EQ(result, 123.0);
 }
 
-XSIGMATEST(XPlaneBuilder, simple_atod_scientific_notation)
+QUARISMATEST(XPlaneBuilder, simple_atod_scientific_notation)
 {
     // Test positive exponent
     double result = 0.0;
@@ -164,7 +164,7 @@ XSIGMATEST(XPlaneBuilder, simple_atod_scientific_notation)
     EXPECT_DOUBLE_EQ(result, 1500.0);
 }
 
-XSIGMATEST(XPlaneBuilder, simple_atod_invalid_inputs)
+QUARISMATEST(XPlaneBuilder, simple_atod_invalid_inputs)
 {
     double result = 0.0;
 
@@ -189,7 +189,7 @@ XSIGMATEST(XPlaneBuilder, simple_atod_invalid_inputs)
 // xplane_builder Tests - Consolidated
 // ============================================================================
 
-XSIGMATEST(XPlaneBuilder, xplane_builder_basic_operations)
+QUARISMATEST(XPlaneBuilder, xplane_builder_basic_operations)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -209,7 +209,7 @@ XSIGMATEST(XPlaneBuilder, xplane_builder_basic_operations)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(XPlaneBuilder, xplane_builder_line_management)
+QUARISMATEST(XPlaneBuilder, xplane_builder_line_management)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -228,7 +228,7 @@ XSIGMATEST(XPlaneBuilder, xplane_builder_line_management)
     EXPECT_EQ(plane.lines_size(), 4);  // Including the initial line with ID 100
 }
 
-XSIGMATEST(XPlaneBuilder, xplane_builder_metadata_management)
+QUARISMATEST(XPlaneBuilder, xplane_builder_metadata_management)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -275,7 +275,7 @@ XSIGMATEST(XPlaneBuilder, xplane_builder_metadata_management)
 // xline_builder Tests - Consolidated
 // ============================================================================
 
-XSIGMATEST(XPlaneBuilder, xline_builder_basic_operations)
+QUARISMATEST(XPlaneBuilder, xline_builder_basic_operations)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -297,7 +297,7 @@ XSIGMATEST(XPlaneBuilder, xline_builder_basic_operations)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(XPlaneBuilder, xline_builder_event_management)
+QUARISMATEST(XPlaneBuilder, xline_builder_event_management)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -329,7 +329,7 @@ XSIGMATEST(XPlaneBuilder, xline_builder_event_management)
 // xevent_builder Tests - Consolidated
 // ============================================================================
 
-XSIGMATEST(XPlaneBuilder, xevent_builder_timing_operations)
+QUARISMATEST(XPlaneBuilder, xevent_builder_timing_operations)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -377,7 +377,7 @@ XSIGMATEST(XPlaneBuilder, xevent_builder_timing_operations)
     EXPECT_EQ(event7.DurationPs(), 5000);
 }
 
-XSIGMATEST(XPlaneBuilder, xevent_builder_stats_and_occurrences)
+QUARISMATEST(XPlaneBuilder, xevent_builder_stats_and_occurrences)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -406,4 +406,4 @@ XSIGMATEST(XPlaneBuilder, xevent_builder_stats_and_occurrences)
     EXPECT_TRUE(true);
 }
 
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

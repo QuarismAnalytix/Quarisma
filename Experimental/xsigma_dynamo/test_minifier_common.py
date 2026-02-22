@@ -97,7 +97,7 @@ class MinifierTestBase(torch._dynamo.test_case.TestCase):
         if os.getenv("PYTORCH_KEEP_TMPDIR", "0") != "1":
             shutil.rmtree(cls.DEBUG_DIR)
         else:
-            print(f"test_minifier_common tmpdir kept xsigma: {cls.DEBUG_DIR}")
+            print(f"test_minifier_common tmpdir kept quarisma: {cls.DEBUG_DIR}")
         cls._exit_stack.close()  # type: ignore[attr-defined]
 
     def _gen_codegen_fn_patch_code(self, device: str, bug_type: str) -> str:

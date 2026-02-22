@@ -8,7 +8,7 @@
 #include <torch/csrc/jit/passes/inliner.h>
 #include <torch/csrc/jit/passes/lower_tuples.h>
 #include <torch/csrc/jit/runtime/graph_executor_impl.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <stack>
 #include <utility>
@@ -99,7 +99,7 @@ public:
 
         for (auto name : preservedAttrs)
         {
-            XSIGMA_CHECK(checkName(name), "Unknown name: " + name);
+            QUARISMA_CHECK(checkName(name), "Unknown name: " + name);
         }
     }
 
@@ -136,7 +136,7 @@ public:
         };
         auto applyOptimizations = [](std::shared_ptr<Graph>& subgraph)
         {
-#ifndef XSIGMA_MOBILE
+#ifndef QUARISMA_MOBILE
             Autocast(subgraph);
 #endif
             runOptimization(
@@ -292,7 +292,7 @@ private:
     // For example:
     // module M {
     //   attributes {
-    //     A = <SubModule xsigma ...>
+    //     A = <SubModule quarisma ...>
     //   }
     //   ...
     //   %A = prim::GetAttr[name="A"](%self)
@@ -304,7 +304,7 @@ private:
     //   submodules {
     //     module SubModule {
     //       attributes {
-    //          B = <SubModule2 xsigma ...>
+    //          B = <SubModule2 quarisma ...>
     //       }
     //       submodules {
     //         module SubModule2 {
@@ -318,7 +318,7 @@ private:
     //
     // findConstantAttr(%B, "scale", M)  returns true because there are no
     // explicit SetAttr that modifies %B. attrModule points to the module where
-    // attribute lives (in this example it is <SubModule2 xsigma ...>).
+    // attribute lives (in this example it is <SubModule2 quarisma ...>).
     //
     // Note inplace mutations to attributes are checked later using alias
     // analysis.
@@ -401,7 +401,7 @@ private:
 
                 // Modules with prim::ModuleContainerIndex cannot be frozen because they
                 // return InterfaceTypes.
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     n->kind() != prim::ModuleContainerIndex,
                     "Freezing modules containing prim::ModuleContainerIndex is not supported");
 
@@ -410,7 +410,7 @@ private:
                     // By default if interface attributes are present then fail freezing.
                     // If freezingInterfaces is on then Interfaces are folded similarly
                     // to other attributes.
-                    XSIGMA_CHECK(
+                    QUARISMA_CHECK(
                         freezeInterfaces_ || !(n->kind() == prim::GetAttr &&
                                                n->output()->type()->cast<InterfaceType>()),
                         "attempted to freeze a module that uses interface attributes");
@@ -465,7 +465,7 @@ private:
         {
             IValue::HashAliasedIValues subValues;
             val.getSubValues(subValues);
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 std::all_of(
                     subValues.begin(),
                     subValues.end(),
@@ -492,7 +492,7 @@ private:
         {
             auto        tuple = std::move(attr).toTuple();
             const auto& elems = tuple->elements();
-            for (const auto idx : xsigma::irange(elems.size()))
+            for (const auto idx : quarisma::irange(elems.size()))
             {
                 tuple->unsafeSetElement(idx, overrideGradient(elems[idx]));
             }
@@ -500,8 +500,8 @@ private:
         }
         else if (attr.isList())
         {
-            xsigma::List<IValue> elems = std::move(attr).toList();
-            for (const auto i : xsigma::irange(elems.size()))
+            quarisma::List<IValue> elems = std::move(attr).toList();
+            for (const auto i : quarisma::irange(elems.size()))
             {
                 elems.set(i, overrideGradient(elems.extract(i)));
             }
@@ -624,7 +624,7 @@ private:
                     auto name       = n->s(attr::name);
                     auto attrModule = module_;
                     auto input      = n->inputs()[0];
-                    XSIGMA_CHECK(
+                    QUARISMA_CHECK(
                         findConstantAttr(input, name, attrModule, graph),
                         "failed to freeze interface attribute '" + name + "'");
                     TORCH_INTERNAL_ASSERT(attrModule.hasattr(name));
@@ -823,7 +823,7 @@ private:
                         n->outputs()[0]->debugName(),
                         " with ",
                         paramConst->debugName());
-                    n->outputs().xsigma(0)->replaceAllUsesWith(paramConst);
+                    n->outputs().quarisma(0)->replaceAllUsesWith(paramConst);
                     n->removeAllInputs();
                 }
                 else if (n->kind() == prim::fork)
@@ -846,7 +846,7 @@ private:
         std::shared_ptr<Graph>&                             graph,
         const std::function<void(std::shared_ptr<Graph>&)>& func)
     {
-        XSIGMA_CHECK(n->kind() == prim::fork);
+        QUARISMA_CHECK(n->kind() == prim::fork);
         auto attrModule = module_;
         auto node       = n->inputs()[0]->node();
         // Check if first parameter of fork is a module. This module is used
@@ -1022,7 +1022,7 @@ private:
         auto it2 = preservedScalarAttrs_.find(module._ivalue());
         SharedTypeSubModules_[type].insert(module._ivalue());
         attrsToKeep_[type].insert({});
-        for (const auto i : xsigma::irange(N))
+        for (const auto i : quarisma::irange(N))
         {
             auto name   = type->getAttributeName(i);
             auto attr   = module.attr(name);
@@ -1043,7 +1043,7 @@ private:
                 if (attr.isModule())
                 {
                     // See [Note: Inlining interfaces strategy]
-                    XSIGMA_CHECK(
+                    QUARISMA_CHECK(
                         !type->getAttribute(i)->cast<InterfaceType>(),
                         "Unexpected interface attribute '" + name + "' during freezing");
 
@@ -1069,7 +1069,7 @@ private:
             {
                 continue;
             }
-            for (const auto i : xsigma::irange(N))
+            for (const auto i : quarisma::irange(N))
             {
                 if (it.second.count(i) == 0)
                 {
@@ -1141,8 +1141,8 @@ private:
 
     // see [Constant Object Weak CompilationUnit Reference]
     std::unordered_map<
-        xsigma::intrusive_ptr<xsigma::ivalue::Object>,
-        xsigma::intrusive_ptr<xsigma::ivalue::Object>>
+        quarisma::intrusive_ptr<quarisma::ivalue::Object>,
+        quarisma::intrusive_ptr<quarisma::ivalue::Object>>
         object_memo_;
 
     // Contains names of attributes that the user wants to preserve with
@@ -1159,7 +1159,7 @@ void checkModuleDoesNotReturnSelf(const Module& module)
         // Check that module does not return itself.
         for (auto& output : method.graph()->outputs())
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 output->type() != module.type(), "attempted to freeze a module that return itself");
         }
     }
@@ -1187,7 +1187,7 @@ void freeze_module_inplace(
     bool                     freezeInterfaces,
     bool                     preserveParameters)
 {
-    XSIGMA_CHECK(module != nullptr, "module cannot be nullptr");
+    QUARISMA_CHECK(module != nullptr, "module cannot be nullptr");
     checkModuleDoesNotReturnSelf(*module);
     AttributePropagator attrPropagator(
         *module, preservedAttrs, freezeInterfaces, preserveParameters);

@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef __XSIGMA_WRAP__
+#ifndef __QUARISMA_WRAP__
 
 /**
  * Simple registry implementation that uses static variables to
@@ -17,7 +17,7 @@
 #include "util/exception.h"
 #include "util/flat_hash.h"
 
-namespace xsigma
+namespace quarisma
 {
 template <class KeyType, typename Function>
 class Registry
@@ -36,14 +36,14 @@ public:
     template <class Arg1, class Arg2, class... Args>
     auto run(const KeyType& key, Arg1& arg1, Arg2* arg2, Args... args)
     {
-        XSIGMA_CHECK_DEBUG(registry_.count(key) != 0, "key ", key, " was not found");
+        QUARISMA_CHECK_DEBUG(registry_.count(key) != 0, "key ", key, " was not found");
         return registry_[key](arg1, arg2, args...);
     }
 
     template <class Arg1, class Arg2, class... Args>
     auto run(const KeyType& key, Arg1& arg1, Arg2& arg2, Args... args)
     {
-        XSIGMA_CHECK_DEBUG(registry_.count(key) != 0, "key ", key, " was not found");
+        QUARISMA_CHECK_DEBUG(registry_.count(key) != 0, "key ", key, " was not found");
         return registry_[key](arg1, arg2, args...);
     }
 
@@ -64,7 +64,7 @@ public:
     Registry& operator=(const Registry& /*rhs*/) = delete;
 
 private:
-    xsigma_map<KeyType, Function> registry_{};
+    quarisma_map<KeyType, Function> registry_{};
     std::mutex                    register_mutex_;
 };
 
@@ -132,7 +132,7 @@ public:
     Registry& operator=(const Registry& /*rhs*/) = delete;
 
 private:
-    xsigma_map<KeyType, Function> registry_{};
+    quarisma_map<KeyType, Function> registry_{};
     std::mutex                    register_mutex_;
 };
 
@@ -156,72 +156,72 @@ public:
 };
 }  // namespace creator
 
-#define XSIGMA_DECLARE_FUNCTION_REGISTRY(RegistryName, Function) \
-    xsigma::Registry<std::string, Function>* RegistryName();     \
-    using Registerer##RegistryName = xsigma::Registerer<std::string, Function>;
+#define QUARISMA_DECLARE_FUNCTION_REGISTRY(RegistryName, Function) \
+    quarisma::Registry<std::string, Function>* RegistryName();     \
+    using Registerer##RegistryName = quarisma::Registerer<std::string, Function>;
 
-#define XSIGMA_DEFINE_FUNCTION_REGISTRY(RegistryName, Function)                \
-    xsigma::Registry<std::string, Function>* RegistryName()                    \
+#define QUARISMA_DEFINE_FUNCTION_REGISTRY(RegistryName, Function)                \
+    quarisma::Registry<std::string, Function>* RegistryName()                    \
     {                                                                          \
-        static auto* registry = new xsigma::Registry<std::string, Function>(); \
+        static auto* registry = new quarisma::Registry<std::string, Function>(); \
         return registry;                                                       \
     }
 
-#define XSIGMA_REGISTER_FUNCTION(RegistryName, type, Function)                   \
-    static Registerer##RegistryName XSIGMA_ANONYMOUS_VARIABLE(g_##RegistryName)( \
+#define QUARISMA_REGISTER_FUNCTION(RegistryName, type, Function)                   \
+    static Registerer##RegistryName QUARISMA_ANONYMOUS_VARIABLE(g_##RegistryName)( \
         demangle(typeid(type).name()), RegistryName(), Function);
 
-#define XSIGMA_DECLARE_TYPED_REGISTRY(RegistryName, KeyType, ObjectType, PtrType, ...)      \
-    xsigma::creator::Registry<KeyType, PtrType<ObjectType>, ##__VA_ARGS__>* RegistryName(); \
+#define QUARISMA_DECLARE_TYPED_REGISTRY(RegistryName, KeyType, ObjectType, PtrType, ...)      \
+    quarisma::creator::Registry<KeyType, PtrType<ObjectType>, ##__VA_ARGS__>* RegistryName(); \
     using Registerer##RegistryName =                                                        \
-        xsigma::creator::Registerer<KeyType, PtrType<ObjectType>, ##__VA_ARGS__>;
+        quarisma::creator::Registerer<KeyType, PtrType<ObjectType>, ##__VA_ARGS__>;
 
-#define XSIGMA_DEFINE_TYPED_REGISTRY(RegistryName, KeyType, ObjectType, PtrType, ...)      \
-    xsigma::creator::Registry<KeyType, PtrType<ObjectType>, ##__VA_ARGS__>* RegistryName() \
+#define QUARISMA_DEFINE_TYPED_REGISTRY(RegistryName, KeyType, ObjectType, PtrType, ...)      \
+    quarisma::creator::Registry<KeyType, PtrType<ObjectType>, ##__VA_ARGS__>* RegistryName() \
     {                                                                                      \
         static auto* registry =                                                            \
-            new xsigma::creator::Registry<KeyType, PtrType<ObjectType>, ##__VA_ARGS__>();  \
+            new quarisma::creator::Registry<KeyType, PtrType<ObjectType>, ##__VA_ARGS__>();  \
         return registry;                                                                   \
     }
 
 // The __VA_ARGS__ below allows one to specify a templated
 // creator with comma in its templated arguments.
-#define XSIGMA_REGISTER_TYPED_CREATOR(RegistryName, key, ...)                    \
-    static Registerer##RegistryName XSIGMA_ANONYMOUS_VARIABLE(g_##RegistryName)( \
+#define QUARISMA_REGISTER_TYPED_CREATOR(RegistryName, key, ...)                    \
+    static Registerer##RegistryName QUARISMA_ANONYMOUS_VARIABLE(g_##RegistryName)( \
         key, RegistryName(), ##__VA_ARGS__);
 
-#define XSIGMA_REGISTER_TYPED_CLASS(RegistryName, key, ...)                      \
-    static Registerer##RegistryName XSIGMA_ANONYMOUS_VARIABLE(g_##RegistryName)( \
+#define QUARISMA_REGISTER_TYPED_CLASS(RegistryName, key, ...)                      \
+    static Registerer##RegistryName QUARISMA_ANONYMOUS_VARIABLE(g_##RegistryName)( \
         key, RegistryName(), Registerer##RegistryName::DefaultCreator<__VA_ARGS__>);
 
-// XSIGMA_DECLARE_REGISTRY and XSIGMA_DEFINE_REGISTRY are hard-wired to use
+// QUARISMA_DECLARE_REGISTRY and QUARISMA_DEFINE_REGISTRY are hard-wired to use
 // std::string as the key type, because that is the most commonly used cases.
-#define XSIGMA_DECLARE_REGISTRY(RegistryName, ObjectType, ...) \
-    XSIGMA_DECLARE_TYPED_REGISTRY(                             \
+#define QUARISMA_DECLARE_REGISTRY(RegistryName, ObjectType, ...) \
+    QUARISMA_DECLARE_TYPED_REGISTRY(                             \
         RegistryName, std::string, ObjectType, std::unique_ptr, ##__VA_ARGS__)
 
-#define XSIGMA_DEFINE_REGISTRY(RegistryName, ObjectType, ...) \
-    XSIGMA_DEFINE_TYPED_REGISTRY(                             \
+#define QUARISMA_DEFINE_REGISTRY(RegistryName, ObjectType, ...) \
+    QUARISMA_DEFINE_TYPED_REGISTRY(                             \
         RegistryName, std::string, ObjectType, std::unique_ptr, ##__VA_ARGS__)
 
-// XSIGMA_REGISTER_CREATOR and XSIGMA_REGISTER_CLASS are hard-wired to use std::string
+// QUARISMA_REGISTER_CREATOR and QUARISMA_REGISTER_CLASS are hard-wired to use std::string
 // as the key
 // type, because that is the most commonly used cases.
-#define XSIGMA_REGISTER_CREATOR(RegistryName, key, ...) \
-    XSIGMA_REGISTER_TYPED_CREATOR(RegistryName, #key, __VA_ARGS__)
+#define QUARISMA_REGISTER_CREATOR(RegistryName, key, ...) \
+    QUARISMA_REGISTER_TYPED_CREATOR(RegistryName, #key, __VA_ARGS__)
 
-#define XSIGMA_REGISTER_CLASS(RegistryName, key, ...) \
-    XSIGMA_REGISTER_TYPED_CLASS(RegistryName, #key, __VA_ARGS__)
+#define QUARISMA_REGISTER_CLASS(RegistryName, key, ...) \
+    QUARISMA_REGISTER_TYPED_CLASS(RegistryName, #key, __VA_ARGS__)
 
-// XSIGMA_DECLARE_SHARED_REGISTRY and XSIGMA_DEFINE_SHARED_REGISTRY use std::shared_ptr
+// QUARISMA_DECLARE_SHARED_REGISTRY and QUARISMA_DEFINE_SHARED_REGISTRY use std::shared_ptr
 // instead of std::unique_ptr for shared ownership semantics
-#define XSIGMA_DECLARE_SHARED_REGISTRY(RegistryName, ObjectType, ...) \
-    XSIGMA_DECLARE_TYPED_REGISTRY(                                    \
+#define QUARISMA_DECLARE_SHARED_REGISTRY(RegistryName, ObjectType, ...) \
+    QUARISMA_DECLARE_TYPED_REGISTRY(                                    \
         RegistryName, std::string, ObjectType, std::shared_ptr, ##__VA_ARGS__)
 
-#define XSIGMA_DEFINE_SHARED_REGISTRY(RegistryName, ObjectType, ...) \
-    XSIGMA_DEFINE_TYPED_REGISTRY(                                    \
+#define QUARISMA_DEFINE_SHARED_REGISTRY(RegistryName, ObjectType, ...) \
+    QUARISMA_DEFINE_TYPED_REGISTRY(                                    \
         RegistryName, std::string, ObjectType, std::shared_ptr, ##__VA_ARGS__)
 
-}  // namespace xsigma
-#endif  // ! __XSIGMA_WRAP__
+}  // namespace quarisma
+#endif  // ! __QUARISMA_WRAP__

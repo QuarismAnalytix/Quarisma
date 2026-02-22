@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,12 +18,12 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "memory/backend/allocator_retry.h"
@@ -36,7 +36,7 @@
 
 #include "common/macros.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace
 {
@@ -92,7 +92,7 @@ void update_allocator_bfc_delay_time(const uint64_t delay_usecs)
 class scoped_time_tracker
 {
 public:
-    XSIGMA_DELETE_COPY(scoped_time_tracker);
+    QUARISMA_DELETE_COPY(scoped_time_tracker);
 
     scoped_time_tracker()                                 = default;
     scoped_time_tracker(scoped_time_tracker&&)            = delete;
@@ -179,4 +179,4 @@ void* allocator_retry::allocate_raw(
 
     return ptr;
 }
-}  // namespace xsigma
+}  // namespace quarisma

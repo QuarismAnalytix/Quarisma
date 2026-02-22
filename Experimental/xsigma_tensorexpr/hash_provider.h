@@ -168,8 +168,8 @@ private:
         seed._h ^= te_hash(val) + 0x1f752c19 + (seed._h << 7) + (seed._h >> 4);
     }
 
-    // xsigma:::Half doesn't have a prime_number_hash, so cast to short.
-    void _hash_combine(SimplifierHashType& seed, const xsigma::Half& val)
+    // quarisma:::Half doesn't have a prime_number_hash, so cast to short.
+    void _hash_combine(SimplifierHashType& seed, const quarisma::Half& val)
     {
         seed._h ^= te_hash((uint16_t)val) + 0x1f752c19 + (seed._h << 7) + (seed._h >> 4);
     }
@@ -290,13 +290,13 @@ private:
         return te_hash(*n);
     }
 
-    size_t te_hash(xsigma::Half d)
+    size_t te_hash(quarisma::Half d)
     {
         int16_t* n = reinterpret_cast<int16_t*>(&d);
         return te_hash(*n);
     }
 
-    size_t te_hash(xsigma::BFloat16 d)
+    size_t te_hash(quarisma::BFloat16 d)
     {
         int16_t* n = reinterpret_cast<int16_t*>(&d);
         return te_hash(*n);

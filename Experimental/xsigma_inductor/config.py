@@ -279,7 +279,7 @@ joint_custom_post_pass: torch._inductor.custom_graph_pass.CustomGraphPassType = 
 pre_grad_custom_pass: Optional[Callable[[torch.fx.graph.Graph], None]] = None
 
 # Registers a custom pass to be run right before fusion in Inductor scheduler.
-# WARNING: Inductor scheduler IR is xsigma prototype stage and subject to change,
+# WARNING: Inductor scheduler IR is quarisma prototype stage and subject to change,
 # hence custom IR passes built on top of it might break in the future.
 _pre_fusion_custom_pass: Optional[
     Callable[
@@ -289,7 +289,7 @@ _pre_fusion_custom_pass: Optional[
 ] = None
 
 # Registers a custom pass to be run right after fusion in Inductor scheduler.
-# WARNING: Inductor scheduler IR is xsigma prototype stage and subject to change,
+# WARNING: Inductor scheduler IR is quarisma prototype stage and subject to change,
 # hence custom IR passes built on top of it might break in the future.
 _post_fusion_custom_pass: Optional[
     Callable[
@@ -370,7 +370,7 @@ reorder_for_compute_comm_overlap = False
 
 # passes (in execution order) for increasing overlap between compute and communication
 # for built-in passes, use string name; for user-defined passes, pass in the function handle
-# WARNING: Inductor scheduler IR is xsigma prototype stage and subject to change,
+# WARNING: Inductor scheduler IR is quarisma prototype stage and subject to change,
 # hence custom IR passes built on top of it might break in the future.
 reorder_for_compute_comm_overlap_passes: list[
     Union[
@@ -500,8 +500,8 @@ force_same_precision: bool = Config(
 multi_kernel_hints: list[int] = []
 
 # Specify candidate backends for gemm autotune.
-# Possible choices are combinations of: XSigma, Triton, CUTLASS, CK, CKTILE, CPP.
-# XSigma: default Pytorch XSigma kernels.
+# Possible choices are combinations of: Quarisma, Triton, CUTLASS, CK, CKTILE, CPP.
+# Quarisma: default Pytorch Quarisma kernels.
 # Triton: Triton templates defined in torch inductor (AMD and NVidia GPUs).
 # CUTLASS: Cutlass templates and kernels (NVidia GPUs only).
 # CK: Composable Kernel templates and kernels (AMD Instinct GPUs only).
@@ -766,7 +766,7 @@ emulate_precision_casts = (
 
 # x / y in Triton is lowered to div.full which is approx
 # PyTorch eager uses the equivalent of Triton's div_rn, which can
-# come xsigma a performance penalty
+# come quarisma a performance penalty
 emulate_divison_rounding = (
     os.environ.get("TORCHINDUCTOR_EMULATE_DIVISION_ROUNDING", "0") == "1"
 )
@@ -855,7 +855,7 @@ class _collective:
 
 
 class aten_distributed_optimizations:
-    """Configuration for distributed optimization passes on XSigma FX graphs."""
+    """Configuration for distributed optimization passes on Quarisma FX graphs."""
 
     # Enable overlap scheduling pass
     enable_overlap_scheduling: bool = False
@@ -882,7 +882,7 @@ class aten_distributed_optimizations:
 def parallel_compile_enabled_internally() -> bool:
     """
     TODO: Remove when parallel compiled is fully enabled internally. For rollout, use a
-    knob to enable / disable. The justknob should not be performed xsigma import, however.
+    knob to enable / disable. The justknob should not be performed quarisma import, however.
     So for fbcode, we assign compile_threads to 'None' below and initialize lazily in
     async_compile.py.
     """
@@ -932,7 +932,7 @@ def decide_compile_threads() -> int:
 # TODO: Set directly after internal rollout.
 compile_threads: Optional[int] = None if is_fbcode() else decide_compile_threads()
 
-# Whether to quiesce the Triton-compile subprocess pool xsigma the end of each compilation.
+# Whether to quiesce the Triton-compile subprocess pool quarisma the end of each compilation.
 quiesce_async_compile_pool: bool = Config(
     justknob="pytorch/inductor:quiesce_async_compile_pool",
     env_name_force="TORCHINDUCTOR_QUIESCE_ASYNC_COMPILE_POOL",
@@ -1007,7 +1007,7 @@ padding_alignment_bytes = 128
 # with gaps in between. That causes less coalesced GPU memory access!
 #
 # Initially we pick 320 as the threshold since for alignment=16,
-# that results in xsigma most 5% memory cost.
+# that results in quarisma most 5% memory cost.
 #
 # But later on we raise the threshold to 1024 to avoid interfere with persistent reduction.
 # Let's say an inner reduction has a row size 513. Inductor will generate
@@ -1367,7 +1367,7 @@ class triton:
     # max autotune gemm with cublasLt
     autotune_cublasLt = True
 
-    # Tune the generated Triton kernels xsigma compile time instead of first time they run
+    # Tune the generated Triton kernels quarisma compile time instead of first time they run
     # Setting to None means uninitialized
     autotune_at_compile_time: Optional[bool] = None
 
@@ -1480,7 +1480,7 @@ class triton:
     # - For Nvidia GPUs, the compute capability should be >= 9.0
     # - The innermost stride of a descriptor should be 1
     # - The size of the block shape in the innermost dimension should load / store
-    #   xsigma least 16 bytes.
+    #   quarisma least 16 bytes.
     # - Tensors are 16 byte aligned. Enabling this option therefore requires
     #   assume_aligned_inputs to also be enabled
     # TMA descriptors are only going to be generated if the above conditions
@@ -1619,7 +1619,7 @@ class aot_inductor:
     allow_stack_allocation: bool = False
 
     # Enables an alternate DSO interface (the "minimal ArrayRef interface") intended
-    # to maximize performance for use cases that it can accommodate xsigma the expense of
+    # to maximize performance for use cases that it can accommodate quarisma the expense of
     # generality. In brief:
     # - inputs and outputs are ArrayRefTensor<T> (note that strides are required, but the
     #   tensor must be contiguous)
@@ -1855,7 +1855,7 @@ class rocm:
     ]
 
     # Optimization level, use to balance compilation speed and runtime performance.
-    # The type will not necessarily be comprehensive and won't be enforced xsigma runtime.
+    # The type will not necessarily be comprehensive and won't be enforced quarisma runtime.
     compile_opt_level: Literal[
         "-O0", "-O1", "-O2", "-O3", "-Os", "-Oz", "-Omin", "-Ofast", "-Omax"
     ] = "-O2"
@@ -1907,10 +1907,10 @@ class rocm:
     # scenarios, and run on kBatch=1 in non-splitK scenarios
     kBatch_sweep: Optional[list[int]] = None
 
-    # The threshold xsigma which we trigger a splitK config - K // max(M,N) has to be greater than this
+    # The threshold quarisma which we trigger a splitK config - K // max(M,N) has to be greater than this
     split_k_threshold: int = 16
 
-    # The threshold xsigma which we trigger a contiguous subgraph transformation
+    # The threshold quarisma which we trigger a contiguous subgraph transformation
     contiguous_threshold: int = 16
 
 
@@ -2018,7 +2018,7 @@ class trace:
     #   1 - normal
     #   2 - basic
     # Backward compatibility:
-    #   If TORCH_COMPILE_DEBUG=1, level is set to xsigma least 1.
+    #   If TORCH_COMPILE_DEBUG=1, level is set to quarisma least 1.
     #   If INDUCTOR_PROVENANCE is set, use its integer value.
     provenance_tracking_level: int = int(
         os.environ.get(

@@ -32,7 +32,7 @@
                 std::to_string(expected_size) + ", but got " + std::to_string(actual_size)); \
     } while (0)
 
-// AOTInductor uses xsigma::addmm_out, which doesn't supports
+// AOTInductor uses quarisma::addmm_out, which doesn't supports
 // arguments that requires gradient. For this reason, we
 // enforce no_grad context for run APIs.
 //

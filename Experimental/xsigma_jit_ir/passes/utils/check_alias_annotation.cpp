@@ -2,7 +2,7 @@
 #include <torch/csrc/jit/passes/normalize_ops.h>
 #include <torch/csrc/jit/passes/utils/check_alias_annotation.h>
 #include <torch/csrc/jit/runtime/operator.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit
 {
@@ -20,14 +20,14 @@ IValue deepCopy(const IValue& self)
     // Tensors need special handling, since copy assignment creates an alias
     if (self.isTensor())
     {
-        return IValue(self.toTensor().clone(xsigma::MemoryFormat::Preserve));
+        return IValue(self.toTensor().clone(quarisma::MemoryFormat::Preserve));
     }
 
     // Lists of ivalues should recursively deep copy their contents
     if (self.isList())
     {
         auto source  = self.toList();
-        auto newList = xsigma::impl::GenericList(source.elementType());
+        auto newList = quarisma::impl::GenericList(source.elementType());
         newList.reserve(source.size());
         for (const IValue& value : source)
         {
@@ -104,28 +104,28 @@ bool deepEquals(const IValue& lhs, const IValue& rhs)
 
 struct AliasAndIValue
 {
-    AliasAndIValue(const xsigma::AliasInfo* aliasInfo, IValue iValue)
+    AliasAndIValue(const quarisma::AliasInfo* aliasInfo, IValue iValue)
         : aliasInfo(aliasInfo), iValue(std::move(iValue))
     {
     }
 
-    const xsigma::AliasInfo* aliasInfo;
+    const quarisma::AliasInfo* aliasInfo;
     const IValue             iValue;
 };
 
 // No inputs should alias each other
 void checkInputPreconditions(const Stack& inputs)
 {
-    for (const auto i : xsigma::irange(inputs.size()))
+    for (const auto i : quarisma::irange(inputs.size()))
     {
-        for (const auto j : xsigma::irange(inputs.size()))
+        for (const auto j : quarisma::irange(inputs.size()))
         {
             if (i == j)
             {
                 continue;
             }
-            const auto& lhs = inputs.xsigma(i);
-            const auto& rhs = inputs.xsigma(j);
+            const auto& lhs = inputs.quarisma(i);
+            const auto& rhs = inputs.quarisma(j);
             AT_ASSERT(!lhs.isAliasOf(rhs));
         }
     }
@@ -166,7 +166,7 @@ void checkWrites(
     const std::vector<AliasAndIValue>& inputs, const std::vector<IValue>& deepCopiedInputs)
 {
     AT_ASSERT(inputs.size() == deepCopiedInputs.size());
-    for (const auto i : xsigma::irange(inputs.size()))
+    for (const auto i : quarisma::irange(inputs.size()))
     {
         const auto& input           = inputs[i];
         const auto& deepCopiedInput = deepCopiedInputs[i];
@@ -201,7 +201,7 @@ const Node* findNodeForOp(const Graph& g, const std::string& unqualifiedOpName)
         }
     }
 
-    // Ideally, there will be only one XSigma operator that has tensor outputs in
+    // Ideally, there will be only one Quarisma operator that has tensor outputs in
     // the graph. Let's use that as the last resolve to make checkAliasAnnotation
     // more robust.
     for (const auto* node : g.nodes())
@@ -250,7 +250,7 @@ std::optional<IValue> toIValueProp(const Value* v)
 
         // Specialize the list based on ListConstruct's return type
         auto listType      = v->node()->output()->type();
-        auto containedType = listType->containedTypes().xsigma(0);
+        auto containedType = listType->containedTypes().quarisma(0);
         if (containedType == IntType::get())
         {
             return IValue(fmap(genericList, [](const IValue& v) { return v.toInt(); }));
@@ -273,7 +273,7 @@ std::optional<IValue> toIValueProp(const Value* v)
     {
         if (auto maybe_stack = runNodeIfInputsAreConstant(v->node()))
         {
-            return maybe_stack->xsigma(0);
+            return maybe_stack->quarisma(0);
         }
     }
     return std::nullopt;
@@ -316,7 +316,7 @@ void checkAliasAnnotation(
         if (input->node() == graph->param_node())
         {
             // This value was passed as an input in python
-            push(stack, pythonInputs.xsigma(input->offset()));
+            push(stack, pythonInputs.quarisma(input->offset()));
         }
         else
         {
@@ -346,9 +346,9 @@ void checkAliasAnnotation(
     const auto& schema = node->schema();
 
     std::vector<AliasAndIValue> inputsToCheck;
-    for (const auto i : xsigma::irange(schema.arguments().size()))
+    for (const auto i : quarisma::irange(schema.arguments().size()))
     {
-        inputsToCheck.emplace_back(schema.arguments().xsigma(i).alias_info(), stack.xsigma(i));
+        inputsToCheck.emplace_back(schema.arguments().quarisma(i).alias_info(), stack.quarisma(i));
     }
 
     // Save a copy of the inputs so we can check whether the original inputs were
@@ -361,9 +361,9 @@ void checkAliasAnnotation(
     const auto outputs = std::move(stack);
 
     std::vector<AliasAndIValue> outputsToCheck;
-    for (const auto i : xsigma::irange(schema.returns().size()))
+    for (const auto i : quarisma::irange(schema.returns().size()))
     {
-        outputsToCheck.emplace_back(schema.returns().xsigma(i).alias_info(), outputs.xsigma(i));
+        outputsToCheck.emplace_back(schema.returns().quarisma(i).alias_info(), outputs.quarisma(i));
     }
 
     // Check that if any alias was created, we annotated it properly.

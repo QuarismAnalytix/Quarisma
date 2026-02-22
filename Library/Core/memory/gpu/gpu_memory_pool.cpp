@@ -12,11 +12,11 @@
 #include "util/exception.h"
 #include "util/flat_hash.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -55,10 +55,10 @@ private:
     mutable std::mutex mutex_;
 
     /** @brief Map of size class to cached blocks */
-    xsigma_map<size_t, std::vector<gpu_memory_block>> cached_blocks_;
+    quarisma_map<size_t, std::vector<gpu_memory_block>> cached_blocks_;
 
     /** @brief Map of active allocations for tracking (using custom hash for void*) */
-    xsigma_map<void*, gpu_memory_block, void_ptr_hash> active_allocations_;
+    quarisma_map<void*, gpu_memory_block, void_ptr_hash> active_allocations_;
 
     /** @brief Current total allocated bytes */
     std::atomic<size_t> allocated_bytes_{0};
@@ -124,7 +124,7 @@ private:
 
         switch (device_type)
         {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         case device_enum::CUDA:
         {
             // Set the device context
@@ -139,7 +139,7 @@ private:
                 cudaError_t const result = cudaMalloc(&ptr, aligned_size);
                 if (result != cudaSuccess)
                 {
-                    XSIGMA_THROW(
+                    QUARISMA_THROW(
                         "CUDA memory allocation failed: {}",
                         std::string(cudaGetErrorString(result)));
                 }
@@ -150,7 +150,7 @@ private:
                 cudaError_t const result = cudaMalloc(&ptr, size);
                 if (result != cudaSuccess)
                 {
-                    XSIGMA_THROW(
+                    QUARISMA_THROW(
                         "CUDA memory allocation failed: {}",
                         std::string(cudaGetErrorString(result)));
                 }
@@ -159,12 +159,12 @@ private:
         }
 #endif
         default:
-            XSIGMA_THROW("Unsupported device type for GPU memory allocation");
+            QUARISMA_THROW("Unsupported device type for GPU memory allocation");
         }
 
         if (config_.debug_mode)
         {
-            XSIGMA_LOG_INFO("Direct GPU allocation: {} bytes on device {}", size, device_index);
+            QUARISMA_LOG_INFO("Direct GPU allocation: {} bytes on device {}", size, device_index);
         }
 
         return {ptr, size, device};
@@ -183,14 +183,14 @@ private:
 
         switch (block.device.type())
         {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         case device_enum::CUDA:
         {
             cudaSetDevice(block.device.index());
             cudaError_t const result = cudaFree(block.ptr);
             if (result != cudaSuccess && config_.debug_mode)
             {
-                XSIGMA_LOG_WARNING(
+                QUARISMA_LOG_WARNING(
                     "CUDA memory deallocation warning: {}",
                     std::string(cudaGetErrorString(result)));
             }
@@ -200,13 +200,13 @@ private:
         default:
             if (config_.debug_mode)
             {
-                XSIGMA_LOG_WARNING("Unknown device type in deallocation");
+                QUARISMA_LOG_WARNING("Unknown device type in deallocation");
             }
         }
 
         if (config_.debug_mode)
         {
-            XSIGMA_LOG_INFO(
+            QUARISMA_LOG_INFO(
                 "Direct GPU deallocation: {} bytes from device {}",
                 block.size,
                 block.device.index());
@@ -218,22 +218,22 @@ public:
     {
         if (config_.min_block_size == 0 || config_.max_block_size == 0)
         {
-            XSIGMA_THROW("Invalid block size configuration");
+            QUARISMA_THROW("Invalid block size configuration");
         }
 
         if (config_.min_block_size > config_.max_block_size)
         {
-            XSIGMA_THROW("Minimum block size cannot be larger than maximum block size");
+            QUARISMA_THROW("Minimum block size cannot be larger than maximum block size");
         }
 
         if (config_.block_growth_factor <= 1.0)
         {
-            XSIGMA_THROW("Block growth factor must be greater than 1.0");
+            QUARISMA_THROW("Block growth factor must be greater than 1.0");
         }
 
         if (config_.debug_mode)
         {
-            XSIGMA_LOG_INFO(
+            QUARISMA_LOG_INFO(
                 "GPU memory pool initialized with min_block={}, max_block={}, growth_factor={}",
                 config_.min_block_size,
                 config_.max_block_size,
@@ -247,7 +247,7 @@ public:
 
         if (config_.debug_mode && !active_allocations_.empty())
         {
-            XSIGMA_LOG_WARNING(
+            QUARISMA_LOG_WARNING(
                 "GPU memory pool destroyed with {} active allocations (potential memory leak)",
                 active_allocations_.size());
         }
@@ -257,7 +257,7 @@ public:
     {
         if (size == 0)
         {
-            XSIGMA_THROW("Cannot allocate zero bytes");
+            QUARISMA_THROW("Cannot allocate zero bytes");
         }
 
         size_t const size_class = calculate_size_class(size);
@@ -293,7 +293,7 @@ public:
 
                     if (config_.debug_mode)
                     {
-                        XSIGMA_LOG_INFO("Cache hit: reusing block of size {}", result_block.size);
+                        QUARISMA_LOG_INFO("Cache hit: reusing block of size {}", result_block.size);
                     }
 
                     return result_block;
@@ -331,7 +331,7 @@ public:
     {
         if (block.ptr == nullptr)
         {
-            XSIGMA_THROW("Cannot deallocate null pointer");
+            QUARISMA_THROW("Cannot deallocate null pointer");
         }
 
         std::scoped_lock const lock(mutex_);
@@ -339,7 +339,7 @@ public:
         auto it = active_allocations_.find(block.ptr);
         if (it == active_allocations_.end())
         {
-            XSIGMA_THROW("Attempting to deallocate unknown memory block");
+            QUARISMA_THROW("Attempting to deallocate unknown memory block");
         }
 
         gpu_memory_block cached_block = std::move(it->second);
@@ -358,7 +358,7 @@ public:
 
             if (config_.debug_mode)
             {
-                XSIGMA_LOG_INFO("Cached block of size {}", cached_size);
+                QUARISMA_LOG_INFO("Cached block of size {}", cached_size);
             }
         }
         else
@@ -394,7 +394,7 @@ public:
 
         if (config_.debug_mode)
         {
-            XSIGMA_LOG_INFO("GPU memory pool cache cleared");
+            QUARISMA_LOG_INFO("GPU memory pool cache cleared");
         }
     }
 
@@ -476,4 +476,4 @@ std::unique_ptr<gpu_memory_pool> gpu_memory_pool::create(const gpu_memory_pool_c
 }
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

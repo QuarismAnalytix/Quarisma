@@ -2,7 +2,7 @@
 #include <torch/csrc/jit/tensorexpr/eval.h>
 #include <torch/csrc/jit/tensorexpr/external_functions_core.h>
 #include <torch/csrc/jit/tensorexpr/external_functions_registry.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <utility>
 
@@ -44,7 +44,7 @@ static inline bool mod_value(bool lhs, bool rhs)
 template <typename T>
 static inline std::enable_if_t<std::is_integral_v<T>, T> div_value(T lhs, T rhs)
 {
-    XSIGMA_CHECK(rhs != 0, "Division by zero");
+    QUARISMA_CHECK(rhs != 0, "Division by zero");
     return lhs / rhs;
 }
 
@@ -55,12 +55,12 @@ div_value(T lhs, T rhs)
     return lhs / rhs;
 }
 
-static inline xsigma::Half div_value(xsigma::Half lhs, xsigma::Half rhs)
+static inline quarisma::Half div_value(quarisma::Half lhs, quarisma::Half rhs)
 {
     return lhs / rhs;
 }
 
-static inline xsigma::BFloat16 div_value(xsigma::BFloat16 lhs, xsigma::BFloat16 rhs)
+static inline quarisma::BFloat16 div_value(quarisma::BFloat16 lhs, quarisma::BFloat16 rhs)
 {
     return lhs / rhs;
 }
@@ -147,7 +147,7 @@ public:
         std::vector<T> lhs_v = lhs.as_vec<T>();
         std::vector<T> rhs_v = rhs.as_vec<T>();
         std::vector<T> result_v(lhs_v.size());
-        for (const auto i : xsigma::irange(lhs_v.size()))
+        for (const auto i : quarisma::irange(lhs_v.size()))
         {
             switch (op_type)
             {
@@ -187,7 +187,7 @@ public:
         std::vector<T> lhs_v = lhs.as_vec<T>();
         std::vector<T> rhs_v = rhs.as_vec<T>();
         std::vector<T> result_v(lhs_v.size());
-        for (const auto i : xsigma::irange(lhs_v.size()))
+        for (const auto i : quarisma::irange(lhs_v.size()))
         {
             switch (op_type)
             {
@@ -214,7 +214,7 @@ public:
         std::vector<T> lhs_v = lhs.as_vec<T>();
         std::vector<T> rhs_v = rhs.as_vec<T>();
         std::vector<T> result_v(lhs_v.size());
-        for (const auto i : xsigma::irange(lhs_v.size()))
+        for (const auto i : quarisma::irange(lhs_v.size()))
         {
             switch (op_type)
             {
@@ -248,7 +248,7 @@ public:
         std::vector<R> ret_val1_v = retval1.as_vec<R>();
         std::vector<R> ret_val2_v = retval2.as_vec<R>();
         std::vector<R> result_v(lhs_v.size());
-        for (const auto i : xsigma::irange(lhs_v.size()))
+        for (const auto i : quarisma::irange(lhs_v.size()))
         {
             switch (cmp_op)
             {
@@ -480,8 +480,8 @@ public:
         this->value_ = InterpValue(qvec);                                      \
     }                                                                          \
     break;
-            DST_TYPE_CASE_QUANT(xsigma::quint8, QUInt8, uint8_t)
-            DST_TYPE_CASE_QUANT(xsigma::qint8, QInt8, int8_t)
+            DST_TYPE_CASE_QUANT(quarisma::quint8, QUInt8, uint8_t)
+            DST_TYPE_CASE_QUANT(quarisma::qint8, QInt8, int8_t)
 #undef DST_TYPE_CASE_QUANT
         default:
             throw unsupported_dtype();
@@ -508,8 +508,8 @@ public:
         doCastFromSrc<Type>(src_dtype, dst_dtype, value_); \
         break;
                 AT_FORALL_SCALAR_TYPES_AND3(Bool, Half, BFloat16, SRC_TYPE_CASE)
-                SRC_TYPE_CASE(xsigma::quint8, QUInt8);
-                SRC_TYPE_CASE(xsigma::qint8, QInt8);
+                SRC_TYPE_CASE(quarisma::quint8, QUInt8);
+                SRC_TYPE_CASE(quarisma::qint8, QInt8);
 #undef SRC_TYPE_CASE
             default:
                 throw unsupported_dtype();
@@ -606,7 +606,7 @@ public:
         int  lanes  = v->lanes();
 
         std::vector<int64_t> values(lanes);
-        for (const auto i : xsigma::irange(lanes))
+        for (const auto i : quarisma::irange(lanes))
         {
             values[i] = base + i * stride;
         }
@@ -714,7 +714,7 @@ public:
                 {
                     ExprHandle buf_size_expr = ExprHandle(immLike(dims[0], 1));
                     ExprHandle negative_one  = ExprHandle(immLike(dims[0], -1));
-                    for (const auto& i : xsigma::irange(dims.size()))
+                    for (const auto& i : quarisma::irange(dims.size()))
                     {
                         buf_size_expr = buf_size_expr + ((negative_one + ExprHandle(dims[i])) *
                                                          ExprHandle(buf->strides()[i]));
@@ -739,7 +739,7 @@ public:
                     std::to_string(indices.size()) + " dimensions.",
                 buf);
         }
-        for (const auto& i : xsigma::irange(dims.size()))
+        for (const auto& i : quarisma::irange(dims.size()))
         {
             auto opt_dim = intValue(dims[i]);
             if (!opt_dim)
@@ -781,7 +781,7 @@ public:
     {                                                          \
         Type*             ptr##Name = static_cast<Type*>(ptr); \
         std::vector<Type> val(index.size());                   \
-        for (const auto i : xsigma::irange(index.size()))      \
+        for (const auto i : quarisma::irange(index.size()))      \
         {                                                      \
             val[i] = ptr##Name[index[i]];                      \
             GRAPH_DEBUG(                                       \
@@ -798,8 +798,8 @@ public:
     }                                                          \
     break;
             AT_FORALL_SCALAR_TYPES_AND3(Bool, Half, BFloat16, TYPE_CASE)
-            TYPE_CASE(xsigma::quint8, QUInt8);
-            TYPE_CASE(xsigma::qint8, QInt8);
+            TYPE_CASE(quarisma::quint8, QUInt8);
+            TYPE_CASE(quarisma::qint8, QInt8);
 #undef TYPE_CASE
         default:
             throw unsupported_dtype("scalar type:" + std::to_string(v_sdtype));
@@ -835,7 +835,7 @@ public:
             throw malformed_input("value size mismatch in Store", v); \
         }                                                             \
         Type* ptr##Name = static_cast<Type*>(ptr);                    \
-        for (const auto i : xsigma::irange(index.size()))             \
+        for (const auto i : quarisma::irange(index.size()))             \
         {                                                             \
             GRAPH_DEBUG(                                              \
                 "STORE: ptr=",                                        \
@@ -851,8 +851,8 @@ public:
     }                                                                 \
     break;
             AT_FORALL_SCALAR_TYPES_AND3(Bool, Half, BFloat16, TYPE_CASE)
-            TYPE_CASE(xsigma::quint8, QUInt8);
-            TYPE_CASE(xsigma::qint8, QInt8);
+            TYPE_CASE(quarisma::quint8, QUInt8);
+            TYPE_CASE(quarisma::qint8, QInt8);
 #undef TYPE_CASE
         default:
             throw unsupported_dtype();
@@ -929,7 +929,7 @@ public:
             extra_args.push_back(val);
         }
 
-        auto fn_ptr = func_registry.xsigma(v->func_name());
+        auto fn_ptr = func_registry.quarisma(v->func_name());
         (*fn_ptr)(
             bufs.size(),
             buf_ptrs.data(),
@@ -1015,7 +1015,7 @@ public:
             extra_args.push_back(val);
         }
 
-        auto fn_ptr = func_registry.xsigma(v->func_name());
+        auto fn_ptr = func_registry.quarisma(v->func_name());
         (*fn_ptr)(
             bufs_in_size,
             buf_ptrs.data(),
@@ -1038,7 +1038,7 @@ public:
     void visit_intrinsics_helper(const IntrinsicsPtr& v)
     {
         std::vector<InterpValue> values(v->nparams());
-        for (const auto i : xsigma::irange(v->nparams()))
+        for (const auto i : quarisma::irange(v->nparams()))
         {
             v->param(i)->accept(this);
             values[i] = this->value();
@@ -1066,14 +1066,14 @@ public:
         std::vector<TReturn> result(v1.size(), -1);
         if (values.size() == 1ULL)
         {
-            for (const auto i : xsigma::irange(v1.size()))
+            for (const auto i : quarisma::irange(v1.size()))
             {
                 result[i] = compute_intrinsics<TReturn>(v->op_type(), v1[i]);
             }
         }
         else
         {
-            for (const auto i : xsigma::irange(v1.size()))
+            for (const auto i : quarisma::irange(v1.size()))
             {
                 result[i] = compute_intrinsics<TReturn>(v->op_type(), v1[i], v2[i]);
             }
@@ -1086,7 +1086,7 @@ public:
         auto ty = v->dtype().scalar_type();
         if (v->op_type() == kIsNan)
         {
-            auto inp_dtype = v->params().xsigma(0)->dtype().scalar_type();
+            auto inp_dtype = v->params().quarisma(0)->dtype().scalar_type();
             if (inp_dtype == ScalarType::Float)
             {
                 visit_intrinsics_helper<int, float>(v);
@@ -1146,7 +1146,7 @@ public:
 
     void visit(const PlacementAllocatePtr& v) override
     {
-        buffer_mapping_[v->buf()] = buffer_mapping_.xsigma(v->buf_to_reuse());
+        buffer_mapping_[v->buf()] = buffer_mapping_.quarisma(v->buf_to_reuse());
     }
 
     void visit(const FreePtr& v) override
@@ -1341,7 +1341,7 @@ private:
 SimpleIREvaluator::SimpleIREvaluator(
     StmtPtr                       stmt,
     const std::vector<BufferArg>& buffer_args,
-    xsigma::Device                device,
+    quarisma::Device                device,
     const std::string&            kernel_func_name)
     : CodeGen(std::move(stmt), buffer_args, device, kernel_func_name)
 {
@@ -1369,7 +1369,7 @@ void SimpleIREvaluator::call_raw(const std::vector<void*>& args)
     {
         throw malformed_input("bad args in IREvaluator call");
     }
-    for (const auto i : xsigma::irange(args.size()))
+    for (const auto i : quarisma::irange(args.size()))
     {
         bindArg(buffer_args()[i], args[i]);
     }

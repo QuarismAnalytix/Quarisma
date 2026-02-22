@@ -1,8 +1,8 @@
-#include <XSigma/core/dispatch/Dispatcher.h>
-#include <XSigma/core/function_schema.h>
+#include <Quarisma/core/dispatch/Dispatcher.h>
+#include <Quarisma/core/function_schema.h>
 #include <fmt/format.h>
 #include <torch/nativert/graph/GraphPasses.h>
-#include <xsigma/util/StringUtil.h>
+#include <quarisma/util/StringUtil.h>
 
 #include <unordered_set>
 
@@ -20,7 +20,7 @@ bool isScalar(const Value& v)
     return v.type() == Type::Kind::SymInt || v.type() == Type::Kind::SymFloat;
 }
 
-bool schemaTypeMatch(const xsigma::FunctionSchema& schema, const Node& node)
+bool schemaTypeMatch(const quarisma::FunctionSchema& schema, const Node& node)
 {
     std::unordered_set<std::string> inputNames;
     for (const auto& input : node.inputs())
@@ -30,7 +30,7 @@ bool schemaTypeMatch(const xsigma::FunctionSchema& schema, const Node& node)
         {
             if (schemaArg.name() == input.name)
             {
-                if (schemaArg.type() == xsigma::TensorType::get() && input.value &&
+                if (schemaArg.type() == quarisma::TensorType::get() && input.value &&
                     isScalar(*input.value))
                 {
                     return false;
@@ -46,7 +46,7 @@ bool schemaTypeMatch(const xsigma::FunctionSchema& schema, const Node& node)
         {
             if (schemaArg.name() == constant.name)
             {
-                if (schemaArg.type() == xsigma::TensorType::get() && isScalar(constant.value))
+                if (schemaArg.type() == quarisma::TensorType::get() && isScalar(constant.value))
                 {
                     return false;
                 }
@@ -111,7 +111,7 @@ std::string selectScalarOverloadName(const Node& node)
                                                       "floor_divide_",
                                                       "floor_divide_out",
                                                       "_conj"};
-    std::vector<std::string_view>          atoms   = xsigma::split(node.target(), '.');
+    std::vector<std::string_view>          atoms   = quarisma::split(node.target(), '.');
 
     if (atoms.size() < 3)
     {
@@ -130,7 +130,7 @@ std::string selectScalarOverloadName(const Node& node)
     {
         return overloadName;
     }
-    auto op = xsigma::Dispatcher::singleton().findSchemaOrThrow(
+    auto op = quarisma::Dispatcher::singleton().findSchemaOrThrow(
         fmt::format("{}::{}", ns, opName.c_str()).c_str(), overloadName.c_str());
     if (schemaTypeMatch(op.schema(), node))
     {
@@ -138,7 +138,7 @@ std::string selectScalarOverloadName(const Node& node)
     }
     for (const auto& variant : {"Scalar_mode", "Scalar", "Scalar_Tensor", "Tensor_Scalar"})
     {
-        if (auto schema = xsigma::Dispatcher::singleton().findSchema(
+        if (auto schema = quarisma::Dispatcher::singleton().findSchema(
                 {fmt::format("{}::{}", ns, opName.c_str()).c_str(), variant}))
         {
             if (schemaTypeMatch(schema->schema(), node))
@@ -163,7 +163,7 @@ void selectScalarOverload(Graph* graph)
         }
 
         auto                          target = node.target();
-        std::vector<std::string_view> atoms  = xsigma::split(target, '.');
+        std::vector<std::string_view> atoms  = quarisma::split(target, '.');
 
         size_t numAtoms = atoms.size();
         if (numAtoms != 5)

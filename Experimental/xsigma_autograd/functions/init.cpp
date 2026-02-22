@@ -7,7 +7,7 @@
 #include <torch/csrc/autograd/python_autograd.h>
 #include <torch/csrc/autograd/python_cpp_function.h>
 #include <torch/csrc/autograd/python_variable.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 #ifdef USE_DISTRIBUTED
 #include <torch/csrc/distributed/autograd/functions/sendrpc_backward.h>
 #endif
@@ -24,13 +24,13 @@ struct DelayedErrorCtor
 {
     DelayedError* operator()(PyObject* args)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             PyTuple_GET_SIZE(args) == 2, "Requires two arguments, got ", PyTuple_GET_SIZE(args));
         auto arg1 = PyTuple_GET_ITEM(args, 0);
-        XSIGMA_CHECK(THPUtils_checkString(arg1), "argument 'msg' must be a string");
+        QUARISMA_CHECK(THPUtils_checkString(arg1), "argument 'msg' must be a string");
         std::string msg  = THPUtils_unpackString(arg1);
         auto        arg2 = PyTuple_GET_ITEM(args, 1);
-        XSIGMA_CHECK(THPUtils_checkLong(arg2), "argument 'num_inputs' must be an int");
+        QUARISMA_CHECK(THPUtils_checkLong(arg2), "argument 'num_inputs' must be an int");
         auto num_inputs = THPUtils_unpackLong(arg2);
         return new DelayedError(std::move(msg), num_inputs);
     }
@@ -40,7 +40,7 @@ struct UndefinedGradCtor
 {
     UndefinedGrad* operator()(PyObject* args)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             PyTuple_GET_SIZE(args) == 0, "Requires zero arguments, got ", PyTuple_GET_SIZE(args));
         return new UndefinedGrad();
     }
@@ -48,7 +48,7 @@ struct UndefinedGradCtor
 
 struct NoCtor
 {
-    Node* operator()(PyObject* args) { XSIGMA_CHECK(false, "Cannot construct"); }
+    Node* operator()(PyObject* args) { QUARISMA_CHECK(false, "Cannot construct"); }
 };
 
 template <typename C, typename T>
@@ -81,7 +81,7 @@ static PyObject* getTupleAttr(PyObject* obj, void* _unused)
     THPObjectPtr    py_tuple(PyTuple_New(num_elems));
     if (!py_tuple)
         return nullptr;
-    for (const auto i : xsigma::irange(num_elems))
+    for (const auto i : quarisma::irange(num_elems))
     {
         PyTuple_SET_ITEM(py_tuple.get(), i, Convert(arr[i]));
     }

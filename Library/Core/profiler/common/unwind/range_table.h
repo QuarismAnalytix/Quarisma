@@ -6,7 +6,7 @@
 
 #include "profiler/common/unwind/unwind_error.h"
 
-namespace xsigma::unwind
+namespace quarisma::unwind
 {
 template <typename T>
 struct RangeTable
@@ -85,4 +85,4 @@ private:
     std::vector<uint64_t>         addresses_;
     std::vector<std::optional<T>> payloads_;
 };
-}  // namespace xsigma::unwind
+}  // namespace quarisma::unwind

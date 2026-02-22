@@ -1,7 +1,7 @@
 #pragma once
 
 #include <torch/nativert/graph/Graph.h>
-#include <xsigma/util/Logging.h>
+#include <quarisma/util/Logging.h>
 
 #include <functional>
 #include <map>
@@ -71,7 +71,7 @@ public:
     const GraphPass& get_pass(const GraphPassIdentifier& name)
     {
         auto it = registry_.find(name);
-        XSIGMA_CHECK(it != registry_.end(), "Pass ", name, " not registered to get");
+        QUARISMA_CHECK(it != registry_.end(), "Pass ", name, " not registered to get");
         return it->second;
     }
 

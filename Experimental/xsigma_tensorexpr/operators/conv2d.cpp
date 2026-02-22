@@ -1,4 +1,4 @@
-#include <XSigma/Config.h>
+#include <Quarisma/Config.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/tensorexpr/loopnest.h>
 #include <torch/csrc/jit/tensorexpr/operators/conv2d.h>
@@ -239,8 +239,8 @@ bool conv2dIsSupported(
     const std::vector<int64_t>& dilation,
     int64_t                     groups)
 {
-    if (input.dtype != xsigma::ScalarType::Float || weight.dtype != xsigma::ScalarType::Float ||
-        bias.dtype != xsigma::ScalarType::Float)
+    if (input.dtype != quarisma::ScalarType::Float || weight.dtype != quarisma::ScalarType::Float ||
+        bias.dtype != quarisma::ScalarType::Float)
     {
         GRAPH_DEBUG("conv2dIsSupported: only float32 allowed");
         return false;
@@ -292,7 +292,7 @@ bool mkldnnPrepackedConvIsSupported(
     int64_t                     groups)
 {
 #if AT_MKLDNN_ENABLED()
-    if (input.dtype != xsigma::ScalarType::Float || weight.dtype != xsigma::ScalarType::Float)
+    if (input.dtype != quarisma::ScalarType::Float || weight.dtype != quarisma::ScalarType::Float)
     {
         GRAPH_DEBUG("mkldnnPrepackedConvIsSupported: only float32 allowed");
         return false;
@@ -319,7 +319,7 @@ bool mkldnnPrepackedConvIsSupported(
     }
 
     // Do not rewrite for cases where native is faster than mkldnn
-    // Conditions are from: aten/src/XSigma/native/Convolution.cpp:use_mkldnn
+    // Conditions are from: aten/src/Quarisma/native/Convolution.cpp:use_mkldnn
     bool use_mkldnn = groups > 1 || (weight.dims[2] > 3 && weight.dims[3] > 3) ||
                       input.dims[0] > 1 ||
                       input.dims[0] * input.dims[1] * input.dims[2] * input.dims[3] > 20480;
@@ -334,7 +334,7 @@ Tensor computeConv2d(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device)
+    quarisma::Device                   device)
 {
     Dtype dtype = kFloat;
     if (outputType)
@@ -378,7 +378,7 @@ Tensor computeConv1d(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device)
+    quarisma::Device                   device)
 {
     Dtype dtype = kFloat;
     if (outputType)
@@ -411,7 +411,7 @@ Tensor computePrepackedConv2dClampRun(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device)
+    quarisma::Device                   device)
 {
     Dtype dtype = kFloat;
     if (outputType)
@@ -432,7 +432,7 @@ Tensor computePrepackedLinearClampRun(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device)
+    quarisma::Device                   device)
 {
     Dtype dtype = kFloat;
     if (outputType)
@@ -453,7 +453,7 @@ Tensor computeMkldnnPrepackedConvRun(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device)
+    quarisma::Device                   device)
 {
     Dtype dtype = kFloat;
     if (outputType)

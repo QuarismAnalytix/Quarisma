@@ -9,13 +9,13 @@ namespace torch::jit
 
 namespace onnx
 {
-using namespace ::xsigma::onnx;
+using namespace ::quarisma::onnx;
 }
 
 // findSubModuleAttr function chases getAttr chains backwards to locate the
 // submodules. For example: module M {
 //   attributes {
-//     A = <SubModule xsigma ...>
+//     A = <SubModule quarisma ...>
 //   }
 //   ...
 //   %A = prim::GetAttr[name="A"](%self)
@@ -33,7 +33,7 @@ static std::deque<std::string> findSubModuleAttr(
     // Loop starts from inner submodule and follows the chain until reaches the
     // top module.
 
-    while (node->outputs().xsigma(0)->type() != graph->inputs().xsigma(0)->type())
+    while (node->outputs().quarisma(0)->type() != graph->inputs().quarisma(0)->type())
     {
         if (node->kind() == prim::GetAttr)
         {
@@ -186,10 +186,10 @@ static std::vector<IValue> getParamAttributes(
 static void insertMainModuleAsConstant(const std::shared_ptr<Graph>& graph)
 {
     auto* constNode = graph->create(prim::CreateObject);
-    constNode->output()->setType(graph->inputs().xsigma(0)->type());
+    constNode->output()->setType(graph->inputs().quarisma(0)->type());
     auto it = graph->nodes().begin();
     constNode->insertBefore(*it);
-    graph->inputs().xsigma(0)->replaceAllUsesWith(constNode->output());
+    graph->inputs().quarisma(0)->replaceAllUsesWith(constNode->output());
     graph->eraseInput(0);
 }
 

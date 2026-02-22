@@ -217,7 +217,7 @@ class BaseConfigHeuristic(metaclass=BaseHeuristicSingleton):
         # Whether the heuristic is used for int8. Use this when the heuristic is int8 exclusive
         # but prefer the preprocess_mm_configs argument when it's used for both
         self.has_int8_tensor: bool = False
-        # Whether to scale configs xsigma all
+        # Whether to scale configs quarisma all
         # TODO(coconutruben): remove this once mm_plus_mm and tests support scaling
         self.should_scale_configs: bool = True
         # List of dictionaries to store the kernel configs. Configs that evaluate to true
@@ -1608,7 +1608,7 @@ class MMTemplateConfigMixin(GemmMaxAutotuneTemplateConfigHeuristics):
         )
         input_nodes = kernel_inputs.nodes()
         if len(input_nodes) < 2:
-            raise ValueError(f"Need xsigma least 2 input tensors, got {len(input_nodes)}")
+            raise ValueError(f"Need quarisma least 2 input tensors, got {len(input_nodes)}")
         if not self._valid(kernel_inputs):
             return
 
@@ -1834,7 +1834,7 @@ class BaseScaledMMConfigMixin(MMTemplateConfigMixin):
         nodes = inputs.nodes()
         mat_a, mat_b, scale_a, scale_b, *bias = nodes
         bias = bias[0] if bias else None
-        # Prepare triton input nodes and create kernel_inputs xsigma the top
+        # Prepare triton input nodes and create kernel_inputs quarisma the top
         from ..lowering import lowerings as L
 
         aten = torch.ops.aten
@@ -1867,7 +1867,7 @@ class BaseScaledMMConfigMixin(MMTemplateConfigMixin):
         input_nodes = kernel_inputs.nodes()
         # Initial assertion from mm_common.scaled_mm_options
         assert len(input_nodes) >= 4, (
-            f"scaled_mm requires xsigma least 4 inputs, got {len(input_nodes)}"
+            f"scaled_mm requires quarisma least 4 inputs, got {len(input_nodes)}"
         )
 
         # Extract scale tensors (typically scale_a and scale_b are input_nodes[2] and input_nodes[3])

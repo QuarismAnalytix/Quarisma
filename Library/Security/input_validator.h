@@ -15,7 +15,7 @@
 #include "common/export.h"
 #include "common/macros.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace security
 {
@@ -32,7 +32,7 @@ namespace security
  * - Return std::optional<T> for validated and converted values
  * - Never throw exceptions (use return values for error handling)
  */
-class XSIGMA_VISIBILITY input_validator
+class QUARISMA_VISIBILITY input_validator
 {
 public:
     // ========================================================================
@@ -46,7 +46,7 @@ public:
      * @param max_length Maximum acceptable length (inclusive)
      * @return true if length is valid, false otherwise
      */
-    static XSIGMA_API bool validate_string_length(
+    static QUARISMA_API bool validate_string_length(
         std::string_view str, size_t min_length, size_t max_length);
 
     /**
@@ -54,14 +54,14 @@ public:
      * @param str String to validate
      * @return true if string is alphanumeric, false otherwise
      */
-    static XSIGMA_API bool is_alphanumeric(std::string_view str);
+    static QUARISMA_API bool is_alphanumeric(std::string_view str);
 
     /**
      * @brief Validates string contains only ASCII printable characters
      * @param str String to validate
      * @return true if string contains only printable ASCII, false otherwise
      */
-    static XSIGMA_API bool is_printable_ascii(std::string_view str);
+    static QUARISMA_API bool is_printable_ascii(std::string_view str);
 
     /**
      * @brief Validates string matches a given regex pattern
@@ -69,14 +69,14 @@ public:
      * @param pattern Regex pattern to match
      * @return true if string matches pattern, false otherwise
      */
-    static XSIGMA_API bool matches_pattern(std::string_view str, const std::regex& pattern);
+    static QUARISMA_API bool matches_pattern(std::string_view str, const std::regex& pattern);
 
     /**
      * @brief Validates string does not contain null bytes
      * @param str String to validate
      * @return true if no null bytes found, false otherwise
      */
-    static XSIGMA_API bool has_no_null_bytes(std::string_view str);
+    static QUARISMA_API bool has_no_null_bytes(std::string_view str);
 
     // ========================================================================
     // Numeric Validation
@@ -179,7 +179,7 @@ public:
      * @param path File path to validate
      * @return true if path is safe, false if it contains traversal sequences
      */
-    static XSIGMA_API bool is_safe_path(std::string_view path);
+    static QUARISMA_API bool is_safe_path(std::string_view path);
 
     /**
      * @brief Validates file extension is in allowed list
@@ -187,7 +187,7 @@ public:
      * @param allowed_extensions List of allowed extensions (e.g., {".txt", ".csv"})
      * @return true if extension is allowed, false otherwise
      */
-    static XSIGMA_API bool has_allowed_extension(
+    static QUARISMA_API bool has_allowed_extension(
         std::string_view filename, const std::vector<std::string>& allowed_extensions);
 
     // ========================================================================
@@ -290,4 +290,4 @@ public:
 };
 
 }  // namespace security
-}  // namespace xsigma
+}  // namespace quarisma

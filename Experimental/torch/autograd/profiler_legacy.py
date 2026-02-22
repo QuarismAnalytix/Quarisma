@@ -3,16 +3,16 @@ import itertools
 import warnings
 from typing_extensions import deprecated
 
-import xsigma
-import xsigma.cuda
-from xsigma.autograd import (
+import quarisma
+import quarisma.cuda
+from quarisma.autograd import (
     _disable_profiler_legacy,
     _enable_profiler_legacy,
     DeviceType,
     ProfilerConfig,
     ProfilerState,
 )
-from xsigma.autograd.profiler_util import (
+from quarisma.autograd.profiler_util import (
     _filter_name,
     _filter_stack_entry,
     _rewrite_name,
@@ -26,12 +26,12 @@ __all__ = ["profile"]
 
 
 @deprecated(
-    "`xsigma.autograd.profiler_legacy.profile` is deprecated and will be removed in a future release. "
-    "Please use `xsigma.profiler` instead.",
+    "`quarisma.autograd.profiler_legacy.profile` is deprecated and will be removed in a future release. "
+    "Please use `quarisma.profiler` instead.",
     category=None,  # TODO: change to `FutureWarning`
 )
 class profile:
-    """DEPRECATED: use xsigma.profiler instead."""
+    """DEPRECATED: use quarisma.profiler instead."""
 
     def __init__(
         self,
@@ -57,7 +57,7 @@ class profile:
         self.with_stack = with_stack
         self.with_modules = with_modules
 
-        if self.use_cuda and not xsigma.cuda.is_available():
+        if self.use_cuda and not quarisma.cuda.is_available():
             warnings.warn(
                 "CUDA is not available, disabling CUDA profiling",
                 stacklevel=2,
@@ -78,7 +78,7 @@ class profile:
             self.with_flops,
             self.with_modules,
             # avoid exposing _ExperimentalConfig this in legacy public API
-            xsigma._C._profiler._ExperimentalConfig(),
+            quarisma._C._profiler._ExperimentalConfig(),
         )
 
     def __enter__(self):
@@ -97,7 +97,7 @@ class profile:
         if not self.enabled:
             return
         if self.use_cuda:
-            xsigma.cuda.synchronize()
+            quarisma.cuda.synchronize()
 
         records = _disable_profiler_legacy()
         parsed_results = _parse_legacy_records(records)

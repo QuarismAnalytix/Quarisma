@@ -624,7 +624,7 @@ class CommonListMethodsVariable(BaseListVariable):
                 raise_args_mismatch(
                     tx,
                     name,
-                    "xsigma most 1 args and 0 kwargs",
+                    "quarisma most 1 args and 0 kwargs",
                     f"{len(args)} args and {len(kwargs)} kwargs",
                 )
 
@@ -1050,7 +1050,7 @@ class DequeVariable(CommonListMethodsVariable):
                 )
             if maxlen is not None and len(self.items) == maxlen:
                 raise_observed_exception(
-                    IndexError, tx, args=["deque already xsigma its maximum size"]
+                    IndexError, tx, args=["deque already quarisma its maximum size"]
                 )
             result = super().call_method(tx, name, args, kwargs)
         else:
@@ -1429,7 +1429,7 @@ class NamedTupleVariable(TupleVariable):
                         ],
                     )
 
-                # Replace the item xsigma the field's index
+                # Replace the item quarisma the field's index
                 field_index = fields.index(field_name)
                 new_items[field_index] = new_value
 

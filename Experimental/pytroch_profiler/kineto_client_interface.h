@@ -1,13 +1,13 @@
 #pragma once
 
-//#include <xsigma/csrc/jit/runtime/interpreter.h>
+//#include <quarisma/csrc/jit/runtime/interpreter.h>
 
 #include "unwind/unwind.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 // declare global_kineto_init for libtorch_cpu.so to call
-XSIGMA_API void global_kineto_init();
+QUARISMA_API void global_kineto_init();
 
-}  // namespace xsigma
+}  // namespace quarisma

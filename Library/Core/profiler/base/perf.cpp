@@ -7,7 +7,7 @@
 #include "util/error.h"
 #include "util/exception.h"
 
-namespace xsigma::profiler::impl::linux_perf
+namespace quarisma::profiler::impl::linux_perf
 {
 
 #if defined(__ANDROID__) || defined(__linux__)
@@ -51,12 +51,12 @@ PerfEvent::~PerfEvent()
 
 void PerfEvent::Init()
 {
-    XSIGMA_CHECK(!name_.empty(), "Invalid profiler event name");
+    QUARISMA_CHECK(!name_.empty(), "Invalid profiler event name");
 
     auto const it = EventTable.find(name_);
     if (it == EventTable.end())
     {
-        XSIGMA_CHECK(false, "Unsupported profiler event name: ", name_);
+        QUARISMA_CHECK(false, "Unsupported profiler event name: ", name_);
     }
 
     struct perf_event_attr attr{};
@@ -82,7 +82,7 @@ void PerfEvent::Init()
     fd_ = static_cast<int>(perf_event_open(&attr, pid, cpu, group_fd, flags));
     if (fd_ == -1)
     {
-        XSIGMA_CHECK(false, "perf_event_open() failed, error: ", xsigma::utils::str_error(errno));
+        QUARISMA_CHECK(false, "perf_event_open() failed, error: ", quarisma::utils::str_error(errno));
     }
     Reset();
 }
@@ -91,13 +91,13 @@ uint64_t PerfEvent::ReadCounter() const
 {
     PerfCounter counter{};
     const long  n = read(fd_, &counter, sizeof(PerfCounter));
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         n == sizeof(counter),
         "Read failed for Perf event fd, event : ",
         name_,
         ", error: ",
-        xsigma::utils::str_error(errno));
-    XSIGMA_CHECK(
+        quarisma::utils::str_error(errno));
+    QUARISMA_CHECK(
         counter.time_enabled == counter.time_running,
         "Hardware performance counter time multiplexing is not handled yet",
         ", name: ",
@@ -133,14 +133,14 @@ uint64_t PerfEvent::ReadCounter() const  //NOLINT
 
 void PerfProfiler::Configure(std::vector<std::string>& event_names)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         event_names.size() <= MAX_EVENTS,
         "Too many events to configure, configured: ",
         event_names.size(),
         ", max allowed:",
         MAX_EVENTS);
     std::unordered_set<std::string> const s(event_names.begin(), event_names.end());
-    XSIGMA_CHECK(s.size() == event_names.size(), "Duplicate event names are not allowed!")
+    QUARISMA_CHECK(s.size() == event_names.size(), "Duplicate event names are not allowed!")
     for (auto name : event_names)
     {
         events_.emplace_back(name);
@@ -172,9 +172,9 @@ void PerfProfiler::Enable()
 void PerfProfiler::Disable(perf_counters_t& vals)
 {
     StopCounting();
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         vals.size() == events_.size(), "Can not fit all perf counters in the supplied container");
-    XSIGMA_CHECK(!start_values_.empty(), "PerfProfiler must be enabled before disabling");
+    QUARISMA_CHECK(!start_values_.empty(), "PerfProfiler must be enabled before disabling");
 
     /* Always connecting this disable event to the last enable event i.e. using
    * whatever is on the top of the start counter value stack. */
@@ -191,4 +191,4 @@ void PerfProfiler::Disable(perf_counters_t& vals)
         StartCounting();
     }
 }
-}  // namespace xsigma::profiler::impl::linux_perf
+}  // namespace quarisma::profiler::impl::linux_perf

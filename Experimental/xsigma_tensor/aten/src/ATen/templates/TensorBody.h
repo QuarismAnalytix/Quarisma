@@ -8,14 +8,14 @@
   See NOTE: [Tensor vs. TensorBase]
 #endif
 
-#include <XSigma/MethodOperators.h>
-#include <XSigma/core/CheckMemoryFormat.h>
-#include <XSigma/core/DeprecatedTypeProperties.h>
-#include <XSigma/core/DeprecatedTypePropertiesRegistry.h>
-#include <XSigma/core/NamedTensor.h>
-#include <XSigma/core/QuantizerBase.h>
-#include <XSigma/core/TensorAccessor.h>
-#include <XSigma/core/TensorBase.h>
+#include <Quarisma/MethodOperators.h>
+#include <Quarisma/core/CheckMemoryFormat.h>
+#include <Quarisma/core/DeprecatedTypeProperties.h>
+#include <Quarisma/core/DeprecatedTypePropertiesRegistry.h>
+#include <Quarisma/core/NamedTensor.h>
+#include <Quarisma/core/QuantizerBase.h>
+#include <Quarisma/core/TensorAccessor.h>
+#include <Quarisma/core/TensorBase.h>
 #include <c10/core/Device.h>
 #include <c10/core/Layout.h>
 #include <c10/core/MemoryFormat.h>
@@ -545,7 +545,7 @@ public:
     }
 
     // STOP.  Thinking of adding a method here, which only makes use
-    // of other XSigma methods?  Define it in native_functions.yaml.
+    // of other Quarisma methods?  Define it in native_functions.yaml.
 
     //example
     //Tensor * add(Tensor & b);

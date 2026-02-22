@@ -1,17 +1,17 @@
 #include "profiler/pytorch_profiler/profiler_python.h"
 
 #include <Python.h>
-#include <XSigma/core/TensorBase.h>
+#include <Quarisma/core/TensorBase.h>
 #include <frameobject.h>
 #include <torch/csrc/autograd/python_variable.h>
 #include <torch/csrc/utils/pybind.h>
 #include <torch/csrc/utils/python_compat.h>
 #include <torch/csrc/utils/python_numbers.h>
 #include <torch/csrc/utils/python_strings.h>
-#include <xsigma/util/ApproximateClock.h>
-#include <xsigma/util/Logging.h>
-#include <xsigma/util/flat_hash_map.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/ApproximateClock.h>
+#include <quarisma/util/Logging.h>
+#include <quarisma/util/flat_hash_map.h>
+#include <quarisma/util/irange.h>
 
 #include <atomic>
 #include <cstdint>
@@ -114,7 +114,7 @@ struct std::hash<torch::profiler::impl::CodeLocation>
 {
     size_t operator()(const torch::profiler::impl::CodeLocation& x)
     {
-        return xsigma::get_hash(x.filename_, x.name_, x.line_number_);
+        return quarisma::get_hash(x.filename_, x.name_, x.line_number_);
     }
 };
 
@@ -214,7 +214,7 @@ struct Config<CallType::PyCall>
 {
     using key_t                           = CodeLocation;
     using ephemeral_t                     = no_ephemeral_t;
-    using cache_t                         = xsigma::flat_hash_map<key_t, PyFrameState>;
+    using cache_t                         = quarisma::flat_hash_map<key_t, PyFrameState>;
     static constexpr EventType event_type = EventType::PyCall;
 };
 
@@ -235,8 +235,8 @@ struct ExtendedPyCallConfig
     {
         // `nn.Module.forward` or `optim.Optimizer._optimizer_step_code`
         std::optional<CodeLocation>                      location_;
-        xsigma::flat_hash_map<key_t, ClsAndParameters>   cls_and_parameters_;
-        xsigma::flat_hash_map<cls_t, xsigma::StringView> cls_names_;
+        quarisma::flat_hash_map<key_t, ClsAndParameters>   cls_and_parameters_;
+        quarisma::flat_hash_map<cls_t, quarisma::StringView> cls_names_;
     };
     using cache_t = Cache;
 
@@ -260,7 +260,7 @@ struct Config<CallType::PyCCall>
 {
     using key_t                           = PyMethod;
     using ephemeral_t                     = PyObject*;
-    using cache_t                         = xsigma::flat_hash_map<key_t, xsigma::StringView>;
+    using cache_t                         = quarisma::flat_hash_map<key_t, quarisma::StringView>;
     static constexpr EventType event_type = EventType::PyCCall;
 };
 
@@ -318,7 +318,7 @@ public:
         auto caller = load<CallType::PyCall>(callsite.caller_);
         TORCH_INTERNAL_ASSERT(!caller.module_info_.has_value());
         return ExtraFields<Config<C>::event_type>{
-            /*end_time_ns=*/std::numeric_limits<xsigma::time_t>::min(),
+            /*end_time_ns=*/std::numeric_limits<quarisma::time_t>::min(),
             python_tid,
             caller.frame_state_,
             load<C>(callsite.value_)};
@@ -346,7 +346,7 @@ typename Config<C>::cls_t set_class(
     const typename Config<C>::key_t&       key,
     const typename Config<C>::ephemeral_t& frame)
 {
-    if XSIGMA_UNLIKELY (!cache.location_.has_value())
+    if QUARISMA_UNLIKELY (!cache.location_.has_value())
     {
         auto code = THPCodeObjectPtr(PyFrame_GetCode(frame));
         TORCH_INTERNAL_ASSERT(code.get() == getCode<C>());
@@ -358,7 +358,7 @@ typename Config<C>::cls_t set_class(
     auto cls        = typename Config<C>::cls_t(cls_handle.ptr());
     if (cache.cls_names_.find(cls) == cache.cls_names_.end())
     {
-        cache.cls_names_[cls] = xsigma::StringView(py::str(cls_handle.attr("__name__")));
+        cache.cls_names_[cls] = quarisma::StringView(py::str(cls_handle.attr("__name__")));
     }
     return cls;
 }
@@ -371,7 +371,7 @@ TensorMetadata toTensorMetadata(PyObject* self)
     return TensorMetadata{
         m,
         t.sizes().vec(),
-        m.layout_ == xsigma::kStrided ? t.strides().vec() : std::vector<int64_t>()};
+        m.layout_ == quarisma::kStrided ? t.strides().vec() : std::vector<int64_t>()};
 }
 
 std::optional<TensorMetadata> ValueCache::recordIfTensor(py::handle p)
@@ -400,10 +400,10 @@ template <>
 void ValueCache::store<CallType::PyCall>(const PyCallKey& key, no_ephemeral_t /*unused*/)
 {
     auto& locations = std::get<CallType::PyCall>(state_);
-    if XSIGMA_UNLIKELY (locations.find(key) == locations.end())
+    if QUARISMA_UNLIKELY (locations.find(key) == locations.end())
     {
         locations[key] = {
-            key.line_number_, xsigma::StringView(key.filename_), xsigma::StringView(key.name_)};
+            key.line_number_, quarisma::StringView(key.filename_), quarisma::StringView(key.name_)};
     }
 }
 
@@ -411,7 +411,7 @@ template <>
 ExtraFields<EventType::PyCall>::args_t ValueCache::load<CallType::PyCall>(
     const PyCallKey& key) const
 {
-    return {std::get<CallType::PyCall>(state_).xsigma(key), std::nullopt};
+    return {std::get<CallType::PyCall>(state_).quarisma(key), std::nullopt};
 }
 
 template <>
@@ -419,7 +419,7 @@ void ValueCache::store<CallType::PyModuleCall>(
     const PyModuleCallKey& key, Config<CallType::PyModuleCall>::ephemeral_t frame)
 {
     auto& cache = std::get<CallType::PyModuleCall>(state_);
-    if XSIGMA_UNLIKELY (cache.cls_and_parameters_.find(key) == cache.cls_and_parameters_.end())
+    if QUARISMA_UNLIKELY (cache.cls_and_parameters_.find(key) == cache.cls_and_parameters_.end())
     {
         auto cls = set_class<CallType::PyModuleCall>(this, cache, key, frame);
 
@@ -446,10 +446,10 @@ ExtraFields<EventType::PyCall>::args_t ValueCache::load<CallType::PyModuleCall>(
 {
     auto& cache = std::get<CallType::PyModuleCall>(state_);
     TORCH_INTERNAL_ASSERT(cache.location_.has_value());
-    const auto&  cls_and_parameters = cache.cls_and_parameters_.xsigma(key);
+    const auto&  cls_and_parameters = cache.cls_and_parameters_.quarisma(key);
     const auto&  cls                = cls_and_parameters.cls_;
-    NNModuleInfo info{key, cls, cache.cls_names_.xsigma(cls), cls_and_parameters.parameters_};
-    return {/*frame_state_=*/std::get<CallType::PyCall>(state_).xsigma(*cache.location_),
+    NNModuleInfo info{key, cls, cache.cls_names_.quarisma(cls), cls_and_parameters.parameters_};
+    return {/*frame_state_=*/std::get<CallType::PyCall>(state_).quarisma(*cache.location_),
             /*module_info_=*/std::move(info),
             /*optimizer_info_=*/std::nullopt};
 }
@@ -459,7 +459,7 @@ void ValueCache::store<CallType::PyOptimizerCall>(
     const PyOptimizerCallKey& key, Config<CallType::PyOptimizerCall>::ephemeral_t frame)
 {
     auto& cache = std::get<CallType::PyOptimizerCall>(state_);
-    if XSIGMA_UNLIKELY (cache.cls_and_parameters_.find(key) == cache.cls_and_parameters_.end())
+    if QUARISMA_UNLIKELY (cache.cls_and_parameters_.find(key) == cache.cls_and_parameters_.end())
     {
         auto             cls = set_class<CallType::PyOptimizerCall>(this, cache, key, frame);
         const py::handle self{(PyObject*)key};
@@ -494,10 +494,10 @@ ExtraFields<EventType::PyCall>::args_t ValueCache::load<CallType::PyOptimizerCal
     const PyOptimizerCallKey& key) const
 {
     auto&         cache              = std::get<CallType::PyOptimizerCall>(state_);
-    const auto&   cls_and_parameters = cache.cls_and_parameters_.xsigma(key);
+    const auto&   cls_and_parameters = cache.cls_and_parameters_.quarisma(key);
     auto          cls                = cls_and_parameters.cls_;
-    OptimizerInfo info{key, cls, cache.cls_names_.xsigma(cls), cls_and_parameters.parameters_};
-    return {/*frame_state_=*/std::get<CallType::PyCall>(state_).xsigma(
+    OptimizerInfo info{key, cls, cache.cls_names_.quarisma(cls), cls_and_parameters.parameters_};
+    return {/*frame_state_=*/std::get<CallType::PyCall>(state_).quarisma(
                 // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
                 cache.location_.value()),
             /*module_info_=*/std::nullopt,
@@ -509,9 +509,9 @@ void ValueCache::store<CallType::PyCCall>(
     const PyCCallKey& key, Config<CallType::PyCCall>::ephemeral_t arg)
 {
     auto& names = std::get<CallType::PyCCall>(state_);
-    if XSIGMA_UNLIKELY (names.find(key) == names.end())
+    if QUARISMA_UNLIKELY (names.find(key) == names.end())
     {
-        names[key] = xsigma::StringView(py::repr(arg));
+        names[key] = quarisma::StringView(py::repr(arg));
     }
 }
 
@@ -519,7 +519,7 @@ template <>
 ExtraFields<EventType::PyCCall>::args_t ValueCache::load<CallType::PyCCall>(
     const PyCCallKey& key) const
 {
-    return std::get<CallType::PyCCall>(state_).xsigma(key);
+    return std::get<CallType::PyCCall>(state_).quarisma(key);
 }
 
 // TODO: Use re2.
@@ -541,7 +541,7 @@ void ValueCache::trimPrefixes()
             if (filename.compare(0, p.size(), p) == 0)
             {
                 filename.erase(0, p.size());
-                it.second.filename_ = xsigma::StringView(filename);
+                it.second.filename_ = quarisma::StringView(filename);
                 break;
             }
         }
@@ -566,7 +566,7 @@ struct TraceKeyCacheState
     {
         size_t operator()(const Callsite<C>& key)
         {
-            return xsigma::get_hash(key.value_, key.caller_);
+            return quarisma::get_hash(key.value_, key.caller_);
         }
     };
 
@@ -574,7 +574,7 @@ struct TraceKeyCacheState
         Callsite<C> callsite, typename Config<C>::ephemeral_t ephemeral, ValueCache& value_cache)
     {
         auto it = state_.find(callsite);
-        if XSIGMA_UNLIKELY (it == state_.end())
+        if QUARISMA_UNLIKELY (it == state_.end())
         {
             value_cache.store<C>(callsite.value_, ephemeral);
             value_cache.store<CallType::PyCall>(callsite.caller_, no_ephemeral_t());
@@ -590,7 +590,7 @@ struct TraceKeyCacheState
             value_cache.load<CallType::PyCall>(callsite.caller_));
     }
 
-    xsigma::flat_hash_map<Callsite<C>, TraceKey, Hash> state_;
+    quarisma::flat_hash_map<Callsite<C>, TraceKey, Hash> state_;
 };
 
 // ============================================================================
@@ -721,8 +721,8 @@ struct ThreadLocalResults
     ValueCache*                                       value_cache_;
     PythonTracer*                                     active_tracer_;
     CallTypeHelper<TraceKeyCacheState>::tuple_type    trace_keys_;
-    AppendOnlyList<xsigma::approx_time_t, BLOCK_SIZE> exit_times_;
-    AppendOnlyList<xsigma::approx_time_t, BLOCK_SIZE> c_exit_times_;
+    AppendOnlyList<quarisma::approx_time_t, BLOCK_SIZE> exit_times_;
+    AppendOnlyList<quarisma::approx_time_t, BLOCK_SIZE> c_exit_times_;
 
     int active_frames_{0};
     int remaining_start_frames_{0};
@@ -751,14 +751,14 @@ public:
     void       stop() override;
     void       restart() override;
     std::vector<std::shared_ptr<Result>> getEvents(
-        std::function<xsigma::time_t(xsigma::approx_time_t)> time_converter,
+        std::function<quarisma::time_t(quarisma::approx_time_t)> time_converter,
         std::vector<python_tracer::CompressedEvent>&         enters,
-        xsigma::time_t                                       end_time_ns) override;
+        quarisma::time_t                                       end_time_ns) override;
 
     struct StartFrame
     {
         TraceKey              trace_key_;
-        xsigma::approx_time_t start_time{};
+        quarisma::approx_time_t start_time{};
     };
 
 private:
@@ -1043,7 +1043,7 @@ PyObject* PythonTracer::gc_event_callback(PyObject* self, PyObject* args)
         PyErr_SetString(PyExc_RuntimeError, "Invalid tracer instance");
         return nullptr;
     }
-    instance->queue_->getSubqueue()->emplace_gc_call(phase, xsigma::getApproximateTime());
+    instance->queue_->getSubqueue()->emplace_gc_call(phase, quarisma::getApproximateTime());
     Py_RETURN_NONE;
 }
 
@@ -1053,7 +1053,7 @@ PythonTracer::PythonTracer(torch::profiler::impl::RecordQueue* queue)
       module_call_code_(getCode<CallType::PyModuleCall>()),
       optimizer_hook_(getCode<CallType::PyOptimizerCall>())
 {
-    XSIGMA_CHECK(queue_ != nullptr);
+    QUARISMA_CHECK(queue_ != nullptr);
 
     bool expected{false};
     active_ = active_lock_.compare_exchange_strong(expected, true);
@@ -1085,7 +1085,7 @@ PythonTracer::PythonTracer(torch::profiler::impl::RecordQueue* queue)
 
         // When we begin profiling there are already frames on the Python
         // interpreter stack. To ensure a complete trace, we must push calls
-        // to all the prior frames onto our event stack. (We stop xsigma depth=128)
+        // to all the prior frames onto our event stack. (We stop quarisma depth=128)
 
         std::vector<THPFrameObjectPtr> current_stack;
         auto                           frame = PyEval_GetFrame();
@@ -1312,7 +1312,7 @@ void PythonTracer::recordPyCall(
             return tls.intern<CallType::PyCall, E>(no_ephemeral_t(), frame, f_back);
         }
     }();
-    const auto time = xsigma::getApproximateTime();
+    const auto time = quarisma::getApproximateTime();
     is_startup_frame ? start_frames_.push_back({key, time})
                      : queue_->getSubqueue()->emplace_py_call(key, time);
     ++tls.active_frames_;
@@ -1325,14 +1325,14 @@ void PythonTracer::recordCCall(
     // empty C frames in trace when exiting
     if (!start_frame)
     {
-        XSIGMA_CHECK_DEBUG(PyCFunction_Check(arg));
+        QUARISMA_CHECK_DEBUG(PyCFunction_Check(arg));
     }
     auto fn = reinterpret_cast<PyCFunctionObject*>(arg);
 
     // NB: For C calls a new frame is not created, so we use `frame` rather than
     //     `frame->f_back`.
     auto key = tls.intern<CallType::PyCCall, EventType::PyCCall>(arg, (void*)(fn->m_ml), frame);
-    queue_->getSubqueue()->emplace_py_call(key, xsigma::getApproximateTime());
+    queue_->getSubqueue()->emplace_py_call(key, quarisma::getApproximateTime());
     ++tls.active_frames_;
 }
 
@@ -1343,7 +1343,7 @@ struct Exit
 {
     bool operator>(const Exit& other) const { return t_ > other.t_; }
 
-    xsigma::time_t t_;
+    quarisma::time_t t_;
     size_t         python_tid_;
 };
 
@@ -1351,13 +1351,13 @@ class PostProcess
 {
 public:
     PostProcess(
-        std::function<xsigma::time_t(xsigma::approx_time_t)> time_converter,
+        std::function<quarisma::time_t(quarisma::approx_time_t)> time_converter,
         std::deque<ThreadLocalResults>&                      tls,
         const ValueCache&                                    value_cache,
-        xsigma::time_t                                       end_time_ns)
+        quarisma::time_t                                       end_time_ns)
         : end_time_{end_time_ns}, time_converter_{std::move(time_converter)}
     {
-        for (size_t python_tid : xsigma::irange(tls.size()))
+        for (size_t python_tid : quarisma::irange(tls.size()))
         {
             CallTypeHelper<TraceKeyCacheState>::map(
                 tls[python_tid].trace_keys_, *this, value_cache, python_tid);
@@ -1394,7 +1394,7 @@ public:
     }
 
     template <EventType E, size_t N>
-    void addExits(AppendOnlyList<xsigma::approx_time_t, N>& exits, size_t python_tid)
+    void addExits(AppendOnlyList<quarisma::approx_time_t, N>& exits, size_t python_tid)
     {
         for (const auto i : exits)
         {
@@ -1422,7 +1422,7 @@ private:
     {
         using stack_t           = std::vector<std::shared_ptr<Result>>;
         const auto initial_size = out.size();
-        auto       pop          = [](stack_t& stack, xsigma::time_t t)
+        auto       pop          = [](stack_t& stack, quarisma::time_t t)
         {
             if (!stack.empty())
             {
@@ -1437,9 +1437,9 @@ private:
             }
         };
 
-        xsigma::flat_hash_map<size_t, stack_t> stacks;
+        quarisma::flat_hash_map<size_t, stack_t> stacks;
         auto&                                  state = get_state<E>();
-        // We already own the GIL xsigma this point
+        // We already own the GIL quarisma this point
         for (const auto& enter : enters)
         {
             auto fields_it = state.fields_.find(enter.key_);
@@ -1471,9 +1471,9 @@ private:
 
         // Assign system TIDs to start events based on the system TID of the next
         // observed event with the same Python TID.
-        xsigma::flat_hash_map<size_t, std::pair<size_t, kineto::DeviceAndResource>> tid_map;
+        quarisma::flat_hash_map<size_t, std::pair<size_t, kineto::DeviceAndResource>> tid_map;
         auto it = out.rbegin();
-        for ([[maybe_unused]] auto _ : xsigma::irange(initial_size, out.size()))
+        for ([[maybe_unused]] auto _ : quarisma::irange(initial_size, out.size()))
         {
             const auto python_tid = std::get<ExtraFields<E>>((*it)->extra_fields_).python_tid_;
             if ((*it)->start_tid_ == NoTID && SOFT_ASSERT(E == EventType::PyCall))
@@ -1492,7 +1492,7 @@ private:
     template <EventType E>
     struct State
     {
-        xsigma::flat_hash_map<TraceKey, ExtraFields<E>>              fields_;
+        quarisma::flat_hash_map<TraceKey, ExtraFields<E>>              fields_;
         std::priority_queue<Exit, std::vector<Exit>, std::greater<>> exits_;
     };
 
@@ -1502,8 +1502,8 @@ private:
         return std::get<E == EventType::PyCall ? 0 : 1>(state_);
     }
 
-    xsigma::time_t                                                  end_time_;
-    std::function<xsigma::time_t(xsigma::approx_time_t)>            time_converter_;
+    quarisma::time_t                                                  end_time_;
+    std::function<quarisma::time_t(quarisma::approx_time_t)>            time_converter_;
     std::tuple<State<EventType::PyCall>, State<EventType::PyCCall>> state_;
 };
 
@@ -1531,13 +1531,13 @@ struct PythonIDVisitor
     }
 
     size_t current_python_id_{0};
-    xsigma::flat_hash_map<PyModuleCls, xsigma::flat_hash_map<PyModuleSelf, size_t>> module_ids_;
+    quarisma::flat_hash_map<PyModuleCls, quarisma::flat_hash_map<PyModuleSelf, size_t>> module_ids_;
 };
 
 std::vector<std::shared_ptr<Result>> PythonTracer::getEvents(
-    std::function<xsigma::time_t(xsigma::approx_time_t)> time_converter,
+    std::function<quarisma::time_t(quarisma::approx_time_t)> time_converter,
     std::vector<python_tracer::CompressedEvent>&         enters,
-    xsigma::time_t                                       end_time_ns)
+    quarisma::time_t                                       end_time_ns)
 {
     value_cache_.trimPrefixes();
     PostProcess post_process(
@@ -1655,7 +1655,7 @@ int PythonTracer::pyProfileFn(PyObject* obj, PyFrameObject* frame, int what, PyO
         break;
 
     case PyTrace_RETURN:
-        local_results.exit_times_.emplace_back(xsigma::getApproximateTime());
+        local_results.exit_times_.emplace_back(quarisma::getApproximateTime());
         local_results.active_frames_--;
         if (local_results.active_frames_ < local_results.remaining_start_frames_)
         {
@@ -1667,7 +1667,7 @@ int PythonTracer::pyProfileFn(PyObject* obj, PyFrameObject* frame, int what, PyO
     case PyTrace_C_RETURN:
         if (local_results.active_frames_ > local_results.remaining_start_frames_)
         {
-            local_results.c_exit_times_.emplace_back(xsigma::getApproximateTime());
+            local_results.c_exit_times_.emplace_back(quarisma::getApproximateTime());
             local_results.active_frames_--;
         }
         break;
@@ -1695,7 +1695,7 @@ namespace torch::autograd::profiler::python_tracer
 void init()
 {
     pybind11::gil_scoped_acquire gil;
-    XSIGMA_CHECK(PyType_Ready(&torch::profiler::impl::TraceContextType) == 0);
+    QUARISMA_CHECK(PyType_Ready(&torch::profiler::impl::TraceContextType) == 0);
     torch::profiler::impl::python_tracer::registerTracer(&torch::profiler::impl::getTracer);
     torch::profiler::impl::python_tracer::registerMemoryTracer(
         &torch::profiler::impl::getMemoryTracer);

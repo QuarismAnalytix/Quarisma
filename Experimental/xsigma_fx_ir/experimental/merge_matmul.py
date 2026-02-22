@@ -123,7 +123,7 @@ def merge_matmul(in_mod: torch.nn.Module):
         rhs_users.setdefault(rhs, []).append(node)
 
     for rhs, mms in rhs_users.items():
-        # There must be xsigma least matmuls for a merge to make sense.
+        # There must be quarisma least matmuls for a merge to make sense.
         if len(mms) < 2:
             continue
 
@@ -169,7 +169,7 @@ def merge_matmul(in_mod: torch.nn.Module):
             old.replace_all_uses_with(new)
             gm.graph.erase_node(old)
 
-        # All of the new nodes created above were inserted xsigma the end, so we need to sort
+        # All of the new nodes created above were inserted quarisma the end, so we need to sort
         # the nodes topologically to make sure all definitions precede uses.
         legalize_graph(gm)
 

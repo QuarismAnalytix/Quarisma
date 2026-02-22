@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -8,13 +8,13 @@
  * Tests hierarchical annotation tracking for CPU profiling
  */
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "profiler/native/cpu/annotation_stack.h"
 
-using namespace xsigma::profiler;
+using namespace quarisma::profiler;
 
 // Test push_annotation single level
-XSIGMATEST(Profiler, annotation_stack_push_single)
+QUARISMATEST(Profiler, annotation_stack_push_single)
 {
     annotation_stack::enable(true);
     // Clear any existing annotations
@@ -30,7 +30,7 @@ XSIGMATEST(Profiler, annotation_stack_push_single)
 }
 
 // Test pop_annotation single level
-XSIGMATEST(Profiler, annotation_stack_pop_single)
+QUARISMATEST(Profiler, annotation_stack_pop_single)
 {
     annotation_stack::enable(true);
     // Clear any existing annotations
@@ -47,7 +47,7 @@ XSIGMATEST(Profiler, annotation_stack_pop_single)
 }
 
 // Test push_annotation multiple levels
-XSIGMATEST(Profiler, annotation_stack_push_multiple)
+QUARISMATEST(Profiler, annotation_stack_push_multiple)
 {
     annotation_stack::enable(true);
     // Clear any existing annotations
@@ -65,7 +65,7 @@ XSIGMATEST(Profiler, annotation_stack_push_multiple)
 }
 
 // Test pop_annotation multiple levels
-XSIGMATEST(Profiler, annotation_stack_pop_multiple)
+QUARISMATEST(Profiler, annotation_stack_pop_multiple)
 {
     annotation_stack::enable(true);
     // Clear any existing annotations
@@ -83,7 +83,7 @@ XSIGMATEST(Profiler, annotation_stack_pop_multiple)
 }
 
 // Test get_scope_range_ids single level
-XSIGMATEST(Profiler, annotation_stack_scope_range_ids_single)
+QUARISMATEST(Profiler, annotation_stack_scope_range_ids_single)
 {
     annotation_stack::enable(true);
     // Clear any existing annotations
@@ -99,7 +99,7 @@ XSIGMATEST(Profiler, annotation_stack_scope_range_ids_single)
 }
 
 // Test get_scope_range_ids multiple levels
-XSIGMATEST(Profiler, annotation_stack_scope_range_ids_multiple)
+QUARISMATEST(Profiler, annotation_stack_scope_range_ids_multiple)
 {
     annotation_stack::enable(true);
     // Clear any existing annotations
@@ -116,7 +116,7 @@ XSIGMATEST(Profiler, annotation_stack_scope_range_ids_multiple)
 }
 
 // Test enable/disable functionality
-XSIGMATEST(Profiler, annotation_stack_enable_disable)
+QUARISMATEST(Profiler, annotation_stack_enable_disable)
 {
     annotation_stack::enable(true);
     EXPECT_TRUE(annotation_stack::is_enabled());
@@ -126,21 +126,21 @@ XSIGMATEST(Profiler, annotation_stack_enable_disable)
 }
 
 // Test is_enabled when enabled
-XSIGMATEST(Profiler, annotation_stack_is_enabled_true)
+QUARISMATEST(Profiler, annotation_stack_is_enabled_true)
 {
     annotation_stack::enable(true);
     EXPECT_TRUE(annotation_stack::is_enabled());
 }
 
 // Test is_enabled when disabled
-XSIGMATEST(Profiler, annotation_stack_is_enabled_false)
+QUARISMATEST(Profiler, annotation_stack_is_enabled_false)
 {
     annotation_stack::enable(false);
     EXPECT_FALSE(annotation_stack::is_enabled());
 }
 
 // Test push with empty name
-XSIGMATEST(Profiler, annotation_stack_push_empty_name)
+QUARISMATEST(Profiler, annotation_stack_push_empty_name)
 {
     annotation_stack::enable(true);
     annotation_stack::push_annotation("");
@@ -150,7 +150,7 @@ XSIGMATEST(Profiler, annotation_stack_push_empty_name)
 }
 
 // Test push with special characters
-XSIGMATEST(Profiler, annotation_stack_push_special_chars)
+QUARISMATEST(Profiler, annotation_stack_push_special_chars)
 {
     annotation_stack::enable(true);
     annotation_stack::push_annotation("test_123");
@@ -160,7 +160,7 @@ XSIGMATEST(Profiler, annotation_stack_push_special_chars)
 }
 
 // Test push with long name
-XSIGMATEST(Profiler, annotation_stack_push_long_name)
+QUARISMATEST(Profiler, annotation_stack_push_long_name)
 {
     annotation_stack::enable(true);
     // Clear any existing annotations
@@ -177,7 +177,7 @@ XSIGMATEST(Profiler, annotation_stack_push_long_name)
 }
 
 // Test nested push/pop sequence
-XSIGMATEST(Profiler, annotation_stack_nested_sequence)
+QUARISMATEST(Profiler, annotation_stack_nested_sequence)
 {
     annotation_stack::enable(true);
     // Clear any existing annotations
@@ -206,7 +206,7 @@ XSIGMATEST(Profiler, annotation_stack_nested_sequence)
 }
 
 // Test deep nesting
-XSIGMATEST(Profiler, annotation_stack_deep_nesting)
+QUARISMATEST(Profiler, annotation_stack_deep_nesting)
 {
     annotation_stack::enable(true);
     // Clear any existing annotations
@@ -232,7 +232,7 @@ XSIGMATEST(Profiler, annotation_stack_deep_nesting)
 }
 
 // Test separator in annotation names
-XSIGMATEST(Profiler, annotation_stack_separator_in_name)
+QUARISMATEST(Profiler, annotation_stack_separator_in_name)
 {
     annotation_stack::enable(true);
     annotation_stack::push_annotation("outer");
@@ -243,7 +243,7 @@ XSIGMATEST(Profiler, annotation_stack_separator_in_name)
 }
 
 // Test multiple push/pop cycles
-XSIGMATEST(Profiler, annotation_stack_multiple_cycles)
+QUARISMATEST(Profiler, annotation_stack_multiple_cycles)
 {
     annotation_stack::enable(true);
     // Clear any existing annotations
@@ -263,7 +263,7 @@ XSIGMATEST(Profiler, annotation_stack_multiple_cycles)
 }
 
 // Test scope range IDs are unique
-XSIGMATEST(Profiler, annotation_stack_scope_range_ids_unique)
+QUARISMATEST(Profiler, annotation_stack_scope_range_ids_unique)
 {
     annotation_stack::enable(true);
     // Clear any existing annotations
@@ -285,7 +285,7 @@ XSIGMATEST(Profiler, annotation_stack_scope_range_ids_unique)
 }
 
 // Test get returns reference
-XSIGMATEST(Profiler, annotation_stack_get_returns_reference)
+QUARISMATEST(Profiler, annotation_stack_get_returns_reference)
 {
     annotation_stack::enable(true);
     annotation_stack::push_annotation("test");
@@ -297,7 +297,7 @@ XSIGMATEST(Profiler, annotation_stack_get_returns_reference)
 }
 
 // Test get_scope_range_ids returns reference
-XSIGMATEST(Profiler, annotation_stack_get_scope_range_ids_returns_reference)
+QUARISMATEST(Profiler, annotation_stack_get_scope_range_ids_returns_reference)
 {
     annotation_stack::enable(true);
     annotation_stack::push_annotation("test");
@@ -309,7 +309,7 @@ XSIGMATEST(Profiler, annotation_stack_get_scope_range_ids_returns_reference)
 }
 
 // Test enable multiple times
-XSIGMATEST(Profiler, annotation_stack_enable_multiple_times)
+QUARISMATEST(Profiler, annotation_stack_enable_multiple_times)
 {
     annotation_stack::enable(true);
     EXPECT_TRUE(annotation_stack::is_enabled());
@@ -325,7 +325,7 @@ XSIGMATEST(Profiler, annotation_stack_enable_multiple_times)
 }
 
 // Test push with numeric string
-XSIGMATEST(Profiler, annotation_stack_push_numeric_string)
+QUARISMATEST(Profiler, annotation_stack_push_numeric_string)
 {
     annotation_stack::enable(true);
     annotation_stack::push_annotation("12345");
@@ -335,7 +335,7 @@ XSIGMATEST(Profiler, annotation_stack_push_numeric_string)
 }
 
 // Test push with whitespace
-XSIGMATEST(Profiler, annotation_stack_push_whitespace)
+QUARISMATEST(Profiler, annotation_stack_push_whitespace)
 {
     annotation_stack::enable(true);
     // Clear any existing annotations
@@ -349,4 +349,4 @@ XSIGMATEST(Profiler, annotation_stack_push_whitespace)
     const std::string& result = annotation_stack::get();
     EXPECT_TRUE(result.find("test name") != std::string::npos);
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

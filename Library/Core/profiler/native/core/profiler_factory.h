@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors All Rights Reserved.
@@ -40,7 +40,7 @@ limitations under the License.
 #include "profiler/native/core/profiler_interface.h"
 #include "profiler/native/core/profiler_options.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -58,7 +58,7 @@ using profiler_factory = std::function<std::unique_ptr<profiler_interface>(const
  *
  * @param factory The profiler factory function to register
  */
-XSIGMA_API void register_profiler_factory(profiler_factory factory);
+QUARISMA_API void register_profiler_factory(profiler_factory factory);
 
 /**
  * @brief Creates profiler instances using registered factories
@@ -69,7 +69,7 @@ XSIGMA_API void register_profiler_factory(profiler_factory factory);
  * @param options The profiling options to use
  * @return Vector of created profiler interfaces
  */
-XSIGMA_API std::vector<std::unique_ptr<profiler_interface>> create_profilers(
+QUARISMA_API std::vector<std::unique_ptr<profiler_interface>> create_profilers(
     const profile_options& options);
 
 /**
@@ -77,6 +77,6 @@ XSIGMA_API std::vector<std::unique_ptr<profiler_interface>> create_profilers(
  *
  * For testing only.
  */
-XSIGMA_API void clear_registered_profilers_for_test();
+QUARISMA_API void clear_registered_profilers_for_test();
 
-}  // namespace xsigma
+}  // namespace quarisma

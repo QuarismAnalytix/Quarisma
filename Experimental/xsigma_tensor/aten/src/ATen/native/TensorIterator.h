@@ -1,2 +1,2 @@
 #pragma once
-#include <XSigma/TensorIterator.h>
+#include <Quarisma/TensorIterator.h>

@@ -35,25 +35,25 @@ struct TORCH_API KinetoEvent
     uint8_t                                               activityType() const;
     uint64_t                                              fwdThreadId() const;
     bool                                                  hasShapes() const;
-    const xsigma::ArrayRef<std::vector<int64_t>>          shapes() const;
+    const quarisma::ArrayRef<std::vector<int64_t>>          shapes() const;
     bool                                                  hasTypes() const;
-    const xsigma::ArrayRef<std::string>                   dtypes() const;
+    const quarisma::ArrayRef<std::string>                   dtypes() const;
     bool                                                  hasConcreteInputs() const;
-    const xsigma::ArrayRef<xsigma::IValue>                concreteInputs() const;
+    const quarisma::ArrayRef<quarisma::IValue>                concreteInputs() const;
     bool                                                  hasKwinputs() const;
     bool                                                  isHiddenEvent() const;
-    const std::unordered_map<std::string, xsigma::IValue> kwinputs() const;
+    const std::unordered_map<std::string, quarisma::IValue> kwinputs() const;
     uint64_t                                              flops() const;
     int64_t                                               sequenceNr() const;
     bool                                                  hasStack() const;
-    const xsigma::ArrayRef<std::string>                   stack() const;
+    const quarisma::ArrayRef<std::string>                   stack() const;
     uint8_t                                               scope() const;
     bool                                                  hasModuleHierarchy() const;
-    const xsigma::ArrayRef<std::string>                   moduleHierarchy() const;
+    const quarisma::ArrayRef<std::string>                   moduleHierarchy() const;
     int64_t                                               debugHandle() const;
     std::string                                           name() const;
     std::string                                           overload_name() const;
-    xsigma::DeviceType                                    deviceType() const;
+    quarisma::DeviceType                                    deviceType() const;
     int                                                   deviceIndex() const;
     int64_t                                               nBytes() const;
     uint64_t                                              startNs() const;
@@ -81,8 +81,8 @@ private:
     // Copy fields from result so we can return ArrayRefs.
     std::vector<std::vector<int64_t>>               shapes_;
     std::vector<std::string>                        dtypes_;
-    std::vector<xsigma::IValue>                     concrete_inputs_;
-    std::unordered_map<std::string, xsigma::IValue> kwinputs_;
+    std::vector<quarisma::IValue>                     concrete_inputs_;
+    std::unordered_map<std::string, quarisma::IValue> kwinputs_;
 };
 
 // Consolidating events returned directly from Kineto
@@ -119,7 +119,7 @@ private:
  * For example, if part of the model is lowered to a dsp backend, then
  * the execution of that part of the model is delegated to the backend.
  * When backend finishes execution it has an option to provide profiling
- * information (latency only xsigma the moment) corresponding to different operators
+ * information (latency only quarisma the moment) corresponding to different operators
  * that were executed in the backend.
  * When such events are recorded by backend using this API, the event
  * records will be collected by active kineto profiler. If no kineto profiler
@@ -138,14 +138,14 @@ TORCH_API void reportBackendEventToActiveKinetoProfiler(
     const int64_t             start_time_us,
     const int64_t             end_time_us,
     const int64_t             debug_handle,
-    const xsigma::RecordScope scope,
+    const quarisma::RecordScope scope,
     const std::string&        event_name,
     const std::string&        backend_name);
 
 TORCH_API void enableProfiler(
     const torch::profiler::impl::profiler_config&              config,
     const std::set<torch::profiler::impl::activity_type_enum>& activities,
-    const std::unordered_set<xsigma::RecordScope>&             scopes = {});
+    const std::unordered_set<quarisma::RecordScope>&             scopes = {});
 
 /*
  * Same as enableProfiler but with callback to do post-processing of
@@ -173,7 +173,7 @@ TORCH_API void enableProfilerWithEventPostProcess(
     const torch::profiler::impl::profiler_config&              config,
     const std::set<torch::profiler::impl::activity_type_enum>& activities,
     post_process_t&&                                           cb,
-    const std::unordered_set<xsigma::RecordScope>&             scopes = {});
+    const std::unordered_set<quarisma::RecordScope>&             scopes = {});
 
 TORCH_API std::unique_ptr<ProfilerResult> disableProfiler();
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <XSigma/DimVector.h>
-#include <XSigma/EmptyTensor.h>
-#include <XSigma/Tensor.h>
-#include <XSigma/TensorGeometry.h>
-#include <XSigma/Utils.h>
+#include <Quarisma/DimVector.h>
+#include <Quarisma/EmptyTensor.h>
+#include <Quarisma/Tensor.h>
+#include <Quarisma/TensorGeometry.h>
+#include <Quarisma/Utils.h>
 
 #include <utility>
 

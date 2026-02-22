@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,12 +18,12 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -39,17 +39,17 @@
 #include "memory/cpu/allocator.h"
 #include "util/flat_hash.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 class allocator_pool;
 
 // Singleton that manages per-process state, e.g. allocation of
 // shared resources.
-class XSIGMA_VISIBILITY process_state
+class QUARISMA_VISIBILITY process_state
 {
 public:
-    XSIGMA_API static process_state* singleton();
+    QUARISMA_API static process_state* singleton();
 
     // Descriptor for memory allocation attributes, used by optional
     // runtime correctness analysis logic.
@@ -65,7 +65,7 @@ public:
         bool   gpu_registered;
         bool   nic_registered;
         MemDesc() : loc(CPU), dev_index(0), gpu_registered(false), nic_registered(false) {}
-        XSIGMA_API std::string debug_string() const;
+        QUARISMA_API std::string debug_string() const;
     };
 
     // If NUMA Allocators are desired, call this before calling any
@@ -74,25 +74,25 @@ public:
 
     // Returns what we know about the memory at ptr.
     // If we know nothing, it's called CPU 0 with no other attributes.
-    XSIGMA_API MemDesc PtrType(const void* ptr);
+    QUARISMA_API MemDesc PtrType(const void* ptr);
 
     // Returns the one cpu_allocator used for the given numa_node.
     // Treats numa_node == NUMANOAFFINITY as numa_node == 0.
-    XSIGMA_API Allocator* GetCPUAllocator(int numa_node);
+    QUARISMA_API Allocator* GetCPUAllocator(int numa_node);
 
     // Registers alloc visitor for the CPU allocator(s).
     // REQUIRES: must be called before GetCPUAllocator.
-    XSIGMA_API void AddCPUAllocVisitor(sub_allocator::Visitor v);
+    QUARISMA_API void AddCPUAllocVisitor(sub_allocator::Visitor v);
 
     // Registers free visitor for the CPU allocator(s).
     // REQUIRES: must be called before GetCPUAllocator.
-    XSIGMA_API void AddCPUFreeVisitor(sub_allocator::Visitor v);
+    QUARISMA_API void AddCPUFreeVisitor(sub_allocator::Visitor v);
 
-    typedef xsigma_map<const void*, MemDesc> MDMap;
+    typedef quarisma_map<const void*, MemDesc> MDMap;
 
     // Helper method for unit tests to reset the process_state singleton by
     // cleaning up everything. Never use in production.
-    XSIGMA_API void TestOnlyReset();
+    QUARISMA_API void TestOnlyReset();
 
 protected:
     process_state();
@@ -112,9 +112,9 @@ protected:
 
     // Indexed by numa_node.  If we want numa-specific allocators AND a
     // non-specific allocator, maybe should index by numa_node+1.
-    std::vector<Allocator*> cpu_allocators_                 XSIGMA_GUARDED_BY(mu_);
-    std::vector<sub_allocator::Visitor> cpu_alloc_visitors_ XSIGMA_GUARDED_BY(mu_);
-    std::vector<sub_allocator::Visitor> cpu_free_visitors_  XSIGMA_GUARDED_BY(mu_);
+    std::vector<Allocator*> cpu_allocators_                 QUARISMA_GUARDED_BY(mu_);
+    std::vector<sub_allocator::Visitor> cpu_alloc_visitors_ QUARISMA_GUARDED_BY(mu_);
+    std::vector<sub_allocator::Visitor> cpu_free_visitors_  QUARISMA_GUARDED_BY(mu_);
 
     // A cache of cpu allocators indexed by a numa node. Used as a fast path to
     // get CPU allocator by numa node id without locking the mutex. We can't use
@@ -126,7 +126,7 @@ protected:
     // Optional RecordingAllocators that wrap the corresponding
     // Allocators for runtime attribute use analysis.
     MDMap                           mem_desc_map_;
-    std::vector<Allocator*> cpu_al_ XSIGMA_GUARDED_BY(mu_);
+    std::vector<Allocator*> cpu_al_ QUARISMA_GUARDED_BY(mu_);
 };
 
 namespace internal
@@ -169,4 +169,4 @@ public:
     std::mutex*            mu_;
 };
 }  // namespace internal
-}  // namespace xsigma
+}  // namespace quarisma

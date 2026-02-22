@@ -1,19 +1,19 @@
 /**
  * @file string_util.h
- * @brief Comprehensive string utility functions for the XSigma Core library
+ * @brief Comprehensive string utility functions for the Quarisma Core library
  *
  * This header provides a collection of high-performance string manipulation,
  * conversion, and utility functions designed for financial computing applications.
  * All functions are optimized for performance and thread-safety where applicable.
  *
- * @author XSigma Development Team
+ * @author Quarisma Development Team
  * @version 2.0
  * @date 2024
  */
 
 #pragma once
 
-#ifndef __XSIGMA_WRAP__
+#ifndef __QUARISMA_WRAP__
 
 #include <stdarg.h>  // for va_list
 
@@ -28,17 +28,17 @@
 #include <string_view>  // for string_view
 #include <vector>       // for vector
 
-#include "common/export.h"  // for XSIGMA_API, XSIGMA_VISIBILITY
-#include "common/macros.h"  // for XSIGMA_PRINTF_ATTRIBUTE
+#include "common/export.h"  // for QUARISMA_API, QUARISMA_VISIBILITY
+#include "common/macros.h"  // for QUARISMA_PRINTF_ATTRIBUTE
 
 // =============================================================================
 // ENUM CONVERSION UTILITIES
 // =============================================================================
 
-#if XSIGMA_HAS_MAGICENUM
+#if QUARISMA_HAS_MAGICENUM
 #include <magic_enum/magic_enum.hpp>
 
-namespace xsigma
+namespace quarisma
 {
 /**
  * @brief Convert an enum value to its string representation using magic_enum
@@ -76,9 +76,9 @@ E string_to_enum(std::string_view str)
 {
     return magic_enum::enum_cast<E>(str, magic_enum::case_insensitive).value();
 }
-}  // namespace xsigma
+}  // namespace quarisma
 #else
-namespace xsigma
+namespace quarisma
 {
 /**
  * @brief Convert an enum value to its numeric string representation (fallback)
@@ -86,7 +86,7 @@ namespace xsigma
  * @param x The enum value to convert
  * @return String view containing the numeric representation
  * @note This is a fallback implementation when magic_enum is not available
- * @warning Uses xsigma_thread_local storage for performance
+ * @warning Uses quarisma_thread_local storage for performance
  */
 template <typename E>
 inline std::string_view enum_to_string(E x)
@@ -109,14 +109,14 @@ E string_to_enum(std::string_view str)
 {
     return static_cast<E>(std::stoi(std::string(str)));
 }
-}  // namespace xsigma
+}  // namespace quarisma
 #endif
 
 // =============================================================================
 // TYPE INTROSPECTION AND DEMANGLING UTILITIES
 // =============================================================================
 
-namespace xsigma
+namespace quarisma
 {
 /**
  * @brief Demangle a C++ symbol name to human-readable format
@@ -130,7 +130,7 @@ namespace xsigma
  * std::string readable = demangle(mangled); // Returns "std::vector<int>"
  * @endcode
  */
-XSIGMA_API std::string demangle(const char* name);
+QUARISMA_API std::string demangle(const char* name);
 
 /**
  * @brief Get the printable name of a type using RTTI
@@ -165,7 +165,7 @@ inline const char* demangle_type()
  * @note Used primarily in assertion macros and error reporting
  * @note All members are const char* for minimal memory overhead
  */
-struct XSIGMA_VISIBILITY source_location
+struct QUARISMA_VISIBILITY source_location
 {
     const char* function;  ///< Function name where the location was captured
     const char* file;      ///< Source file name
@@ -187,9 +187,9 @@ struct XSIGMA_VISIBILITY source_location
  * // text becomes "Hello universe, universe!", count is 2
  * @endcode
  */
-XSIGMA_API size_t replace_all(std::string& s, const char* from, const char* to);
+QUARISMA_API size_t replace_all(std::string& s, const char* from, const char* to);
 
-XSIGMA_API void erase_all_sub_string(
+QUARISMA_API void erase_all_sub_string(
     std::string& mainStr, std::string_view const& toErase) noexcept;
 // =============================================================================
 // C++20 COMPATIBILITY UTILITIES
@@ -208,7 +208,7 @@ XSIGMA_API void erase_all_sub_string(
  * bool result2 = starts_with("Hello World", "hello"); // Returns false
  * @endcode
  */
-XSIGMA_API bool starts_with(std::string_view str, std::string_view prefix);
+QUARISMA_API bool starts_with(std::string_view str, std::string_view prefix);
 
 /**
  * @brief Check if a string ends with a given suffix (C++20 compatibility)
@@ -223,11 +223,11 @@ XSIGMA_API bool starts_with(std::string_view str, std::string_view prefix);
  * bool result2 = ends_with("document.pdf", ".PDF"); // Returns false
  * @endcode
  */
-XSIGMA_API bool ends_with(std::string_view str, std::string_view suffix);
+QUARISMA_API bool ends_with(std::string_view str, std::string_view suffix);
 
-}  // namespace xsigma
+}  // namespace quarisma
 
-namespace xsigma
+namespace quarisma
 {
 // =============================================================================
 // STRING CONCATENATION UTILITIES
@@ -403,7 +403,7 @@ void str_append(std::string* result, const Args&... args)
     *result += oss.str();
 }
 
-XSIGMA_FORCE_INLINE std::string to_lower(std::string_view input)
+QUARISMA_FORCE_INLINE std::string to_lower(std::string_view input)
 {
     std::string result(input);
     std::transform(
@@ -414,6 +414,6 @@ XSIGMA_FORCE_INLINE std::string to_lower(std::string_view input)
     return result;
 }
 }  // namespace strings
-}  // namespace xsigma
+}  // namespace quarisma
 
-#endif  // __XSIGMA_WRAP__
+#endif  // __QUARISMA_WRAP__

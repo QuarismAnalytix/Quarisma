@@ -1,7 +1,7 @@
 # =============================================================================
-# XSigma Main CMake Configuration
+# Quarisma Main CMake Configuration
 # =============================================================================
-# This is the root CMake configuration file that orchestrates the XSigma build system.
+# This is the root CMake configuration file that orchestrates the Quarisma build system.
 # It manages third-party dependencies, feature flags, compiler settings, and library targets.
 # Third-party dependencies are handled by ThirdParty/CMakeLists.txt, and feature flags are
 # mapped to compile definitions by Cmake/flags/compile_definitions.cmake.
@@ -17,17 +17,17 @@ endif()
 
 # Set project name and version
 project(
-  XSigma
+  Quarisma
   VERSION 1.0.0
-  DESCRIPTION "XSigma High-Performance Computing Library"
+  DESCRIPTION "Quarisma High-Performance Computing Library"
   LANGUAGES CXX C
 )
 
 # Set version macros
-set(XSIGMA_MAJOR_VERSION 1)
-set(XSIGMA_MINOR_VERSION 0)
-set(XSIGMA_BUILD_VERSION 0)
-set(XSIGMA_VERSION_FULL "${XSIGMA_MAJOR_VERSION}.${XSIGMA_MINOR_VERSION}.${XSIGMA_BUILD_VERSION}")
+set(QUARISMA_MAJOR_VERSION 1)
+set(QUARISMA_MINOR_VERSION 0)
+set(QUARISMA_BUILD_VERSION 0)
+set(QUARISMA_VERSION_FULL "${QUARISMA_MAJOR_VERSION}.${QUARISMA_MINOR_VERSION}.${QUARISMA_BUILD_VERSION}")
 
 # Add CMake module path
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Cmake/tools")
@@ -35,9 +35,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Cmake/flags")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Cmake/packages")
 
 # Distributed compilation with Icecream
-option(XSIGMA_ENABLE_ICECC "Use Icecream distributed compilation" OFF)
+option(QUARISMA_ENABLE_ICECC "Use Icecream distributed compilation" OFF)
 
-if(XSIGMA_ENABLE_ICECC)
+if(QUARISMA_ENABLE_ICECC)
   find_program(ICECC_EXECUTABLE icecc)
   if(ICECC_EXECUTABLE)
     set(CMAKE_C_COMPILER_LAUNCHER ${ICECC_EXECUTABLE})
@@ -50,10 +50,10 @@ endif()
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 
 # Build optimization settings
-option(XSIGMA_ENABLE_LTO "Enable Link Time Optimization" OFF)
+option(QUARISMA_ENABLE_LTO "Enable Link Time Optimization" OFF)
 
-# Set CMAKE_INTERPROCEDURAL_OPTIMIZATION based on XSIGMA_ENABLE_LTO
-if(XSIGMA_ENABLE_LTO)
+# Set CMAKE_INTERPROCEDURAL_OPTIMIZATION based on QUARISMA_ENABLE_LTO
+if(QUARISMA_ENABLE_LTO)
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
   message(STATUS "Link Time Optimization (LTO) enabled via CMAKE_INTERPROCEDURAL_OPTIMIZATION")
@@ -67,23 +67,23 @@ endif()
 include(CMakeDependentOption)
 
 # Set C++ standard configuration
-set(XSIGMA_CXX_STANDARD "17" CACHE STRING "C++ standard to use. Options are 11, 14, 17, 20, or 23")
-mark_as_advanced(XSIGMA_CXX_STANDARD)
+set(QUARISMA_CXX_STANDARD "17" CACHE STRING "C++ standard to use. Options are 11, 14, 17, 20, or 23")
+mark_as_advanced(QUARISMA_CXX_STANDARD)
 
 # Validate C++ standard
-if(NOT XSIGMA_CXX_STANDARD MATCHES "^(11|14|17|20|23)$")
-  message(FATAL_ERROR "XSIGMA_CXX_STANDARD must be 11,14, 17, 20, or 23")
+if(NOT QUARISMA_CXX_STANDARD MATCHES "^(11|14|17|20|23)$")
+  message(FATAL_ERROR "QUARISMA_CXX_STANDARD must be 11,14, 17, 20, or 23")
 endif()
 
-set(CMAKE_CXX_STANDARD ${XSIGMA_CXX_STANDARD})
+set(CMAKE_CXX_STANDARD ${QUARISMA_CXX_STANDARD})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(XSIGMA_DEPENDENCY_LIBS "")
-mark_as_advanced(XSIGMA_DEPENDENCY_LIBS)
-set_property(GLOBAL PROPERTY XSIGMA_DEPENDENCY_LIBS "")
-set_property(GLOBAL PROPERTY XSIGMA_DEPENDENCY_INCLUDE_DIRS "")
-set_property(GLOBAL PROPERTY XSIGMA_DEPENDENCY_COMPILE_DEFINITIONS "")
+set(QUARISMA_DEPENDENCY_LIBS "")
+mark_as_advanced(QUARISMA_DEPENDENCY_LIBS)
+set_property(GLOBAL PROPERTY QUARISMA_DEPENDENCY_LIBS "")
+set_property(GLOBAL PROPERTY QUARISMA_DEPENDENCY_INCLUDE_DIRS "")
+set_property(GLOBAL PROPERTY QUARISMA_DEPENDENCY_COMPILE_DEFINITIONS "")
 
 # =============================================================================
 # General Project-Wide
@@ -95,21 +95,21 @@ set_property(GLOBAL PROPERTY XSIGMA_DEPENDENCY_COMPILE_DEFINITIONS "")
 
 # Enzyme Automatic Differentiation Support Flag Controls whether Enzyme automatic differentiation is
 # enabled. Enzyme provides high-performance automatic differentiation capabilities.
-option(XSIGMA_ENABLE_ENZYME "Enable Enzyme" OFF)
-mark_as_advanced(XSIGMA_ENABLE_ENZYME)
+option(QUARISMA_ENABLE_ENZYME "Enable Enzyme" OFF)
+mark_as_advanced(QUARISMA_ENABLE_ENZYME)
 
 # GPU Allocation Strategy Configuration This flag controls which GPU allocation functions are used
 # by allocator_gpu (CUDA/HIP)
-set(XSIGMA_GPU_ALLOC "POOL_ASYNC"
+set(QUARISMA_GPU_ALLOC "POOL_ASYNC"
     CACHE STRING "GPU allocation strategy to use. Options are SYNC, ASYNC, POOL_ASYNC"
 )
-set_property(CACHE XSIGMA_GPU_ALLOC PROPERTY STRINGS SYNC ASYNC POOL_ASYNC)
+set_property(CACHE QUARISMA_GPU_ALLOC PROPERTY STRINGS SYNC ASYNC POOL_ASYNC)
 
 # Validate CUDA allocation strategy
-if(NOT XSIGMA_GPU_ALLOC MATCHES "^(SYNC|ASYNC|POOL_ASYNC)$")
+if(NOT QUARISMA_GPU_ALLOC MATCHES "^(SYNC|ASYNC|POOL_ASYNC)$")
   message(
     FATAL_ERROR
-      "Invalid XSIGMA_GPU_ALLOC: ${XSIGMA_GPU_ALLOC}. Valid options are: SYNC, ASYNC, POOL_ASYNC"
+      "Invalid QUARISMA_GPU_ALLOC: ${QUARISMA_GPU_ALLOC}. Valid options are: SYNC, ASYNC, POOL_ASYNC"
   )
 endif()
 
@@ -122,11 +122,11 @@ endif()
 
 # Sobol Sequence 1111-Dimension Support Flag Controls whether Sobol quasi-random sequence generation
 # supports 1111 dimensions. When enabled, provides extended Sobol sequence capabilities.
-option(XSIGMA_SOBOL_1111 "Build support sobol with 1111 dimension" ON)
+option(QUARISMA_SOBOL_1111 "Build support sobol with 1111 dimension" ON)
 
 # LU Decomposition Pivoting Flag Controls whether LU decomposition uses pivoting for numerical
 # stability. When enabled, improves numerical stability at the cost of additional computation.
-option(XSIGMA_LU_PIVOTING "Enable LU PIVOTING" OFF)
+option(QUARISMA_LU_PIVOTING "Enable LU PIVOTING" OFF)
 
 # =============================================================================
 # Testing and Quality
@@ -137,20 +137,20 @@ option(XSIGMA_LU_PIVOTING "Enable LU PIVOTING" OFF)
 
 # Build Testing Configuration Controls whether test directories are built: ON (always), OFF (never),
 # or WANT (optional).
-set(XSIGMA_BUILD_TESTING "ON" CACHE STRING "Build module testing directories")
-set_property(CACHE XSIGMA_BUILD_TESTING PROPERTY STRINGS "ON;OFF;WANT")
+set(QUARISMA_BUILD_TESTING "ON" CACHE STRING "Build module testing directories")
+set_property(CACHE QUARISMA_BUILD_TESTING PROPERTY STRINGS "ON;OFF;WANT")
 
 # Build Examples Configuration Controls whether example programs are built. When enabled, builds
 # comprehensive examples demonstrating parallel APIs and other features.
-option(XSIGMA_ENABLE_EXAMPLES "Build example programs" OFF)
+option(QUARISMA_ENABLE_EXAMPLES "Build example programs" OFF)
 
 # Google Benchmark Support Flag Controls whether Google Benchmark is enabled for performance
 # benchmarking. When enabled, allows creation of benchmark targets for performance analysis.
-option(XSIGMA_ENABLE_BENCHMARK "Enable google benchmark" OFF)
+option(QUARISMA_ENABLE_BENCHMARK "Enable google benchmark" OFF)
 
 # Google Test Support Flag Controls whether Google Test framework is enabled for unit testing. When
 # enabled, provides comprehensive testing infrastructure.
-option(XSIGMA_ENABLE_GTEST "Enable google test" ON)
+option(QUARISMA_ENABLE_GTEST "Enable google test" ON)
 
 # =============================================================================
 # Performance and
@@ -161,10 +161,10 @@ option(XSIGMA_ENABLE_GTEST "Enable google test" ON)
 
 # Vectorization Strategy Configuration Specifies which SIMD vectorization to use: no, sse, avx,
 # avx2, or avx512. Enables platform-specific optimizations for numerical computations.
-set(XSIGMA_VECTORIZATION_TYPE "avx2"
+set(QUARISMA_VECTORIZATION_TYPE "avx2"
     CACHE STRING "vectorization implementation to use. Options are no, sse, avx, avx2, or avx512"
 )
-set_property(CACHE XSIGMA_VECTORIZATION_TYPE PROPERTY STRINGS no sse avx avx2 avx512)
+set_property(CACHE QUARISMA_VECTORIZATION_TYPE PROPERTY STRINGS no sse avx avx2 avx512)
 
 # =============================================================================
 # Third-Party Library
@@ -175,48 +175,48 @@ set_property(CACHE XSIGMA_VECTORIZATION_TYPE PROPERTY STRINGS no sse avx avx2 av
 # =============================================================================
 # Magic Enum Static Reflection Flag Controls whether magic_enum is enabled for compile-time enum
 # reflection. When enabled, provides powerful enum introspection capabilities.
-option(XSIGMA_ENABLE_MAGICENUM "Enable magic_enum static reflection for enums." ON)
-mark_as_advanced(XSIGMA_ENABLE_MAGICENUM)
+option(QUARISMA_ENABLE_MAGICENUM "Enable magic_enum static reflection for enums." ON)
+mark_as_advanced(QUARISMA_ENABLE_MAGICENUM)
 
 # Microsoft Mimalloc Memory Allocator Flag Controls whether Microsoft's mimalloc high-performance
 # allocator is enabled. When enabled, provides faster memory allocation with better performance
 # characteristics.
-option(XSIGMA_ENABLE_MIMALLOC
+option(QUARISMA_ENABLE_MIMALLOC
        "Enable Microsoft mimalloc high-performance memory allocator support." ON
 )
-mark_as_advanced(XSIGMA_ENABLE_MIMALLOC)
+mark_as_advanced(QUARISMA_ENABLE_MIMALLOC)
 
 # ROCm Support Flag Controls whether ROCm (Radeon Open Compute) support is enabled for AMD GPUs.
 # When enabled, allows integration with ROCm ecosystem and AMD GPU acceleration.
-option(XSIGMA_ENABLE_ROCM "Enable ROCm support for AMD GPUs" OFF)
-mark_as_advanced(XSIGMA_ENABLE_ROCM)
+option(QUARISMA_ENABLE_ROCM "Enable ROCm support for AMD GPUs" OFF)
+mark_as_advanced(QUARISMA_ENABLE_ROCM)
 
-# profiling libreray XSigma Kineto Profiling Library Flag Controls whether Kineto profiling library
+# profiling libreray Quarisma Kineto Profiling Library Flag Controls whether Kineto profiling library
 # is enabled. When enabled, provides advanced profiling capabilities for performance analysis.
-option(XSIGMA_ENABLE_KINETO "Enable XSigma Kineto profiling library." ON)
-mark_as_advanced(XSIGMA_ENABLE_KINETO)
+option(QUARISMA_ENABLE_KINETO "Enable Quarisma Kineto profiling library." ON)
+mark_as_advanced(QUARISMA_ENABLE_KINETO)
 
 # Intel ITT API (Instrumentation and Tracing Technology) Flag Controls whether Intel ITT API is
 # enabled. When enabled, provides task/frame annotations for Intel VTune profiling.
-option(XSIGMA_ENABLE_ITT "Enable Intel ITT API for VTune profiling." OFF)
-mark_as_advanced(XSIGMA_ENABLE_ITT)
+option(QUARISMA_ENABLE_ITT "Enable Intel ITT API for VTune profiling." OFF)
+mark_as_advanced(QUARISMA_ENABLE_ITT)
 
 # Profiler backend selection controls whether Kineto, Native TraceMe, or ITT
 # instrumentation is used. Defaults to Kineto for downstream compatibility.
-set(XSIGMA_PROFILER_TYPE "KINETO"
+set(QUARISMA_PROFILER_TYPE "KINETO"
     CACHE STRING "Profiler backend type. Options are KINETO, NATIVE, or ITT")
-set_property(CACHE XSIGMA_PROFILER_TYPE PROPERTY STRINGS KINETO NATIVE ITT)
+set_property(CACHE QUARISMA_PROFILER_TYPE PROPERTY STRINGS KINETO NATIVE ITT)
 
-if(NOT XSIGMA_PROFILER_TYPE MATCHES "^(KINETO|NATIVE|ITT)$")
+if(NOT QUARISMA_PROFILER_TYPE MATCHES "^(KINETO|NATIVE|ITT)$")
   message(
     FATAL_ERROR
-      "Invalid XSIGMA_PROFILER_TYPE: ${XSIGMA_PROFILER_TYPE}. Valid options are KINETO, NATIVE, or ITT")
+      "Invalid QUARISMA_PROFILER_TYPE: ${QUARISMA_PROFILER_TYPE}. Valid options are KINETO, NATIVE, or ITT")
 endif()
 
-if(XSIGMA_PROFILER_TYPE STREQUAL "NATIVE")
-  set(XSIGMA_ENABLE_NATIVE_PROFILER ON)
+if(QUARISMA_PROFILER_TYPE STREQUAL "NATIVE")
+  set(QUARISMA_ENABLE_NATIVE_PROFILER ON)
 else()
-  set(XSIGMA_ENABLE_NATIVE_PROFILER OFF)
+  set(QUARISMA_ENABLE_NATIVE_PROFILER OFF)
 endif()
 
 # =============================================================================
@@ -229,12 +229,12 @@ endif()
 
 # NUMA is only available on Unix systems
 if(NOT UNIX)
-  set(XSIGMA_ENABLE_NUMA OFF)
+  set(QUARISMA_ENABLE_NUMA OFF)
 endif()
 
 # Memkind is only available on Unix systems (not macOS or Windows)
 if(NOT UNIX OR APPLE)
-  set(XSIGMA_ENABLE_MEMKIND OFF)
+  set(QUARISMA_ENABLE_MEMKIND OFF)
 endif()
 
 # =============================================================================
@@ -244,29 +244,29 @@ endif()
 # Set global variables used throughout the build system.
 # =============================================================================
 
-set(XSIGMA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-set(XSIGMA_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-set(XSIGMA_VERSION "${PROJECT_VERSION}")
+set(QUARISMA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(QUARISMA_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+set(QUARISMA_VERSION "${PROJECT_VERSION}")
 
 # =============================================================================
 # Build Library Type
 # Configuration
 # =============================================================================
-# Controls whether libraries are built as shared or static. XSigma requires shared libraries (DLLs
+# Controls whether libraries are built as shared or static. Quarisma requires shared libraries (DLLs
 # on Windows) for proper functionality.
 # =============================================================================
 
 # Build Shared Libraries Flag Controls whether libraries are built as shared (ON) or static (OFF).
-# XSigma requires shared libraries for proper DLL export/import handling.
-option(XSIGMA_BUILD_SHARED_LIBS "Build shared libraries" ON)
-set(BUILD_SHARED_LIBS ${XSIGMA_BUILD_SHARED_LIBS})
+# Quarisma requires shared libraries for proper DLL export/import handling.
+option(QUARISMA_BUILD_SHARED_LIBS "Build shared libraries" ON)
+set(BUILD_SHARED_LIBS ${QUARISMA_BUILD_SHARED_LIBS})
 
 # Include necessary CMake modules
 include(CheckCXXSourceCompiles)
 include(CheckCXXSourceRuns)
 include(CheckSymbolExists)
 
-# Include XSigma-specific CMake modules
+# Include Quarisma-specific CMake modules
 include(compiler_checks)
 include(cache)
 include(build_type)
@@ -282,11 +282,11 @@ include(parallel_backend)
 
 # Create build interface target for common settings FIRST
 # This target is needed by sanitize.cmake and other modules
-add_library(xsigmabuild INTERFACE)
-add_library(XSigma::build ALIAS xsigmabuild)
+add_library(quarismabuild INTERFACE)
+add_library(Quarisma::build ALIAS quarismabuild)
 
 # Include sanitizer configuration EARLY to disable incompatible features
-# Must be before compile_definitions so XSIGMA_HAS_MIMALLOC is set correctly
+# Must be before compile_definitions so QUARISMA_HAS_MIMALLOC is set correctly
 include(sanitize)
 
 # Configure optional features
@@ -305,24 +305,24 @@ include(valgrind)
 include(helper_macros)
 include(compile_definitions)
 
-# Include optimization modules AFTER xsigmabuild target is created These modules apply flags to the
-# xsigmabuild target to affect only XSigma targets, not third-party dependencies
+# Include optimization modules AFTER quarismabuild target is created These modules apply flags to the
+# quarismabuild target to affect only Quarisma targets, not third-party dependencies
 include(linker)
 
 # Set compile features
-target_compile_features(xsigmabuild INTERFACE cxx_std_${XSIGMA_CXX_STANDARD})
+target_compile_features(quarismabuild INTERFACE cxx_std_${QUARISMA_CXX_STANDARD})
 
 # Apply common linker flags
-if(DEFINED XSIGMA_LINKER_FLAGS_COMMON)
-  target_link_options(xsigmabuild INTERFACE ${XSIGMA_LINKER_FLAGS_COMMON})
+if(DEFINED QUARISMA_LINKER_FLAGS_COMMON)
+  target_link_options(quarismabuild INTERFACE ${QUARISMA_LINKER_FLAGS_COMMON})
 endif()
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${XSIGMA_BINARY_DIR}/bin")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${XSIGMA_BINARY_DIR}/lib")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${XSIGMA_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${QUARISMA_BINARY_DIR}/bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${QUARISMA_BINARY_DIR}/lib")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${QUARISMA_BINARY_DIR}/lib")
 
 # Configure testing
-if(XSIGMA_BUILD_TESTING STREQUAL "ON" OR XSIGMA_BUILD_TESTING STREQUAL "WANT")
+if(QUARISMA_BUILD_TESTING STREQUAL "ON" OR QUARISMA_BUILD_TESTING STREQUAL "WANT")
   enable_testing()
   include(CTest)
 endif()
@@ -335,15 +335,15 @@ add_subdirectory(Library/Security)
 add_subdirectory(Library/Core)
 
 # Add examples if enabled
-if(XSIGMA_ENABLE_EXAMPLES)
+if(QUARISMA_ENABLE_EXAMPLES)
   add_subdirectory(Examples/Profiling)
   message(STATUS "✓ Profiling Examples enabled")
 endif()
 
 # Apply Valgrind timeout multiplier to all tests (if Valgrind is enabled) This must be called after
 # all tests are registered
-if(XSIGMA_ENABLE_VALGRIND AND XSIGMA_BUILD_TESTING)
-  xsigma_apply_valgrind_timeouts()
+if(QUARISMA_ENABLE_VALGRIND AND QUARISMA_BUILD_TESTING)
+  quarisma_apply_valgrind_timeouts()
 endif()
 
 # Include summary at the end

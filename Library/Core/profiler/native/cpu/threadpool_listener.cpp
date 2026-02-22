@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "profiler/native/cpu/threadpool_listener.h"
@@ -29,7 +29,7 @@
 #include "profiler/native/tracing/traceme_encode.h"
 #include "profiler/native/tracing/traceme_recorder.h"
 
-namespace xsigma::profiler
+namespace quarisma::profiler
 {
 namespace
 {
@@ -87,7 +87,7 @@ profiler_status threadpool_profiler_interface::start()
 {
     if (tracing::event_collector::is_enabled())
     {
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "[ThreadpoolEventCollector] event collector already enabled; "
             "threadpool events will not be captured.");
         last_status_ = profiler_status::Error(
@@ -122,4 +122,4 @@ std::unique_ptr<profiler_interface> create_threadpool_profiler()
     return std::make_unique<threadpool_profiler_interface>();
 }
 
-}  // namespace xsigma::profiler
+}  // namespace quarisma::profiler

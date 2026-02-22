@@ -1,34 +1,34 @@
 #pragma once
 /*
-#include <xsigma/core/Allocator.h>
-#include <xsigma/core/DeviceType.h>
-#include <xsigma/core/DispatchKey.h>
-#include <xsigma/core/DispatchKeySet.h>
-#include <xsigma/core/InferenceMode.h>
-#include <xsigma/core/Layout.h>
-#include <xsigma/core/MemoryFormat.h>
-#include <xsigma/core/ScalarType.h>
-#include <xsigma/core/ScalarTypeToTypeMeta.h>
-#include <xsigma/core/Storage.h>
-#include <xsigma/core/SymBool.h>
-#include <xsigma/core/SymInt.h>
-#include <xsigma/core/SymIntArrayRef.h>
-#include <xsigma/core/SymbolicShapeMeta.h>
-#include <xsigma/core/WrapDimMinimal.h>
-#include <xsigma/core/device_option.h>
-#include <xsigma/core/impl/PyObjectSlot.h>
-#include <xsigma/core/impl/SizesAndStrides.h>
-#include <xsigma/macros/Export.h>
-#include <xsigma/macros/Macros.h>
-#include <xsigma/util/DimVector.h>
-#include <xsigma/util/Exception.h>
-#include <xsigma/util/Flags.h>
-#include <xsigma/util/accumulate.h>
-#include <xsigma/util/array_ref.h>
-#include <xsigma/util/intrusive_ptr.h>
-#include <xsigma/util/irange.h>
-#include <xsigma/util/safe_numerics.h>
-#include <xsigma/util/typeid.h>
+#include <quarisma/core/Allocator.h>
+#include <quarisma/core/DeviceType.h>
+#include <quarisma/core/DispatchKey.h>
+#include <quarisma/core/DispatchKeySet.h>
+#include <quarisma/core/InferenceMode.h>
+#include <quarisma/core/Layout.h>
+#include <quarisma/core/MemoryFormat.h>
+#include <quarisma/core/ScalarType.h>
+#include <quarisma/core/ScalarTypeToTypeMeta.h>
+#include <quarisma/core/Storage.h>
+#include <quarisma/core/SymBool.h>
+#include <quarisma/core/SymInt.h>
+#include <quarisma/core/SymIntArrayRef.h>
+#include <quarisma/core/SymbolicShapeMeta.h>
+#include <quarisma/core/WrapDimMinimal.h>
+#include <quarisma/core/device_option.h>
+#include <quarisma/core/impl/PyObjectSlot.h>
+#include <quarisma/core/impl/SizesAndStrides.h>
+#include <quarisma/macros/Export.h>
+#include <quarisma/macros/Macros.h>
+#include <quarisma/util/DimVector.h>
+#include <quarisma/util/Exception.h>
+#include <quarisma/util/Flags.h>
+#include <quarisma/util/accumulate.h>
+#include <quarisma/util/array_ref.h>
+#include <quarisma/util/intrusive_ptr.h>
+#include <quarisma/util/irange.h>
+#include <quarisma/util/safe_numerics.h>
+#include <quarisma/util/typeid.h>
 */
 #include <algorithm>
 #include <atomic>
@@ -49,7 +49,7 @@
 #include "util/exception.h"
 
 #if 1
-namespace xsigma
+namespace quarisma
 {
 // Stub for Storage - used in execution trace observer and tensor implementations
 struct Storage
@@ -61,7 +61,7 @@ struct Storage
 // Minimal stubs sufficient for profiler build. These are NOT full tensor implementations.
 // They intentionally return defaults so profiler paths can compile even when tensors are disabled.
 
-struct TensorImpl : public xsigma::intrusive_ptr_target
+struct TensorImpl : public quarisma::intrusive_ptr_target
 {
     // Profiler checks for symbolic shapes; return false in the stub.
     bool has_symbolic_sizes_strides() const noexcept { return false; }
@@ -70,24 +70,24 @@ struct TensorImpl : public xsigma::intrusive_ptr_target
     size_t          storage_offset() const noexcept { return 0; }
     int64_t         numel() const noexcept { return 0; }
     size_t          itemsize() const noexcept { return 0; }
-    xsigma::Storage storage() const noexcept { return xsigma::Storage(); }
+    quarisma::Storage storage() const noexcept { return quarisma::Storage(); }
 };
 
-struct Tensor : public xsigma::intrusive_ptr_target
+struct Tensor : public quarisma::intrusive_ptr_target
 {
     // Basic tensor metadata accessors expected by the profiler. All return safe defaults.
     int scalar_type() const noexcept { return 0; }
-    int layout() const noexcept { return 0; /* xsigma::kStrided */ }
+    int layout() const noexcept { return 0; /* quarisma::kStrided */ }
 
     // Dimensions and strides; empty by default.
-    xsigma::IntArrayRef sizes() const noexcept { return {}; }
-    xsigma::IntArrayRef strides() const noexcept { return {}; }
+    quarisma::IntArrayRef sizes() const noexcept { return {}; }
+    quarisma::IntArrayRef strides() const noexcept { return {}; }
 
     // Device information; default to CPU, index -1 (undefined).
-    xsigma::device_option device() const noexcept
+    quarisma::device_option device() const noexcept
     {
-        return xsigma::device_option(
-            xsigma::device_enum::CPU, static_cast<xsigma::device_option::int_t>(-1));
+        return quarisma::device_option(
+            quarisma::device_enum::CPU, static_cast<quarisma::device_option::int_t>(-1));
     }
 
     // Defined/nested status; undefined by default to keep encoder in safe path.
@@ -95,9 +95,9 @@ struct Tensor : public xsigma::intrusive_ptr_target
     bool is_nested() const noexcept { return false; }
 
     // Unsafe access to underlying impl; nullptr in stub (guarded by defined()).
-    const xsigma::TensorImpl* unsafeGetTensorImpl() const noexcept { return nullptr; }
+    const quarisma::TensorImpl* unsafeGetTensorImpl() const noexcept { return nullptr; }
 };
-}  // namespace xsigma
+}  // namespace quarisma
 #else
 
 // A global boolean variable to control whether we free memory when a Tensor
@@ -107,15 +107,15 @@ struct Tensor : public xsigma::intrusive_ptr_target
 // This parameter is respected "upper-case" methods which call Resize()
 // (e.g., CopyFrom, ResizeLike); it is NOT respected by Tensor::resize_
 // or ShrinkTo, both of which guarantee to never to free memory.
-// XSIGMA_DECLARE_bool(caffe2_keep_on_shrink);
+// QUARISMA_DECLARE_bool(caffe2_keep_on_shrink);
 
 // Since we can have high variance in blob memory allocated across different
 // inputs in the same run, we will shrink the blob only if the memory gain
 // is larger than this flag in bytes.  This only applies to functions which
 // respect caffe2_keep_on_shrink.
-//XSIGMA_DECLARE_int64(caffe2_max_keep_on_shrink_memory);
+//QUARISMA_DECLARE_int64(caffe2_max_keep_on_shrink_memory);
 
-namespace xsigma
+namespace quarisma
 {
 class Tensor;
 class TensorBase;
@@ -134,7 +134,7 @@ inline std::vector<int64_t> ToVectorint64_t(const array_ref<int>& src)
 inline int64_t size_from_dim_(int k, IntArrayRef dims)
 {
     int64_t r = 1;
-    for (const auto i : xsigma::irange(k, dims.size()))
+    for (const auto i : quarisma::irange(k, dims.size()))
     {
         r *= dims[i];
     }
@@ -144,9 +144,9 @@ inline int64_t size_from_dim_(int k, IntArrayRef dims)
 // Product of all dims up to k (not including dims[k])
 inline int64_t size_to_dim_(int k, IntArrayRef dims)
 {
-    XSIGMA_CHECK(k >= 0 && static_cast<size_t>(k) <= dims.size());
+    QUARISMA_CHECK(k >= 0 && static_cast<size_t>(k) <= dims.size());
     int64_t r = 1;
-    for (const auto i : xsigma::irange(k))
+    for (const auto i : quarisma::irange(k))
     {
         r *= dims[i];
     }
@@ -156,7 +156,7 @@ inline int64_t size_to_dim_(int k, IntArrayRef dims)
 // Product of all dims between k and l (not including dims[k] and dims[l])
 inline int64_t size_between_dim_(int k, int l, IntArrayRef dims)
 {
-    XSIGMA_CHECK((unsigned)l < dims.size() && (unsigned)k < dims.size());
+    QUARISMA_CHECK((unsigned)l < dims.size() && (unsigned)k < dims.size());
     int64_t r = 1;
     if (k < l)
     {
@@ -178,8 +178,8 @@ inline int64_t size_between_dim_(int k, int l, IntArrayRef dims)
 // Wrap around axis_index if it is negative, s.t., -1 is the last dim
 inline int canonical_axis_index_(int axis_index, int ndims)
 {
-    XSIGMA_CHECK(axis_index >= -ndims);
-    XSIGMA_CHECK(axis_index < ndims);
+    QUARISMA_CHECK(axis_index >= -ndims);
+    QUARISMA_CHECK(axis_index < ndims);
     if (axis_index < 0)
     {
         return axis_index + ndims;
@@ -198,7 +198,7 @@ using PlacementDtor = void (*)(void*, size_t);
  * data pointer before the DataPtr is destructed.
  * `data_ptr_` owns the memory.
  */
-struct XSIGMA_API PlacementDeleteContext
+struct QUARISMA_API PlacementDeleteContext
 {
     DataPtr       data_ptr_;
     PlacementDtor placement_dtor_;
@@ -222,7 +222,7 @@ struct XSIGMA_API PlacementDeleteContext
     }
 };
 
-struct XSIGMA_API AutogradMetaInterface
+struct QUARISMA_API AutogradMetaInterface
 {
     virtual void              set_requires_grad(bool requires_grad, at::TensorImpl* self_impl) = 0;
     virtual bool              requires_grad() const                                            = 0;
@@ -246,7 +246,7 @@ namespace impl
 // not even from the cpp file.  So we have to indirect it through a factory
 // function which will be initialized when we load libtorch.so.
 
-struct XSIGMA_API AutogradMetaFactory
+struct QUARISMA_API AutogradMetaFactory
 {
     virtual ~AutogradMetaFactory()                              = default;
     virtual std::unique_ptr<AutogradMetaInterface> make() const = 0;
@@ -255,29 +255,29 @@ struct XSIGMA_API AutogradMetaFactory
     virtual const at::Tensor& undefined_tensor() const = 0;
 };
 
-XSIGMA_API void                 SetAutogradMetaFactory(AutogradMetaFactory* factory);
-XSIGMA_API AutogradMetaFactory* GetAutogradMetaFactory();
+QUARISMA_API void                 SetAutogradMetaFactory(AutogradMetaFactory* factory);
+QUARISMA_API AutogradMetaFactory* GetAutogradMetaFactory();
 
-struct XSIGMA_API AutogradMetaFactoryRegisterer
+struct QUARISMA_API AutogradMetaFactoryRegisterer
 {
     explicit AutogradMetaFactoryRegisterer(AutogradMetaFactory* factory)
     {
         SetAutogradMetaFactory(factory);
     }  // namespace impl
-};  // namespace xsigma
+};  // namespace quarisma
 
 }  // namespace impl
 
-struct XSIGMA_API NamedTensorMetaInterface
+struct QUARISMA_API NamedTensorMetaInterface
 {
     virtual ~NamedTensorMetaInterface() = default;
     virtual std::unique_ptr<NamedTensorMetaInterface> clone() const
     {
-        XSIGMA_CHECK_DEBUG(false, "Not implemented: NamedTensorMetaInterface::clone");
+        QUARISMA_CHECK_DEBUG(false, "Not implemented: NamedTensorMetaInterface::clone");
     }
     virtual int64_t slow_dim() const
     {
-        XSIGMA_CHECK_DEBUG(false, "Not implemented: NamedTensorMetaInterface::slow_dim");
+        QUARISMA_CHECK_DEBUG(false, "Not implemented: NamedTensorMetaInterface::slow_dim");
     }
 };
 
@@ -295,7 +295,7 @@ is_non_overlapping_and_dense
  * This structure is intended to hold additional metadata of the specific device
  * backend.
  **/
-struct XSIGMA_API BackendMeta : intrusive_ptr_target
+struct QUARISMA_API BackendMeta : intrusive_ptr_target
 {
     ~BackendMeta() override = default;
     virtual intrusive_ptr<BackendMeta> clone(const intrusive_ptr<BackendMeta>& ptr) const
@@ -304,11 +304,11 @@ struct XSIGMA_API BackendMeta : intrusive_ptr_target
     }
 };
 
-struct XSIGMA_API ExtraMeta
+struct QUARISMA_API ExtraMeta
 {
-    std::unique_ptr<xsigma::SymbolicShapeMeta>        symbolic_shape_meta_       = nullptr;
-    std::unique_ptr<xsigma::NamedTensorMetaInterface> named_tensor_meta_         = nullptr;
-    intrusive_ptr<xsigma::BackendMeta>                backend_meta_              = nullptr;
+    std::unique_ptr<quarisma::SymbolicShapeMeta>        symbolic_shape_meta_       = nullptr;
+    std::unique_ptr<quarisma::NamedTensorMetaInterface> named_tensor_meta_         = nullptr;
+    intrusive_ptr<quarisma::BackendMeta>                backend_meta_              = nullptr;
     std::optional<std::string>                        custom_data_ptr_error_msg_ = std::nullopt;
     std::optional<std::string>                        custom_storage_error_msg_  = std::nullopt;
 
@@ -319,7 +319,7 @@ struct XSIGMA_API ExtraMeta
         if (other.symbolic_shape_meta_)
         {
             symbolic_shape_meta_ =
-                std::make_unique<xsigma::SymbolicShapeMeta>(*other.symbolic_shape_meta_);
+                std::make_unique<quarisma::SymbolicShapeMeta>(*other.symbolic_shape_meta_);
         }
         if (other.named_tensor_meta_)
         {
@@ -343,9 +343,9 @@ struct XSIGMA_API ExtraMeta
     ExtraMeta& operator=(ExtraMeta&& other)      = delete;
 
     ExtraMeta(
-        std::unique_ptr<xsigma::SymbolicShapeMeta>        symbolic_shape_meta,
-        std::unique_ptr<xsigma::NamedTensorMetaInterface> named_tensor_meta,
-        intrusive_ptr<xsigma::BackendMeta>                backend_meta,
+        std::unique_ptr<quarisma::SymbolicShapeMeta>        symbolic_shape_meta,
+        std::unique_ptr<quarisma::NamedTensorMetaInterface> named_tensor_meta,
+        intrusive_ptr<quarisma::BackendMeta>                backend_meta,
         std::optional<std::string>                        custom_data_ptr_error_msg = std::nullopt,
         std::optional<std::string> custom_storage_access_error_msg                  = std::nullopt)
         : symbolic_shape_meta_(std::move(symbolic_shape_meta)),
@@ -400,7 +400,7 @@ struct XSIGMA_API ExtraMeta
 // can introduce race conditions when we are running the forward pass in
 // multi-thread scenarios, thus making the forward pass not thread-safe anymore,
 // which breaks the invariant.
-struct XSIGMA_API VariableVersion
+struct QUARISMA_API VariableVersion
 {
 private:
     struct VersionCounter : intrusive_ptr_target
@@ -408,7 +408,7 @@ private:
         VersionCounter(uint32_t version) : version_(version) {}
         std::atomic<uint32_t> version_;
     };
-    xsigma::intrusive_ptr<VersionCounter> version_counter_;
+    quarisma::intrusive_ptr<VersionCounter> version_counter_;
 
 public:
     // Note [Disabled VariableVersion]
@@ -437,7 +437,7 @@ public:
     // leaves it in a persistently undefined state. See
     // https://cplusplus.github.io/LWG/issue2334.
     VariableVersion(uint32_t version)
-        : version_counter_(xsigma::make_intrusive<VersionCounter>(version))
+        : version_counter_(quarisma::make_intrusive<VersionCounter>(version))
     {
     }
     VariableVersion(Disabled /*unused*/ = DISABLED) {}
@@ -468,7 +468,7 @@ public:
     void bump()
     {
         // TODO: Replace the link to the documentation once it's available.
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             version_counter_ || InferenceMode::is_enabled(),
             "Inplace update to inference tensor outside InferenceMode is not allowed."
             "You can make a clone to get a normal tensor before doing inplace update."
@@ -481,11 +481,11 @@ public:
 
     void set_version(int64_t i)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             version_counter_,
             "Tried to call torch.autograd._unsafe_set_version() on a tensor "
             "that does not have a version counter. Was it created in inference mode?");
-        XSIGMA_CHECK(i >= 0, "Cannot set a version_counter to a value below 0: ", i);
+        QUARISMA_CHECK(i >= 0, "Cannot set a version_counter to a value below 0: ", i);
         version_counter_->version_ = i;
     }
 
@@ -493,14 +493,14 @@ public:
     // accessed.
     uint32_t current_version() const
     {
-        XSIGMA_CHECK(version_counter_, "Inference tensors do not track version counter.");
+        QUARISMA_CHECK(version_counter_, "Inference tensors do not track version counter.");
         return version_counter_->version_;
     }
 };
 
 // Forward declaration of TensorImpl needed for forward declaration of
-// XSIGMA_TensorImpl_Size_Check_Dummy_Class
-struct XSIGMA_API TensorImpl;
+// QUARISMA_TensorImpl_Size_Check_Dummy_Class
+struct QUARISMA_API TensorImpl;
 
 /**
  * NOTE: Some TensorImpl methods are small and not overridden in the
@@ -511,7 +511,7 @@ struct XSIGMA_API TensorImpl;
  * XLA's XLATensorImpl currently overrides these methods, so we can't
  * enable this flag by default.)
  */
-#ifdef XSIGMA_DISABLE_TENSORIMPL_EXTENSIBILITY
+#ifdef QUARISMA_DISABLE_TENSORIMPL_EXTENSIBILITY
 #define TENSORIMPL_MAYBE_VIRTUAL
 #else
 #define TENSORIMPL_MAYBE_VIRTUAL virtual
@@ -588,7 +588,7 @@ struct XSIGMA_API TensorImpl;
  *    tensor is fully initialized in all fields.  Please do not write new code
  *    that depends on these uninitialized states.
  */
-struct XSIGMA_API TensorImpl : public xsigma::intrusive_ptr_target
+struct QUARISMA_API TensorImpl : public quarisma::intrusive_ptr_target
 {
     TensorImpl() = delete;
     ~TensorImpl() override;
@@ -621,7 +621,7 @@ struct XSIGMA_API TensorImpl : public xsigma::intrusive_ptr_target
     TensorImpl(
         DispatchKeySet /*key_set*/,
         const caffe2::TypeMeta               data_type,
-        std::optional<xsigma::device_option> device_opt);
+        std::optional<quarisma::device_option> device_opt);
 
     // Legacy constructors so I don't have to go update call sites.
     // TODO: When Variable is added, delete these constructors
@@ -632,7 +632,7 @@ struct XSIGMA_API TensorImpl : public xsigma::intrusive_ptr_target
     TensorImpl(
         DispatchKey                          dispatch_key,
         const caffe2::TypeMeta               data_type,
-        std::optional<xsigma::device_option> device_opt)
+        std::optional<quarisma::device_option> device_opt)
         : TensorImpl(DispatchKeySet(dispatch_key), data_type, device_opt)
     {
     }
@@ -646,7 +646,7 @@ private:
         Storage&& storage,
         DispatchKeySet /*key_set*/,
         const caffe2::TypeMeta data_type,
-        std::optional<xsigma::device_option> /*device_opt*/);
+        std::optional<quarisma::device_option> /*device_opt*/);
 
 public:
     TensorImpl(const TensorImpl&)            = delete;
@@ -692,7 +692,7 @@ public:
    */
     IntArrayRef sizes() const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
         {
             return sizes_custom();
         }
@@ -701,17 +701,17 @@ public:
 
     SymIntArrayRef sym_sizes() const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
         {
             return sym_sizes_custom();
         }
         // Sizes guaranteed to be non-negative, so unchecked cast is OK
-        return xsigma::fromIntArrayRefKnownNonNegative(sizes_and_strides_.sizes_arrayref());
+        return quarisma::fromIntArrayRefKnownNonNegative(sizes_and_strides_.sizes_arrayref());
     }
 
     IntArrayRef sizes_default() const
     {
-        if XSIGMA_UNLIKELY (has_symbolic_sizes_strides_)
+        if QUARISMA_UNLIKELY (has_symbolic_sizes_strides_)
         {
             throw_cannot_call_with_symbolic("sizes");
         }
@@ -727,7 +727,7 @@ public:
         else
         {
             // Sizes guaranteed to be non-negative, so unchecked cast is OK
-            return xsigma::fromIntArrayRefKnownNonNegative(sizes_default());
+            return quarisma::fromIntArrayRefKnownNonNegative(sizes_default());
         }
     }
 
@@ -735,8 +735,8 @@ public:
     array_ref<T> generic_sizes()
     {
         static_assert(
-            std::is_same_v<T, int64_t> || std::is_same_v<T, xsigma::SymInt>,
-            "Only supports int64_t and xsigma::SymInt.");
+            std::is_same_v<T, int64_t> || std::is_same_v<T, quarisma::SymInt>,
+            "Only supports int64_t and quarisma::SymInt.");
 
         if constexpr (std::is_same_v<T, int64_t>)
         {
@@ -752,8 +752,8 @@ public:
     array_ref<T> generic_strides()
     {
         static_assert(
-            std::is_same_v<T, int64_t> || std::is_same_v<T, xsigma::SymInt>,
-            "Only supports int64_t and xsigma::SymInt.");
+            std::is_same_v<T, int64_t> || std::is_same_v<T, quarisma::SymInt>,
+            "Only supports int64_t and quarisma::SymInt.");
 
         if constexpr (std::is_same_v<T, int64_t>)
         {
@@ -769,8 +769,8 @@ public:
     T generic_storage_offset()
     {
         static_assert(
-            std::is_same_v<T, int64_t> || std::is_same_v<T, xsigma::SymInt>,
-            "Only supports int64_t and xsigma::SymInt.");
+            std::is_same_v<T, int64_t> || std::is_same_v<T, quarisma::SymInt>,
+            "Only supports int64_t and quarisma::SymInt.");
 
         if constexpr (std::is_same_v<T, int64_t>)
         {
@@ -792,32 +792,32 @@ public:
    */
     int64_t numel() const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
         {
             return numel_custom();
         }
         return numel_;
     }
 
-    xsigma::SymInt sym_numel() const
+    quarisma::SymInt sym_numel() const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
         {
             return sym_numel_custom();
         }
-        return xsigma::SymInt(SymInt::UNCHECKED, numel_);
+        return quarisma::SymInt(SymInt::UNCHECKED, numel_);
     }
 
     int64_t numel_default() const
     {
-        if XSIGMA_UNLIKELY (has_symbolic_sizes_strides_)
+        if QUARISMA_UNLIKELY (has_symbolic_sizes_strides_)
         {
             throw_cannot_call_with_symbolic("numel");
         }
         return numel_;
     }
 
-    xsigma::SymInt sym_numel_default() const
+    quarisma::SymInt sym_numel_default() const
     {
         if (has_symbolic_sizes_strides_)
         {
@@ -825,7 +825,7 @@ public:
         }
         else
         {
-            return xsigma::SymInt(SymInt::UNCHECKED, numel_);
+            return quarisma::SymInt(SymInt::UNCHECKED, numel_);
         }
     }
 
@@ -835,7 +835,7 @@ public:
    */
     int64_t dim() const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
         {
             return dim_custom();
         }
@@ -864,32 +864,32 @@ public:
     int64_t storage_offset() const
     {
         // TODO: maybe this should be toggled by strides
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
         {
             return storage_offset_custom();
         }
         return storage_offset_;
     }
 
-    xsigma::SymInt sym_storage_offset() const
+    quarisma::SymInt sym_storage_offset() const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
         {
             return sym_storage_offset_custom();
         }
-        return xsigma::SymInt(SymInt::UNCHECKED, storage_offset_);
+        return quarisma::SymInt(SymInt::UNCHECKED, storage_offset_);
     }
 
     int64_t storage_offset_default() const
     {
-        if XSIGMA_UNLIKELY (has_symbolic_sizes_strides_)
+        if QUARISMA_UNLIKELY (has_symbolic_sizes_strides_)
         {
             throw_cannot_call_with_symbolic("storage_offset");
         }
         return storage_offset_;
     }
 
-    xsigma::SymInt sym_storage_offset_default() const
+    quarisma::SymInt sym_storage_offset_default() const
     {
         if (has_symbolic_sizes_strides_)
         {
@@ -897,7 +897,7 @@ public:
         }
         else
         {
-            return xsigma::SymInt(SymInt::UNCHECKED, storage_offset_);
+            return quarisma::SymInt(SymInt::UNCHECKED, storage_offset_);
         }
     }
 
@@ -907,32 +907,32 @@ public:
    */
     IntArrayRef strides() const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
         {
             return strides_custom();
         }
         return sizes_and_strides_.strides_arrayref();
     }
 
-    xsigma::SymIntArrayRef sym_strides() const
+    quarisma::SymIntArrayRef sym_strides() const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
         {
             return sym_strides_custom();
         }
-        return xsigma::fromIntArrayRefKnownNonNegative(strides_default());
+        return quarisma::fromIntArrayRefKnownNonNegative(strides_default());
     }
 
     IntArrayRef strides_default() const
     {
-        if XSIGMA_UNLIKELY (has_symbolic_sizes_strides_)
+        if QUARISMA_UNLIKELY (has_symbolic_sizes_strides_)
         {
             throw_cannot_call_with_symbolic("strides");
         }
         return sizes_and_strides_.strides_arrayref();
     }
 
-    xsigma::SymIntArrayRef sym_strides_default() const
+    quarisma::SymIntArrayRef sym_strides_default() const
     {
         if (has_symbolic_sizes_strides_)
         {
@@ -940,14 +940,14 @@ public:
         }
         else
         {
-            return xsigma::fromIntArrayRefKnownNonNegative(strides_default());
+            return quarisma::fromIntArrayRefKnownNonNegative(strides_default());
         }
     }
 
-    xsigma::SymBool sym_is_contiguous(
+    quarisma::SymBool sym_is_contiguous(
         at::MemoryFormat memory_format = at::MemoryFormat::Contiguous) const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
         {
             return sym_is_contiguous_custom(memory_format);
         }
@@ -988,9 +988,9 @@ public:
         return is_contiguous_default_impl<bool>(memory_format);
     }
 
-    xsigma::SymBool sym_is_contiguous_default(at::MemoryFormat memory_format) const
+    quarisma::SymBool sym_is_contiguous_default(at::MemoryFormat memory_format) const
     {
-        return is_contiguous_default_impl<xsigma::SymBool>(memory_format);
+        return is_contiguous_default_impl<quarisma::SymBool>(memory_format);
     }
 
     /**
@@ -1002,7 +1002,7 @@ public:
    */
     bool is_contiguous(at::MemoryFormat memory_format = at::MemoryFormat::Contiguous) const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
         {
             return is_contiguous_custom(memory_format);
         }
@@ -1076,7 +1076,7 @@ public:
    */
     int64_t size(int64_t d) const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
         {
             return size_custom(d);
         }
@@ -1084,9 +1084,9 @@ public:
         return sizes_and_strides_.size_at_unchecked(d);
     }
 
-    xsigma::SymInt sym_size(int64_t d) const
+    quarisma::SymInt sym_size(int64_t d) const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomSizes))
         {
             return sym_size_custom(d);
         }
@@ -1105,7 +1105,7 @@ public:
     int64_t stride(int64_t d) const
     {
         d = maybe_wrap_dim(d, dim(), false);
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
         {
             // TODO: provide stride_custom, symmetrically with size_custom.
             // There is presently no user for it; only NestedTensor is using
@@ -1149,7 +1149,7 @@ protected:
         auto r = python_custom_sizes_strides_ >= static_cast<uint8_t>(policy);
         if (r)
         {
-            XSIGMA_CHECK_DEBUG(is_python_dispatch())
+            QUARISMA_CHECK_DEBUG(is_python_dispatch())
         }
         return r;
     }
@@ -1165,14 +1165,14 @@ protected:
 
     virtual bool is_strides_like_custom(at::MemoryFormat memory_format) const;
 
-    virtual xsigma::SymBool sym_is_non_overlapping_and_dense_custom() const;
+    virtual quarisma::SymBool sym_is_non_overlapping_and_dense_custom() const;
 
     bool is_non_overlapping_and_dense_custom() const
     {
         return sym_is_non_overlapping_and_dense_custom().guard_bool(__FILE__, __LINE__);
     }
 
-    virtual xsigma::SymBool sym_is_contiguous_custom(at::MemoryFormat memory_format) const;
+    virtual quarisma::SymBool sym_is_contiguous_custom(at::MemoryFormat memory_format) const;
 
     bool is_contiguous_custom(at::MemoryFormat memory_format) const
     {
@@ -1191,7 +1191,7 @@ protected:
         return sizes_custom()[d];  // unchecked (maybe_wrap_dim enforces bounds)
     }
 
-    virtual xsigma::SymInt sym_size_custom(int64_t d) const
+    virtual quarisma::SymInt sym_size_custom(int64_t d) const
     {
         // TODO: We could add support to Python dispatch here.
         // TODO: We could call into aten::size.int instead of
@@ -1208,10 +1208,10 @@ protected:
     virtual device_option device_custom() const;
     virtual Layout        layout_custom() const;
 
-    virtual xsigma::SymIntArrayRef sym_sizes_custom() const;
-    virtual xsigma::SymIntArrayRef sym_strides_custom() const;
-    virtual xsigma::SymInt         sym_numel_custom() const;
-    virtual xsigma::SymInt         sym_storage_offset_custom() const;
+    virtual quarisma::SymIntArrayRef sym_sizes_custom() const;
+    virtual quarisma::SymIntArrayRef sym_strides_custom() const;
+    virtual quarisma::SymInt         sym_numel_custom() const;
+    virtual quarisma::SymInt         sym_storage_offset_custom() const;
 
 public:
 /**
@@ -1230,7 +1230,7 @@ public:
 // This used to throw for most subclasses, but OpaqueTensorImpl
 // wanted it to successfully return false, so we went ahead and made
 // it a non-error.
-#ifdef XSIGMA_DISABLE_TENSORIMPL_EXTENSIBILITY
+#ifdef QUARISMA_DISABLE_TENSORIMPL_EXTENSIBILITY
     {
         return storage_;
     }
@@ -1248,7 +1248,7 @@ public:
    */
     TENSORIMPL_MAYBE_VIRTUAL const Storage& storage() const
     {
-        if XSIGMA_UNLIKELY (storage_access_should_throw_)
+        if QUARISMA_UNLIKELY (storage_access_should_throw_)
         {
             throw_storage_access_error();
         }
@@ -1267,7 +1267,7 @@ public:
 protected:
     virtual Layout layout_impl() const
     {
-        XSIGMA_CHECK(false, "layout_impl is only implemented for TensorImpl subclasses.");
+        QUARISMA_CHECK(false, "layout_impl is only implemented for TensorImpl subclasses.");
     }
 
 public:
@@ -1276,14 +1276,14 @@ public:
     {
         // NB: This method is not virtual and avoid dispatches for performance
         // reasons.
-        return key_set_.has_all(xsigma::sparse_ks);
+        return key_set_.has_all(quarisma::sparse_ks);
     }
 
     // Whether a tensor is sparse CSR or not.
     bool is_sparse_csr() const { return layout() == kSparseCsr; }
 
     // Whether a tensor is sparse CSR/CSC/BSR/BSC or not.
-    bool is_sparse_compressed() const { return key_set_.has_all(xsigma::sparse_csr_ks); }
+    bool is_sparse_compressed() const { return key_set_.has_all(quarisma::sparse_csr_ks); }
 
     bool is_quantized() const
     {
@@ -1297,7 +1297,7 @@ public:
     {
         // NB: This method is not virtual and avoid dispatches for performance
         // reasons.
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_meta();
         }
@@ -1308,7 +1308,7 @@ public:
     {
         // NB: This method is not virtual and avoid dispatches for performance
         // reasons.
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_cpu();
         }
@@ -1322,7 +1322,7 @@ public:
     {
         // NB: This method is not virtual and avoid dispatches for performance
         // reasons.
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_cuda();
         }
@@ -1333,7 +1333,7 @@ public:
     {
         // NB: This method is not virtual and avoid dispatches for performance
         // reasons.
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_xpu();
         }
@@ -1342,7 +1342,7 @@ public:
 
     bool is_ipu() const
     {
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_ipu();
         }
@@ -1351,7 +1351,7 @@ public:
 
     bool is_xla() const
     {
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_xla();
         }
@@ -1360,7 +1360,7 @@ public:
 
     bool is_mtia() const
     {
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_mtia();
         }
@@ -1369,7 +1369,7 @@ public:
 
     bool is_hpu() const
     {
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_hpu();
         }
@@ -1378,7 +1378,7 @@ public:
 
     bool is_lazy() const
     {
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_lazy();
         }
@@ -1389,7 +1389,7 @@ public:
     {
         // NB: This method is not virtual and avoid dispatches for performance
         // reasons.
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_hip();
         }
@@ -1400,7 +1400,7 @@ public:
     {
         // NB: This method is not virtual and avoid dispatches for performance
         // reasons.
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_ve();
         }
@@ -1411,18 +1411,18 @@ public:
     {
         // NB: This method is not virtual and avoid dispatches for performance
         // reasons.
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_privateuseone();
         }
         return device_opt_.has_value() && device_opt_->type() == kPrivateUse1;
     }
 
-    bool is_mkldnn() const { return key_set_.has_all(xsigma::mkldnn_ks); }
+    bool is_mkldnn() const { return key_set_.has_all(quarisma::mkldnn_ks); }
 
     bool is_vulkan() const
     {
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_vulkan();
         }
@@ -1431,7 +1431,7 @@ public:
 
     bool is_metal() const
     {
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_metal();
         }
@@ -1440,7 +1440,7 @@ public:
 
     bool is_mps() const
     {
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_mps();
         }
@@ -1449,7 +1449,7 @@ public:
 
     bool is_maia() const
     {
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().is_maia();
         }
@@ -1462,7 +1462,7 @@ public:
     // keys
     //       in TensorImpl constructor.
     // DON'T USE THIS API!! It's only created for testing purpose in
-    // file aten/src/XSigma/core/boxing/impl/test_helpers.h
+    // file aten/src/Quarisma/core/boxing/impl/test_helpers.h
     void remove_autograd_key() { key_set_ = key_set_ - autograd_dispatch_keyset; }
 
     // Inference tensor doesn't have autograd or ADInplaceOrView key.
@@ -1470,8 +1470,8 @@ public:
     //   Inference tensor has version_counter_.enabled() == false
     bool is_inference()
     {
-        bool no_ADInplaceOrView = !key_set_.has_any(xsigma::inplace_or_view_ks);
-        bool no_Autograd        = !key_set_.has_any(xsigma::autograd_dispatch_keyset);
+        bool no_ADInplaceOrView = !key_set_.has_any(quarisma::inplace_or_view_ks);
+        bool no_Autograd        = !key_set_.has_any(quarisma::autograd_dispatch_keyset);
         TORCH_INTERNAL_ASSERT_DEBUG_ONLY(
             no_ADInplaceOrView == no_Autograd,
             "ADInplaceOrView and Autograd keys must be on/off at the same time.");
@@ -1480,7 +1480,7 @@ public:
 
     DeviceIndex get_device() const
     {
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom().index();
         }
@@ -1489,7 +1489,7 @@ public:
 
     device_option device() const
     {
-        if XSIGMA_UNLIKELY (device_policy_)
+        if QUARISMA_UNLIKELY (device_policy_)
         {
             return device_custom();
         }
@@ -1497,9 +1497,9 @@ public:
     }
 
 protected:
-    xsigma::device_option device_default() const
+    quarisma::device_option device_default() const
     {
-        XSIGMA_CHECK(device_opt_.has_value(), "tensor does not have a device");
+        QUARISMA_CHECK(device_opt_.has_value(), "tensor does not have a device");
         // See NOTE [std::optional operator usage in CUDA]
         return *device_opt_;
     }
@@ -1507,7 +1507,7 @@ protected:
 public:
     Layout layout() const
     {
-        if XSIGMA_UNLIKELY (layout_policy_)
+        if QUARISMA_UNLIKELY (layout_policy_)
         {
             return layout_custom();
         }
@@ -1518,7 +1518,7 @@ public:
         // This keyset must also be kept in sync with the logic in
         // is_sparse() / is_sparse_csr() / is_mkldnn()
         constexpr auto sparse_and_sparsecsr_and_mkldnn_ks =
-            xsigma::sparse_ks | xsigma::sparse_csr_ks | xsigma::mkldnn_ks;
+            quarisma::sparse_ks | quarisma::sparse_csr_ks | quarisma::mkldnn_ks;
         if (!key_set_.has_any(sparse_and_sparsecsr_and_mkldnn_ks))
         {
             return kStrided;
@@ -1543,7 +1543,7 @@ public:
         }
         else
         {
-            XSIGMA_CHECK_DEBUG(is_mkldnn(), "There is an error in the layout calculation logic.");
+            QUARISMA_CHECK_DEBUG(is_mkldnn(), "There is an error in the layout calculation logic.");
             return kMkldnn;
         }
     }
@@ -1577,7 +1577,7 @@ public:
    */
     void set_wrapped_number(bool value)
     {
-        XSIGMA_CHECK_DEBUG(dim() == 0);
+        QUARISMA_CHECK_DEBUG(dim() == 0);
         is_wrapped_number_ = value;
     }
 
@@ -1652,7 +1652,7 @@ public:
         if (value)
         {
             key_set_ = key_set_.add(DispatchKey::Conjugate);
-            XSIGMA_CHECK_DEBUG(isComplexType(typeMetaToScalarType(dtype())));
+            QUARISMA_CHECK_DEBUG(isComplexType(typeMetaToScalarType(dtype())));
         }
         else
         {
@@ -1665,7 +1665,7 @@ public:
    * Update the backend component related keys to the backend component
    * corresponding to this device.
    */
-    void _change_backend_component_keys(xsigma::device_option device);
+    void _change_backend_component_keys(quarisma::device_option device);
 
     /**
    * Whether or not the tensor is a zerotensor
@@ -1683,7 +1683,7 @@ public:
     {
         if (value)
         {
-            XSIGMA_CHECK_DEBUG(
+            QUARISMA_CHECK_DEBUG(
                 false,
                 "Please call `torch._efficientzerotensor` if you want to create a tensor with no "
                 "storage.");
@@ -1808,7 +1808,7 @@ private:
     template <typename T, typename Func>
     T* data_dtype_initialized_impl(const Func& get_data) const
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             data_type_.Match<std::remove_const_t<T> >(),
             "Tensor type mismatch, caller expects elements to be ",
             caffe2::TypeMeta::TypeName<std::remove_const_t<T> >(),
@@ -1848,11 +1848,11 @@ private:
     template <typename T, typename Func>
     __ubsan_ignore_pointer_overflow__ T* data_ptr_impl_impl(const Func& get_data) const
     {
-        if XSIGMA_UNLIKELY (!has_storage())
+        if QUARISMA_UNLIKELY (!has_storage())
         {
             throw_data_ptr_access_error();
         }
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             storage_initialized(),
             "The tensor has a non-zero number of elements, but its data is not allocated yet.\n"
             "If you're using torch.compile/export/fx, it is likely that we are erroneously "
@@ -1908,11 +1908,11 @@ private:
     template <typename Void, typename Func>
     Void* data_impl(const Func& get_data) const
     {
-        if XSIGMA_UNLIKELY (!has_storage())
+        if QUARISMA_UNLIKELY (!has_storage())
         {
             throw_data_ptr_access_error();
         }
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             dtype_initialized(),
             "Cannot access data pointer of Tensor that doesn't have initialized dtype "
             "(e.g., caffe2::Tensor x(CPU), prior to calling mutable_data<T>() on x)");
@@ -1940,19 +1940,19 @@ public:
    */
     size_t itemsize() const
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             dtype_initialized(),
             "Cannot report itemsize of Tensor that doesn't have initialized dtype "
             "(e.g., caffe2::Tensor x(CPU), prior to calling mutable_data<T>() on x)");
         return data_type_.itemsize();
     }
 
-    void set_backend_meta(intrusive_ptr<xsigma::BackendMeta> backend_meta)
+    void set_backend_meta(intrusive_ptr<quarisma::BackendMeta> backend_meta)
     {
         get_extra_meta().backend_meta_ = std::move(backend_meta);
     }
 
-    xsigma::BackendMeta* get_backend_meta()
+    quarisma::BackendMeta* get_backend_meta()
     {
         if (!extra_meta_)
         {
@@ -1961,7 +1961,7 @@ public:
         return extra_meta_->backend_meta_.get();
     }
 
-    intrusive_ptr<xsigma::BackendMeta> get_backend_meta_intrusive_ptr() const
+    intrusive_ptr<quarisma::BackendMeta> get_backend_meta_intrusive_ptr() const
     {
         if (!extra_meta_)
         {
@@ -1998,15 +1998,15 @@ private:
         return *extra_meta_;
     }
 
-    xsigma::SymbolicShapeMeta& symbolic_shape_meta()
+    quarisma::SymbolicShapeMeta& symbolic_shape_meta()
     {
-        XSIGMA_CHECK_DEBUG(extra_meta_ && extra_meta_->symbolic_shape_meta_);
+        QUARISMA_CHECK_DEBUG(extra_meta_ && extra_meta_->symbolic_shape_meta_);
         return *extra_meta_->symbolic_shape_meta_;
     }
 
-    const xsigma::SymbolicShapeMeta& symbolic_shape_meta() const
+    const quarisma::SymbolicShapeMeta& symbolic_shape_meta() const
     {
-        XSIGMA_CHECK_DEBUG(extra_meta_ && extra_meta_->symbolic_shape_meta_);
+        QUARISMA_CHECK_DEBUG(extra_meta_ && extra_meta_->symbolic_shape_meta_);
         return *extra_meta_->symbolic_shape_meta_;
     }
 
@@ -2019,12 +2019,12 @@ public:
     // if we are going to use sym sizes, we should be setting sym strides at the
     // same time, otherwise it's very easy to misuse this API
     void set_sizes_and_strides(
-        xsigma::SymIntArrayRef        sizes,
-        xsigma::SymIntArrayRef        strides,
-        std::optional<xsigma::SymInt> storage_offset = std::nullopt);
+        quarisma::SymIntArrayRef        sizes,
+        quarisma::SymIntArrayRef        strides,
+        std::optional<quarisma::SymInt> storage_offset = std::nullopt);
     // This is renamed to avoid breaking overload BC
-    void generic_set_sizes_contiguous(xsigma::SymIntArrayRef sizes);
-    void generic_set_sizes_contiguous(xsigma::IntArrayRef sizes) { set_sizes_contiguous(sizes); }
+    void generic_set_sizes_contiguous(quarisma::SymIntArrayRef sizes);
+    void generic_set_sizes_contiguous(quarisma::IntArrayRef sizes) { set_sizes_contiguous(sizes); }
 
     /**
    * Change the size at some dimension.  This DOES NOT update strides;
@@ -2036,11 +2036,11 @@ public:
    */
     virtual void set_size(int64_t dim, int64_t new_size)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             allow_tensor_metadata_change(),
             "set_size ",
             err_msg_tensor_metadata_change_not_allowed);
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !matches_policy(SizesStridesPolicy::CustomSizes),
             "set_size() called on tensor with dynamic shapes or customized size behavior")
         sizes_and_strides_.size_at(dim) = new_size;
@@ -2056,11 +2056,11 @@ public:
    */
     virtual void set_stride(int64_t dim, int64_t new_stride)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             allow_tensor_metadata_change(),
             "set_stride ",
             err_msg_tensor_metadata_change_not_allowed);
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !has_symbolic_sizes_strides_, "set_stride() called on tensor with symbolic shape")
         sizes_and_strides_.stride_at_unchecked(dim) = new_stride;
         refresh_contiguous();
@@ -2075,12 +2075,12 @@ public:
    */
     virtual void set_storage_offset(int64_t storage_offset)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             allow_tensor_metadata_change(),
             "set_storage_offset ",
             err_msg_tensor_metadata_change_not_allowed);
         // TODO: this should probably consult policy
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !has_symbolic_sizes_strides_,
             "set_storage_offset() called on tensor with symbolic shape")
         storage_offset_ = storage_offset;
@@ -2095,11 +2095,11 @@ public:
    */
     void set_sizes_contiguous(IntArrayRef new_size)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             allow_tensor_metadata_change(),
             "set_sizes_contiguous ",
             err_msg_tensor_metadata_change_not_allowed);
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !matches_policy(SizesStridesPolicy::CustomStrides),
             "tried to directly modify sizes for customized tensor");
         sizes_and_strides_.set_sizes(new_size);
@@ -2108,7 +2108,7 @@ public:
         empty_tensor_restride(MemoryFormat::Contiguous);  // calls refresh_contiguous()
     }
 
-    XSIGMA_FORCE_INLINE const impl::SizesAndStrides& sizes_and_strides()
+    QUARISMA_FORCE_INLINE const impl::SizesAndStrides& sizes_and_strides()
     {
         return sizes_and_strides_;
     }
@@ -2125,14 +2125,14 @@ public:
         IntArrayRef            new_stride,
         std::optional<int64_t> storage_offset = std::nullopt)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             allow_tensor_metadata_change(),
             "set_sizes_and_strides ",
             err_msg_tensor_metadata_change_not_allowed);
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !has_symbolic_sizes_strides_,
             "set_sizes_and_strides() called on tensor with symbolic shape")
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             new_size.size() == new_stride.size(),
             "dimensionality of sizes (",
             new_size.size(),
@@ -2163,7 +2163,7 @@ public:
                     else
                     {
                         // Keep stride monotonically increasing to match NumPy.
-                        overflowed |= xsigma::mul_overflows(
+                        overflowed |= quarisma::mul_overflows(
                             sizes_and_strides_.stride_at_unchecked(dim + 1),
                             std::max<int64_t>(sizes_and_strides_.size_at_unchecked(dim + 1), 1),
                             std::addressof(sizes_and_strides_.stride_at_unchecked(dim)));
@@ -2172,7 +2172,7 @@ public:
                 if (dim == 0)
                     break;
             }
-            XSIGMA_CHECK(!overflowed, "Stride calculation overflowed");
+            QUARISMA_CHECK(!overflowed, "Stride calculation overflowed");
         }
 
         refresh_numel();
@@ -2205,18 +2205,18 @@ public:
     /**
    * Set the pointer to autograd metadata.
    */
-    void set_autograd_meta(std::unique_ptr<xsigma::AutogradMetaInterface> autograd_meta);
+    void set_autograd_meta(std::unique_ptr<quarisma::AutogradMetaInterface> autograd_meta);
 
     /**
    * Return the pointer to autograd metadata.  May return nullptr if the
    * tensor does not track gradients.
    */
-    xsigma::AutogradMetaInterface* autograd_meta() const;
+    quarisma::AutogradMetaInterface* autograd_meta() const;
 
     /**
    * Set the pointer to named tensor metadata.
    */
-    void set_named_tensor_meta(std::unique_ptr<xsigma::NamedTensorMetaInterface> named_tensor_meta)
+    void set_named_tensor_meta(std::unique_ptr<quarisma::NamedTensorMetaInterface> named_tensor_meta)
     {
         TORCH_WARN_ONCE(
             "Named tensors and all their associated APIs are an experimental feature ",
@@ -2225,7 +2225,7 @@ public:
 #ifdef DEBUG
         if (named_tensor_meta)
         {
-            XSIGMA_CHECK_DEBUG(named_tensor_meta->slow_dim() == dim());
+            QUARISMA_CHECK_DEBUG(named_tensor_meta->slow_dim() == dim());
         }
 #endif
         if (named_tensor_meta)
@@ -2247,20 +2247,20 @@ public:
     {
         if (k)
         {
-            key_set_ = key_set_.add(xsigma::python_ks);
+            key_set_ = key_set_.add(quarisma::python_ks);
         }
         else
         {
-            key_set_ = key_set_ - xsigma::python_ks;
+            key_set_ = key_set_ - quarisma::python_ks;
         }
     }
 
-    bool is_python_dispatch() const { return key_set_.has_all(xsigma::python_ks); }
+    bool is_python_dispatch() const { return key_set_.has_all(quarisma::python_ks); }
 
     /**
    * Return the pointer to named tensor metadata.
    */
-    const xsigma::NamedTensorMetaInterface* named_tensor_meta() const
+    const quarisma::NamedTensorMetaInterface* named_tensor_meta() const
     {
         if (!extra_meta_)
         {
@@ -2269,7 +2269,7 @@ public:
         return extra_meta_->named_tensor_meta_.get();
     }
 
-    xsigma::NamedTensorMetaInterface* named_tensor_meta()
+    quarisma::NamedTensorMetaInterface* named_tensor_meta()
     {
         if (!extra_meta_)
         {
@@ -2371,7 +2371,7 @@ public:
 
 private:
     template <typename VariableVersion>
-    xsigma::intrusive_ptr<TensorImpl> shallow_copy_and_detach_core(
+    quarisma::intrusive_ptr<TensorImpl> shallow_copy_and_detach_core(
         VariableVersion&& version_counter, bool allow_tensor_metadata_change) const;
 
 public:
@@ -2381,8 +2381,8 @@ public:
    * For usage of `version_counter` and `allow_tensor_metadata_change`,
    * see NOTE [ TensorImpl Shallow-Copying ].
    */
-    virtual xsigma::intrusive_ptr<TensorImpl> shallow_copy_and_detach(
-        const xsigma::VariableVersion& version_counter, bool allow_tensor_metadata_change) const;
+    virtual quarisma::intrusive_ptr<TensorImpl> shallow_copy_and_detach(
+        const quarisma::VariableVersion& version_counter, bool allow_tensor_metadata_change) const;
 
     /**
    * Return a TensorImpl that is a shallow-copy of this TensorImpl.
@@ -2390,8 +2390,8 @@ public:
    * For usage of `version_counter` and `allow_tensor_metadata_change`,
    * see NOTE [ TensorImpl Shallow-Copying ].
    */
-    virtual xsigma::intrusive_ptr<TensorImpl> shallow_copy_and_detach(
-        xsigma::VariableVersion&& version_counter, bool allow_tensor_metadata_change) const;
+    virtual quarisma::intrusive_ptr<TensorImpl> shallow_copy_and_detach(
+        quarisma::VariableVersion&& version_counter, bool allow_tensor_metadata_change) const;
 
     /**
    * Shallow-copies data from another TensorImpl into this TensorImpl.
@@ -2399,7 +2399,7 @@ public:
    * For why this function doesn't check this TensorImpl's
    * `allow_tensor_metadata_change_`, see NOTE [ TensorImpl Shallow-Copying ].
    */
-    virtual void shallow_copy_from(const xsigma::intrusive_ptr<TensorImpl>& impl)
+    virtual void shallow_copy_from(const quarisma::intrusive_ptr<TensorImpl>& impl)
     {
         copy_tensor_metadata(
             /*src_impl=*/impl.get(),
@@ -2410,23 +2410,23 @@ public:
 
     // Inference tensor doesn't have version counter,
     // set_version_counter is no-op for them.
-    void set_version_counter(const xsigma::VariableVersion& version_counter)
+    void set_version_counter(const quarisma::VariableVersion& version_counter)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !(is_inference() && version_counter.enabled()),
             "Cannot set version_counter for inference tensor");
         version_counter_ = version_counter;
     }
 
-    void set_version_counter(xsigma::VariableVersion&& version_counter)
+    void set_version_counter(quarisma::VariableVersion&& version_counter)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !(is_inference() && version_counter.enabled()),
             "Cannot set version_counter for inference tensor");
         version_counter_ = std::move(version_counter);
     }
 
-    const xsigma::VariableVersion& version_counter() const noexcept { return version_counter_; }
+    const quarisma::VariableVersion& version_counter() const noexcept { return version_counter_; }
 
     void bump_version() { version_counter_.bump(); }
 
@@ -2438,7 +2438,7 @@ private:
     // See NOTE [std::optional operator usage in CUDA]
     // We probably don't want to expose this publicly until
     // the note is addressed.
-    std::optional<xsigma::device_option> device_opt() const { return device_opt_; }
+    std::optional<quarisma::device_option> device_opt() const { return device_opt_; }
 
 public:
     /**
@@ -2448,7 +2448,7 @@ public:
     {
         // TODO: A useful internal assert would be to show that device_opt_ is null
         // only if you are an undefined tensor
-        XSIGMA_CHECK(device_opt_.has_value(), "device_type cannot be run on undefined Tensor");
+        QUARISMA_CHECK(device_opt_.has_value(), "device_type cannot be run on undefined Tensor");
         // See NOTE [std::optional operator usage in CUDA]
         return (*device_opt_).type();
     }
@@ -2569,7 +2569,7 @@ public:
             if (numel_ == 0 || (meta.placementNew() == nullptr && !had_special_dtor &&
                                 (storage_.nbytes() >= (numel_ * data_type_.itemsize()))))
             {
-                XSIGMA_CHECK_DEBUG(storage_offset_ == 0);  // because we just reallocated
+                QUARISMA_CHECK_DEBUG(storage_offset_ == 0);  // because we just reallocated
                 return storage_.mutable_data();
             }
             Allocator* allocator = storage_.allocator();
@@ -2600,7 +2600,7 @@ public:
                 storage_.set_data_ptr_noswap(allocator->allocate(numel_ * data_type_.itemsize()));
             }
             storage_.set_nbytes(numel_ * data_type_.itemsize());
-            XSIGMA_CHECK_DEBUG(storage_offset_ == 0);  // because we just reallocated
+            QUARISMA_CHECK_DEBUG(storage_offset_ == 0);  // because we just reallocated
             device_opt_ = storage_.device();
             return storage_.mutable_data();
         }
@@ -2633,7 +2633,7 @@ public:
    */
     bool storage_initialized() const
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             has_storage(), "cannot call storage_initialized on tensor that does not have storage");
         return storage_.data() || numel_ == 0;
     }
@@ -2647,7 +2647,7 @@ public:
 
     void set_storage_keep_dtype(at::Storage storage)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             allow_tensor_metadata_change(),
             "set_storage ",
             err_msg_tensor_metadata_change_not_allowed);
@@ -2677,7 +2677,7 @@ public:
             return;
         }
 #ifdef DEBUG
-        XSIGMA_CHECK_DEBUG(
+        QUARISMA_CHECK_DEBUG(
             compute_numel() == numel_,
             "If you are seeing this error, that means empty_tensor_restride was "
             "called before setting correct numel");
@@ -2696,34 +2696,34 @@ public:
                 sizes_and_strides_.stride_at_unchecked(last_idx) = 1;
                 for (auto i = last_idx - 1; i >= 0; --i)
                 {
-                    overflowed |= xsigma::mul_overflows(
+                    overflowed |= quarisma::mul_overflows(
                         sizes_and_strides_.stride_at_unchecked(i + 1),
                         std::max<int64_t>(sizes_and_strides_.size_at_unchecked(i + 1), 1),
                         std::addressof(sizes_and_strides_.stride_at_unchecked(i)));
                 }
-                XSIGMA_CHECK(!overflowed, "Stride calculation overflowed");
+                QUARISMA_CHECK(!overflowed, "Stride calculation overflowed");
             }
             break;
         }
         case MemoryFormat::ChannelsLast:
         {
-            XSIGMA_CHECK(dim() == 4, "required rank 4 tensor to use channels_last format");
+            QUARISMA_CHECK(dim() == 4, "required rank 4 tensor to use channels_last format");
             set_sizes_and_strides(sizes(), get_channels_last_strides_2d(sizes()));
             break;
         }
         case MemoryFormat::ChannelsLast3d:
         {
-            XSIGMA_CHECK(dim() == 5, "required rank 5 tensor to use channels_last_3d format");
+            QUARISMA_CHECK(dim() == 5, "required rank 5 tensor to use channels_last_3d format");
             set_sizes_and_strides(sizes(), get_channels_last_strides_3d(sizes()));
             break;
         }
         case MemoryFormat::Preserve:
-            XSIGMA_CHECK(false, "unsupported memory format ", memory_format);
-            // Cleaning warning messages, no need to break as XSIGMA_CHECK(false)
+            QUARISMA_CHECK(false, "unsupported memory format ", memory_format);
+            // Cleaning warning messages, no need to break as QUARISMA_CHECK(false)
             // terminates flow.
             // break;
         case MemoryFormat::NumOptions:
-            XSIGMA_CHECK_DEBUG(false, "invalid memory format ", memory_format);
+            QUARISMA_CHECK_DEBUG(false, "invalid memory format ", memory_format);
         }
         // recompute contiguous flag, as currently NHWC/NCHW flags are not mutually
         // exclusive see #24090
@@ -2732,7 +2732,7 @@ public:
 
     bool is_strides_like(at::MemoryFormat memory_format) const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
         {
             return is_strides_like_custom(memory_format);
         }
@@ -2756,7 +2756,7 @@ public:
 
     bool is_non_overlapping_and_dense() const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
         {
             return is_non_overlapping_and_dense_custom();
         }
@@ -2765,7 +2765,7 @@ public:
 
     SymBool sym_is_non_overlapping_and_dense() const
     {
-        if XSIGMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
+        if QUARISMA_UNLIKELY (matches_policy(SizesStridesPolicy::CustomStrides))
         {
             return sym_is_non_overlapping_and_dense_custom();
         }
@@ -2791,12 +2791,12 @@ private:
     template <typename T, typename = typename std::enable_if_t<std::is_integral_v<T> > >
     bool SetDimsTemplate(array_ref<T> src)
     {
-        XSIGMA_CHECK(!has_symbolic_sizes_strides_, "SetDims() called on tensor with symbolic shape")
+        QUARISMA_CHECK(!has_symbolic_sizes_strides_, "SetDims() called on tensor with symbolic shape")
 
         auto old_numel = numel_;
         sizes_and_strides_.resize(src.size());
         int64_t new_numel = 1;
-        for (const auto i : xsigma::irange(src.size()))
+        for (const auto i : quarisma::irange(src.size()))
         {
             new_numel *= src[i];
             sizes_and_strides_.size_at_unchecked(i) = src[i];
@@ -2837,11 +2837,11 @@ private:
     int64_t compute_numel() const
     {
         TORCH_INTERNAL_ASSERT_DEBUG_ONLY(!has_symbolic_sizes_strides_);
-#if XSIGMA_HAS_BUILTIN_OVERFLOW() && !defined(XSIGMA_MOBILE)
+#if QUARISMA_HAS_BUILTIN_OVERFLOW() && !defined(QUARISMA_MOBILE)
         // Use overflow checks if supported by the compiler
         return safe_compute_numel();
 #else
-        return xsigma::multiply_integers(sizes_and_strides_.sizes_arrayref());
+        return quarisma::multiply_integers(sizes_and_strides_.sizes_arrayref());
 #endif
     }
 
@@ -2854,13 +2854,13 @@ private:
     {
         TORCH_INTERNAL_ASSERT_DEBUG_ONLY(!has_symbolic_sizes_strides_);
         uint64_t n         = 1;
-        bool     overflows = xsigma::safe_multiplies_u64(sizes_and_strides_.sizes_arrayref(), &n);
+        bool     overflows = quarisma::safe_multiplies_u64(sizes_and_strides_.sizes_arrayref(), &n);
         constexpr auto numel_max = std::min(
             static_cast<uint64_t>(std::numeric_limits<int64_t>::max()),
             static_cast<uint64_t>(std::numeric_limits<size_t>::max()));
 
         overflows |= (n > numel_max);
-        XSIGMA_CHECK(!overflows, "numel: integer multiplication overflow");
+        QUARISMA_CHECK(!overflows, "numel: integer multiplication overflow");
         return static_cast<int64_t>(n);
     }
 
@@ -3048,7 +3048,7 @@ protected:
     static void copy_tensor_metadata(
         const TensorImpl*              src_impl,
         TensorImpl*                    dest_impl,
-        const xsigma::VariableVersion& version_counter,
+        const quarisma::VariableVersion& version_counter,
         bool                           allow_tensor_metadata_change);
 
     /**
@@ -3061,7 +3061,7 @@ protected:
     static void copy_tensor_metadata(
         const TensorImpl*         src_impl,
         TensorImpl*               dest_impl,
-        xsigma::VariableVersion&& version_counter,
+        quarisma::VariableVersion&& version_counter,
         bool                      allow_tensor_metadata_change);
 
 private:
@@ -3161,16 +3161,16 @@ private:
     //    2. autograd_meta_ is default constructed (semantically, same as (1))
     //    3. autograd_meta_ has nontrivial information content
     //
-    std::unique_ptr<xsigma::AutogradMetaInterface> autograd_meta_ = nullptr;
+    std::unique_ptr<quarisma::AutogradMetaInterface> autograd_meta_ = nullptr;
 
 protected:
-    std::unique_ptr<xsigma::ExtraMeta> extra_meta_ = nullptr;
+    std::unique_ptr<quarisma::ExtraMeta> extra_meta_ = nullptr;
 
-    xsigma::VariableVersion version_counter_;
+    quarisma::VariableVersion version_counter_;
 
     impl::PyObjectSlot pyobj_slot_;
 
-    xsigma::impl::SizesAndStrides sizes_and_strides_;
+    quarisma::impl::SizesAndStrides sizes_and_strides_;
 
     int64_t storage_offset_ = 0;
     // If sizes and strides are empty, the numel is 1!!  However, most of the
@@ -3195,7 +3195,7 @@ protected:
     //
     // INVARIANT: device_opt_ is only nullopt for undefined tensors
     // (which do not have a device.)
-    std::optional<xsigma::device_option> device_opt_;
+    std::optional<quarisma::device_option> device_opt_;
 
     // default member initializers for bit-fields only available with -std=c++2a
     // or -std=gnu++2a
@@ -3321,7 +3321,7 @@ protected:
     DispatchKeySet key_set_;
 
 private:
-    // XSIGMA_TensorImpl_Size_Check_Dummy_Class needs to be friends with
+    // QUARISMA_TensorImpl_Size_Check_Dummy_Class needs to be friends with
     // TensorImpl so it can inspect the size of private fields
     template <
         size_t cplusplus,
@@ -3332,7 +3332,7 @@ private:
         size_t cuda_version,
         size_t cuda_version_major,
         size_t ptr_size>
-    friend class XSIGMA_TensorImpl_Size_Check_Dummy_Class;
+    friend class QUARISMA_TensorImpl_Size_Check_Dummy_Class;
 };
 
 // Note [TensorImpl size constraints]
@@ -3389,39 +3389,39 @@ private:
 // TensorImpl size hasn't changed unexpectedly. We undef
 // these later.
 #ifndef __NVCC__
-#define XSIGMA_NVCC 0
+#define QUARISMA_NVCC 0
 #else
-#define XSIGMA_NVCC __NVCC__
+#define QUARISMA_NVCC __NVCC__
 #endif
 
 #ifndef __CUDA_VER_MAJOR__
-#define XSIGMA_CUDA_VERSION_MAJOR 0
+#define QUARISMA_CUDA_VERSION_MAJOR 0
 #else
-#define XSIGMA_CUDA_VERSION_MAJOR __CUDA_VER_MAJOR__
+#define QUARISMA_CUDA_VERSION_MAJOR __CUDA_VER_MAJOR__
 #endif
 
 #ifndef CUDA_VERSION
-#define XSIGMA_CUDA_VERSION 0
+#define QUARISMA_CUDA_VERSION 0
 #else
-#define XSIGMA_CUDA_VERSION CUDA_VERSION
+#define QUARISMA_CUDA_VERSION CUDA_VERSION
 #endif
 
 #ifndef __clang_major__
-#define XSIGMA_CLANG_MAJOR_VERSION 0
+#define QUARISMA_CLANG_MAJOR_VERSION 0
 #else
-#define XSIGMA_CLANG_MAJOR_VERSION __clang_major__
+#define QUARISMA_CLANG_MAJOR_VERSION __clang_major__
 #endif
 
 #ifndef __GNUC__
-#define XSIGMA_GCC_VERSION 0
+#define QUARISMA_GCC_VERSION 0
 #else
-#define XSIGMA_GCC_VERSION __GNUC__
+#define QUARISMA_GCC_VERSION __GNUC__
 #endif
 
 #ifndef __GNUC_MINOR__
-#define XSIGMA_GCC_VERSION_MINOR 0
+#define QUARISMA_GCC_VERSION_MINOR 0
 #else
-#define XSIGMA_GCC_VERSION_MINOR __GNUC_MINOR__
+#define QUARISMA_GCC_VERSION_MINOR __GNUC_MINOR__
 #endif
 
 // We use a templatized class to both contain the logic of checking the sizes
@@ -3431,14 +3431,14 @@ private:
 // always printed by the compiler when the static_assert fails.
 template <
     size_t cplusplus          = __cplusplus,
-    size_t clang_ver_major    = XSIGMA_CLANG_MAJOR_VERSION,
-    size_t gcc_ver            = XSIGMA_GCC_VERSION,
-    size_t gcc_ver_minor      = XSIGMA_GCC_VERSION_MINOR,
-    size_t nvcc               = XSIGMA_NVCC,
-    size_t cuda_version       = XSIGMA_CUDA_VERSION,
-    size_t cuda_version_major = XSIGMA_CUDA_VERSION_MAJOR,
+    size_t clang_ver_major    = QUARISMA_CLANG_MAJOR_VERSION,
+    size_t gcc_ver            = QUARISMA_GCC_VERSION,
+    size_t gcc_ver_minor      = QUARISMA_GCC_VERSION_MINOR,
+    size_t nvcc               = QUARISMA_NVCC,
+    size_t cuda_version       = QUARISMA_CUDA_VERSION,
+    size_t cuda_version_major = QUARISMA_CUDA_VERSION_MAJOR,
     size_t ptr_size           = sizeof(void*)>
-class XSIGMA_TensorImpl_Size_Check_Dummy_Class : private TensorImpl
+class QUARISMA_TensorImpl_Size_Check_Dummy_Class : private TensorImpl
 {
     // Names of (non-bitfield) fields in TensorImpl; used to provide
     // compile-time info about fields whose size changes unexpectedly.
@@ -3551,15 +3551,15 @@ public:
 // own static_asserts, we should never see the error messages
 // below. We have to provide it though for c++ <17.
 static_assert(
-    XSIGMA_TensorImpl_Size_Check_Dummy_Class<>::check_sizes(), "You should not see this message.");
+    QUARISMA_TensorImpl_Size_Check_Dummy_Class<>::check_sizes(), "You should not see this message.");
 
 // Clean up after ourselves
-#undef XSIGMA_NVCC
-#undef XSIGMA_CUDA_VERSION_MAJOR
-#undef XSIGMA_CUDA_VERSION
-#undef XSIGMA_CLANG_MAJOR_VERSION
-#undef XSIGMA_GCC_VERSION
-#undef XSIGMA_GCC_VERSION_MINOR
+#undef QUARISMA_NVCC
+#undef QUARISMA_CUDA_VERSION_MAJOR
+#undef QUARISMA_CUDA_VERSION
+#undef QUARISMA_CLANG_MAJOR_VERSION
+#undef QUARISMA_GCC_VERSION
+#undef QUARISMA_GCC_VERSION_MINOR
 
-}  // namespace xsigma
+}  // namespace quarisma
 #endif

@@ -1,7 +1,7 @@
-#include <XSigma/Dispatch.h>
+#include <Quarisma/Dispatch.h>
 
 // This is a new implementation of the AT_DISPATCH macro family from
-// XSigma/Dispatch.h
+// Quarisma/Dispatch.h
 //
 // The intended usage is:
 //

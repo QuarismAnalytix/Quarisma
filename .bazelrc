@@ -1,5 +1,5 @@
 # =============================================================================
-# XSigma Bazel Configuration
+# Quarisma Bazel Configuration
 # =============================================================================
 # Build flags, compiler options, and platform-specific settings
 # Equivalent to CMake compiler flags and build type configurations
@@ -70,7 +70,7 @@ build:lto --copt=-flto=thin
 build:lto --linkopt=-flto=thin
 
 # =============================================================================
-# Vectorization Options (equivalent to XSIGMA_VECTORIZATION_TYPE)
+# Vectorization Options (equivalent to QUARISMA_VECTORIZATION_TYPE)
 # =============================================================================
 
 # SSE vectorization
@@ -173,47 +173,47 @@ build:msan --copt=-fno-omit-frame-pointer
 build:msan --linkopt=-fsanitize=memory
 
 # =============================================================================
-# Feature Flags (equivalent to XSIGMA_ENABLE_* options)
+# Feature Flags (equivalent to QUARISMA_ENABLE_* options)
 # =============================================================================
 
 # Enable CUDA support
-build:cuda --define=xsigma_enable_cuda=true
+build:cuda --define=quarisma_enable_cuda=true
 build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain
 
 # Enable HIP support
-build:hip --define=xsigma_enable_hip=true
+build:hip --define=quarisma_enable_hip=true
 
 # Enable OpenMP
 build:openmp --copt=-fopenmp
 build:openmp --linkopt=-fopenmp
 
 # Enable TBB
-build:tbb --define=xsigma_enable_tbb=true
+build:tbb --define=quarisma_enable_tbb=true
 
 # Enable MKL
-build:mkl --define=xsigma_enable_mkl=true
+build:mkl --define=quarisma_enable_mkl=true
 
 # Enable mimalloc
-build:mimalloc --define=xsigma_enable_mimalloc=true
+build:mimalloc --define=quarisma_enable_mimalloc=true
 
 # Enable magic_enum
-build:magic_enum --define=xsigma_enable_magic_enum=true
+build:magic_enum --define=quarisma_enable_magic_enum=true
 
 # Enable Kineto profiling
 # Note: Kineto config also enables native profiler for compatibility with tests
-build:kineto --define=xsigma_profiler_type=kineto --define=xsigma_enable_kineto=true
+build:kineto --define=quarisma_profiler_type=kineto --define=quarisma_enable_kineto=true
 
 # Enable native profiler
-build:native_profiler --define=xsigma_profiler_type=native
+build:native_profiler --define=quarisma_profiler_type=native
 
 # Enable ITT profiling
-build:itt --define=xsigma_profiler_type=itt --define=xsigma_enable_itt=true
+build:itt --define=quarisma_profiler_type=itt --define=quarisma_enable_itt=true
 
 # Enable LU pivoting
-build:lu_pivoting --define=xsigma_lu_pivoting=true
+build:lu_pivoting --define=quarisma_lu_pivoting=true
 
 # Enable Sobol 1111 dimensions
-build:sobol_1111 --define=xsigma_sobol_1111=true
+build:sobol_1111 --define=quarisma_sobol_1111=true
 
 # =============================================================================
 # Testing Configuration
@@ -222,10 +222,10 @@ test --test_output=errors
 test --test_summary=detailed
 
 # Enable Google Test
-build:gtest --define=xsigma_enable_gtest=true
+build:gtest --define=quarisma_enable_gtest=true
 
 # Enable Google Benchmark
-build:benchmark --define=xsigma_enable_benchmark=true
+build:benchmark --define=quarisma_enable_benchmark=true
 
 # =============================================================================
 # Code Coverage
@@ -237,16 +237,16 @@ coverage --experimental_use_llvm_covmap
 # =============================================================================
 # Logging Backend Selection
 # =============================================================================
-build:logging_glog --define=xsigma_logging_backend=glog
-build:logging_loguru --define=xsigma_logging_backend=loguru
-build:logging_native --define=xsigma_logging_backend=native
+build:logging_glog --define=quarisma_logging_backend=glog
+build:logging_loguru --define=quarisma_logging_backend=loguru
+build:logging_native --define=quarisma_logging_backend=native
 
 # =============================================================================
 # GPU Allocation Strategy
 # =============================================================================
-build:gpu_alloc_sync --define=xsigma_gpu_alloc=sync
-build:gpu_alloc_async --define=xsigma_gpu_alloc=async
-build:gpu_alloc_pool_async --define=xsigma_gpu_alloc=pool_async
+build:gpu_alloc_sync --define=quarisma_gpu_alloc=sync
+build:gpu_alloc_async --define=quarisma_gpu_alloc=async
+build:gpu_alloc_pool_async --define=quarisma_gpu_alloc=pool_async
 
 # =============================================================================
 # Windows-Specific Configuration

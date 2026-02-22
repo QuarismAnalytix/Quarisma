@@ -8,14 +8,14 @@
 3. **Initiator**: Build machine that submits jobs
 4. **XGE (Xge.exe)**: Command-line tool for job distribution
 
-### Integration Points with XSigma
+### Integration Points with Quarisma
 
 #### 1. CMake Integration
 ```cmake
 # Cmake/tools/incredibuild.cmake (NEW FILE)
-option(XSIGMA_ENABLE_INCREDIBUILD "Enable IncrediBuild distributed compilation" OFF)
+option(QUARISMA_ENABLE_INCREDIBUILD "Enable IncrediBuild distributed compilation" OFF)
 
-if(XSIGMA_ENABLE_INCREDIBUILD)
+if(QUARISMA_ENABLE_INCREDIBUILD)
   if(NOT WIN32)
     message(FATAL_ERROR "IncrediBuild is only supported on Windows")
   endif()
@@ -34,13 +34,13 @@ endif()
 #### 2. Python Build Script Integration
 ```python
 # Scripts/setup.py modifications
-class XsigmaFlags:
+class QuarismaFlags:
     def __initialize_flags(self):
         self.__key.append("incredibuild")
         self.__description.append("enable IncrediBuild distributed compilation (Windows only)")
         
     def __build_cmake_flag(self):
-        self.__name["incredibuild"] = "XSIGMA_ENABLE_INCREDIBUILD"
+        self.__name["incredibuild"] = "QUARISMA_ENABLE_INCREDIBUILD"
 ```
 
 #### 3. Conflict Detection
@@ -64,7 +64,7 @@ if self.__value.get("incredibuild") == self.ON:
 ## Configuration Parameters
 
 ### CMake Options
-- `XSIGMA_ENABLE_INCREDIBUILD`: Enable/disable IncrediBuild (default: OFF)
+- `QUARISMA_ENABLE_INCREDIBUILD`: Enable/disable IncrediBuild (default: OFF)
 - `INCREDIBUILD_COORDINATOR`: Coordinator machine address (auto-detect if local)
 - `INCREDIBUILD_PROFILE`: Build profile (default: "default")
 
@@ -85,7 +85,7 @@ python Scripts/setup.py config.build.incredibuild
 # Using CMake directly
 cmake -B build -S . \
   -G Ninja \
-  -DXSIGMA_ENABLE_INCREDIBUILD=ON \
+  -DQUARISMA_ENABLE_INCREDIBUILD=ON \
   -DCMAKE_BUILD_TYPE=Release
 ```
 
@@ -153,7 +153,7 @@ python Scripts/setup.py config.build.incredibuild
 
 4. **"Coverage data incorrect"**
    - Disable IncrediBuild caching for coverage builds
-   - Use: `-DXSIGMA_ENABLE_INCREDIBUILD=OFF` with coverage
+   - Use: `-DQUARISMA_ENABLE_INCREDIBUILD=OFF` with coverage
 
 ---
 

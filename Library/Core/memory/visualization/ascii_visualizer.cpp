@@ -14,7 +14,7 @@
 #include "memory/backend/allocator_tracking.h"
 #include "memory/unified_memory_stats.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 std::string ascii_visualizer::create_histogram(const std::vector<size_t>& allocation_sizes) const
@@ -457,4 +457,4 @@ std::string ascii_visualizer::create_layout_visualization(const memory_layout& l
     return vis.str();
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

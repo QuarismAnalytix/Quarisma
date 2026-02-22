@@ -1,5 +1,5 @@
-#include <XSigma/core/jit_type.h>
-#include <XSigma/native/xnnpack/OpContext.h>
+#include <Quarisma/core/jit_type.h>
+#include <Quarisma/native/xnnpack/OpContext.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/passes/constant_propagation.h>
 #include <torch/csrc/jit/passes/fold_conv_bn.h>
@@ -506,7 +506,7 @@ script::Module optimizeForMobile(
 {
     TORCH_INTERNAL_ASSERT(
         false,
-        "Mobile optimization only available with XNNPACK xsigma the moment. "
+        "Mobile optimization only available with XNNPACK quarisma the moment. "
         "XNNPACK is not enabled. Please build with USE_XNNPACK=1");
     return module;
 }

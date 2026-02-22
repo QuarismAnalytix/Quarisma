@@ -1,7 +1,7 @@
-#include <XSigma/NamedTensorUtils.h>
-#include <XSigma/NestedTensorImpl.h>
-#include <XSigma/WrapDimUtils.h>
-#include <XSigma/XSigma.h>
+#include <Quarisma/NamedTensorUtils.h>
+#include <Quarisma/NestedTensorImpl.h>
+#include <Quarisma/WrapDimUtils.h>
+#include <Quarisma/Quarisma.h>
 #include <c10/core/DispatchKey.h>
 #include <c10/core/DispatchKeySet.h>
 #include <c10/core/TensorImpl.h>

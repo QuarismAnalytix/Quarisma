@@ -6,12 +6,12 @@
 
 #include "common/macros.h"
 
-XSIGMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED("-Wsuggest-override")
+QUARISMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED("-Wsuggest-override")
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/ExecutionEngine/JITSymbol.h>
-XSIGMA_DIAGNOSTIC_POP()
+QUARISMA_DIAGNOSTIC_POP()
 
-XSIGMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED("-Wextra-semi")
+QUARISMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED("-Wextra-semi")
 #include <llvm/ExecutionEngine/Orc/CompileUtils.h>
 #include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
 #include <llvm/ExecutionEngine/Orc/IRCompileLayer.h>
@@ -36,10 +36,10 @@ XSIGMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED("-Wextra-semi")
 #endif
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
-XSIGMA_DIAGNOSTIC_POP()
+QUARISMA_DIAGNOSTIC_POP()
 
 #include <torch/csrc/jit/tensorexpr/external_functions_registry.h>
-#include <xsigma/util/Half.h>
+#include <quarisma/util/Half.h>
 
 #include <algorithm>
 #include <memory>

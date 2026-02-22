@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -8,19 +8,19 @@
  * Tests visitor pattern implementation for XPlane data structures
  */
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "profiler/native/exporters/xplane/xplane.h"
 #include "profiler/native/exporters/xplane/xplane_builder.h"
 #include "profiler/native/exporters/xplane/xplane_visitor.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // ============================================================================
 // x_stat_visitor Tests
 // ============================================================================
 
 // Test x_stat_visitor int64 value
-XSIGMATEST(XPlaneVisitor, x_stat_visitor_int_value)
+QUARISMATEST(XPlaneVisitor, x_stat_visitor_int_value)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -50,7 +50,7 @@ XSIGMATEST(XPlaneVisitor, x_stat_visitor_int_value)
 }
 
 // Test x_stat_visitor uint64 value
-XSIGMATEST(XPlaneVisitor, x_stat_visitor_uint_value)
+QUARISMATEST(XPlaneVisitor, x_stat_visitor_uint_value)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -80,7 +80,7 @@ XSIGMATEST(XPlaneVisitor, x_stat_visitor_uint_value)
 }
 
 // Test x_stat_visitor double value
-XSIGMATEST(XPlaneVisitor, x_stat_visitor_double_value)
+QUARISMATEST(XPlaneVisitor, x_stat_visitor_double_value)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -110,7 +110,7 @@ XSIGMATEST(XPlaneVisitor, x_stat_visitor_double_value)
 }
 
 // Test x_stat_visitor string value
-XSIGMATEST(XPlaneVisitor, x_stat_visitor_str_value)
+QUARISMATEST(XPlaneVisitor, x_stat_visitor_str_value)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -140,7 +140,7 @@ XSIGMATEST(XPlaneVisitor, x_stat_visitor_str_value)
 }
 
 // Test x_stat_visitor bool value
-XSIGMATEST(XPlaneVisitor, x_stat_visitor_bool_value)
+QUARISMATEST(XPlaneVisitor, x_stat_visitor_bool_value)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -166,7 +166,7 @@ XSIGMATEST(XPlaneVisitor, x_stat_visitor_bool_value)
 }
 
 // Test x_stat_visitor id and name
-XSIGMATEST(XPlaneVisitor, x_stat_visitor_id_and_name)
+QUARISMATEST(XPlaneVisitor, x_stat_visitor_id_and_name)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -200,7 +200,7 @@ XSIGMATEST(XPlaneVisitor, x_stat_visitor_id_and_name)
 // ============================================================================
 
 // Test xevent_visitor basic properties
-XSIGMATEST(XPlaneVisitor, xevent_visitor_basic_properties)
+QUARISMATEST(XPlaneVisitor, xevent_visitor_basic_properties)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -227,7 +227,7 @@ XSIGMATEST(XPlaneVisitor, xevent_visitor_basic_properties)
 }
 
 // Test xevent_visitor timestamp calculations
-XSIGMATEST(XPlaneVisitor, xevent_visitor_timestamps)
+QUARISMATEST(XPlaneVisitor, xevent_visitor_timestamps)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -255,7 +255,7 @@ XSIGMATEST(XPlaneVisitor, xevent_visitor_timestamps)
 }
 
 // Test xevent_visitor timespan
-XSIGMATEST(XPlaneVisitor, xevent_visitor_timespan)
+QUARISMATEST(XPlaneVisitor, xevent_visitor_timespan)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -283,7 +283,7 @@ XSIGMATEST(XPlaneVisitor, xevent_visitor_timespan)
 }
 
 // Test xevent_visitor aggregated events
-XSIGMATEST(XPlaneVisitor, xevent_visitor_aggregated_event)
+QUARISMATEST(XPlaneVisitor, xevent_visitor_aggregated_event)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -308,7 +308,7 @@ XSIGMATEST(XPlaneVisitor, xevent_visitor_aggregated_event)
 }
 
 // Test xevent_visitor comparison
-XSIGMATEST(XPlaneVisitor, xevent_visitor_comparison)
+QUARISMATEST(XPlaneVisitor, xevent_visitor_comparison)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -346,7 +346,7 @@ XSIGMATEST(XPlaneVisitor, xevent_visitor_comparison)
 // ============================================================================
 
 // Test xline_visitor basic properties
-XSIGMATEST(XPlaneVisitor, xline_visitor_basic_properties)
+QUARISMATEST(XPlaneVisitor, xline_visitor_basic_properties)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -367,7 +367,7 @@ XSIGMATEST(XPlaneVisitor, xline_visitor_basic_properties)
 }
 
 // Test xline_visitor display name
-XSIGMATEST(XPlaneVisitor, xline_visitor_display_name)
+QUARISMATEST(XPlaneVisitor, xline_visitor_display_name)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -389,7 +389,7 @@ XSIGMATEST(XPlaneVisitor, xline_visitor_display_name)
 }
 
 // Test xline_visitor event iteration
-XSIGMATEST(XPlaneVisitor, xline_visitor_event_iteration)
+QUARISMATEST(XPlaneVisitor, xline_visitor_event_iteration)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -423,7 +423,7 @@ XSIGMATEST(XPlaneVisitor, xline_visitor_event_iteration)
 // ============================================================================
 
 // Test xplane_visitor basic properties
-XSIGMATEST(XPlaneVisitor, xplane_visitor_basic_properties)
+QUARISMATEST(XPlaneVisitor, xplane_visitor_basic_properties)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -439,7 +439,7 @@ XSIGMATEST(XPlaneVisitor, xplane_visitor_basic_properties)
 }
 
 // Test xplane_visitor multiple lines
-XSIGMATEST(XPlaneVisitor, xplane_visitor_multiple_lines)
+QUARISMATEST(XPlaneVisitor, xplane_visitor_multiple_lines)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -465,7 +465,7 @@ XSIGMATEST(XPlaneVisitor, xplane_visitor_multiple_lines)
 }
 
 // Test xplane_visitor event metadata access
-XSIGMATEST(XPlaneVisitor, xplane_visitor_event_metadata)
+QUARISMATEST(XPlaneVisitor, xplane_visitor_event_metadata)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -485,7 +485,7 @@ XSIGMATEST(XPlaneVisitor, xplane_visitor_event_metadata)
 }
 
 // Test xplane_visitor stat metadata access
-XSIGMATEST(XPlaneVisitor, xplane_visitor_stat_metadata)
+QUARISMATEST(XPlaneVisitor, xplane_visitor_stat_metadata)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -511,7 +511,7 @@ XSIGMATEST(XPlaneVisitor, xplane_visitor_stat_metadata)
 // ============================================================================
 
 // Test complete workflow: build and read back
-XSIGMATEST(XPlaneVisitor, integration_build_and_read)
+QUARISMATEST(XPlaneVisitor, integration_build_and_read)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -577,7 +577,7 @@ XSIGMATEST(XPlaneVisitor, integration_build_and_read)
 // ============================================================================
 
 // Test xevent_visitor raw_event and plane methods
-XSIGMATEST(XPlaneVisitor, xevent_visitor_raw_event_and_plane)
+QUARISMATEST(XPlaneVisitor, xevent_visitor_raw_event_and_plane)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -604,7 +604,7 @@ XSIGMATEST(XPlaneVisitor, xevent_visitor_raw_event_and_plane)
 }
 
 // Test x_stat_visitor raw_stat method
-XSIGMATEST(XPlaneVisitor, x_stat_visitor_raw_stat)
+QUARISMATEST(XPlaneVisitor, x_stat_visitor_raw_stat)
 {
     xplane         plane;
     xplane_builder builder(&plane);
@@ -633,4 +633,4 @@ XSIGMATEST(XPlaneVisitor, x_stat_visitor_raw_stat)
                 });
         });
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

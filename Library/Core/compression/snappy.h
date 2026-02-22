@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -22,8 +22,8 @@
  * - Added conditional compilation support for optional compression
  * - Enhanced documentation and error handling
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -39,13 +39,13 @@
 #include <sys/uio.h>  // For iovec on Unix/Linux
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace compression
 {
 
 /**
- * @brief High-performance Snappy compression interface for XSigma.
+ * @brief High-performance Snappy compression interface for Quarisma.
  *
  * Provides a unified interface for Snappy compression operations with
  * conditional compilation support. When compression is disabled, all
@@ -91,7 +91,7 @@ namespace snappy
  * }
  * ```
  */
-XSIGMA_API bool compress(const char* input, size_t length, std::string* output);
+QUARISMA_API bool compress(const char* input, size_t length, std::string* output);
 
 /**
  * @brief Compress data from I/O vector using Snappy compression.
@@ -111,7 +111,7 @@ XSIGMA_API bool compress(const char* input, size_t length, std::string* output);
  *
  * **Platform Notes**: Handles Windows/Unix iovec differences automatically
  */
-XSIGMA_API bool compress_from_io_vec(
+QUARISMA_API bool compress_from_io_vec(
     const struct iovec* iov, size_t uncompressed_length, std::string* output);
 
 /**
@@ -139,7 +139,7 @@ XSIGMA_API bool compress_from_io_vec(
  * }
  * ```
  */
-XSIGMA_API bool get_uncompressed_length(const char* input, size_t length, size_t* result);
+QUARISMA_API bool get_uncompressed_length(const char* input, size_t length, size_t* result);
 
 /**
  * @brief Uncompress Snappy-compressed data.
@@ -168,7 +168,7 @@ XSIGMA_API bool get_uncompressed_length(const char* input, size_t length, size_t
  * }
  * ```
  */
-XSIGMA_API bool uncompress(const char* input, size_t length, char* output);
+QUARISMA_API bool uncompress(const char* input, size_t length, char* output);
 
 /**
  * @brief Uncompress Snappy-compressed data to I/O vector.
@@ -189,9 +189,9 @@ XSIGMA_API bool uncompress(const char* input, size_t length, char* output);
  *
  * **Platform Notes**: Handles Windows/Unix iovec differences automatically
  */
-XSIGMA_API bool uncompress_to_io_vec(
+QUARISMA_API bool uncompress_to_io_vec(
     const char* compressed, size_t compressed_length, const struct iovec* iov, size_t iov_cnt);
 
 }  // namespace snappy
 }  // namespace compression
-}  // namespace xsigma
+}  // namespace quarisma

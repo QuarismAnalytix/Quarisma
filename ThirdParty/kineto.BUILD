@@ -16,7 +16,7 @@ KINETO_COPTS = [
     # in C++20, causing compilation errors in kineto's usage of fmt
     "-DFMT_USE_CONSTEVAL=0",
 ] + select({
-    "@xsigma//bazel:enable_cuda": ["-DHAS_CUPTI"],
+    "@quarisma//bazel:enable_cuda": ["-DHAS_CUPTI"],
     "//conditions:default": ["-DLIBKINETO_NOCUPTI"],
 }) + select({
     "@platforms//os:windows": [
@@ -68,7 +68,7 @@ cc_library(
         ],
         allow_empty = True,
     ) + select({
-        "@xsigma//bazel:enable_cuda": [
+        "@quarisma//bazel:enable_cuda": [
             # Include CUPTI-specific files when CUDA is enabled
             # These files are part of get_libkineto_cupti_srcs() in libkineto_defs.bzl
             # Note: CuptiActivityApi.cpp, CuptiActivityProfiler.cpp, and Demangle.cpp
@@ -98,7 +98,7 @@ cc_library(
         ],
         allow_empty = True,
     ) + select({
-        "@xsigma//bazel:enable_cuda": [
+        "@quarisma//bazel:enable_cuda": [
             # CuptiActivity.cpp is included as a header because it's meant to be
             # #included by CuptiActivityProfiler.cpp (not compiled separately)
             "libkineto/src/CuptiActivity.cpp",
@@ -120,7 +120,7 @@ cc_library(
     deps = [
         "@fmt//:fmt",
     ] + select({
-        "@xsigma//bazel:enable_cuda": [
+        "@quarisma//bazel:enable_cuda": [
             "@local_config_cuda//:cupti",
             "@local_config_cuda//:cudart",
         ],

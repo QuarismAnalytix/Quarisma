@@ -1,4 +1,4 @@
-#include <XSigma/TensorOperators.h>
+#include <Quarisma/TensorOperators.h>
 #include <torch/csrc/jit/ir/subgraph_matcher.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/fold_conv_bn.h>
@@ -6,12 +6,12 @@
 #include <torch/csrc/jit/passes/quantization/helper.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/empty_like.h>
-#include <XSigma/ops/ones_like.h>
-#include <XSigma/ops/rsqrt.h>
-#include <XSigma/ops/zeros_like.h>
+#include <Quarisma/ops/empty_like.h>
+#include <Quarisma/ops/ones_like.h>
+#include <Quarisma/ops/rsqrt.h>
+#include <Quarisma/ops/zeros_like.h>
 #endif
 
 #include <stack>
@@ -20,19 +20,19 @@
 namespace torch::jit
 {
 
-std::tuple<xsigma::Tensor, xsigma::Tensor> computeUpdatedConvWeightAndBias(
+std::tuple<quarisma::Tensor, quarisma::Tensor> computeUpdatedConvWeightAndBias(
     const ConvBNParameters& p)
 {
-    xsigma::Tensor    bn_var_rsqrt = xsigma::rsqrt(p.bn_rv + p.bn_eps);
+    quarisma::Tensor    bn_var_rsqrt = quarisma::rsqrt(p.bn_rv + p.bn_eps);
     const int64_t     ndim         = p.conv_w.dim();
-    xsigma::DimVector sizes(ndim, 1);
-    sizes.xsigma(0) = -1;
+    quarisma::DimVector sizes(ndim, 1);
+    sizes.quarisma(0) = -1;
 
     auto conv_w_dtype = p.conv_w.dtype();
     auto conv_b_dtype = p.conv_b.dtype();
 
-    xsigma::Tensor new_w = p.conv_w * (p.bn_w * bn_var_rsqrt).reshape(sizes);
-    xsigma::Tensor new_b = (p.conv_b - p.bn_rm) * bn_var_rsqrt * p.bn_w + p.bn_b;
+    quarisma::Tensor new_w = p.conv_w * (p.bn_w * bn_var_rsqrt).reshape(sizes);
+    quarisma::Tensor new_b = (p.conv_b - p.bn_rm) * bn_var_rsqrt * p.bn_w + p.bn_b;
     return std::make_tuple(new_w.to(conv_w_dtype), new_b.to(conv_b_dtype));
 }
 
@@ -80,7 +80,7 @@ void replaceConvBiasWithGetAttr(Module& module)
                 // Insert that in the graph.
                 // And change _convolution to take the new value.
                 auto conv_node =
-                    match.values_map.xsigma(convolution_vmap.xsigma("conv_out"))->node();
+                    match.values_map.quarisma(convolution_vmap.quarisma("conv_out"))->node();
                 WithInsertPoint ins(conv_node);
                 Value*          bias_attr_val =
                     graph->insertGetAttr(graph->inputs()[0], "bias")->setType(TensorType::get());
@@ -110,7 +110,7 @@ void addBiasForConvIfNone(Module& module, const std::string& pattern_name)
         {
             auto optional_tensor_type = OptionalType::create(TensorType::get());
             t->addAttribute("bias", std::move(optional_tensor_type), true);
-            auto optional_tensor = std::optional<xsigma::Tensor>();
+            auto optional_tensor = std::optional<quarisma::Tensor>();
             module.setattr("bias", std::move(optional_tensor));
             replaceConvBiasWithGetAttr(module);
         }
@@ -141,7 +141,7 @@ public:
 private:
     bool tryExtractingConvBNParameters(Module& conv, Module& bn, ConvBNParameters& r);
 
-    std::unordered_map<ModulePtr, std::tuple<xsigma::Tensor, xsigma::Tensor>>
+    std::unordered_map<ModulePtr, std::tuple<quarisma::Tensor, quarisma::Tensor>>
         conv_module_and_params_;
 
     // A map from graph to a list of tuple of paths of matched conv and bn module
@@ -190,14 +190,14 @@ bool extractOptionalBNParams(const script::Module& bn, ConvBNParameters& r)
     }
     else
     {
-        auto optional_eps = toIValue(matches[0].values_map.xsigma(bn_vmap.xsigma("eps")));
+        auto optional_eps = toIValue(matches[0].values_map.quarisma(bn_vmap.quarisma("eps")));
         if (!optional_eps)
         {
             return false;
         }
         r.bn_eps = optional_eps.value().toDouble();
     }
-    r.bn_w = xsigma::ones_like(bn.attr("running_mean").toTensor());
+    r.bn_w = quarisma::ones_like(bn.attr("running_mean").toTensor());
     if (bn.hasattr("weight"))
     {
         if (bn.attr("weight").isTensor())
@@ -207,7 +207,7 @@ bool extractOptionalBNParams(const script::Module& bn, ConvBNParameters& r)
     }
     else
     {
-        auto optional_bn_weight = toIValue(matches[0].values_map.xsigma(bn_vmap.xsigma("weight")));
+        auto optional_bn_weight = toIValue(matches[0].values_map.quarisma(bn_vmap.quarisma("weight")));
         if (!optional_bn_weight)
         {
             return false;
@@ -217,7 +217,7 @@ bool extractOptionalBNParams(const script::Module& bn, ConvBNParameters& r)
             r.bn_w = optional_bn_weight.value().toTensor();
         }
     }
-    r.bn_b = xsigma::zeros_like(bn.attr("running_mean").toTensor());
+    r.bn_b = quarisma::zeros_like(bn.attr("running_mean").toTensor());
     if (bn.hasattr("bias"))
     {
         if (bn.attr("bias").isTensor())
@@ -227,7 +227,7 @@ bool extractOptionalBNParams(const script::Module& bn, ConvBNParameters& r)
     }
     else
     {
-        auto optional_bn_bias = toIValue(matches[0].values_map.xsigma(bn_vmap.xsigma("bias")));
+        auto optional_bn_bias = toIValue(matches[0].values_map.quarisma(bn_vmap.quarisma("bias")));
         if (!optional_bn_bias)
         {
             return false;
@@ -258,8 +258,8 @@ bool FoldConvBatchNormHelper::tryExtractingConvBNParameters(
     }
 
     r.conv_w      = conv.attr("weight").toTensor();
-    r.conv_b      = xsigma::zeros_like(r.bn_rm);
-    auto bias_opt = conv.attr("bias").toOptional<xsigma::Tensor>();
+    r.conv_b      = quarisma::zeros_like(r.bn_rm);
+    auto bias_opt = conv.attr("bias").toOptional<quarisma::Tensor>();
     if (bias_opt)
     {
         r.conv_b = *bias_opt;
@@ -272,9 +272,9 @@ void FoldConvBatchNormHelper::analyze(Module& module, const PatternInfo& pattern
 {
     const Graph& pattern_graph        = *pattern.pattern_graph;
     const auto&  vmap                 = pattern.vmap;
-    Value*       pattern_conv_out     = vmap.xsigma("conv_out");
-    Value*       pattern_bn_out       = vmap.xsigma("bn_out");
-    Value*       pattern_bn_submodule = vmap.xsigma("batchnorm");
+    Value*       pattern_conv_out     = vmap.quarisma("conv_out");
+    Value*       pattern_bn_out       = vmap.quarisma("bn_out");
+    Value*       pattern_bn_submodule = vmap.quarisma("batchnorm");
     Node*        pattern_conv         = pattern_conv_out->node();
     Node*        pattern_bn           = pattern_bn_out->node();
 
@@ -318,10 +318,10 @@ void FoldConvBatchNormHelper::analyze(Module& module, const PatternInfo& pattern
                     }
                     GRAPH_DEBUG("Checking next match...");
                     // Get the conv and bn submodule
-                    Node* matched_conv = match.nodes_map.xsigma(pattern_conv);
-                    Node* matched_bn   = match.nodes_map.xsigma(pattern_bn);
+                    Node* matched_conv = match.nodes_map.quarisma(pattern_conv);
+                    Node* matched_bn   = match.nodes_map.quarisma(pattern_bn);
                     Node* matched_bn_submodule =
-                        match.values_map.xsigma(pattern_bn_submodule)->node();
+                        match.values_map.quarisma(pattern_bn_submodule)->node();
                     Value* conv_instance    = matched_conv->input(0);
                     Value* bn_instance      = matched_bn->input(0);
                     Value* self             = g->inputs()[0];
@@ -358,13 +358,13 @@ void FoldConvBatchNormHelper::analyze(Module& module, const PatternInfo& pattern
                     GRAPH_UPDATE("Deleting ", *matched_bn_submodule);
 
                     auto slot = conv_submodule.type()->getAttributeSlot("bias");
-                    XSIGMA_CHECK(
+                    QUARISMA_CHECK(
                         conv_submodule.type()->is_parameter(slot),
                         "Expected conv module to have a bias parameter");
                 }  // matches
             }
 
-            for (const auto& conv_bn : conv_bn_paths_.xsigma(g))
+            for (const auto& conv_bn : conv_bn_paths_.quarisma(g))
             {
                 Module conv_submodule = findChildModule(current, std::get<0>(conv_bn));
                 Module bn_submodule   = findChildModule(current, std::get<1>(conv_bn));
@@ -392,7 +392,7 @@ void FoldConvBatchNormHelper::transform()
     // Perform planned rewritings
     for (auto v : values_to_rewrite_)
     {
-        v->replaceAllUsesWith(rewrite_map_.xsigma(v));
+        v->replaceAllUsesWith(rewrite_map_.quarisma(v));
     }
 
     // Perform planned deletions

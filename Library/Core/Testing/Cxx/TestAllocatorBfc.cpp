@@ -17,12 +17,12 @@
 #include <thread>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "common/pointer.h"
 #include "memory/backend/allocator_bfc.h"
 #include "memory/backend/allocator_pool.h"
 #include "memory/helper/memory_allocator.h"
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 #include "profiler/native/analysis/statistical_analyzer.h"
 #include "profiler/native/memory/memory_tracker.h"
 #include "profiler/native/session/profiler.h"
@@ -31,7 +31,7 @@
 #include "profiler/native/tracing/traceme_recorder.h"
 #endif
 
-using namespace xsigma;
+using namespace quarisma;
 
 namespace
 {
@@ -99,9 +99,9 @@ std::unique_ptr<allocator_bfc> create_test_bfc_allocator()
 /**
  * @brief Test basic allocation and deallocation functionality
  */
-XSIGMATEST(AllocatorBFC, basic_allocation_deallocation)
+QUARISMATEST(AllocatorBFC, basic_allocation_deallocation)
 {
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
     traceme_recorder::start(3);
     auto allocator = create_test_bfc_allocator();
 
@@ -140,7 +140,7 @@ XSIGMATEST(AllocatorBFC, basic_allocation_deallocation)
 /**
  * @brief Test allocation tracking capabilities
  */
-XSIGMATEST(AllocatorBFC, allocation_tracking)
+QUARISMATEST(AllocatorBFC, allocation_tracking)
 {
     auto allocator = create_test_bfc_allocator();
 
@@ -167,7 +167,7 @@ XSIGMATEST(AllocatorBFC, allocation_tracking)
 /**
  * @brief Test different alignment requirements
  */
-XSIGMATEST(AllocatorBFC, alignment_requirements)
+QUARISMATEST(AllocatorBFC, alignment_requirements)
 {
 #if 0
     auto allocator = create_test_bfc_allocator();
@@ -189,7 +189,7 @@ XSIGMATEST(AllocatorBFC, alignment_requirements)
 /**
  * @brief Test allocation with attributes
  */
-XSIGMATEST(AllocatorBFC, allocation_with_attributes)
+QUARISMATEST(AllocatorBFC, allocation_with_attributes)
 {
     auto allocator = create_test_bfc_allocator();
 
@@ -208,7 +208,7 @@ XSIGMATEST(AllocatorBFC, allocation_with_attributes)
 /**
  * @brief Test statistics collection
  */
-XSIGMATEST(AllocatorBFC, statistics_collection)
+QUARISMATEST(AllocatorBFC, statistics_collection)
 {
     auto allocator = create_test_bfc_allocator();
 
@@ -247,7 +247,7 @@ XSIGMATEST(AllocatorBFC, statistics_collection)
 /**
  * @brief Test allocator name and memory type
  */
-XSIGMATEST(AllocatorBFC, allocator_properties)
+QUARISMATEST(AllocatorBFC, allocator_properties)
 {
     auto allocator = create_test_bfc_allocator();
 
@@ -263,7 +263,7 @@ XSIGMATEST(AllocatorBFC, allocator_properties)
 /**
  * @brief Test zero-size allocation handling
  */
-XSIGMATEST(AllocatorBFC, zero_size_allocation)
+QUARISMATEST(AllocatorBFC, zero_size_allocation)
 {
     auto allocator = create_test_bfc_allocator();
 
@@ -282,7 +282,7 @@ XSIGMATEST(AllocatorBFC, zero_size_allocation)
 /**
  * @brief Test null pointer deallocation
  */
-XSIGMATEST(AllocatorBFC, null_pointer_deallocation)
+QUARISMATEST(AllocatorBFC, null_pointer_deallocation)
 {
     auto allocator = create_test_bfc_allocator();
 
@@ -298,7 +298,7 @@ XSIGMATEST(AllocatorBFC, null_pointer_deallocation)
 /**
  * @brief Test large allocation handling
  */
-XSIGMATEST(AllocatorBFC, large_allocations)
+QUARISMATEST(AllocatorBFC, large_allocations)
 {
     auto allocator = create_test_bfc_allocator();
 
@@ -322,7 +322,7 @@ XSIGMATEST(AllocatorBFC, large_allocations)
 /**
  * @brief Test fragmentation and coalescing behavior
  */
-XSIGMATEST(AllocatorBFC, fragmentation_and_coalescing)
+QUARISMATEST(AllocatorBFC, fragmentation_and_coalescing)
 {
     auto allocator = create_test_bfc_allocator();
 
@@ -364,7 +364,7 @@ XSIGMATEST(AllocatorBFC, fragmentation_and_coalescing)
 /**
  * @brief Test BFC allocator with different configuration options
  */
-XSIGMATEST(AllocatorBFC, configuration_options)
+QUARISMATEST(AllocatorBFC, configuration_options)
 {
     auto sub_alloc = std::make_unique<basic_cpu_allocator>(
         0,                                      // numa_node = 0 (default)
@@ -397,7 +397,7 @@ XSIGMATEST(AllocatorBFC, configuration_options)
 /**
  * @brief Test BFC allocator with growth disabled
  */
-XSIGMATEST(AllocatorBFC, no_growth_configuration)
+QUARISMATEST(AllocatorBFC, no_growth_configuration)
 {
     auto sub_alloc = std::make_unique<basic_cpu_allocator>(
         0,                                      // numa_node = 0 (default)
@@ -427,7 +427,7 @@ XSIGMATEST(AllocatorBFC, no_growth_configuration)
 /**
  * @brief Test concurrent access to BFC allocator
  */
-XSIGMATEST(AllocatorBFC, thread_safety)
+QUARISMATEST(AllocatorBFC, thread_safety)
 {
     auto sub_alloc = std::make_unique<basic_cpu_allocator>(
         0,                                      // numa_node = 0 (default)
@@ -496,7 +496,7 @@ XSIGMATEST(AllocatorBFC, thread_safety)
 /**
  * @brief Test BFC allocator performance characteristics
  */
-XSIGMATEST(AllocatorBFC, allocation_timing)
+QUARISMATEST(AllocatorBFC, allocation_timing)
 {
     auto sub_alloc = std::make_unique<basic_cpu_allocator>(
         0,                                      // numa_node = 0 (default)
@@ -550,7 +550,7 @@ XSIGMATEST(AllocatorBFC, allocation_timing)
     END_TEST();
 }
 
-XSIGMATEST(AllocatorBFC, basic_allocation)
+QUARISMATEST(AllocatorBFC, basic_allocation)
 {
     // Create a BFC allocator with 1MB memory limit
     const size_t memory_limit  = 1024ULL * 1024ULL;  // 1MB
@@ -588,7 +588,7 @@ XSIGMATEST(AllocatorBFC, basic_allocation)
     END_TEST();
 }
 // Test allocator_bfc edge cases
-XSIGMATEST(AllocatorBFC, EdgeCases)
+QUARISMATEST(AllocatorBFC, EdgeCases)
 {
     const size_t memory_limit  = 1024ULL * 1024ULL;  // 1MB
     auto         sub_allocator = std::make_unique<basic_cpu_allocator>(
@@ -624,7 +624,7 @@ XSIGMATEST(AllocatorBFC, EdgeCases)
 }
 
 // Test allocator_bfc memory tracking
-XSIGMATEST(AllocatorBFC, MemoryTracking)
+QUARISMATEST(AllocatorBFC, MemoryTracking)
 {
     const size_t memory_limit  = 1024ULL;  // 1MB
     auto         sub_allocator = std::make_unique<basic_cpu_allocator>(
@@ -651,9 +651,9 @@ XSIGMATEST(AllocatorBFC, MemoryTracking)
 }
 
 // Test comprehensive memory profiling with BFC allocator
-XSIGMATEST(AllocatorBFC, ComprehensiveMemoryProfiling)
+QUARISMATEST(AllocatorBFC, ComprehensiveMemoryProfiling)
 {
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
     auto session = profiler_session_builder()
                        .with_timing(true)
                        .with_memory_tracking(true)
@@ -665,7 +665,7 @@ XSIGMATEST(AllocatorBFC, ComprehensiveMemoryProfiling)
     session->start();
 
     {
-        XSIGMA_PROFILE_SCOPE("bfc_allocator_comprehensive_test");
+        QUARISMA_PROFILE_SCOPE("bfc_allocator_comprehensive_test");
 
         const size_t memory_limit  = 10 * 1024 * 1024;  // 10MB
         auto         sub_allocator = std::make_unique<basic_cpu_allocator>(
@@ -680,18 +680,18 @@ XSIGMATEST(AllocatorBFC, ComprehensiveMemoryProfiling)
         std::vector<size_t> allocation_sizes = {64, 128, 256, 512, 1024, 2048, 4096, 8192};
 
         {
-            XSIGMA_PROFILE_SCOPE("allocation_phase");
+            QUARISMA_PROFILE_SCOPE("allocation_phase");
 
             // Perform multiple allocation batches
             for (int batch = 0; batch < 5; ++batch)
             {
-                XSIGMA_PROFILE_SCOPE("allocation_batch_" + std::to_string(batch));
+                QUARISMA_PROFILE_SCOPE("allocation_batch_" + std::to_string(batch));
 
                 for (size_t size : allocation_sizes)
                 {
                     for (int i = 0; i < 10; ++i)
                     {
-                        XSIGMA_PROFILE_SCOPE("single_allocation");
+                        QUARISMA_PROFILE_SCOPE("single_allocation");
 
                         void* ptr = allocator.allocate_raw(size, size);
                         EXPECT_NE(nullptr, ptr);
@@ -723,7 +723,7 @@ XSIGMATEST(AllocatorBFC, ComprehensiveMemoryProfiling)
         }
 
         {
-            XSIGMA_PROFILE_SCOPE("fragmentation_analysis");
+            QUARISMA_PROFILE_SCOPE("fragmentation_analysis");
 
             // Deallocate every other allocation to create fragmentation
             for (size_t i = 1; i < allocations.size(); i += 2)
@@ -747,12 +747,12 @@ XSIGMATEST(AllocatorBFC, ComprehensiveMemoryProfiling)
         }
 
         {
-            XSIGMA_PROFILE_SCOPE("reallocation_phase");
+            QUARISMA_PROFILE_SCOPE("reallocation_phase");
 
             // Try to allocate in fragmented space
             for (int i = 0; i < 20; ++i)
             {
-                XSIGMA_PROFILE_SCOPE("fragmented_allocation");
+                QUARISMA_PROFILE_SCOPE("fragmented_allocation");
 
                 void* ptr = allocator.allocate_raw(256, 256);
                 if (ptr)
@@ -763,7 +763,7 @@ XSIGMATEST(AllocatorBFC, ComprehensiveMemoryProfiling)
         }
 
         {
-            XSIGMA_PROFILE_SCOPE("cleanup_phase");
+            QUARISMA_PROFILE_SCOPE("cleanup_phase");
 
             // Clean up all remaining allocations
             for (void* ptr : allocations)
@@ -795,9 +795,9 @@ XSIGMATEST(AllocatorBFC, ComprehensiveMemoryProfiling)
 }
 
 // Test memory profiling with allocation hotspots identification
-XSIGMATEST(AllocatorBFC, AllocationHotspotsIdentification)
+QUARISMATEST(AllocatorBFC, AllocationHotspotsIdentification)
 {
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
     auto session = profiler_session_builder()
                        .with_timing(true)
                        .with_memory_tracking(true)
@@ -808,7 +808,7 @@ XSIGMATEST(AllocatorBFC, AllocationHotspotsIdentification)
     session->start();
 
     {
-        XSIGMA_PROFILE_SCOPE("hotspot_identification_test");
+        QUARISMA_PROFILE_SCOPE("hotspot_identification_test");
 
         const size_t memory_limit  = 5 * 1024 * 1024;  // 5MB
         auto         sub_allocator = std::make_unique<basic_cpu_allocator>(
@@ -820,12 +820,12 @@ XSIGMATEST(AllocatorBFC, AllocationHotspotsIdentification)
 
         // Simulate different allocation patterns to identify hotspots
         {
-            XSIGMA_PROFILE_SCOPE("small_frequent_allocations");
+            QUARISMA_PROFILE_SCOPE("small_frequent_allocations");
 
             std::vector<void*> small_ptrs;
             for (int i = 0; i < 1000; ++i)
             {
-                XSIGMA_PROFILE_SCOPE("small_alloc");
+                QUARISMA_PROFILE_SCOPE("small_alloc");
                 void* ptr = allocator.allocate_raw(32, 32);
                 if (ptr)
                     small_ptrs.push_back(ptr);
@@ -839,12 +839,12 @@ XSIGMATEST(AllocatorBFC, AllocationHotspotsIdentification)
         }
 
         {
-            XSIGMA_PROFILE_SCOPE("large_infrequent_allocations");
+            QUARISMA_PROFILE_SCOPE("large_infrequent_allocations");
 
             std::vector<void*> large_ptrs;
             for (int i = 0; i < 10; ++i)
             {
-                XSIGMA_PROFILE_SCOPE("large_alloc");
+                QUARISMA_PROFILE_SCOPE("large_alloc");
                 void* ptr = allocator.allocate_raw(64 * 1024, 64 * 1024);  // 64KB
                 if (ptr)
                     large_ptrs.push_back(ptr);
@@ -858,7 +858,7 @@ XSIGMATEST(AllocatorBFC, AllocationHotspotsIdentification)
         }
 
         {
-            XSIGMA_PROFILE_SCOPE("mixed_size_allocations");
+            QUARISMA_PROFILE_SCOPE("mixed_size_allocations");
 
             std::vector<void*>  mixed_ptrs;
             std::vector<size_t> sizes = {16, 64, 256, 1024, 4096, 16384};
@@ -867,7 +867,7 @@ XSIGMATEST(AllocatorBFC, AllocationHotspotsIdentification)
             {
                 for (size_t size : sizes)
                 {
-                    XSIGMA_PROFILE_SCOPE("mixed_alloc_" + std::to_string(size));
+                    QUARISMA_PROFILE_SCOPE("mixed_alloc_" + std::to_string(size));
                     void* ptr = allocator.allocate_raw(size, size);
                     if (ptr)
                         mixed_ptrs.push_back(ptr);

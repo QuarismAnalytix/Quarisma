@@ -35,10 +35,10 @@
 #include <stack>
 #include <vector>
 
-// TODO: Missing XSigma dependencies - original includes were:
-// //#include <XSigma/core/TensorBody.h>
-// //#include <XSigma/core/function_schema.h>
-// //#include <XSigma/core/stack.h>
+// TODO: Missing Quarisma dependencies - original includes were:
+// //#include <Quarisma/core/TensorBody.h>
+// //#include <Quarisma/core/function_schema.h>
+// //#include <Quarisma/core/stack.h>
 #include "profiler/base/thread_local_debug_info.h"
 #include "profiler/common/record_function.h"
 #include "profiler/common/standalone/execution_trace_observer.h"
@@ -47,21 +47,21 @@
 #include "util/irange.h"
 
 #ifdef USE_DISTRIBUTED
-#include <xsigma/csrc/distributed/c10d/ParamCommsUtils.hpp>
+#include <quarisma/csrc/distributed/c10d/ParamCommsUtils.hpp>
 #endif  // USE_DISTRIBUTED
 
-using namespace xsigma;
+using namespace quarisma;
 
 // Stub declarations for types not available in profiler-only build
-namespace xsigma
+namespace quarisma
 {
 // Stub for StorageImpl - used in execution trace observer
-struct StorageImpl : public xsigma::intrusive_ptr_target
+struct StorageImpl : public quarisma::intrusive_ptr_target
 {
     // Stub implementation for profiler-only build
     static const void* data() { return nullptr; }
 };
-}  // namespace xsigma
+}  // namespace quarisma
 
 // Collective property attributes
 // https://github.com/pytorch/pytorch/issues/124674
@@ -78,11 +78,11 @@ constexpr auto kETProcessGroupName = "pg_name";
 constexpr auto kETProcessGroupDesc = "pg_desc";
 #endif  // USE_DISTRIBUTED
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 //******************************************************************************
-// JSON output utility functions. To be merged with XSigma profiler.
+// JSON output utility functions. To be merged with Quarisma profiler.
 //******************************************************************************
 template <typename T>
 static std::string vectorToString(const std::vector<T>& v)
@@ -96,7 +96,7 @@ constexpr size_t kMaxNumElements = 4096;
 
 #if 0
 // Disabled: IValue methods (isDouble, toDouble, isInt, toInt, isBool, toBool, isString, toStringRef) not available in profiler-only build
-static std::string getScalarValue(const xsigma::IValue& val)
+static std::string getScalarValue(const quarisma::IValue& val)
 {
     if (val.isDouble())
     {
@@ -126,7 +126,7 @@ static std::string getScalarValue(const xsigma::IValue& val)
 }
 #else
 // Stub implementation
-static std::string getScalarValue(const xsigma::IValue& /*val*/)
+static std::string getScalarValue(const quarisma::IValue& /*val*/)
 {
     return "";
 #endif
@@ -163,7 +163,7 @@ static int32_t processId()
 // at the cost of performance in large number of threads situations. We may
 // optimize this further to thread local, fine-grained locking, or use thread
 // safe containers.
-struct XSIGMA_VISIBILITY ExecutionTraceObserver
+struct QUARISMA_VISIBILITY ExecutionTraceObserver
 {  // NOLINT
     using ID = size_t;
 
@@ -173,13 +173,13 @@ struct XSIGMA_VISIBILITY ExecutionTraceObserver
     // unique id.
     std::map<const void*, ID> objectId;
 
-    using weak_storage_ptr = xsigma::weak_intrusive_ptr<StorageImpl>;
+    using weak_storage_ptr = quarisma::weak_intrusive_ptr<StorageImpl>;
     std::unordered_map<const void*, ID>               data_ptr_to_storage_id;
     std::unordered_map<const void*, weak_storage_ptr> data_ptr_to_weak_storage_ptr;
 
 #if 0
     // Disabled: Storage::getWeakStorageImpl() not available in profiler-only build
-    ID get_tensor_storage_ID(const xsigma::Storage& t_storage)
+    ID get_tensor_storage_ID(const quarisma::Storage& t_storage)
     {
         const std::lock_guard<std::recursive_mutex> lock(gMutex);
 
@@ -214,7 +214,7 @@ struct XSIGMA_VISIBILITY ExecutionTraceObserver
     }
 #else
     // Stub implementation
-    ID get_tensor_storage_ID(const xsigma::Storage& /*t_storage*/)
+    ID get_tensor_storage_ID(const quarisma::Storage& /*t_storage*/)
     {
         const std::scoped_lock lock(gMutex);
         return storage_id_++;
@@ -360,7 +360,7 @@ static std::ofstream openOutputFile(const std::string& name)
     else
     {
         // Disabled: Logging macros not available in profiler-only build.
-        VLOG(1) << "XSigma Execution Trace: writing to " << name;
+        VLOG(1) << "Quarisma Execution Trace: writing to " << name;
 
     }
 #endif
@@ -519,7 +519,7 @@ static void finalizeExecutionTraceOutput(ExecutionTraceObserver& ob)
     ob.out.close();
 #if 0
     // Disabled: Logging macros not available in profiler-only build.
-    VLOG(1) << "XSigma Execution Trace: written to file " << ob.fileName;
+    VLOG(1) << "Quarisma Execution Trace: written to file " << ob.fileName;
 #endif
 }
 
@@ -538,7 +538,7 @@ static ExecutionTraceObserver::ID getObjectID(ExecutionTraceObserver& ob, const 
     return iter->second;
 }
 
-static void dumpTensorData2File(std::string& tensor_dump_file_name, xsigma::Tensor& tensor_on_host)
+static void dumpTensorData2File(std::string& tensor_dump_file_name, quarisma::Tensor& tensor_on_host)
 {
     std::fstream fs;
     fs.open(tensor_dump_file_name, std::fstream::out | std::fstream::binary);
@@ -561,7 +561,7 @@ static std::tuple<std::string, std::string, std::string, std::string> convertIVa
     int&                                  tensorIndex,
     std::map<int, std::pair<long, long>>& tensor_index_min_max_map,
     bool                                  isInput,
-    const xsigma::IValue&                 val,
+    const quarisma::IValue&                 val,
     const bool                            baseType    = true,
     const size_t                          maxArrayLen = kMaxNumElements)
 {
@@ -597,14 +597,14 @@ static std::tuple<std::string, std::string, std::string, std::string> convertIVa
         // symbolic sizes/strides implies t->storage_offset() will fail
         if (tensor_impl->has_storage() && !tensor_impl->has_symbolic_sizes_strides())
         {
-            const xsigma::Storage& t_storage = tensor_impl->storage();
+            const quarisma::Storage& t_storage = tensor_impl->storage();
             storage_id                       = ob.get_tensor_storage_ID(t_storage);
             offset                           = tensor_impl->storage_offset();
             numel                            = tensor_impl->numel();
             itemsize                         = tensor_impl->itemsize();
             device_str                       = tensor_impl->device().str();
 
-            if (isInput && xsigma::isIntegralType(tensor.scalar_type(), false) &&
+            if (isInput && quarisma::isIntegralType(tensor.scalar_type(), false) &&
                 tensor.numel() != 0)
             {
                 enableRecordFunction(false);
@@ -643,7 +643,7 @@ static std::tuple<std::string, std::string, std::string, std::string> convertIVa
         std::vector<std::string> stride_array;
         std::vector<std::string> type_array;
         std::vector<std::string> value_array;
-        for (const auto j : xsigma::irange(tuple_size))
+        for (const auto j : quarisma::irange(tuple_size))
         {
             auto tuple = convertIValue(
                 ob,
@@ -676,7 +676,7 @@ static std::tuple<std::string, std::string, std::string, std::string> convertIVa
         std::vector<std::string> stride_array;
         std::vector<std::string> type_array;
         std::vector<std::string> value_array;
-        for (const auto j : xsigma::irange(list_size))
+        for (const auto j : quarisma::irange(list_size))
         {
             auto tuple = convertIValue(
                 ob,
@@ -726,7 +726,7 @@ static std::tuple<std::string, std::string, std::string, std::string> convertIVa
     int& /*tensorIndex*/,
     std::map<int, std::pair<long, long>>& /*tensor_index_min_max_map*/,
     bool /*isInput*/,
-    const xsigma::IValue& /*val*/,
+    const quarisma::IValue& /*val*/,
     const bool /*baseType*/      = true,
     const size_t /*maxArrayLen*/ = kMaxNumElements)
 {
@@ -741,7 +741,7 @@ static void appendValueInfo(
     int&                                  tensorIndex,
     std::map<int, std::pair<long, long>>& tensor_index_min_max_map,
     bool                                  isInput,
-    const xsigma::IValue&                 val,
+    const quarisma::IValue&                 val,
     std::vector<std::string>&             shapes,
     std::vector<std::string>&             strides,
     std::vector<std::string>&             types,
@@ -767,7 +767,7 @@ static void handleKernelBackendInfo(FunctionCallContext& fc, const RecordFunctio
         if (fc.kernelBackend == "triton")
         {
             fc.kernelFile = kwinputs.at("kernel_file").toStringRef();
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 kwinputs.find("kernel_file") != kwinputs.end(),
                 "kernel file is missing in triton kernel");
             // Remove the path of the file name
@@ -777,7 +777,7 @@ static void handleKernelBackendInfo(FunctionCallContext& fc, const RecordFunctio
             }
 
             // get stream information
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 kwinputs.find("stream") != kwinputs.end(), "stream is missing in triton kernel");
             fc.inputValues.emplace_back(std::to_string(kwinputs.at("stream").toInt()));
             fc.inputTypes.emplace_back("\"Int\"");
@@ -789,7 +789,7 @@ static void handleKernelBackendInfo(FunctionCallContext& fc, const RecordFunctio
 // Stub implementation
 static void handleKernelBackendInfo(FunctionCallContext& /*fc*/, const RecordFunction& fn)
 {
-    XSIGMA_UNUSED const auto& kwinputs = fn.kwinputs();
+    QUARISMA_UNUSED const auto& kwinputs = fn.kwinputs();
     // Stub: IValue methods not available in profiler-only build
 }
 #endif
@@ -802,7 +802,7 @@ static inline std::string getCommsNodeAttrs(const RecordFunction& /*fn*/)
 #ifdef USE_DISTRIBUTED
     // We rely on paramcommsdebug object that is available in thread local info
     auto debugInfo = dynamic_cast<ParamCommsDebugInfo*>(
-        xsigma::thread_local_debug_info::get(xsigma::DebugInfoKind::PARAM_COMMS_INFO));
+        quarisma::thread_local_debug_info::get(quarisma::DebugInfoKind::PARAM_COMMS_INFO));
     if (debugInfo == nullptr)
     {
         //LOG(WARNING) << "ParamCommsDebugInfo not available for function: "
@@ -896,7 +896,7 @@ static void recordOperatorStart(
         // tensor_index is the index of the flattened tensor list for all input
         // tensors
         int tensor_index = 0;
-        for (const auto i : xsigma::irange(input_start, inputs.size()))
+        for (const auto i : quarisma::irange(input_start, inputs.size()))
         {
             appendValueInfo(
                 ob,
@@ -1006,7 +1006,7 @@ static void onFunctionExit(const RecordFunction& fn, ObserverContext* ctx_ptr)
     if (ob->getState() == RunState::enabled)
     {
         auto* fc_ptr = dynamic_cast<FunctionCallContext*>(ctx_ptr);
-        // XSIGMA_CHECK(fc_ptr != nullptr);
+        // QUARISMA_CHECK(fc_ptr != nullptr);
         if (fc_ptr == nullptr)
         {
             //LOG(WARNING) << "FunctionCallContext is nullptr.";
@@ -1029,7 +1029,7 @@ static void onFunctionExit(const RecordFunction& fn, ObserverContext* ctx_ptr)
         try
         {
             int tensor_index = 0;
-            for (const auto i : xsigma::irange(output_start, outputs.size()))
+            for (const auto i : quarisma::irange(output_start, outputs.size()))
             {
                 appendValueInfo(
                     *ob,
@@ -1050,8 +1050,8 @@ static void onFunctionExit(const RecordFunction& fn, ObserverContext* ctx_ptr)
             if (op_schema.has_value())
             {
 #if 0
-                // Disabled: xsigma::toString not available in profiler-only build
-                op_schema_str = json_str_escape(xsigma::toString(op_schema.value()));
+                // Disabled: quarisma::toString not available in profiler-only build
+                op_schema_str = json_str_escape(quarisma::toString(op_schema.value()));
 #else
                 op_schema_str = "";  // Stub: toString not available
 #endif
@@ -1120,7 +1120,7 @@ bool addExecutionTraceObserver(const std::string& output_file_path)
         // check if the environment variable is set to force recording integer
         // tensors
         auto env_variable =
-            xsigma::utils::get_env("ENABLE_PYXSIGMA_EXECUTION_TRACE_SAVE_INTEGRAL_TENSOR_RANGE");
+            quarisma::utils::get_env("ENABLE_PYQUARISMA_EXECUTION_TRACE_SAVE_INTEGRAL_TENSOR_RANGE");
         if (env_variable.has_value())
         {
             ob.record_integral_tensor_range = true;
@@ -1129,7 +1129,7 @@ bool addExecutionTraceObserver(const std::string& output_file_path)
         // check if the environment variable is set to force recording integer
         // tensors
         env_variable =
-            xsigma::utils::get_env("ENABLE_PYXSIGMA_EXECUTION_TRACE_SAVE_INTEGRAL_TENSOR_DATA");
+            quarisma::utils::get_env("ENABLE_PYQUARISMA_EXECUTION_TRACE_SAVE_INTEGRAL_TENSOR_DATA");
         if (env_variable.has_value())
         {
             std::istringstream stream(env_variable.value());
@@ -1160,7 +1160,7 @@ bool addExecutionTraceObserver(const std::string& output_file_path)
         // Default to disabled.
         ob.setState(ExecutionTraceObserver::RunState::disabled);
 
-        // VLOG(1) << "XSigma Execution Trace: added observer, output=" << output_file_path;
+        // VLOG(1) << "Quarisma Execution Trace: added observer, output=" << output_file_path;
     }
     else if (ObserverManager::get()->cbHandle != INVALID_CALLBACK_HANDLE)
     {
@@ -1185,10 +1185,10 @@ void removeExecutionTraceObserver()
             removeCallback(ob->cbHandle);
             ob->cbHandle = INVALID_CALLBACK_HANDLE;
             // Release the current ET observer object and reset.
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 ObserverManager::pop() != nullptr,
                 "Global state ptr cannot be null before resetting");
-            // VLOG(1) << "XSigma Execution Trace: removed observer";
+            // VLOG(1) << "Quarisma Execution Trace: removed observer";
         }
         else
         {
@@ -1229,4 +1229,4 @@ void disableExecutionTraceObserver()
         // LOG(WARNING) << "Trying to disable Execution Trace Observer when it's already disabled.";
     }
 }
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl

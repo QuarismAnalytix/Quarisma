@@ -1,6 +1,6 @@
-#include <XSigma/Functions.h>
-#include <XSigma/MapAllocator.h>
-#include <XSigma/StorageUtils.h>
+#include <Quarisma/Functions.h>
+#include <Quarisma/MapAllocator.h>
+#include <Quarisma/StorageUtils.h>
 #include <c10/core/TensorOptions.h>
 
 namespace at

@@ -1,4 +1,4 @@
-#include <XSigma/core/symbol.h>
+#include <Quarisma/core/symbol.h>
 #include <torch/csrc/jit/ir/alias_analysis.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/ir/node_hashing.h>

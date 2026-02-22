@@ -1,23 +1,23 @@
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
 #define TORCH_ASSERT_NO_OPERATORS
-#include <XSigma/TensorIterator.h>
+#include <Quarisma/TensorIterator.h>
 #undef TORCH_ASSERT_NO_OPERATORS
 
-#include <XSigma/ExpandUtils.h>
-#include <XSigma/MemoryOverlap.h>
-#include <XSigma/NamedTensorUtils.h>
-#include <XSigma/Parallel.h>
-#include <XSigma/TensorIteratorInternal.h>
-#include <XSigma/TensorOperators.h>
-#include <XSigma/core/Tensor.h>
-#include <XSigma/native/Resize.h>
-#include <XSigma/native/TypeProperties.h>
+#include <Quarisma/ExpandUtils.h>
+#include <Quarisma/MemoryOverlap.h>
+#include <Quarisma/NamedTensorUtils.h>
+#include <Quarisma/Parallel.h>
+#include <Quarisma/TensorIteratorInternal.h>
+#include <Quarisma/TensorOperators.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/native/Resize.h>
+#include <Quarisma/native/TypeProperties.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/empty.h>
-#include <XSigma/ops/empty_strided.h>
+#include <Quarisma/ops/empty.h>
+#include <Quarisma/ops/empty_strided.h>
 #endif
 
 #include <c10/util/SmallBuffer.h>

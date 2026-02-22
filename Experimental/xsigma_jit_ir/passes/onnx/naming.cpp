@@ -37,7 +37,7 @@ std::pair<std::string, std::string> parseNameFromScope(const torch::jit::ScopePt
 {
     std::string full_name = scope->name().toUnqualString();
     auto        pos       = full_name.find(name_separator);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         pos != std::string::npos,
         "Scope name (" + full_name + ") does not contain '" + name_separator + "'");
     return std::make_pair(full_name.substr(0, pos), full_name.substr(pos + 2));
@@ -153,7 +153,7 @@ void NodeNameGenerator::UpdateOutputsNames(Node* n)
     if (node_names_.find(n) != node_names_.end())
     {
         auto node_name = node_names_[n];
-        for (auto i : xsigma::irange(n->outputs().size()))
+        for (auto i : quarisma::irange(n->outputs().size()))
         {
             auto output = n->output(i);
             if (!IsGraphOutput(output, graph_))

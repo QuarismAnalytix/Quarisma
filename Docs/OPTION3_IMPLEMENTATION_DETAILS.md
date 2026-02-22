@@ -8,7 +8,7 @@
 
 **Added**:
 ```cpp
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 #include <tbb/enumerable_thread_specific.h>
 #endif
 ```
@@ -21,7 +21,7 @@
 
 **Added**:
 ```cpp
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
 // Static storage for OpenMP threadprivate
 // Each thread gets its own copy automatically
 thread_local unsigned char parallel_tools_functor_initialized = 0;
@@ -63,27 +63,27 @@ struct parallel_tools_functor_internal<Functor, true>
 {
     Functor& f_;
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
     // TBB backend: Use enumerable_thread_specific
     mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 #endif
 
     parallel_tools_functor_internal(Functor& f) : f_(f)
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
         , initialized_(0)
 #endif
     {}
 
     void Execute(size_t first, size_t last)
     {
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
         // OpenMP backend: Use threadprivate static
         if (!parallel_tools_functor_initialized)
         {
             this->f_.Initialize();
             parallel_tools_functor_initialized = 1;
         }
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
         // TBB backend: Use enumerable_thread_specific
         unsigned char& inited = initialized_.local();
         if (!inited)
@@ -129,7 +129,7 @@ struct parallel_tools_functor_internal<Functor, true>
 
 **Code**:
 ```cpp
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
 thread_local unsigned char parallel_tools_functor_initialized = 0;
 #pragma omp threadprivate(parallel_tools_functor_initialized)
 
@@ -164,18 +164,18 @@ if (!parallel_tools_functor_initialized)
 
 **Code**:
 ```cpp
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 #endif
 
 parallel_tools_functor_internal(Functor& f) : f_(f)
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
     , initialized_(0)
 #endif
 {}
 
 // In Execute():
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
 unsigned char& inited = initialized_.local();
 if (!inited)
 {
@@ -225,12 +225,12 @@ if (!initialized)
 ```
 Compilation Time:
   ↓
-Check XSIGMA_HAS_OPENMP
+Check QUARISMA_HAS_OPENMP
   ├─ YES → Compile OpenMP branch
   │         Use #pragma omp threadprivate
   │         Zero overhead
   │
-  └─ NO → Check XSIGMA_HAS_TBB
+  └─ NO → Check QUARISMA_HAS_TBB
            ├─ YES → Compile TBB branch
            │         Use tbb::enumerable_thread_specific
            │         Minimal overhead
@@ -258,24 +258,24 @@ Check XSIGMA_HAS_OPENMP
 
 ## Build Configuration
 
-The implementation uses XSigma's feature detection system:
+The implementation uses Quarisma's feature detection system:
 
 ```cpp
 // Feature flags (defined by CMake)
-#define XSIGMA_HAS_OPENMP 1  // or 0
-#define XSIGMA_HAS_TBB 1     // or 0
+#define QUARISMA_HAS_OPENMP 1  // or 0
+#define QUARISMA_HAS_TBB 1     // or 0
 ```
 
-**Value-based checks** (XSigma standard):
+**Value-based checks** (Quarisma standard):
 ```cpp
-#if XSIGMA_HAS_OPENMP  // Checks if value is non-zero
+#if QUARISMA_HAS_OPENMP  // Checks if value is non-zero
     // OpenMP code
 #endif
 ```
 
 **NOT existence-based checks**:
 ```cpp
-#ifdef XSIGMA_HAS_OPENMP  // ❌ Don't use this
+#ifdef QUARISMA_HAS_OPENMP  // ❌ Don't use this
     // This would always be true if defined
 #endif
 ```
@@ -330,7 +330,7 @@ All existing tests verify correct behavior:
 ✅ Code compiles without warnings
 ✅ All tests pass
 ✅ No regressions
-✅ Follows XSigma coding standards
+✅ Follows Quarisma coding standards
 ✅ Uses value-based preprocessor checks
 ✅ Proper conditional compilation
 ✅ Clear comments for each backend
@@ -345,7 +345,7 @@ Option 3 successfully implements backend-specific thread-local storage solutions
 - Leverage each backend's native capabilities
 - Maintain zero or minimal overhead
 - Provide excellent performance
-- Follow XSigma coding standards
+- Follow Quarisma coding standards
 - Pass all tests
 - Are ready for production
 

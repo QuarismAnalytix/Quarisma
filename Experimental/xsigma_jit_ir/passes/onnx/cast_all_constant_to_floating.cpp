@@ -5,7 +5,7 @@ namespace torch::jit
 {
 namespace onnx
 {
-using namespace ::xsigma::onnx;
+using namespace ::quarisma::onnx;
 }
 
 // For ONNX opset < 9, constant operator supports only three data types:
@@ -32,26 +32,26 @@ static void CastAllConstantToFloating(Block* block)
         if (node->kind() == onnx::Constant)
         {
             auto               val      = node->t(attr::value);
-            xsigma::ScalarType dtype    = val.scalar_type();
+            quarisma::ScalarType dtype    = val.scalar_type();
             auto               val_type = TensorType::create(val);
-            if (dtype != xsigma::ScalarType::Double && dtype != xsigma::ScalarType::Float &&
-                dtype != xsigma::ScalarType::Half)
+            if (dtype != quarisma::ScalarType::Double && dtype != quarisma::ScalarType::Float &&
+                dtype != quarisma::ScalarType::Half)
             {
                 int to_type = 0;
                 switch (val.scalar_type())
                 {
-                case xsigma::ScalarType::Byte:
-                case xsigma::ScalarType::Char:
-                case xsigma::ScalarType::Int:
-                case xsigma::ScalarType::Short:
-                case xsigma::ScalarType::Bool:
+                case quarisma::ScalarType::Byte:
+                case quarisma::ScalarType::Char:
+                case quarisma::ScalarType::Int:
+                case quarisma::ScalarType::Short:
+                case quarisma::ScalarType::Bool:
                     to_type = ATenTypeToOnnxType(val.scalar_type());
-                    val     = val.to(xsigma::ScalarType::Float);
+                    val     = val.to(quarisma::ScalarType::Float);
                     break;
 
-                case xsigma::ScalarType::Long:
+                case quarisma::ScalarType::Long:
                     to_type = ATenTypeToOnnxType(val.scalar_type());
-                    val     = val.to(xsigma::ScalarType::Double);
+                    val     = val.to(quarisma::ScalarType::Double);
                     break;
 
                 default:
@@ -65,9 +65,9 @@ static void CastAllConstantToFloating(Block* block)
                 cast_node->output()->setType(val_type);
                 cast_node->insertAfter(node);
                 // get input from cast node
-                node->outputs().xsigma(0)->replaceAllUsesWith(cast_node->outputs().xsigma(0));
+                node->outputs().quarisma(0)->replaceAllUsesWith(cast_node->outputs().quarisma(0));
                 // add input from constant to cast node
-                cast_node->addInput(node->outputs().xsigma(0));
+                cast_node->addInput(node->outputs().quarisma(0));
                 cast_node->copyMetadata(node);
             }
         }

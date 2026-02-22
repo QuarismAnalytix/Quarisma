@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * Portions of this code are based on VTK (Visualization Toolkit):
 
@@ -43,7 +43,7 @@
 #pragma pop_macro("__TBB_NO_IMPLICIT_LINKAGE")
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace detail
 {
@@ -51,7 +51,7 @@ namespace parallel
 {
 
 static std::unique_ptr<tbb::task_arena> task_arena;
-static std::unique_ptr<std::mutex>      xsigma_parallel_tools_cs;
+static std::unique_ptr<std::mutex>      quarisma_parallel_tools_cs;
 static std::unique_ptr<std::stack<int>> thread_id_stack;
 static std::unique_ptr<std::mutex>      thread_id_stack_lock;
 static int                              specified_num_threads_tbb;  // Default initialized to zero
@@ -68,7 +68,7 @@ parallel_tools_impl_tbb_initialize::parallel_tools_impl_tbb_initialize()
     if (++parallel_tools_impl_tbb_initialize_count == 1)
     {
         task_arena           = std::make_unique<tbb::task_arena>();
-        xsigma_parallel_tools_cs  = std::make_unique<std::mutex>();
+        quarisma_parallel_tools_cs  = std::make_unique<std::mutex>();
         thread_id_stack      = std::make_unique<std::stack<int>>();
         thread_id_stack_lock = std::make_unique<std::mutex>();
     }
@@ -92,7 +92,7 @@ parallel_tools_impl<backend_type::TBB>::parallel_tools_impl() : nested_activated
 template <>
 void parallel_tools_impl<backend_type::TBB>::initialize(int num_threads)
 {
-    xsigma_parallel_tools_cs->lock();
+    quarisma_parallel_tools_cs->lock();
 
     if (num_threads == 0)
     {
@@ -123,7 +123,7 @@ void parallel_tools_impl<backend_type::TBB>::initialize(int num_threads)
         specified_num_threads_tbb = num_threads;
     }
 
-    xsigma_parallel_tools_cs->unlock();
+    quarisma_parallel_tools_cs->unlock();
 }
 
 //------------------------------------------------------------------------------
@@ -192,4 +192,4 @@ void parallel_tools_impl_for_tbb(
 
 }  // namespace parallel
 }  // namespace detail
-}  // namespace xsigma
+}  // namespace quarisma

@@ -1,4 +1,4 @@
-#include <XSigma/core/type_factory.h>
+#include <Quarisma/core/type_factory.h>
 #include <torch/csrc/jit/passes/refine_tuple_types.h>
 #include <torch/csrc/jit/runtime/graph_iterator.h>
 
@@ -11,17 +11,17 @@ namespace
 {
 static void VisitTupleNode(Node* node)
 {
-    XSIGMA_CHECK(node->outputs().size() == 1, "Tuple must have exactly one output!");
+    QUARISMA_CHECK(node->outputs().size() == 1, "Tuple must have exactly one output!");
 
     Value* output     = node->outputs()[0];
     auto   tuple_type = output->type()->expectRef<TupleType>();
 
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         tuple_type.containedTypes().size() == node->inputs().size(),
         "Number of contained types does not match number of inputs!");
 
     // Extract updated types from input values.
-    std::vector<xsigma::TypePtr> types;
+    std::vector<quarisma::TypePtr> types;
     for (const Value* input : node->inputs())
     {
         types.push_back(input->type());

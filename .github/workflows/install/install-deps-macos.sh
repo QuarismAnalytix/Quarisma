@@ -1,6 +1,6 @@
 #!/bin/bash
-# XSigma CI - macOS Dependency Installation Script
-# This script installs all required dependencies for building XSigma on macOS
+# Quarisma CI - macOS Dependency Installation Script
+# This script installs all required dependencies for building Quarisma on macOS
 # Usage: ./install-deps-macos.sh [--with-cuda] [--with-tbb]
 
 set -e  # Exit on error
@@ -136,4 +136,4 @@ python3 -m pip install colorama==0.4.6 psutil==6.1.1 || {
 }
 
 log_success "macOS dependency installation completed successfully!"
-log_info "You can now build XSigma using: python Scripts/setup.py ninja clang config build test"
+log_info "You can now build Quarisma using: python Scripts/setup.py ninja clang config build test"

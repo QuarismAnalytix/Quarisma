@@ -1,8 +1,8 @@
-#include <XSigma/SavedTensorHooks.h>
+#include <Quarisma/SavedTensorHooks.h>
 #include <torch/csrc/PyInterpreter.h>
 #include <torch/csrc/THP.h>
 #include <torch/csrc/autograd/python_saved_variable_hooks.h>
-#include <xsigma/core/SafePyObject.h>
+#include <quarisma/core/SafePyObject.h>
 
 namespace py = pybind11;
 
@@ -19,7 +19,7 @@ PySavedVariableHooks::PySavedVariableHooks(
 
 // We don't use pybind for call_pack_hook and call_unpack_hook to avoid
 // https://github.com/pytorch/pytorch/issues/34172
-void PySavedVariableHooks::call_pack_hook(const xsigma::Tensor& tensor)
+void PySavedVariableHooks::call_pack_hook(const quarisma::Tensor& tensor)
 {
     py::gil_scoped_acquire acquire;
     THPObjectPtr           obj(THPVariable_Wrap(tensor));
@@ -34,7 +34,7 @@ void PySavedVariableHooks::call_pack_hook(const xsigma::Tensor& tensor)
     // released
 }
 
-xsigma::Tensor PySavedVariableHooks::call_unpack_hook()
+quarisma::Tensor PySavedVariableHooks::call_unpack_hook()
 {
     py::gil_scoped_acquire acquire;
     THPObjectPtr           res(PyObject_CallFunctionObjArgs(unpack_hook_, data_, nullptr));
@@ -51,14 +51,14 @@ xsigma::Tensor PySavedVariableHooks::call_unpack_hook()
     // unpack_hook_ will be manually decrefed when the saved variable is released
 }
 
-std::optional<std::pair<xsigma::SafePyObject, xsigma::SafePyObject>>
+std::optional<std::pair<quarisma::SafePyObject, quarisma::SafePyObject>>
 PySavedVariableHooks::retrieve_unpack_hook_data() const
 {
     Py_INCREF(unpack_hook_);
     Py_INCREF(data_);
     return std::make_pair(
-        xsigma::SafePyObject(unpack_hook_, getPyInterpreter()),
-        xsigma::SafePyObject(data_, getPyInterpreter()));
+        quarisma::SafePyObject(unpack_hook_, getPyInterpreter()),
+        quarisma::SafePyObject(data_, getPyInterpreter()));
 }
 
 // NOLINTNEXTLINE(bugprone-exception-escape)
@@ -76,15 +76,15 @@ PySavedVariableHooks::~PySavedVariableHooks()
 
 void PyDefaultSavedVariableHooks::push_hooks(py::function& pack_hook, py::function& unpack_hook)
 {
-    xsigma::SavedTensorDefaultHooks::lazy_initialize();
-    xsigma::SavedTensorDefaultHooks::push_hooks(
-        xsigma::SafePyObject(pack_hook.release().ptr(), getPyInterpreter()),
-        xsigma::SafePyObject(unpack_hook.release().ptr(), getPyInterpreter()));
+    quarisma::SavedTensorDefaultHooks::lazy_initialize();
+    quarisma::SavedTensorDefaultHooks::push_hooks(
+        quarisma::SafePyObject(pack_hook.release().ptr(), getPyInterpreter()),
+        quarisma::SafePyObject(unpack_hook.release().ptr(), getPyInterpreter()));
 }
 
 void PyDefaultSavedVariableHooks::pop_hooks()
 {
-    auto [pack_hook, unpack_hook] = xsigma::SavedTensorDefaultHooks::pop_hooks();
+    auto [pack_hook, unpack_hook] = quarisma::SavedTensorDefaultHooks::pop_hooks();
     TORCH_INTERNAL_ASSERT(
         pack_hook.ptr(getPyInterpreter()) != nullptr &&
         unpack_hook.ptr(getPyInterpreter()) != nullptr);
@@ -92,7 +92,7 @@ void PyDefaultSavedVariableHooks::pop_hooks()
 
 std::unique_ptr<SavedVariableHooks> PyDefaultSavedVariableHooks::get_hooks()
 {
-    auto out = xsigma::SavedTensorDefaultHooks::get_hooks();
+    auto out = quarisma::SavedTensorDefaultHooks::get_hooks();
     if (!out.has_value())
     {
         return nullptr;

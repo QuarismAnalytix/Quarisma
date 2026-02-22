@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -30,7 +30,7 @@
 #include "memory/device.h"
 #include "memory/unified_memory_stats.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -42,7 +42,7 @@ namespace gpu
  * including timing, location, and usage statistics for debugging
  * and performance analysis.
  */
-struct XSIGMA_VISIBILITY gpu_allocation_info
+struct QUARISMA_VISIBILITY gpu_allocation_info
 {
     /** @brief Unique allocation ID */
     size_t allocation_id = 0;
@@ -117,7 +117,7 @@ struct XSIGMA_VISIBILITY gpu_allocation_info
 /**
  * @brief Memory leak detection configuration
  */
-struct XSIGMA_VISIBILITY leak_detection_config
+struct QUARISMA_VISIBILITY leak_detection_config
 {
     /** @brief Enable leak detection */
     bool enabled = true;
@@ -183,25 +183,25 @@ struct XSIGMA_VISIBILITY leak_detection_config
  * std::cout << "Peak memory usage: " << stats.peak_bytes_in_use / 1024 / 1024 << " MB\n";
  * ```
  */
-class XSIGMA_VISIBILITY gpu_resource_tracker
+class QUARISMA_VISIBILITY gpu_resource_tracker
 {
 public:
     /**
      * @brief Get the singleton instance of the resource tracker
      * @return Reference to the global resource tracker instance
      */
-    XSIGMA_API static gpu_resource_tracker& instance();
+    QUARISMA_API static gpu_resource_tracker& instance();
 
     /**
      * @brief Virtual destructor
      */
-    XSIGMA_API virtual ~gpu_resource_tracker() = default;
+    QUARISMA_API virtual ~gpu_resource_tracker() = default;
 
     /**
      * @brief Configure leak detection parameters
      * @param config Leak detection configuration
      */
-    XSIGMA_API virtual void configure_leak_detection(const leak_detection_config& config) = 0;
+    QUARISMA_API virtual void configure_leak_detection(const leak_detection_config& config) = 0;
 
     /**
      * @brief Track a new GPU memory allocation
@@ -215,7 +215,7 @@ public:
      * @param function_name Function name (automatically filled by macro)
      * @return Allocation ID for tracking
      */
-    XSIGMA_API virtual size_t track_allocation(
+    QUARISMA_API virtual size_t track_allocation(
         void*              ptr,
         size_t             size,
         device_enum        device_type,
@@ -230,47 +230,47 @@ public:
      * @param ptr Pointer to memory being deallocated
      * @return True if allocation was found and tracked
      */
-    XSIGMA_API virtual bool track_deallocation(void* ptr) = 0;
+    QUARISMA_API virtual bool track_deallocation(void* ptr) = 0;
 
     /**
      * @brief Record memory access for usage tracking
      * @param ptr Pointer to accessed memory
      */
-    XSIGMA_API virtual void record_access(void* ptr) = 0;
+    QUARISMA_API virtual void record_access(void* ptr) = 0;
 
     /**
      * @brief Get information about a specific allocation
      * @param ptr Pointer to query
      * @return Allocation information, or nullptr if not found
      */
-    XSIGMA_API virtual std::shared_ptr<gpu_allocation_info> get_allocation_info(
+    QUARISMA_API virtual std::shared_ptr<gpu_allocation_info> get_allocation_info(
         void* ptr) const = 0;
 
     /**
      * @brief Get current resource usage statistics
      * @return Current statistics
      */
-    XSIGMA_API virtual unified_resource_stats get_statistics() const = 0;
+    QUARISMA_API virtual unified_resource_stats get_statistics() const = 0;
 
     /**
      * @brief Get list of all active allocations
      * @return Vector of active allocation information
      */
-    XSIGMA_API virtual std::vector<std::shared_ptr<gpu_allocation_info>> get_active_allocations()
+    QUARISMA_API virtual std::vector<std::shared_ptr<gpu_allocation_info>> get_active_allocations()
         const = 0;
 
     /**
      * @brief Detect potential memory leaks
      * @return Vector of allocations that may be leaks
      */
-    XSIGMA_API virtual std::vector<std::shared_ptr<gpu_allocation_info>> detect_leaks() const = 0;
+    QUARISMA_API virtual std::vector<std::shared_ptr<gpu_allocation_info>> detect_leaks() const = 0;
 
     /**
      * @brief Get allocations by tag
      * @param tag Tag to search for
      * @return Vector of allocations with matching tag
      */
-    XSIGMA_API virtual std::vector<std::shared_ptr<gpu_allocation_info>> get_allocations_by_tag(
+    QUARISMA_API virtual std::vector<std::shared_ptr<gpu_allocation_info>> get_allocations_by_tag(
         const std::string& tag) const = 0;
 
     /**
@@ -279,62 +279,62 @@ public:
      * @param device_index Device index
      * @return Vector of allocations on specified device
      */
-    XSIGMA_API virtual std::vector<std::shared_ptr<gpu_allocation_info>> get_allocations_by_device(
+    QUARISMA_API virtual std::vector<std::shared_ptr<gpu_allocation_info>> get_allocations_by_device(
         device_enum device_type, int device_index) const = 0;
 
     /**
      * @brief Clear all tracking data
      */
-    XSIGMA_API virtual void clear_all_data() = 0;
+    QUARISMA_API virtual void clear_all_data() = 0;
 
     /**
      * @brief Generate detailed resource usage report
      * @param include_call_stacks Whether to include call stack information
      * @return Formatted report string
      */
-    XSIGMA_API virtual std::string generate_report(bool include_call_stacks = false) const = 0;
+    QUARISMA_API virtual std::string generate_report(bool include_call_stacks = false) const = 0;
 
     /**
      * @brief Generate leak detection report
      * @return Formatted leak report string
      */
-    XSIGMA_API virtual std::string generate_leak_report() const = 0;
+    QUARISMA_API virtual std::string generate_leak_report() const = 0;
 
     /**
      * @brief Enable or disable tracking
      * @param enabled Whether tracking should be enabled
      */
-    XSIGMA_API virtual void set_tracking_enabled(bool enabled) = 0;
+    QUARISMA_API virtual void set_tracking_enabled(bool enabled) = 0;
 
     /**
      * @brief Check if tracking is currently enabled
      * @return True if tracking is enabled
      */
-    XSIGMA_API virtual bool is_tracking_enabled() const = 0;
+    QUARISMA_API virtual bool is_tracking_enabled() const = 0;
 
 protected:
     gpu_resource_tracker() = default;
-    XSIGMA_DELETE_COPY_AND_MOVE(gpu_resource_tracker);
+    QUARISMA_DELETE_COPY_AND_MOVE(gpu_resource_tracker);
 };
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma
 
 /**
  * @brief Convenience macro for tracking GPU allocations with automatic source location
  */
-#define XSIGMA_TRACK_GPU_ALLOCATION(ptr, size, device_type, device_index, tag) \
-    xsigma::gpu::gpu_resource_tracker::instance().track_allocation(            \
+#define QUARISMA_TRACK_GPU_ALLOCATION(ptr, size, device_type, device_index, tag) \
+    quarisma::gpu::gpu_resource_tracker::instance().track_allocation(            \
         ptr, size, device_type, device_index, tag, __FILE__, __LINE__, __FUNCTION__)
 
 /**
  * @brief Convenience macro for tracking GPU deallocations
  */
-#define XSIGMA_TRACK_GPU_DEALLOCATION(ptr) \
-    xsigma::gpu::gpu_resource_tracker::instance().track_deallocation(ptr)
+#define QUARISMA_TRACK_GPU_DEALLOCATION(ptr) \
+    quarisma::gpu::gpu_resource_tracker::instance().track_deallocation(ptr)
 
 /**
  * @brief Convenience macro for recording GPU memory access
  */
-#define XSIGMA_RECORD_GPU_ACCESS(ptr) \
-    xsigma::gpu::gpu_resource_tracker::instance().record_access(ptr)
+#define QUARISMA_RECORD_GPU_ACCESS(ptr) \
+    quarisma::gpu::gpu_resource_tracker::instance().record_access(ptr)

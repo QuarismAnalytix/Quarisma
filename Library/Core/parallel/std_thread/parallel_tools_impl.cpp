@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * Portions of this code are based on VTK (Visualization Toolkit):
 
@@ -34,7 +34,7 @@
 #include <emscripten.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace detail
 {
@@ -92,8 +92,8 @@ int parallel_tools_impl<backend_type::std_thread>::estimated_number_of_threads()
 template <>
 int parallel_tools_impl<backend_type::std_thread>::estimated_default_number_of_threads()
 {
-#if defined(__EMSCRIPTEN_PTHREADS__) && (XSIGMA_WEBASSEMBLY_PARALLEL_THREAD_POOL_SIZE > 0)
-    const int max_threads = XSIGMA_WEBASSEMBLY_PARALLEL_THREAD_POOL_SIZE;
+#if defined(__EMSCRIPTEN_PTHREADS__) && (QUARISMA_WEBASSEMBLY_PARALLEL_THREAD_POOL_SIZE > 0)
+    const int max_threads = QUARISMA_WEBASSEMBLY_PARALLEL_THREAD_POOL_SIZE;
 #else
     const int max_threads = std::thread::hardware_concurrency();
 #endif
@@ -116,4 +116,4 @@ bool parallel_tools_impl<backend_type::std_thread>::is_parallel_scope()
 
 }  // namespace parallel
 }  // namespace detail
-}  // namespace xsigma
+}  // namespace quarisma

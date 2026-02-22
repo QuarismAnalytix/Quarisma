@@ -1,12 +1,12 @@
 /*
- * XSigma: High-Performance Quantitative Library
- * Copyright 2025 XSigma Contributors
+ * Quarisma: High-Performance Quantitative Library
+ * Copyright 2025 Quarisma Contributors
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
 
 #include "memory/sub_allocator.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 sub_allocator::sub_allocator(
@@ -33,4 +33,4 @@ void sub_allocator::VisitFree(void* ptr, int index, size_t num_bytes)
     }
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

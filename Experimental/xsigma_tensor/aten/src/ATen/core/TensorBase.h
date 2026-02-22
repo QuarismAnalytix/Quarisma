@@ -12,10 +12,10 @@
 #error "TensorBase.h should not be included when TORCH_STABLE_ONLY compile flag is passed"
 #endif
 
-#include <XSigma/StorageUtils.h>
-#include <XSigma/core/NamedTensor.h>
-#include <XSigma/core/QuantizerBase.h>
-#include <XSigma/core/TensorAccessor.h>
+#include <Quarisma/StorageUtils.h>
+#include <Quarisma/core/NamedTensor.h>
+#include <Quarisma/core/QuantizerBase.h>
+#include <Quarisma/core/TensorAccessor.h>
 #include <c10/core/Device.h>
 #include <c10/core/Layout.h>
 #include <c10/core/MemoryFormat.h>
@@ -78,7 +78,7 @@ inline bool variable_excluded_from_dispatch()
 // its header included almost everywhere. Unfortunately this means
 // every time an operator signature is updated or changed in
 // native_functions.yaml, you (and every other PyTorch developer) need
-// to recompile all of XSigma and its dependencies.
+// to recompile all of Quarisma and its dependencies.
 //
 // TensorBase aims to break up these header dependencies, and improve
 // incremental build times for all PyTorch developers. TensorBase
@@ -251,12 +251,12 @@ public:
     c10::SymIntArrayRef sym_sizes() const { return impl_->sym_sizes(); }
     c10::SymIntArrayRef sym_strides() const { return impl_->sym_strides(); }
     IntArrayRef         strides() const { return impl_->strides(); }
-    // See impl::get_opt_names in XSigma/NamedTensor.h for docs.
+    // See impl::get_opt_names in Quarisma/NamedTensor.h for docs.
     std::optional<DimnameList> opt_names() const
     {
         return impl::get_opt_names(unsafeGetTensorImpl());
     }
-    // See impl::get_names in XSigma/NamedTensor.h for docs.
+    // See impl::get_names in Quarisma/NamedTensor.h for docs.
     DimnameList names() const { return impl::get_names(unsafeGetTensorImpl()); }
     int64_t     ndimension() const { return dim(); }
 
@@ -374,7 +374,7 @@ public:
     // what it's doing.
     //
     // NB2: this currently provides Linux fd based shm support only
-    // to simplify the storage lifetime management logic in XSigma
+    // to simplify the storage lifetime management logic in Quarisma
     // and similarly for now we are not adding support for file system based
     // shm support like in THP due to additional GC manager support needed
     // to prevent leaks.

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,15 +13,15 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "common/configure.h"
 #include "common/macros.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 
 #include <future>
 #include <memory>
@@ -31,13 +31,13 @@
 #include "memory/device.h"
 #include "memory/gpu/gpu_memory_transfer.h"
 
-using namespace xsigma;
-using namespace xsigma::gpu;
+using namespace quarisma;
+using namespace quarisma::gpu;
 
 /**
  * @brief Test GPU memory transfer manager singleton access
  */
-XSIGMATEST(GpuMemoryTransfer, provides_singleton_instance)
+QUARISMATEST(GpuMemoryTransfer, provides_singleton_instance)
 {
     // Test singleton access
     auto& manager1 = gpu_memory_transfer::instance();
@@ -46,13 +46,13 @@ XSIGMATEST(GpuMemoryTransfer, provides_singleton_instance)
     // Should be the same instance
     EXPECT_EQ(&manager1, &manager2);
 
-    XSIGMA_LOG_INFO("GPU memory transfer singleton test passed");
+    QUARISMA_LOG_INFO("GPU memory transfer singleton test passed");
 }
 
 /**
  * @brief Test transfer direction enumeration
  */
-XSIGMATEST(GpuMemoryTransfer, supports_all_transfer_directions)
+QUARISMATEST(GpuMemoryTransfer, supports_all_transfer_directions)
 {
     // Test transfer direction enum values
     transfer_direction directions[] = {
@@ -71,13 +71,13 @@ XSIGMATEST(GpuMemoryTransfer, supports_all_transfer_directions)
             direction == transfer_direction::HOST_TO_HOST);
     }
 
-    XSIGMA_LOG_INFO("GPU memory transfer directions test passed");
+    QUARISMA_LOG_INFO("GPU memory transfer directions test passed");
 }
 
 /**
  * @brief Test transfer status enumeration
  */
-XSIGMATEST(GpuMemoryTransfer, tracks_transfer_status)
+QUARISMATEST(GpuMemoryTransfer, tracks_transfer_status)
 {
     // Test transfer status enum values
     transfer_status statuses[] = {
@@ -96,13 +96,13 @@ XSIGMATEST(GpuMemoryTransfer, tracks_transfer_status)
             status == transfer_status::CANCELLED);
     }
 
-    XSIGMA_LOG_INFO("GPU memory transfer status test passed");
+    QUARISMA_LOG_INFO("GPU memory transfer status test passed");
 }
 
 /**
  * @brief Test GPU transfer info structure
  */
-XSIGMATEST(GpuTransferInfo, manages_transfer_metadata)
+QUARISMATEST(GpuTransferInfo, manages_transfer_metadata)
 {
     gpu_transfer_info info;
 
@@ -119,13 +119,13 @@ XSIGMATEST(GpuTransferInfo, manages_transfer_metadata)
     double duration_ms = info.get_duration_ms();
     EXPECT_EQ(0.0, duration_ms);
 
-    XSIGMA_LOG_INFO("GPU transfer info structure test passed");
+    QUARISMA_LOG_INFO("GPU transfer info structure test passed");
 }
 
 /**
  * @brief Test GPU stream creation and management
  */
-XSIGMATEST(GpuStream, creates_and_manages_streams)
+QUARISMATEST(GpuStream, creates_and_manages_streams)
 {
     try
     {
@@ -149,23 +149,23 @@ XSIGMATEST(GpuStream, creates_and_manages_streams)
             bool is_idle = stream->is_idle();
             EXPECT_TRUE(is_idle || !is_idle);  // Should not crash
 
-            XSIGMA_LOG_INFO("GPU stream creation and management test passed");
+            QUARISMA_LOG_INFO("GPU stream creation and management test passed");
         }
         else
         {
-            XSIGMA_LOG_INFO("GPU stream creation failed (expected if no CUDA device)");
+            QUARISMA_LOG_INFO("GPU stream creation failed (expected if no CUDA device)");
         }
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO("GPU stream test failed (expected if no CUDA device): {}", e.what());
+        QUARISMA_LOG_INFO("GPU stream test failed (expected if no CUDA device): {}", e.what());
     }
 }
 
 /**
  * @brief Test optimal chunk size calculation
  */
-XSIGMATEST(GpuMemoryTransfer, calculates_optimal_chunk_sizes)
+QUARISMATEST(GpuMemoryTransfer, calculates_optimal_chunk_sizes)
 {
     auto& transfer_manager = gpu_memory_transfer::instance();
 
@@ -182,19 +182,19 @@ XSIGMATEST(GpuMemoryTransfer, calculates_optimal_chunk_sizes)
         512 * 1024, transfer_direction::DEVICE_TO_DEVICE, device_enum::CUDA);
     EXPECT_GT(chunk_size_d2d, 0);
 
-    XSIGMA_LOG_INFO(
+    QUARISMA_LOG_INFO(
         "Optimal chunk sizes - H2D: {}, D2H: {}, D2D: {}",
         chunk_size_h2d,
         chunk_size_d2h,
         chunk_size_d2d);
 
-    XSIGMA_LOG_INFO("GPU memory transfer chunk size calculation test passed");
+    QUARISMA_LOG_INFO("GPU memory transfer chunk size calculation test passed");
 }
 
 /**
  * @brief Test transfer statistics and reporting
  */
-XSIGMATEST(GpuMemoryTransfer, provides_transfer_statistics)
+QUARISMATEST(GpuMemoryTransfer, provides_transfer_statistics)
 {
     auto& transfer_manager = gpu_memory_transfer::instance();
 
@@ -209,13 +209,13 @@ XSIGMATEST(GpuMemoryTransfer, provides_transfer_statistics)
     std::string cleared_stats = transfer_manager.get_transfer_statistics();
     EXPECT_TRUE(cleared_stats.empty() || !cleared_stats.empty());  // Should not crash
 
-    XSIGMA_LOG_INFO("GPU memory transfer statistics test passed");
+    QUARISMA_LOG_INFO("GPU memory transfer statistics test passed");
 }
 
 /**
  * @brief Test transfer queue management
  */
-XSIGMATEST(GpuMemoryTransfer, manages_transfer_queue)
+QUARISMATEST(GpuMemoryTransfer, manages_transfer_queue)
 {
     auto& transfer_manager = gpu_memory_transfer::instance();
 
@@ -227,18 +227,18 @@ XSIGMATEST(GpuMemoryTransfer, manages_transfer_queue)
         // Test cancelling all transfers (should not throw)
         transfer_manager.cancel_all_transfers();
 
-        XSIGMA_LOG_INFO("GPU memory transfer queue management test passed");
+        QUARISMA_LOG_INFO("GPU memory transfer queue management test passed");
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO("GPU memory transfer queue management failed: {}", e.what());
+        QUARISMA_LOG_INFO("GPU memory transfer queue management failed: {}", e.what());
     }
 }
 
 /**
  * @brief Test synchronous memory transfer (basic validation)
  */
-XSIGMATEST(GpuMemoryTransfer, performs_synchronous_transfers)
+QUARISMATEST(GpuMemoryTransfer, performs_synchronous_transfers)
 {
     auto& transfer_manager = gpu_memory_transfer::instance();
 
@@ -265,18 +265,18 @@ XSIGMATEST(GpuMemoryTransfer, performs_synchronous_transfers)
             EXPECT_EQ(host_data[i], result_data[i]);
         }
 
-        XSIGMA_LOG_INFO("GPU memory transfer synchronous transfer test passed");
+        QUARISMA_LOG_INFO("GPU memory transfer synchronous transfer test passed");
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO("GPU memory transfer synchronous test failed: {}", e.what());
+        QUARISMA_LOG_INFO("GPU memory transfer synchronous test failed: {}", e.what());
     }
 }
 
 /**
  * @brief Test asynchronous memory transfer (basic validation)
  */
-XSIGMATEST(GpuMemoryTransfer, performs_asynchronous_transfers)
+QUARISMATEST(GpuMemoryTransfer, performs_asynchronous_transfers)
 {
     auto& transfer_manager = gpu_memory_transfer::instance();
 
@@ -314,18 +314,18 @@ XSIGMATEST(GpuMemoryTransfer, performs_asynchronous_transfers)
             EXPECT_EQ(host_data[i], result_data[i]);
         }
 
-        XSIGMA_LOG_INFO("GPU memory transfer asynchronous transfer test passed");
+        QUARISMA_LOG_INFO("GPU memory transfer asynchronous transfer test passed");
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO("GPU memory transfer asynchronous test failed: {}", e.what());
+        QUARISMA_LOG_INFO("GPU memory transfer asynchronous test failed: {}", e.what());
     }
 }
 
 /**
  * @brief Test batch memory transfers
  */
-XSIGMATEST(GpuMemoryTransfer, performs_batch_transfers)
+QUARISMATEST(GpuMemoryTransfer, performs_batch_transfers)
 {
     auto& transfer_manager = gpu_memory_transfer::instance();
 
@@ -362,18 +362,18 @@ XSIGMATEST(GpuMemoryTransfer, performs_batch_transfers)
             EXPECT_EQ(src2[i], dst2[i]);
         }
 
-        XSIGMA_LOG_INFO("GPU memory transfer batch transfers test passed");
+        QUARISMA_LOG_INFO("GPU memory transfer batch transfers test passed");
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO("GPU memory transfer batch test failed: {}", e.what());
+        QUARISMA_LOG_INFO("GPU memory transfer batch test failed: {}", e.what());
     }
 }
 
 /**
  * @brief Test transfer error handling
  */
-XSIGMATEST(GpuMemoryTransfer, handles_transfer_errors)
+QUARISMATEST(GpuMemoryTransfer, handles_transfer_errors)
 {
     auto& transfer_manager = gpu_memory_transfer::instance();
 
@@ -389,13 +389,13 @@ XSIGMATEST(GpuMemoryTransfer, handles_transfer_errors)
             null_info.status == transfer_status::COMPLETED ||
             null_info.status == transfer_status::FAILED);
 
-        XSIGMA_LOG_INFO("GPU memory transfer error handling test passed");
+        QUARISMA_LOG_INFO("GPU memory transfer error handling test passed");
     }
     catch (const std::exception& e)
     {
         // Expected behavior for invalid operations
-        XSIGMA_LOG_INFO("Expected exception in transfer error handling: {}", e.what());
+        QUARISMA_LOG_INFO("Expected exception in transfer error handling: {}", e.what());
     }
 }
 
-#endif  // XSIGMA_HAS_CUDA
+#endif  // QUARISMA_HAS_CUDA

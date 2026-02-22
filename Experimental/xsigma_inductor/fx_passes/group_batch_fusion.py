@@ -1232,7 +1232,7 @@ def find_independent_subset_greedy(
       - min_fuse_set_size: Minimum size of the subset to consider. Subsets below
         this size will be ignored.
       - max_fuse_set_size: Maximum size of the subset to consider. Subsets will
-        be broken to be xsigma most this size.
+        be broken to be quarisma most this size.
     """
 
     # Compute all the children of `node` which are members of

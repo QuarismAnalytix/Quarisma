@@ -1,6 +1,6 @@
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
-#include <XSigma/core/Tensor.h>
-#include <XSigma/native/TensorCompare.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/native/TensorCompare.h>
 
 namespace at::native
 {

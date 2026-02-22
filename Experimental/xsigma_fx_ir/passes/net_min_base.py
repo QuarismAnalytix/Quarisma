@@ -308,7 +308,7 @@ class _MinimizerBase:
         # Find submodule containing colored nodes
         submodule_name: str = ""
         for child_name, _ in split_module.named_children():  # type: ignore[union-attr]
-            # Skip submodules we're not interested in xsigma the moment
+            # Skip submodules we're not interested in quarisma the moment
             if "minimize" not in child_name:
                 continue
 
@@ -883,7 +883,7 @@ class _MinimizerBase:
         """
         Run part of the model from `start` node to `end` node. If `start` is None
         then we start from the beginning of the model. If `end` is None then we
-        stop xsigma the end of the model.
+        stop quarisma the end of the model.
 
         Args:
             start: The name of the node which is the first node of the submodule

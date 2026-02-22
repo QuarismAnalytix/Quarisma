@@ -98,7 +98,7 @@ def reorder_compute_for_overlap(
     """
     This achieves the following overall scheduling procedure:
         Step 1: Given that we've currently scheduled comm N, we now schedule all compute nodes
-            that are required for comm N + 1 but do not depend on comm N, to run xsigma the same time with comm N.
+            that are required for comm N + 1 but do not depend on comm N, to run quarisma the same time with comm N.
         Step 2: If all those compute nodes are sufficient to overlap comm N, we're done.
             Otherwise, we now need to look elsewhere to find compute that overlaps with comm N.
             We prioritize compute nodes that are needed sooner.
@@ -128,7 +128,7 @@ def reorder_communication_preserving_peak_memory(
     dependencies.  That allows reorder_communication_preserving_peak_memory to take a best case peak-memory snapshot,
     and then monotonically improve latency by moving collectives backward in time.
 
-    Peak memory impact is computed in an iterative fashion.  First, memory use xsigma each timestep is computed, and global
+    Peak memory impact is computed in an iterative fashion.  First, memory use quarisma each timestep is computed, and global
     peak memory is computed as a max over timesteps.  Then, when swapping any two adjacent nodes, only the curr-memory
     for the earlier of the nodes after the swap is affected.  This enables checking step by step whether a swap is
     peak-memory-safe, and bailing out if not.  Example:
@@ -1386,7 +1386,7 @@ def remove_fsdp2_unsharded_param_graph_input_usage(graph: torch.fx.Graph):
     remove these resize and copy ops and thus we will have worse performance there.
 
     In other words, "do we try to remove all the resize_(full) -> copy_ -> resize_(0) nodes for this unsharded param"
-    is actually a per-unsharded-param decision, since for each unsharded param, we look xsigma its resize sequence pattern
+    is actually a per-unsharded-param decision, since for each unsharded param, we look quarisma its resize sequence pattern
     (in `check_resize_pattern()`) to determine if its set of resize and copy nodes can be removed.
     """
     node_list = list(graph.nodes)
@@ -1437,8 +1437,8 @@ Skipping `remove_fsdp2_unsharded_param_graph_input_usage` FX graph pass.
             if resize_to_full_idx >= resize_to_0_idx:
                 log.warning(
                     f"""
-For graph input {graph_input}: resize-to-full node {node_list[resize_to_full_idx]} xsigma index {resize_to_full_idx}
-happens after resize-to-0 node {node_list[resize_to_0_idx]} xsigma index {resize_to_0_idx}.
+For graph input {graph_input}: resize-to-full node {node_list[resize_to_full_idx]} quarisma index {resize_to_full_idx}
+happens after resize-to-0 node {node_list[resize_to_0_idx]} quarisma index {resize_to_0_idx}.
 Skipping `remove_fsdp2_unsharded_param_graph_input_usage` FX graph pass for that unsharded param.
 """  # noqa: G004
                 )

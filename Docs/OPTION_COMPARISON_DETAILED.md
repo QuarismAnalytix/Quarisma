@@ -95,11 +95,11 @@ unsigned char& inited = initialized.get();
 
 ### Code Example (TBB)
 ```cpp
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
     #include <tbb/enumerable_thread_specific.h>
     tbb::enumerable_thread_specific<unsigned char> initialized;
     unsigned char& inited = initialized.local();
-#elif XSIGMA_HAS_OPENMP
+#elif QUARISMA_HAS_OPENMP
     #pragma omp threadprivate(initialized)
     unsigned char initialized = 0;
 #else

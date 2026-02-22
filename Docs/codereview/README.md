@@ -1,4 +1,4 @@
-# XSigma Linter Code Review Documentation
+# Quarisma Linter Code Review Documentation
 
 **Review Date:** 2025-10-28  
 **Scope:** `Tools/linter/` directory and related files  
@@ -8,11 +8,11 @@
 
 ## Overview
 
-This directory contains comprehensive code review documentation for the XSigma linting infrastructure. The review covers architecture, code quality, Windows compatibility, cross-platform considerations, and actionable recommendations.
+This directory contains comprehensive code review documentation for the Quarisma linting infrastructure. The review covers architecture, code quality, Windows compatibility, cross-platform considerations, and actionable recommendations.
 
 ### Overall Assessment: **GOOD** (7.5/10)
 
-The XSigma linting infrastructure demonstrates solid engineering practices with a well-architected, modular design. No critical issues were found. The main areas for improvement are Windows compatibility enhancements and code quality refinements.
+The Quarisma linting infrastructure demonstrates solid engineering practices with a well-architected, modular design. No critical issues were found. The main areas for improvement are Windows compatibility enhancements and code quality refinements.
 
 ---
 
@@ -292,7 +292,7 @@ lintrunner
 - **Main Linter Documentation:** `Docs/readme/linter.md` (750+ lines)
 - **Adapter Guidelines:** `Tools/linter/adapters/README.md`
 - **Configuration:** `.lintrunner.toml`
-- **Centralized Config:** `Tools/linter/config/xsigma_linter_config.yaml`
+- **Centralized Config:** `Tools/linter/config/quarisma_linter_config.yaml`
 
 ### External Resources
 - **lintrunner:** https://github.com/justinchuby/lintrunner
@@ -358,7 +358,7 @@ For questions, feedback, or contributions related to this code review:
 
 ## License
 
-This documentation is part of the XSigma project and follows the same license as the main project.
+This documentation is part of the Quarisma project and follows the same license as the main project.
 
 ---
 

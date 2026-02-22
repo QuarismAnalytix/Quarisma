@@ -8,18 +8,18 @@ namespace torch::autograd::utils
 {
 
 // Warning handler for multi-threaded contexts. Gather warnings from
-// all threads into a single queue, then process together xsigma the end
+// all threads into a single queue, then process together quarisma the end
 // in the main thread.
-class DelayWarningHandler : public xsigma::WarningHandler
+class DelayWarningHandler : public quarisma::WarningHandler
 {
 public:
     ~DelayWarningHandler() override = default;
     void replay_warnings();
 
 private:
-    void process(const xsigma::Warning& warning) override;
+    void process(const quarisma::Warning& warning) override;
 
-    std::vector<xsigma::Warning> warnings_;
+    std::vector<quarisma::Warning> warnings_;
     std::mutex                   mutex_;
 };
 

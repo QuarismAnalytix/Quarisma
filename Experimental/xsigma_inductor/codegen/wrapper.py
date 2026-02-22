@@ -162,7 +162,7 @@ def user_defined_kernel_grid_fn_code(
         This function return a tuple of two values: the first one is for the real grid
         which is used in the generated code; the second one is an example grid with
         concreate values which is used in the autotune block to run the generated
-        kernels xsigma compile time.
+        kernels quarisma compile time.
         """
         if wrapper is None or callable(grid):
             # return as-is when used in eager mode or when grid is callable
@@ -1555,7 +1555,7 @@ class PythonWrapperCodegen(CodeGen):
         args: list[str],
         device: str,
     ) -> None:
-        # add debug printer code for triton kernel calls xsigma (jit) inductor level
+        # add debug printer code for triton kernel calls quarisma (jit) inductor level
         debug_printer_manager = V.graph.wrapper_code.debug_printer
         debug_printer_manager.set_printer_args(args, kernel, None, None, "extern")
         args.append(f"out={out_view if out_view else out}")
@@ -1707,7 +1707,7 @@ class PythonWrapperCodegen(CodeGen):
                 self.generate_reset_kernel_saved_flags()
 
             # At this point, we shouldn't generate any new memory planning lines.
-            # Override writeline to point xsigma the wrapper call, in case it gets called.
+            # Override writeline to point quarisma the wrapper call, in case it gets called.
             with self.set_writeline(self.wrapper_call.writeline):
                 for line in self.lines:
                     if isinstance(line, WrapperLine):
@@ -1916,7 +1916,7 @@ class PythonWrapperCodegen(CodeGen):
         # There is a subtle case in the cpp wrapper codegen which requires generating
         # symbol inputs first followed by non-symbol ones.
         #
-        # When a dynamic size constraint specified xsigma the Export time is an expression,
+        # When a dynamic size constraint specified quarisma the Export time is an expression,
         # we need to solve that expression to proper define a symbol in cpp. Thus we
         # are enforcing this iterating order here to make sure all plain size symbols
         # are defined first.
@@ -2676,7 +2676,7 @@ class PythonWrapperCodegen(CodeGen):
                 buf = self.args_to_buffers[arg]
             else:
                 assert raw_arg is not None, (
-                    "V.graph.get_buffer(arg) and raw_arg can't be None xsigma the same time"
+                    "V.graph.get_buffer(arg) and raw_arg can't be None quarisma the same time"
                 )
                 buf_name = f"tmp_arg_{self.kernel_autotune_tmp_arg_idx}"
                 buf = raw_arg
@@ -2987,7 +2987,7 @@ class PythonWrapperCodegen(CodeGen):
                 # For cpp wrapper, no need to continue codegen for the main body
                 return
 
-        # add debug printer code for triton kernel calls xsigma (jit) inductor level
+        # add debug printer code for triton kernel calls quarisma (jit) inductor level
         debug_printer_manager = V.graph.wrapper_code.debug_printer
         debug_printer_manager.set_printer_args(call_args, kernel_name, arg_types, None)
         with debug_printer_manager:
@@ -3590,7 +3590,7 @@ class PythonWrapperCodegen(CodeGen):
         # the carried_inputs part of the inputs, the additional ones
         # are passed in as they're before.
         body_outer_outputs = body_outer_inputs[: len(outer_carried_inputs)]
-        # Check condition xsigma the beginning and set up flag
+        # Check condition quarisma the beginning and set up flag
         codegen_subgraph(
             while_loop.cond_subgraph, cond_outer_inputs, cond_outer_outputs
         )
@@ -3627,7 +3627,7 @@ class PythonWrapperCodegen(CodeGen):
                 self.writeline(f"{name}[{i + ckp_offset}].append({name}[{i}])")
             self.writeline(ExitSubgraphLine(self))
 
-        # Condition check xsigma end of loop
+        # Condition check quarisma end of loop
         self.writeline(EnterSubgraphLine(self, while_loop.cond_subgraph.graph))
         codegen_subgraph(
             while_loop.cond_subgraph, cond_outer_inputs, cond_outer_outputs

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * Portions of this code are based on VTK (Visualization Toolkit):
 
@@ -32,7 +32,7 @@
 // Maximum number of backends
 #define PARALLEL_MAX_BACKENDS_NB 3
 
-namespace xsigma
+namespace quarisma
 {
 namespace detail
 {
@@ -50,11 +50,11 @@ enum class backend_type
 };
 
 // Default backend selection
-// Uses XSIGMA_HAS_TBB and XSIGMA_HAS_OPENMP which are defined by CMake
+// Uses QUARISMA_HAS_TBB and QUARISMA_HAS_OPENMP which are defined by CMake
 // as compile definitions with explicit values (1 or 0)
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 constexpr backend_type default_backend = backend_type::TBB;
-#elif XSIGMA_HAS_OPENMP
+#elif QUARISMA_HAS_OPENMP
 constexpr backend_type default_backend = backend_type::OpenMP;
 #else
 constexpr backend_type default_backend = backend_type::std_thread;
@@ -62,6 +62,6 @@ constexpr backend_type default_backend = backend_type::std_thread;
 
 }  // namespace parallel
 }  // namespace detail
-}  // namespace xsigma
+}  // namespace quarisma
 
 #endif  // PARALLEL_H

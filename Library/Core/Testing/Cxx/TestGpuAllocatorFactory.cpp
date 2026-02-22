@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * NOTE: This file tests the legacy gpu_allocator_factory which is deprecated.
  * The main GPU allocator functionality is now in allocator_gpu (see TestAllocatorCuda.cpp).
@@ -23,9 +23,9 @@
 
 #include "common/configure.h"
 #include "common/macros.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 
 #include <memory>
 #include <string>
@@ -35,13 +35,13 @@
 #include "memory/gpu/cuda_caching_allocator.h"
 #include "memory/gpu/gpu_allocator_factory.h"
 
-using namespace xsigma;
-using namespace xsigma::gpu;
+using namespace quarisma;
+using namespace quarisma::gpu;
 
 /**
  * @brief Test strategy recommendation functionality (legacy factory support)
  */
-XSIGMATEST(GpuAllocatorFactory, recommends_appropriate_strategies)
+QUARISMATEST(GpuAllocatorFactory, recommends_appropriate_strategies)
 {
     // Test strategy recommendation for different scenarios
     // Note: This tests the legacy factory pattern which is deprecated
@@ -63,13 +63,13 @@ XSIGMATEST(GpuAllocatorFactory, recommends_appropriate_strategies)
     EXPECT_TRUE(
         strategy3 == gpu_allocation_strategy::POOL || strategy3 == gpu_allocation_strategy::DIRECT);
 
-    XSIGMA_LOG_INFO("GPU allocator factory strategy recommendation test passed");
+    QUARISMA_LOG_INFO("GPU allocator factory strategy recommendation test passed");
 }
 
 /**
  * @brief Test device validation functionality (legacy factory support)
  */
-XSIGMATEST(GpuAllocatorFactory, validates_device_support_correctly)
+QUARISMATEST(GpuAllocatorFactory, validates_device_support_correctly)
 {
     // Test CUDA device validation
     // Note: This tests the legacy factory pattern which is deprecated
@@ -95,13 +95,13 @@ XSIGMATEST(GpuAllocatorFactory, validates_device_support_correctly)
         gpu_allocation_strategy::DIRECT, device_enum::CUDA, 999);
     EXPECT_FALSE(invalid_device);  // Should fail for invalid device index
 
-    XSIGMA_LOG_INFO("GPU allocator factory device validation test passed");
+    QUARISMA_LOG_INFO("GPU allocator factory device validation test passed");
 }
 
 /**
  * @brief Test strategy name conversion
  */
-XSIGMATEST(GpuAllocatorFactory, provides_readable_strategy_names)
+QUARISMATEST(GpuAllocatorFactory, provides_readable_strategy_names)
 {
     // Test strategy name conversion
     std::string direct_name = gpu_allocator_factory::strategy_name(gpu_allocation_strategy::DIRECT);
@@ -119,19 +119,19 @@ XSIGMATEST(GpuAllocatorFactory, provides_readable_strategy_names)
     EXPECT_NE(direct_name, caching_name);
     EXPECT_NE(pool_name, caching_name);
 
-    XSIGMA_LOG_INFO(
+    QUARISMA_LOG_INFO(
         "Strategy names: DIRECT='{}', POOL='{}', CACHING='{}'",
         direct_name,
         pool_name,
         caching_name);
 
-    XSIGMA_LOG_INFO("GPU allocator factory strategy names test passed");
+    QUARISMA_LOG_INFO("GPU allocator factory strategy names test passed");
 }
 
 /**
  * @brief Test configuration creation for different use cases
  */
-XSIGMATEST(GpuAllocatorFactory, creates_optimized_configurations)
+QUARISMATEST(GpuAllocatorFactory, creates_optimized_configurations)
 {
     // Test default configuration creation
     auto default_config = gpu_allocator_config::create_default(gpu_allocation_strategy::DIRECT, 0);
@@ -154,13 +154,13 @@ XSIGMATEST(GpuAllocatorFactory, creates_optimized_configurations)
     EXPECT_GT(pde_config.pool_min_block_size, 0);
     EXPECT_GT(pde_config.pool_max_block_size, pde_config.pool_min_block_size);
 
-    XSIGMA_LOG_INFO("GPU allocator factory configuration creation test passed");
+    QUARISMA_LOG_INFO("GPU allocator factory configuration creation test passed");
 }
 
 /**
  * @brief Test caching allocator creation
  */
-XSIGMATEST(GpuAllocatorFactory, creates_caching_allocators)
+QUARISMATEST(GpuAllocatorFactory, creates_caching_allocators)
 {
     // Test caching allocator creation
     gpu_allocator_config config;
@@ -180,11 +180,11 @@ XSIGMATEST(GpuAllocatorFactory, creates_caching_allocators)
         EXPECT_NE(nullptr, ptr);
         float_allocator->deallocate(ptr, 1000);
 
-        XSIGMA_LOG_INFO("GPU allocator factory caching allocator creation test passed");
+        QUARISMA_LOG_INFO("GPU allocator factory caching allocator creation test passed");
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "Caching allocator creation failed (expected if no CUDA device): {}", e.what());
         // This is acceptable if no CUDA device is available
     }
@@ -193,7 +193,7 @@ XSIGMATEST(GpuAllocatorFactory, creates_caching_allocators)
 /**
  * @brief Test factory error handling
  */
-XSIGMATEST(GpuAllocatorFactory, handles_invalid_configurations)
+QUARISMATEST(GpuAllocatorFactory, handles_invalid_configurations)
 {
     // Test invalid device configuration
     gpu_allocator_config invalid_config;
@@ -211,16 +211,16 @@ XSIGMATEST(GpuAllocatorFactory, handles_invalid_configurations)
     {
         // Expected behavior for invalid configuration
         EXPECT_TRUE(true);  // Test passes if exception is thrown
-        XSIGMA_LOG_INFO("Expected exception for invalid configuration: {}", e.what());
+        QUARISMA_LOG_INFO("Expected exception for invalid configuration: {}", e.what());
     }
 
-    XSIGMA_LOG_INFO("GPU allocator factory error handling test passed");
+    QUARISMA_LOG_INFO("GPU allocator factory error handling test passed");
 }
 
 /**
  * @brief Test factory with different template parameters
  */
-XSIGMATEST(GpuAllocatorFactory, supports_different_template_parameters)
+QUARISMATEST(GpuAllocatorFactory, supports_different_template_parameters)
 {
     gpu_allocator_config config;
     config.strategy        = gpu_allocation_strategy::CACHING;
@@ -251,13 +251,13 @@ XSIGMATEST(GpuAllocatorFactory, supports_different_template_parameters)
             }
         }
 
-        XSIGMA_LOG_INFO("GPU allocator factory template parameters test passed");
+        QUARISMA_LOG_INFO("GPU allocator factory template parameters test passed");
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "Template allocator creation failed (expected if no CUDA device): {}", e.what());
     }
 }
 
-#endif  // XSIGMA_HAS_CUDA
+#endif  // QUARISMA_HAS_CUDA

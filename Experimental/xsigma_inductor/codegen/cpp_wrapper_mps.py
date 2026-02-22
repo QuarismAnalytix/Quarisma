@@ -272,7 +272,7 @@ class CppWrapperMps(CppWrapperGpu):
         # The existing codegen should produce something like:
         # const char* mps_lib_0_source = R"MTL(...shader_source...)MTL";
         # instead of:
-        # xsigma::native::mps::DynamicMetalShaderLibrary mps_lib_0(R"MTL(...shader_source...)MTL");
+        # quarisma::native::mps::DynamicMetalShaderLibrary mps_lib_0(R"MTL(...shader_source...)MTL");
 
         # Generate thread-safe lazy singleton with RAII for each library
         for lib_name in shader_libraries:

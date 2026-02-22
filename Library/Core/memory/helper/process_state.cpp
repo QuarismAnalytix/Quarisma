@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,12 +18,12 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "memory/helper/process_state.h"
@@ -47,7 +47,7 @@
 #include "util/exception.h"
 #include "util/string_util.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 /*static*/ process_state* process_state::singleton()
@@ -107,7 +107,7 @@ Allocator* process_state::GetCPUAllocator(int numa_node)
         bool       use_allocator_bfc      = false;
         bool const use_allocator_tracking = false;
 
-        XSIGMA_UNUSED auto status = xsigma::utils::read_env_bool(
+        QUARISMA_UNUSED auto status = quarisma::utils::read_env_bool(
             "CPU_ALLOCATOR_USE_BFC", alloc_visitors_defined, &use_allocator_bfc);
 
         Allocator*     allocator = nullptr;
@@ -121,21 +121,21 @@ Allocator* process_state::GetCPUAllocator(int numa_node)
             // TODO(reedwm): evaluate whether 64GB by default is the best choice.
             int64_t cpu_mem_limit_in_mb = -1;
 
-            XSIGMA_UNUSED auto const status2 = xsigma::utils::read_env_int64(
+            QUARISMA_UNUSED auto const status2 = quarisma::utils::read_env_int64(
                 "CPU_BFC_MEM_LIMIT_IN_MB", 1LL << 16 /*64GB max by default*/, &cpu_mem_limit_in_mb);
             int64_t const cpu_mem_limit = cpu_mem_limit_in_mb * (1LL << 20);
-            XSIGMA_CHECK_DEBUG(sub_allocator != nullptr);
+            QUARISMA_CHECK_DEBUG(sub_allocator != nullptr);
 
             allocator_bfc::Options allocator_opts;
             allocator_opts.allow_growth = true;
 
             allocator = new allocator_bfc(
-                std::unique_ptr<xsigma::sub_allocator>(sub_allocator),
+                std::unique_ptr<quarisma::sub_allocator>(sub_allocator),
                 cpu_mem_limit,
                 /*name=*/"bfc_cpu_allocator_for_gpu",
                 allocator_opts);
 
-            XSIGMA_LOG_INFO(
+            QUARISMA_LOG_INFO(
                 "Using allocator_bfc with memory limit of {} MB for process_state CPU allocator",
                 cpu_mem_limit_in_mb);
         }
@@ -144,11 +144,11 @@ Allocator* process_state::GetCPUAllocator(int numa_node)
             allocator = new allocator_pool(
                 /*pool_size_limit=*/100,
                 /*auto_resize=*/true,
-                std::unique_ptr<xsigma::sub_allocator>(sub_allocator),
+                std::unique_ptr<quarisma::sub_allocator>(sub_allocator),
                 std::unique_ptr<round_up_interface>(new NoopRounder),
                 "cpu_pool");
 
-            XSIGMA_LOG_INFO(
+            QUARISMA_LOG_INFO(
                 "Using allocator_pool for process_state CPU allocator numa_enabled_={} "
                 "numa_node={}",
                 numa_enabled_,
@@ -173,7 +173,7 @@ Allocator* process_state::GetCPUAllocator(int numa_node)
         }
         if (sub_allocator == nullptr)
         {
-            XSIGMA_CHECK_DEBUG(cpu_alloc_visitors_.empty() && cpu_free_visitors_.empty());
+            QUARISMA_CHECK_DEBUG(cpu_alloc_visitors_.empty() && cpu_free_visitors_.empty());
         }
     }
     return cpu_allocators_[numa_node];
@@ -181,9 +181,9 @@ Allocator* process_state::GetCPUAllocator(int numa_node)
 
 void process_state::AddCPUAllocVisitor(sub_allocator::Visitor visitor)
 {
-    XSIGMA_LOG_INFO("AddCPUAllocVisitor");
+    QUARISMA_LOG_INFO("AddCPUAllocVisitor");
     std::scoped_lock const lock(mu_);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         cpu_allocators_.empty(),
         "AddCPUAllocVisitor must be called prior to first call to "
         "process_state::GetCPUAllocator");
@@ -193,7 +193,7 @@ void process_state::AddCPUAllocVisitor(sub_allocator::Visitor visitor)
 void process_state::AddCPUFreeVisitor(sub_allocator::Visitor visitor)
 {
     std::scoped_lock const lock(mu_);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         cpu_allocators_.empty(),
         "AddCPUFreeVisitor must be called prior to first call to "
         "process_state::GetCPUAllocator");
@@ -222,4 +222,4 @@ void process_state::TestOnlyReset()
     cpu_al_.clear();
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

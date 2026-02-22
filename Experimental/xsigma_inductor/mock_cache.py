@@ -67,7 +67,7 @@ class _GlobalItemStats(Stats):
         self.cache = {}
 
 
-# The cache states are thread-local so if we're running multiple tests xsigma once
+# The cache states are thread-local so if we're running multiple tests quarisma once
 # they won't cross contaminate. However - it needs to be "global" because we
 # allow code to create new cache clients which refer to the same cache (because
 # it's a remote cache).

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "statistical_analyzer.h"
@@ -43,7 +43,7 @@
 #include <limits>
 #include <numeric>
 
-namespace xsigma
+namespace quarisma
 {
 
 //=============================================================================
@@ -144,7 +144,7 @@ void statistical_analyzer::add_time_series_point(
         return;
     }
 
-    xsigma::time_series_point point;
+    quarisma::time_series_point point;
     point.timestamp_ = std::chrono::high_resolution_clock::now();
     point.value_     = value;
     point.label_     = label;
@@ -156,47 +156,47 @@ void statistical_analyzer::add_time_series_point(
     trim_time_series_if_needed(series);
 }
 
-xsigma::statistical_metrics statistical_analyzer::calculate_timing_stats(
+quarisma::statistical_metrics statistical_analyzer::calculate_timing_stats(
     const std::string& name) const
 {
     std::scoped_lock const lock(timing_mutex_);
     auto                   it = timing_data_.find(name);
     if (it == timing_data_.end())
     {
-        return xsigma::statistical_metrics{};
+        return quarisma::statistical_metrics{};
     }
     return calculate_metrics(it->second);
 }
 
-xsigma::statistical_metrics statistical_analyzer::calculate_memory_stats(
+quarisma::statistical_metrics statistical_analyzer::calculate_memory_stats(
     const std::string& name) const
 {
     std::scoped_lock const lock(memory_mutex_);
     auto                   it = memory_data_.find(name);
     if (it == memory_data_.end())
     {
-        return xsigma::statistical_metrics{};
+        return quarisma::statistical_metrics{};
     }
     return calculate_metrics(it->second);
 }
 
-xsigma::statistical_metrics statistical_analyzer::calculate_custom_stats(
+quarisma::statistical_metrics statistical_analyzer::calculate_custom_stats(
     const std::string& name) const
 {
     std::scoped_lock const lock(custom_mutex_);
     auto                   it = custom_data_.find(name);
     if (it == custom_data_.end())
     {
-        return xsigma::statistical_metrics{};
+        return quarisma::statistical_metrics{};
     }
     return calculate_metrics(it->second);
 }
 
-xsigma_map<std::string, xsigma::statistical_metrics>
+quarisma_map<std::string, quarisma::statistical_metrics>
 statistical_analyzer::calculate_all_timing_stats() const
 {
     std::scoped_lock const                               lock(timing_mutex_);
-    xsigma_map<std::string, xsigma::statistical_metrics> results;
+    quarisma_map<std::string, quarisma::statistical_metrics> results;
 
     for (const auto& pair : timing_data_)
     {
@@ -206,11 +206,11 @@ statistical_analyzer::calculate_all_timing_stats() const
     return results;
 }
 
-xsigma_map<std::string, xsigma::statistical_metrics>
+quarisma_map<std::string, quarisma::statistical_metrics>
 statistical_analyzer::calculate_all_memory_stats() const
 {
     std::scoped_lock const                               lock(memory_mutex_);
-    xsigma_map<std::string, xsigma::statistical_metrics> results;
+    quarisma_map<std::string, quarisma::statistical_metrics> results;
 
     for (const auto& pair : memory_data_)
     {
@@ -220,11 +220,11 @@ statistical_analyzer::calculate_all_memory_stats() const
     return results;
 }
 
-xsigma_map<std::string, xsigma::statistical_metrics>
+quarisma_map<std::string, quarisma::statistical_metrics>
 statistical_analyzer::calculate_all_custom_stats() const
 {
     std::scoped_lock const                               lock(custom_mutex_);
-    xsigma_map<std::string, xsigma::statistical_metrics> results;
+    quarisma_map<std::string, quarisma::statistical_metrics> results;
 
     for (const auto& pair : custom_data_)
     {
@@ -234,7 +234,7 @@ statistical_analyzer::calculate_all_custom_stats() const
     return results;
 }
 
-std::vector<xsigma::time_series_point> statistical_analyzer::get_time_series(
+std::vector<quarisma::time_series_point> statistical_analyzer::get_time_series(
     const std::string& series_name) const
 {
     std::scoped_lock const lock(time_series_mutex_);
@@ -247,14 +247,14 @@ std::vector<xsigma::time_series_point> statistical_analyzer::get_time_series(
     return it->second;
 }
 
-xsigma::statistical_metrics statistical_analyzer::analyze_time_series(
+quarisma::statistical_metrics statistical_analyzer::analyze_time_series(
     const std::string& series_name) const
 {
     std::scoped_lock const lock(time_series_mutex_);
     auto                   it = time_series_data_.find(series_name);
     if (it == time_series_data_.end())
     {
-        return xsigma::statistical_metrics{};
+        return quarisma::statistical_metrics{};
     }
 
     std::vector<double> values;
@@ -264,7 +264,7 @@ xsigma::statistical_metrics statistical_analyzer::analyze_time_series(
         it->second.begin(),
         it->second.end(),
         std::back_inserter(values),
-        [](const xsigma::time_series_point& point) { return point.value_; });
+        [](const quarisma::time_series_point& point) { return point.value_; });
 
     return calculate_metrics(values);
 }
@@ -468,10 +468,10 @@ void statistical_analyzer::set_worker_threads_hint(size_t threads)
     worker_threads_hint_ = threads;
 }
 
-xsigma::statistical_metrics statistical_analyzer::calculate_metrics(
+quarisma::statistical_metrics statistical_analyzer::calculate_metrics(
     const std::vector<double>& data) const
 {
-    xsigma::statistical_metrics metrics;
+    quarisma::statistical_metrics metrics;
 
     if (data.empty())
     {
@@ -605,7 +605,7 @@ void statistical_analyzer::trim_series_if_needed(std::vector<double>& series) co
 }
 
 void statistical_analyzer::trim_time_series_if_needed(
-    std::vector<xsigma::time_series_point>& series) const
+    std::vector<quarisma::time_series_point>& series) const
 {
     if (series.size() > max_samples_per_series_)
     {
@@ -620,7 +620,7 @@ void statistical_analyzer::trim_time_series_if_needed(
 //=============================================================================
 
 statistical_analysis_scope::statistical_analysis_scope(
-    xsigma::statistical_analyzer& analyzer, std::string name)
+    quarisma::statistical_analyzer& analyzer, std::string name)
     : analyzer_(analyzer),
       name_(std::move(name)),
       start_time_(std::chrono::high_resolution_clock::now())
@@ -652,11 +652,11 @@ void statistical_analysis_scope::add_checkpoint(const std::string& label)
     analyzer_.add_timing_sample(name_ + "_" + label, duration_ms);
 }
 
-xsigma::statistical_metrics statistical_analysis_scope::get_checkpoint_stats() const
+quarisma::statistical_metrics statistical_analysis_scope::get_checkpoint_stats() const
 {
     if (checkpoints_.empty())
     {
-        return xsigma::statistical_metrics{};
+        return quarisma::statistical_metrics{};
     }
 
     std::vector<double> checkpoint_times;
@@ -673,4 +673,4 @@ xsigma::statistical_metrics statistical_analysis_scope::get_checkpoint_stats() c
     return analyzer_.calculate_metrics(checkpoint_times);
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

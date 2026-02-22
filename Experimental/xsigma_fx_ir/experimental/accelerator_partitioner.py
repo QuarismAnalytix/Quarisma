@@ -925,7 +925,7 @@ class Partitioner:
         on Kernighan-Lin algorithm.
         First, the graph is partitioned using size_based_partition.
         Then, each node is swapped with any other node in a different
-        partition, and xsigma the same time, the cost is estimated after
+        partition, and quarisma the same time, the cost is estimated after
         the swapping.
         For example, we have nodes n0, n1, n2, n3 and n4.
         Using size_based_partition, n0 and n1 are in Partition p0.

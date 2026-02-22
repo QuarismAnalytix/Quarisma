@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide provides step-by-step instructions for implementing and using the `cmake-format` integration in XSigma.
+This guide provides step-by-step instructions for implementing and using the `cmake-format` integration in Quarisma.
 
 ## Files Created/Modified
 
@@ -249,15 +249,15 @@ Test on:
 
 - [cmake-format Documentation](https://cmake-format.readthedocs.io/)
 - [cmakelang GitHub](https://github.com/cheshirekow/cmake_format)
-- [XSigma Linter Documentation](readme/linter.md)
-- [XSigma Coding Standards](.augment/rules/coding.md)
+- [Quarisma Linter Documentation](readme/linter.md)
+- [Quarisma Coding Standards](.augment/rules/coding.md)
 
 ## Support
 
 For issues or questions:
 1. Check the troubleshooting section above
 2. Review cmake-format documentation
-3. Open an issue in the XSigma repository
+3. Open an issue in the Quarisma repository
 
 ## Next Steps
 

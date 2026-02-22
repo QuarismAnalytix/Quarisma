@@ -12,7 +12,7 @@
 #include "logging/logger.h"
 #include "util/string_util.h"
 
-namespace xsigma
+namespace quarisma
 {
 // ============================================================================
 // Exception Mode Configuration
@@ -22,7 +22,7 @@ namespace
 {
 // Global exception mode with atomic access for thread safety
 std::atomic<exception_mode> g_exception_mode_{
-#ifdef XSIGMA_DEFAULT_EXCEPTION_MODE_LOG_FATAL
+#ifdef QUARISMA_DEFAULT_EXCEPTION_MODE_LOG_FATAL
     exception_mode::LOG_FATAL
 #else
     exception_mode::THROW
@@ -38,7 +38,7 @@ std::function<std::string(void)>* GetFetchStackTrace()  // NOLINT
     static std::function<std::string(void)> func = []()
     {
         // Skip 2 frames: this lambda and GetFetchStackTrace
-        return xsigma::back_trace::print(/*frames_to_skip=*/2, /*maximum_number_of_frames=*/32);
+        return quarisma::back_trace::print(/*frames_to_skip=*/2, /*maximum_number_of_frames=*/32);
     };
     return &func;
 };
@@ -74,23 +74,23 @@ void init_exception_mode_from_env() noexcept
         return;
     }
 
-    const char* env_mode = std::getenv("XSIGMA_EXCEPTION_MODE");
+    const char* env_mode = std::getenv("QUARISMA_EXCEPTION_MODE");
     if (env_mode != nullptr)
     {
         std::string mode_str(env_mode);
         if (mode_str == "LOG_FATAL" || mode_str == "log_fatal")
         {
             g_exception_mode_.store(exception_mode::LOG_FATAL, std::memory_order_relaxed);
-            XSIGMA_LOG_INFO("Exception mode set to LOG_FATAL from environment");
+            QUARISMA_LOG_INFO("Exception mode set to LOG_FATAL from environment");
         }
         else if (mode_str == "THROW" || mode_str == "throw")
         {
             g_exception_mode_.store(exception_mode::THROW, std::memory_order_relaxed);
-            XSIGMA_LOG_INFO("Exception mode set to THROW from environment");
+            QUARISMA_LOG_INFO("Exception mode set to THROW from environment");
         }
         else
         {
-            XSIGMA_LOG_WARNING("Invalid XSIGMA_EXCEPTION_MODE value: {}. Using default.", mode_str);
+            QUARISMA_LOG_WARNING("Invalid QUARISMA_EXCEPTION_MODE value: {}. Using default.", mode_str);
         }
     }
 
@@ -193,7 +193,7 @@ void exception::refresh_what()
 {
     what_.reset();
     what_without_backtrace_ = compute_what(/*include_backtrace*/ true);
-    XSIGMA_LOG_ERROR("Error message: {}", what());
+    QUARISMA_LOG_ERROR("Error message: {}", what());
 }
 
 //-----------------------------------------------------------------------------
@@ -214,7 +214,7 @@ namespace details
 {
 void check_fail(const char* func, const char* file, int line, const std::string& msg)
 {
-    throw xsigma::exception({func, file, line}, msg, xsigma::exception_category::GENERIC);
+    throw quarisma::exception({func, file, line}, msg, quarisma::exception_category::GENERIC);
 }
 }  // namespace details
-}  // namespace xsigma
+}  // namespace quarisma

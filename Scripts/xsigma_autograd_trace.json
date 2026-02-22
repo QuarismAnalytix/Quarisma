@@ -32,8 +32,8 @@
   },
   {
     "ph": "X", "cat": "Trace", "ts": 6446896533190.000, "dur": 74.000,
-    "pid": "Spans", "tid": "XSigma Profiler",
-    "name": "XSigma Profiler (0)",
+    "pid": "Spans", "tid": "Quarisma Profiler",
+    "name": "Quarisma Profiler (0)",
     "args": {
       "Op count": 0
     }
@@ -46,13 +46,13 @@
     }
   },
   {
-    "name": "Iteration Start: XSigma Profiler", "ph": "i", "s": "g",
-    "pid": "Traces", "tid": "Trace XSigma Profiler", "ts": 6446896533190.000
+    "name": "Iteration Start: Quarisma Profiler", "ph": "i", "s": "g",
+    "pid": "Traces", "tid": "Trace Quarisma Profiler", "ts": 6446896533190.000
   },
   {
     "name": "Record Window End", "ph": "i", "s": "g",
     "pid": "", "tid": "", "ts": 6446896533323.000
   }
   ],
-  "traceName": "xsigma_autograd_trace.json"
+  "traceName": "quarisma_autograd_trace.json"
 }

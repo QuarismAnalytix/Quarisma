@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -37,16 +37,16 @@ limitations under the License.
 #include <string_view>  // for string_view
 #include <utility>      // for exchange
 
-#include "common/export.h"  // for XSIGMA_API
+#include "common/export.h"  // for QUARISMA_API
 
-namespace xsigma
+namespace quarisma
 {
 
 constexpr std::string_view kProfilerLockContention = "Another profiling session active.";
 
 // Handle for the profiler lock. At most one instance of this class, the
 // "active" instance, owns the profiler lock.
-class XSIGMA_VISIBILITY ProfilerLock
+class QUARISMA_VISIBILITY ProfilerLock
 {
 public:
     // Returns true if the process has active profiling session.
@@ -86,4 +86,4 @@ private:
     bool active_ = false;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

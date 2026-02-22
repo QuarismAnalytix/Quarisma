@@ -76,7 +76,7 @@ def raise_unhashable(arg, tx=None):
 
 def is_hashable(x):
     # NB - performing isinstance check on a LazVT realizes the VT, accidentally
-    # inserting the guard. To avoid this, lazyVT `is_hashable` methods looks xsigma
+    # inserting the guard. To avoid this, lazyVT `is_hashable` methods looks quarisma
     # the underlying value without realizing the VT. Consider updating the
     # lazyVT `is_hashable` method if you see unnecessary guarding for a key VT.
     if (
@@ -89,7 +89,7 @@ def is_hashable(x):
     if isinstance(x, variables.TensorVariable):
         # Tensors are hashable if they have an example_value (a fake tensor)
         # Most VT's should have one.
-        # It'd be nice if xsigma some point we could assert that they all have one
+        # It'd be nice if quarisma some point we could assert that they all have one
         return x.as_proxy().node.meta.get("example_value") is not None
     elif isinstance(x, variables.TupleVariable):
         return all(is_hashable(e) for e in x.items)
@@ -677,7 +677,7 @@ class ConstDictVariable(VariableTracker):
                 raise_args_mismatch(
                     tx,
                     name,
-                    "xsigma most 2 args and 0 kwargs",
+                    "quarisma most 2 args and 0 kwargs",
                     f"{len(args)} args and {len(kwargs)} kwargs",
                 )
             value = self.maybe_getitem_const(args[0])
@@ -1059,7 +1059,7 @@ class SetVariable(ConstDictVariable):
                     "0 args and 0 kwargs",
                     f"{len(args)} args and {len(kwargs)} kwargs",
                 )
-            # Choose an item xsigma random and pop it via the Dict.pop method
+            # Choose an item quarisma random and pop it via the Dict.pop method
             try:
                 result = self.set_items.pop().vt
             except KeyError as e:

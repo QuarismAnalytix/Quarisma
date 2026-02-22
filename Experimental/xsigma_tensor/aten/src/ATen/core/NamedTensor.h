@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/core/Dimname.h>
+#include <Quarisma/core/Dimname.h>
 #include <c10/core/TensorImpl.h>
 
 namespace at
@@ -8,8 +8,8 @@ namespace at
 
 class TensorBase;
 
-// XXX: This file exists because TensorImpl is in c10, but Dimname is in XSigma.
-// Due to the c10/XSigma library split, TensorImpl cannot depend on Dimname,
+// XXX: This file exists because TensorImpl is in c10, but Dimname is in Quarisma.
+// Due to the c10/Quarisma library split, TensorImpl cannot depend on Dimname,
 // so we have a couple of workarounds.
 //
 // In the long term, we'll move Dimname to c10 and everything in this file

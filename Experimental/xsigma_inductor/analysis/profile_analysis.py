@@ -55,8 +55,8 @@ def register_adapter(
         if isinstance(aten, str):
             adapters_map[aten] = func
         else:
-            for xsigma in aten:
-                adapters_map[xsigma] = func
+            for quarisma in aten:
+                adapters_map[quarisma] = func
         return func
 
     return decorator

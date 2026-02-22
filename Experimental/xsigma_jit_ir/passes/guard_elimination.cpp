@@ -52,7 +52,7 @@ struct GuardElimination
             {
                 // grab the next node before we move this one all the way back
                 it++;
-                auto guardee = n->inputs().xsigma(0)->node();
+                auto guardee = n->inputs().quarisma(0)->node();
                 // alias analysis will try to hoist a node out of a loop
                 // if asked. if guardee is in a loop, it should only
                 // be moved to the beginning of the basic block
@@ -69,7 +69,7 @@ struct GuardElimination
                         "Moved ",
                         n->output()->debugName(),
                         " to ",
-                        n->inputs().xsigma(0)->debugName());
+                        n->inputs().quarisma(0)->debugName());
                 }
             }
             else
@@ -161,7 +161,7 @@ struct GuardElimination
                 std::vector<Use> uses = input->uses();
                 while (!uses.empty())
                 {
-                    auto use = uses.xsigma(uses.size() - 1);
+                    auto use = uses.quarisma(uses.size() - 1);
                     uses.pop_back();
 
                     // not all uses are guarded
@@ -243,11 +243,11 @@ struct GuardElimination
         {
             auto n = *it;
             if (n->kind() == prim::Guard && guardsOutput(n) &&
-                removableGuard(n->inputs().xsigma(0)->node()))
+                removableGuard(n->inputs().quarisma(0)->node()))
             {
                 auto pttp = n->output()->type();
-                n->output()->replaceAllUsesWith(n->inputs().xsigma(0));
-                n->inputs().xsigma(0)->setType(pttp);
+                n->output()->replaceAllUsesWith(n->inputs().quarisma(0));
+                n->inputs().quarisma(0)->setType(pttp);
                 GRAPH_UPDATE("Eliminating the redundant guard ", n->output()->debugName());
                 it.destroyCurrent();
             }

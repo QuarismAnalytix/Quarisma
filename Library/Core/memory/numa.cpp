@@ -2,7 +2,7 @@
 
 #include "common/macros.h"
 
-#if XSIGMA_HAS_NUMA
+#if QUARISMA_HAS_NUMA
 #include <numa.h>
 #include <numaif.h>
 #include <unistd.h>
@@ -10,20 +10,20 @@
 #include "util/exception.h"
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 bool IsNUMAEnabled()
 {
-#if XSIGMA_HAS_NUMA
+#if QUARISMA_HAS_NUMA
     return numa_available() >= 0;
 #else
     return false;
 #endif
 }
 
-void NUMABind(XSIGMA_UNUSED int numa_node_id)
+void NUMABind(QUARISMA_UNUSED int numa_node_id)
 {
-#if XSIGMA_HAS_NUMA
+#if QUARISMA_HAS_NUMA
     if (numa_node_id < 0)
     {
         return;
@@ -32,7 +32,7 @@ void NUMABind(XSIGMA_UNUSED int numa_node_id)
     {
         return;
     }
-    XSIGMA_CHECK(numa_node_id <= numa_max_node(), "NUMA node id ", numa_node_id, " is unavailable");
+    QUARISMA_CHECK(numa_node_id <= numa_max_node(), "NUMA node id ", numa_node_id, " is unavailable");
 
     auto* bm = numa_allocate_nodemask();
     numa_bitmask_setbit(bm, numa_node_id);
@@ -43,15 +43,15 @@ void NUMABind(XSIGMA_UNUSED int numa_node_id)
 
 int GetNUMANode(const void* ptr)
 {
-#if XSIGMA_HAS_NUMA
+#if QUARISMA_HAS_NUMA
     if (!IsNUMAEnabled())
     {
         return -1;
     }
-    XSIGMA_CHECK(ptr != nullptr, "");
+    QUARISMA_CHECK(ptr != nullptr, "");
 
     int numa_node = -1;
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         get_mempolicy(&numa_node, nullptr, 0, const_cast<void*>(ptr), MPOL_F_NODE | MPOL_F_ADDR) ==
             0,
         "Unable to get memory policy, errno:",
@@ -65,7 +65,7 @@ int GetNUMANode(const void* ptr)
 
 int GetNumNUMANodes()
 {
-#if XSIGMA_HAS_NUMA
+#if QUARISMA_HAS_NUMA
     if (!IsNUMAEnabled())
     {
         return -1;
@@ -78,7 +78,7 @@ int GetNumNUMANodes()
 
 void NUMAMove(void* ptr, size_t size, int numa_node_id)
 {
-#if XSIGMA_HAS_NUMA
+#if QUARISMA_HAS_NUMA
     if (numa_node_id < 0)
     {
         return;
@@ -87,14 +87,14 @@ void NUMAMove(void* ptr, size_t size, int numa_node_id)
     {
         return;
     }
-    XSIGMA_CHECK(ptr != nullptr, "");
+    QUARISMA_CHECK(ptr != nullptr, "");
 
     uintptr_t page_start_ptr = ((reinterpret_cast<uintptr_t>(ptr)) & ~(getpagesize() - 1));
     ptrdiff_t offset         = reinterpret_cast<uintptr_t>(ptr) - page_start_ptr;
     // Avoid extra dynamic allocation and NUMA api calls
-    XSIGMA_CHECK(static_cast<unsigned>(numa_node_id) < sizeof(unsigned long) * 8, "");
+    QUARISMA_CHECK(static_cast<unsigned>(numa_node_id) < sizeof(unsigned long) * 8, "");
     unsigned long mask = 1UL << numa_node_id;
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         mbind(
             reinterpret_cast<void*>(page_start_ptr),
             size + offset,
@@ -112,7 +112,7 @@ void NUMAMove(void* ptr, size_t size, int numa_node_id)
 
 int GetCurrentNUMANode()
 {
-#if XSIGMA_HAS_NUMA
+#if QUARISMA_HAS_NUMA
     if (!IsNUMAEnabled())
     {
         return -1;
@@ -124,4 +124,4 @@ int GetCurrentNUMANode()
 #endif
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

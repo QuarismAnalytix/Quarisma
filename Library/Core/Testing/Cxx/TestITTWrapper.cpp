@@ -10,19 +10,19 @@
  * - Domain creation
  */
 
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-#if XSIGMA_HAS_ITT
+#if QUARISMA_HAS_ITT
 
 #include "profiler/itt/itt_wrapper.h"
 
-using namespace xsigma::profiler;
+using namespace quarisma::profiler;
 
 // ============================================================================
 // ITT Initialization Tests
 // ============================================================================
 
-XSIGMATEST(ITTWrapper, Initialization)
+QUARISMATEST(ITTWrapper, Initialization)
 {
     // Test ITT initialization
     itt_init();
@@ -31,7 +31,7 @@ XSIGMATEST(ITTWrapper, Initialization)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(ITTWrapper, MultipleInitialization)
+QUARISMATEST(ITTWrapper, MultipleInitialization)
 {
     // Test that multiple initializations don't cause issues
     itt_init();
@@ -45,7 +45,7 @@ XSIGMATEST(ITTWrapper, MultipleInitialization)
 // Event Marking Tests
 // ============================================================================
 
-XSIGMATEST(ITTWrapper, EventMarking)
+QUARISMATEST(ITTWrapper, EventMarking)
 {
     // Test basic event marking
     itt_init();
@@ -54,7 +54,7 @@ XSIGMATEST(ITTWrapper, EventMarking)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(ITTWrapper, EventMarkingMultiple)
+QUARISMATEST(ITTWrapper, EventMarkingMultiple)
 {
     // Test multiple event markings
     itt_init();
@@ -66,7 +66,7 @@ XSIGMATEST(ITTWrapper, EventMarkingMultiple)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(ITTWrapper, EventMarkingWithSpecialChars)
+QUARISMATEST(ITTWrapper, EventMarkingWithSpecialChars)
 {
     // Test event marking with special characters
     itt_init();
@@ -78,7 +78,7 @@ XSIGMATEST(ITTWrapper, EventMarkingWithSpecialChars)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(ITTWrapper, EventMarkingNullName)
+QUARISMATEST(ITTWrapper, EventMarkingNullName)
 {
     // Test event marking with null name (should not crash)
     itt_init();
@@ -91,7 +91,7 @@ XSIGMATEST(ITTWrapper, EventMarkingNullName)
 // Task Range Tests
 // ============================================================================
 
-XSIGMATEST(ITTWrapper, TaskRangePushPop)
+QUARISMATEST(ITTWrapper, TaskRangePushPop)
 {
     // Test task range push and pop
     itt_init();
@@ -102,7 +102,7 @@ XSIGMATEST(ITTWrapper, TaskRangePushPop)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(ITTWrapper, TaskRangeNested)
+QUARISMATEST(ITTWrapper, TaskRangeNested)
 {
     // Test nested task ranges
     itt_init();
@@ -115,7 +115,7 @@ XSIGMATEST(ITTWrapper, TaskRangeNested)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(ITTWrapper, TaskRangeMultiple)
+QUARISMATEST(ITTWrapper, TaskRangeMultiple)
 {
     // Test multiple sequential task ranges
     itt_init();
@@ -130,7 +130,7 @@ XSIGMATEST(ITTWrapper, TaskRangeMultiple)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(ITTWrapper, TaskRangeDeepNesting)
+QUARISMATEST(ITTWrapper, TaskRangeDeepNesting)
 {
     // Test deeply nested task ranges
     itt_init();
@@ -153,7 +153,7 @@ XSIGMATEST(ITTWrapper, TaskRangeDeepNesting)
 // String Handle Tests
 // ============================================================================
 
-XSIGMATEST(ITTWrapper, StringHandleCreation)
+QUARISMATEST(ITTWrapper, StringHandleCreation)
 {
     // Test string handle creation
     itt_init();
@@ -164,7 +164,7 @@ XSIGMATEST(ITTWrapper, StringHandleCreation)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(ITTWrapper, StringHandleReuse)
+QUARISMATEST(ITTWrapper, StringHandleReuse)
 {
     // Test that string handles are reused for same strings
     itt_init();
@@ -182,7 +182,7 @@ XSIGMATEST(ITTWrapper, StringHandleReuse)
 // Domain Tests
 // ============================================================================
 
-XSIGMATEST(ITTWrapper, DomainCreation)
+QUARISMATEST(ITTWrapper, DomainCreation)
 {
     // Test ITT domain creation
     itt_init();
@@ -196,7 +196,7 @@ XSIGMATEST(ITTWrapper, DomainCreation)
 // Integration Tests
 // ============================================================================
 
-XSIGMATEST(ITTWrapper, MixedOperations)
+QUARISMATEST(ITTWrapper, MixedOperations)
 {
     // Test mixed ITT operations
     itt_init();
@@ -216,7 +216,7 @@ XSIGMATEST(ITTWrapper, MixedOperations)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(ITTWrapper, ComplexScenario)
+QUARISMATEST(ITTWrapper, ComplexScenario)
 {
     // Test complex scenario with multiple operations
     itt_init();
@@ -246,7 +246,7 @@ XSIGMATEST(ITTWrapper, ComplexScenario)
 // Error Handling Tests
 // ============================================================================
 
-XSIGMATEST(ITTWrapper, UnmatchedPop)
+QUARISMATEST(ITTWrapper, UnmatchedPop)
 {
     // Test unmatched pop (should not crash)
     itt_init();
@@ -257,7 +257,7 @@ XSIGMATEST(ITTWrapper, UnmatchedPop)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(ITTWrapper, LongEventNames)
+QUARISMATEST(ITTWrapper, LongEventNames)
 {
     // Test with very long event names
     itt_init();
@@ -268,4 +268,4 @@ XSIGMATEST(ITTWrapper, LongEventNames)
     EXPECT_TRUE(true);
 }
 
-#endif  // XSIGMA_HAS_ITT
+#endif  // QUARISMA_HAS_ITT

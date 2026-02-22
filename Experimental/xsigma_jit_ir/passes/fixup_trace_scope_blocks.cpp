@@ -4,7 +4,7 @@
 #include <torch/csrc/jit/passes/fixup_trace_scope_blocks.h>
 #include <torch/csrc/jit/passes/inliner.h>
 #include <torch/csrc/jit/passes/lower_tuples.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <algorithm>
 
@@ -20,7 +20,7 @@ bool isEligibleNode(Node* n)
 }
 
 // This pass does several things:
-// 1) It looks xsigma TracedModuleForward nodes and resolves the type of `self`
+// 1) It looks quarisma TracedModuleForward nodes and resolves the type of `self`
 //    for that (to-be) method call. It adds an input of that type to the
 //    block, and adds the TracedAttr value corresponding to that `self`
 //    value as a Node input. This ensures `self` is an explicit Use on
@@ -117,9 +117,9 @@ private:
         {
             if (n->kind() == prim::TracedModuleForward)
             {
-                n->addInput(attr_qualname_to_value.xsigma(n->s(attr::scope)));
+                n->addInput(attr_qualname_to_value.quarisma(n->s(attr::scope)));
                 n->blocks()[0]->addInput("self")->setType(
-                    attr_qualname_to_value.xsigma(n->s(attr::scope))->type());
+                    attr_qualname_to_value.quarisma(n->s(attr::scope))->type());
                 addSelfArgToTracedForwardNodes(n->blocks()[0]);
             }
             if (n->kind() == prim::TracedFork)
@@ -138,7 +138,7 @@ private:
     // to defer that emission to the caller (in the case where an attribute
     // reference does not reside in the `prefix` scope).
     std::vector<Value*> convertAttrReferencesToLocalGetAttrs(
-        Block* b, const xsigma::QualifiedName& prefix, Value* self)
+        Block* b, const quarisma::QualifiedName& prefix, Value* self)
     {
         // Store away Value*'s which are references to TracedAttr's which are
         // not in the `prefix` scope. We pass this back to the caller, who
@@ -202,7 +202,7 @@ private:
     void replaceTracedAttrInputOnNode(
         Node*                               n,
         size_t                              inp_idx,
-        const xsigma::QualifiedName&        prefix,
+        const quarisma::QualifiedName&        prefix,
         Value*                              self,
         std::unordered_map<Value*, Value*>& local_remaps,
         std::vector<Value*>&                unresolved_tracedattrs)
@@ -212,7 +212,7 @@ private:
         auto prefix_atoms = prefix.atoms();
         if (inp_node->kind() == prim::TracedAttr)
         {
-            auto attr_qualname = xsigma::QualifiedName(inp_node->s(attr::scope));
+            auto attr_qualname = quarisma::QualifiedName(inp_node->s(attr::scope));
             if (prefix.isPrefixOf(attr_qualname))
             {
                 // Prefix case: the attribute resides in this scope or a
@@ -220,7 +220,7 @@ private:
                 // the proper attribute.
                 auto   attr_atoms     = attr_qualname.atoms();
                 Value* replaced_value = self;
-                for (const auto i : xsigma::irange(attr_atoms.size()))
+                for (const auto i : quarisma::irange(attr_atoms.size()))
                 {
                     if (i < prefix_atoms.size())
                     {
@@ -231,7 +231,7 @@ private:
                         replaced_value = n->owningBlock()->owningGraph()->insertGetAttr(
                             replaced_value, attr_atoms[i]);
                     }  // if (i < prefix_atoms.size())
-                }  // for(const auto i : xsigma::irange(attr_atoms.size()))
+                }  // for(const auto i : quarisma::irange(attr_atoms.size()))
                 n->replaceInput(inp_idx, replaced_value);
                 local_remaps[inp] = replaced_value;
             }
@@ -482,7 +482,7 @@ void createMethodCalls(const std::shared_ptr<Graph>& g)
 
             auto mangled_method_name = mangleMethodName("forward", callee_mod_type);
             auto qualname =
-                xsigma::QualifiedName(callee_mod_type->name().value(), mangled_method_name);
+                quarisma::QualifiedName(callee_mod_type->name().value(), mangled_method_name);
             Function* f = callee_mod_type->compilation_unit()->create_function(
                 qualname, n->g(attr::Subgraph));
             callee_mod_type->addMethod(f);
@@ -529,7 +529,7 @@ void inlineScopeBlocks(Block* b)
             const auto& old_outputs = n->outputs();
 
             AT_ASSERT(new_outputs.size() == old_outputs.size());
-            for (const auto i : xsigma::irange(old_outputs.size()))
+            for (const auto i : quarisma::irange(old_outputs.size()))
             {
                 old_outputs[i]->replaceAllUsesWith(new_outputs[i]);
             }

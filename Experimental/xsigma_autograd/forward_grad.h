@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/core/Tensor.h>
+#include <Quarisma/core/Tensor.h>
 
 #include <unordered_set>
 
@@ -82,7 +82,7 @@ struct ForwardGrad;
 //      - Being destructed: Here the ForwardADLevel is not referenced anymore
 //      and can be safely reset
 //        all of the ForwardGrad. Note that we can have more than one reset
-//        being called here (which is ok) but we are guaranteed that there is xsigma
+//        being called here (which is ok) but we are guaranteed that there is quarisma
 //        least one.
 // The ForwardGrad is simpler as there is no intermediary state and no special
 // destructor for. The logic to unregister it from the different ForwardADLevel
@@ -141,10 +141,10 @@ struct TORCH_API ForwardGrad : std::enable_shared_from_this<ForwardGrad>
     //   on
     //   - Any of the ForwardADLevel that this ForwardGrad is registered with
     //   might
-    //     call `reset` xsigma any point during this function
+    //     call `reset` quarisma any point during this function
     void clear()
     {
-        xsigma::SmallVector<uint64_t, EXPECTED_MAX_LEVEL> levels_idx;
+        quarisma::SmallVector<uint64_t, EXPECTED_MAX_LEVEL> levels_idx;
 
         {
             std::lock_guard<std::mutex> lock(mutex_);
@@ -168,7 +168,7 @@ struct TORCH_API ForwardGrad : std::enable_shared_from_this<ForwardGrad>
         }
     }
 
-    void set_value(const xsigma::Tensor& value, uint64_t level)
+    void set_value(const quarisma::Tensor& value, uint64_t level)
     {
         // Owning reference to ensure the forward_level is not destroyed
         // while we are updating our internal state
@@ -200,7 +200,7 @@ struct TORCH_API ForwardGrad : std::enable_shared_from_this<ForwardGrad>
         lock.unlock();
     }
 
-    const xsigma::Tensor& value(uint64_t level) const;
+    const quarisma::Tensor& value(uint64_t level) const;
 
     bool contains(uint64_t level)
     {
@@ -210,11 +210,11 @@ struct TORCH_API ForwardGrad : std::enable_shared_from_this<ForwardGrad>
 
     bool empty() const { return content_.empty(); }
 
-    static const xsigma::Tensor& undef_grad();
+    static const quarisma::Tensor& undef_grad();
 
 private:
     // TODO(albanD): replace this with a SmallVector
-    std::unordered_map<uint64_t, xsigma::Tensor> content_;
+    std::unordered_map<uint64_t, quarisma::Tensor> content_;
     mutable std::mutex                           mutex_;
 };
 

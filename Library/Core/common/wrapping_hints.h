@@ -7,50 +7,50 @@
 #ifndef __wrapping_hints_h__
 #define __wrapping_hints_h__
 
-#ifdef __XSIGMA_WRAP__
-#define XSIGMA_WRAP_HINTS_DEFINED
+#ifdef __QUARISMA_WRAP__
+#define QUARISMA_WRAP_HINTS_DEFINED
 // Exclude a method or class from wrapping
-#define XSIGMA_WRAPEXCLUDE [[xsigma::wrapexclude]]
-// The return value points to a newly-created XSIGMA object.
-#define XSIGMA_NEWINSTANCE [[xsigma::newinstance]]
+#define QUARISMA_WRAPEXCLUDE [[quarisma::wrapexclude]]
+// The return value points to a newly-created QUARISMA object.
+#define QUARISMA_NEWINSTANCE [[quarisma::newinstance]]
 // The parameter is a pointer to a zerocopy buffer.
-#define XSIGMA_ZEROCOPY [[xsigma::zerocopy]]
+#define QUARISMA_ZEROCOPY [[quarisma::zerocopy]]
 // The parameter is a path on the filesystem.
-#define XSIGMA_FILEPATH [[xsigma::filepath]]
+#define QUARISMA_FILEPATH [[quarisma::filepath]]
 // Set preconditions for a function
-#define XSIGMA_EXPECTS(x) [[xsigma::expects(x)]]
+#define QUARISMA_EXPECTS(x) [[quarisma::expects(x)]]
 // Set size hint for parameter or return value
-#define XSIGMA_SIZEHINT(...) [[xsigma::sizehint(__VA_ARGS__)]]
+#define QUARISMA_SIZEHINT(...) [[quarisma::sizehint(__VA_ARGS__)]]
 // Opt-in a class for automatic code generation of (de)serializers.
-#define XSIGMA_MARSHALAUTO [[xsigma::marshalauto]]
+#define QUARISMA_MARSHALAUTO [[quarisma::marshalauto]]
 // Specifies that a class has hand written (de)serializers.
-#define XSIGMA_MARSHALMANUAL [[xsigma::marshalmanual]]
+#define QUARISMA_MARSHALMANUAL [[quarisma::marshalmanual]]
 // Excludes a function from the auto-generated (de)serialization process.
-#define XSIGMA_MARSHALEXCLUDE(reason) [[xsigma::marshalexclude(reason)]]
+#define QUARISMA_MARSHALEXCLUDE(reason) [[quarisma::marshalexclude(reason)]]
 // Enforces a function as the getter for `property`
-#define XSIGMA_MARSHALGETTER(property) [[xsigma::marshalgetter(#property)]]
+#define QUARISMA_MARSHALGETTER(property) [[quarisma::marshalgetter(#property)]]
 // Enforces a function as the setter for `property`
-#define XSIGMA_MARSHALSETTER(property) [[xsigma::marshalsetter(#property)]]
+#define QUARISMA_MARSHALSETTER(property) [[quarisma::marshalsetter(#property)]]
 #endif
 
-#ifndef XSIGMA_WRAP_HINTS_DEFINED
-#define XSIGMA_WRAPEXCLUDE
-#define XSIGMA_NEWINSTANCE
-#define XSIGMA_ZEROCOPY
-#define XSIGMA_FILEPATH
-#define XSIGMA_EXPECTS(x)
-#define XSIGMA_SIZEHINT(...)
-#define XSIGMA_MARSHALAUTO
-#define XSIGMA_MARSHALMANUAL
-#define XSIGMA_MARSHALEXCLUDE(reason)
-#define XSIGMA_MARSHALGETTER(property)
-#define XSIGMA_MARSHALSETTER(property)
+#ifndef QUARISMA_WRAP_HINTS_DEFINED
+#define QUARISMA_WRAPEXCLUDE
+#define QUARISMA_NEWINSTANCE
+#define QUARISMA_ZEROCOPY
+#define QUARISMA_FILEPATH
+#define QUARISMA_EXPECTS(x)
+#define QUARISMA_SIZEHINT(...)
+#define QUARISMA_MARSHALAUTO
+#define QUARISMA_MARSHALMANUAL
+#define QUARISMA_MARSHALEXCLUDE(reason)
+#define QUARISMA_MARSHALGETTER(property)
+#define QUARISMA_MARSHALSETTER(property)
 #endif
 
-#define XSIGMA_MARSHAL_EXCLUDE_REASON_IS_REDUNDANT "is redundant"
-#define XSIGMA_MARSHAL_EXCLUDE_REASON_IS_INTERNAL "is internal"
-#define XSIGMA_MARSHAL_EXCLUDE_REASON_NOT_SUPPORTED \
+#define QUARISMA_MARSHAL_EXCLUDE_REASON_IS_REDUNDANT "is redundant"
+#define QUARISMA_MARSHAL_EXCLUDE_REASON_IS_INTERNAL "is internal"
+#define QUARISMA_MARSHAL_EXCLUDE_REASON_NOT_SUPPORTED \
     "(de)serialization is not supported for this type of property"
 
 #endif
-// XSIGMA-HeaderTest-Exclude: wrapping_hints.h
+// QUARISMA-HeaderTest-Exclude: wrapping_hints.h

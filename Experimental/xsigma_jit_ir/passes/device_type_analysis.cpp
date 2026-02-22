@@ -1,11 +1,11 @@
-#include <XSigma/core/interned_strings.h>
-#include <XSigma/core/jit_type.h>
+#include <Quarisma/core/interned_strings.h>
+#include <Quarisma/core/jit_type.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/device_type_analysis.h>
 #include <torch/csrc/jit/passes/shape_analysis.h>
-#include <xsigma/core/Device.h>
-#include <xsigma/util/ArrayRef.h>
+#include <quarisma/core/Device.h>
+#include <quarisma/util/ArrayRef.h>
 
 #include <memory>
 #include <optional>
@@ -17,8 +17,8 @@ namespace torch::jit
 namespace
 {
 
-using Tensor = xsigma::Tensor;
-using Device = xsigma::Device;
+using Tensor = quarisma::Tensor;
+using Device = quarisma::Device;
 
 using PropRule = std::function<bool(Node*)>;
 /*
@@ -152,7 +152,7 @@ bool defaultDeviceProp(Node* n)
         if (DeviceObjType::get()->isSubtypeOf(argument.type()))
         {
             // Optional args are filled in by torchscript with default val
-            auto input_val = toIValue(n->inputs().xsigma(i));
+            auto input_val = toIValue(n->inputs().quarisma(i));
             if (!input_val.has_value())
             {
                 // Can't propagate if there is a dynamic device type
@@ -183,7 +183,7 @@ struct DeviceTypePropagationPass : public PropertyPropBase
         buildRuleRegistry();
     }
 
-    // returns true if xsigma least one node has its scalar type set on a tensor node
+    // returns true if quarisma least one node has its scalar type set on a tensor node
     bool run()
     {
         propagateBlock(graph_->block(), false);

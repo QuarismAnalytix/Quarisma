@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,12 +18,12 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "memory/backend/allocator_bfc.h"
@@ -50,7 +50,7 @@
 #include "common/macros.h"
 #include "logging/logger.h"
 #include "memory/cpu/allocator.h"
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 #include "profiler/native/memory/scoped_memory_debug_annotation.h"
 #include "profiler/native/tracing/traceme.h"
 #include "profiler/native/tracing/traceme_encode.h"
@@ -59,13 +59,13 @@
 #include "util/flat_hash.h"
 #include "util/string_util.h"
 
-#ifdef XSIGMA_MEM_DEBUG
-#define XSIGMA_LOG_INFO_DEBUG_BFC(...) XSIGMA_LOG_INFO_DEBUG("[mem-verbose] " __VA_ARGS__)
+#ifdef QUARISMA_MEM_DEBUG
+#define QUARISMA_LOG_INFO_DEBUG_BFC(...) QUARISMA_LOG_INFO_DEBUG("[mem-verbose] " __VA_ARGS__)
 #else
-#define XSIGMA_LOG_INFO_DEBUG_BFC(...)
+#define QUARISMA_LOG_INFO_DEBUG_BFC(...)
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 
 // Helper function to format bytes in human-readable format (IEC 60027-2 binary prefixes)
@@ -99,11 +99,11 @@ class MemAllocatorStats
 {
 public:
     // Getters
-    XSIGMA_NODISCARD int64_t num_allocs() const { return num_allocs_; }
-    XSIGMA_NODISCARD int64_t bytes_in_use() const { return bytes_in_use_; }
-    XSIGMA_NODISCARD int64_t peak_bytes_in_use() const { return peak_bytes_in_use_; }
-    XSIGMA_NODISCARD int64_t largest_alloc_size() const { return largest_alloc_size_; }
-    XSIGMA_NODISCARD float   fragmentation_metric() const { return fragmentation_metric_; }
+    QUARISMA_NODISCARD int64_t num_allocs() const { return num_allocs_; }
+    QUARISMA_NODISCARD int64_t bytes_in_use() const { return bytes_in_use_; }
+    QUARISMA_NODISCARD int64_t peak_bytes_in_use() const { return peak_bytes_in_use_; }
+    QUARISMA_NODISCARD int64_t largest_alloc_size() const { return largest_alloc_size_; }
+    QUARISMA_NODISCARD float   fragmentation_metric() const { return fragmentation_metric_; }
 
     // Setters
     void set_num_allocs(int64_t value) { num_allocs_ = value; }
@@ -124,15 +124,15 @@ class MemChunk
 {
 public:
     // Getters
-    XSIGMA_NODISCARD uint64_t address() const { return address_; }
-    XSIGMA_NODISCARD int64_t  size() const { return size_; }
-    XSIGMA_NODISCARD int64_t  requested_size() const { return requested_size_; }
-    XSIGMA_NODISCARD int32_t  bin() const { return bin_; }
-    XSIGMA_NODISCARD const std::string& op_name() const { return op_name_; }
-    XSIGMA_NODISCARD uint64_t           freed_at_count() const { return freed_at_count_; }
-    XSIGMA_NODISCARD uint64_t           action_count() const { return action_count_; }
-    XSIGMA_NODISCARD bool               in_use() const { return in_use_; }
-    XSIGMA_NODISCARD uint64_t           step_id() const { return step_id_; }
+    QUARISMA_NODISCARD uint64_t address() const { return address_; }
+    QUARISMA_NODISCARD int64_t  size() const { return size_; }
+    QUARISMA_NODISCARD int64_t  requested_size() const { return requested_size_; }
+    QUARISMA_NODISCARD int32_t  bin() const { return bin_; }
+    QUARISMA_NODISCARD const std::string& op_name() const { return op_name_; }
+    QUARISMA_NODISCARD uint64_t           freed_at_count() const { return freed_at_count_; }
+    QUARISMA_NODISCARD uint64_t           action_count() const { return action_count_; }
+    QUARISMA_NODISCARD bool               in_use() const { return in_use_; }
+    QUARISMA_NODISCARD uint64_t           step_id() const { return step_id_; }
 
     // Setters
     void set_address(uint64_t value) { address_ = value; }
@@ -162,11 +162,11 @@ class BinSummary
 {
 public:
     // Getters
-    XSIGMA_NODISCARD int32_t bin() const { return bin_; }
-    XSIGMA_NODISCARD int64_t total_bytes_in_use() const { return total_bytes_in_use_; }
-    XSIGMA_NODISCARD int64_t total_bytes_in_bin() const { return total_bytes_in_bin_; }
-    XSIGMA_NODISCARD int64_t total_chunks_in_use() const { return total_chunks_in_use_; }
-    XSIGMA_NODISCARD int64_t total_chunks_in_bin() const { return total_chunks_in_bin_; }
+    QUARISMA_NODISCARD int32_t bin() const { return bin_; }
+    QUARISMA_NODISCARD int64_t total_bytes_in_use() const { return total_bytes_in_use_; }
+    QUARISMA_NODISCARD int64_t total_bytes_in_bin() const { return total_bytes_in_bin_; }
+    QUARISMA_NODISCARD int64_t total_chunks_in_use() const { return total_chunks_in_use_; }
+    QUARISMA_NODISCARD int64_t total_chunks_in_bin() const { return total_chunks_in_bin_; }
 
     // Setters
     void set_bin(int32_t value) { bin_ = value; }
@@ -187,8 +187,8 @@ class SnapShot
 {
 public:
     // Getters
-    XSIGMA_NODISCARD uint64_t action_count() const { return action_count_; }
-    XSIGMA_NODISCARD int64_t  size() const { return size_; }
+    QUARISMA_NODISCARD uint64_t action_count() const { return action_count_; }
+    QUARISMA_NODISCARD int64_t  size() const { return size_; }
 
     // Setters
     void set_action_count(uint64_t value) { action_count_ = value; }
@@ -203,11 +203,11 @@ class memory_dump
 {
 public:
     // Getters
-    XSIGMA_NODISCARD const std::string& allocator_name() const { return allocator_name_; }
-    XSIGMA_NODISCARD const std::vector<BinSummary>& bin_summary() const { return bin_summary_; }
-    XSIGMA_NODISCARD const std::vector<MemChunk>& chunk() const { return chunk_; }
-    XSIGMA_NODISCARD const std::vector<SnapShot>& snap_shot() const { return snap_shot_; }
-    XSIGMA_NODISCARD const MemAllocatorStats&     stats() const { return stats_; }
+    QUARISMA_NODISCARD const std::string& allocator_name() const { return allocator_name_; }
+    QUARISMA_NODISCARD const std::vector<BinSummary>& bin_summary() const { return bin_summary_; }
+    QUARISMA_NODISCARD const std::vector<MemChunk>& chunk() const { return chunk_; }
+    QUARISMA_NODISCARD const std::vector<SnapShot>& snap_shot() const { return snap_shot_; }
+    QUARISMA_NODISCARD const MemAllocatorStats&     stats() const { return stats_; }
 
     // Mutable accessors
     MemAllocatorStats* stats() { return &stats_; }
@@ -255,7 +255,7 @@ private:
 //constexpr allocator_bfc::ChunkHandle allocator_bfc::kInvalidChunkHandle;
 
 allocator_bfc::allocator_bfc(
-    std::unique_ptr<xsigma::sub_allocator> sub_allocator,
+    std::unique_ptr<quarisma::sub_allocator> sub_allocator,
     size_t                                 total_memory,
     std::string                            name,
     const Options&                         opts)
@@ -290,19 +290,19 @@ allocator_bfc::allocator_bfc(
     // We create bins to fit all possible ranges that cover the
     // memory_limit_ starting from allocations up to 256 bytes to
     // allocations up to (and including) the memory limit.
-    XSIGMA_LOG_INFO_DEBUG_BFC("Creating new allocator_bfc named: {}", name);
+    QUARISMA_LOG_INFO_DEBUG_BFC("Creating new allocator_bfc named: {}", name);
     for (BinNum b = 0; b < kNumBins; b++)
     {
         size_t const bin_size = BinNumToSize(b);
-        XSIGMA_LOG_INFO_DEBUG_BFC(
+        QUARISMA_LOG_INFO_DEBUG_BFC(
             "Creating bin of max chunk size {}", format_human_readable_bytes(bin_size));
         new (BinFromIndex(b)) Bin(this, bin_size);
-        XSIGMA_CHECK(BinForSize(bin_size) == BinFromIndex(b));
-        XSIGMA_CHECK(BinForSize(bin_size + 255) == BinFromIndex(b));
-        XSIGMA_CHECK(BinForSize(bin_size * 2 - 1) == BinFromIndex(b));  //NOLINT
+        QUARISMA_CHECK(BinForSize(bin_size) == BinFromIndex(b));
+        QUARISMA_CHECK(BinForSize(bin_size + 255) == BinFromIndex(b));
+        QUARISMA_CHECK(BinForSize(bin_size * 2 - 1) == BinFromIndex(b));  //NOLINT
         if (b + 1 < kNumBins)
         {
-            XSIGMA_CHECK(BinForSize(bin_size * 2) != BinFromIndex(b));
+            QUARISMA_CHECK(BinForSize(bin_size * 2) != BinFromIndex(b));
         }
     }
 }
@@ -315,7 +315,7 @@ allocator_bfc::~allocator_bfc()
     std::scoped_lock const l(mutex_);
 
     // Return memory back.
-    XSIGMA_LOG_INFO_DEBUG_BFC("Number of regions allocated: {}", region_manager_.regions().size());
+    QUARISMA_LOG_INFO_DEBUG_BFC("Number of regions allocated: {}", region_manager_.regions().size());
     for (const auto& region : region_manager_.regions())
     {
         sub_allocator_->Free(region.ptr(), region.memory_size());
@@ -329,15 +329,15 @@ allocator_bfc::~allocator_bfc()
 
 allocator_bfc::Chunk* allocator_bfc::ChunkFromHandle(ChunkHandle h)
 {
-    XSIGMA_CHECK_DEBUG(h >= 0);
-    XSIGMA_CHECK_DEBUG(h < static_cast<int>(chunks_.size()));
+    QUARISMA_CHECK_DEBUG(h >= 0);
+    QUARISMA_CHECK_DEBUG(h < static_cast<int>(chunks_.size()));
     return &(chunks_[h]);
 }
 
 const allocator_bfc::Chunk* allocator_bfc::ChunkFromHandle(ChunkHandle h) const
 {
-    XSIGMA_CHECK_DEBUG(h >= 0);
-    XSIGMA_CHECK_DEBUG(h < static_cast<int>(chunks_.size()));
+    QUARISMA_CHECK_DEBUG(h >= 0);
+    QUARISMA_CHECK_DEBUG(h < static_cast<int>(chunks_.size()));
     return &(chunks_[h]);
 }
 
@@ -390,7 +390,7 @@ bool allocator_bfc::Extend(size_t alignment, size_t rounded_bytes)
         curr_region_allocation_bytes_ *= 2;
     }
 
-    XSIGMA_LOG_INFO_DEBUG_BFC(
+    QUARISMA_LOG_INFO_DEBUG_BFC(
         "Extending allocation by {} bytes for {}",
         format_human_readable_bytes(bytes_received),
         Name());
@@ -406,11 +406,11 @@ bool allocator_bfc::Extend(size_t alignment, size_t rounded_bytes)
         // Retry if another thread updated peak_pool
     }
 
-    XSIGMA_LOG_INFO_DEBUG_BFC(
+    QUARISMA_LOG_INFO_DEBUG_BFC(
         "Total allocated bytes: {}",
         format_human_readable_bytes(stats_.pool_bytes.load(std::memory_order_relaxed)));
 
-    XSIGMA_LOG_INFO_DEBUG_BFC(
+    QUARISMA_LOG_INFO_DEBUG_BFC(
         "Allocated memory at {} to {}",
         mem_addr,
         static_cast<void*>(static_cast<char*>(mem_addr) + bytes_received));
@@ -522,7 +522,7 @@ void* allocator_bfc::AllocateRawInternalWithRetry(
 void* allocator_bfc::allocate_raw(
     size_t unused_alignment, size_t num_bytes, const allocation_attributes& allocation_attr)
 {
-    //XSIGMA_LOG_INFO_DEBUG_BFC("allocate_raw {}  {}", Name(), num_bytes);
+    //QUARISMA_LOG_INFO_DEBUG_BFC("allocate_raw {}  {}", Name(), num_bytes);
     void* result = [&]  //NOLINT
     {
         if (!opts_.allow_retry_on_failure || !allocation_attr.retry_on_failure)
@@ -559,7 +559,7 @@ void* allocator_bfc::allocate_raw(
                 if (counter_value < kMaxFailureLogs)
                 {
                     log_counter.store(counter_value + 1, std::memory_order_relaxed);
-                    XSIGMA_LOG_WARNING(
+                    QUARISMA_LOG_WARNING(
                         "Allocator ({}) ran out of memory trying to allocate {} with "
                         "freed_by_count={}.{}",
                         Name(),
@@ -577,8 +577,8 @@ void* allocator_bfc::allocate_raw(
 
         return AllocateRawInternalWithRetry(unused_alignment, num_bytes, allocation_attr);
     }();
-    //XSIGMA_LOG_INFO_DEBUG_BFC("allocate_raw {}  {} {}", Name(), num_bytes, result);
-    //XSIGMA_LOG_INFO_DEBUG_BFC(
+    //QUARISMA_LOG_INFO_DEBUG_BFC("allocate_raw {}  {} {}", Name(), num_bytes, result);
+    //QUARISMA_LOG_INFO_DEBUG_BFC(
     //   "[mem-verbose] allocate_raw,{},{},{},{},{}", Name(), num_bytes, result, "", "");
     return result;
 }
@@ -592,7 +592,7 @@ size_t allocator_bfc::RoundedBytes(size_t bytes) noexcept
 }
 
 bool allocator_bfc::DeallocateFreeRegions(size_t rounded_bytes)
-    XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_)
+    QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_)
 {
     // Do nothing if garbage collection is off.
     if (!opts_.garbage_collection)
@@ -620,7 +620,7 @@ bool allocator_bfc::DeallocateFreeRegions(size_t rounded_bytes)
 
         if (!any_use)
         {
-            XSIGMA_LOG_INFO("Found free region with ptr = {}", region.ptr());
+            QUARISMA_LOG_INFO("Found free region with ptr = {}", region.ptr());
             free_region_ptrs.insert(region.ptr());
             total_free_bytes += region.memory_size();
         }
@@ -639,7 +639,7 @@ bool allocator_bfc::DeallocateFreeRegions(size_t rounded_bytes)
         return false;
     }
 
-    XSIGMA_LOG_WARNING(
+    QUARISMA_LOG_WARNING(
         "Garbage collection: deallocate free memory regions"
         " (i.e., allocations) so that we can re-allocate a larger"
         " region to avoid OOM due to memory fragmentation. If you"
@@ -657,7 +657,7 @@ bool allocator_bfc::DeallocateFreeRegions(size_t rounded_bytes)
 }
 
 void allocator_bfc::DeallocateRegions(const flat_hash_set<void*>& region_ptrs)
-    XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_)
+    QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_)
 {
     // Explicitly remove the const qualifier as some compilers disallow passing
     // const_iterator to std::vector::erase(), which is used in
@@ -672,7 +672,7 @@ void allocator_bfc::DeallocateRegions(const flat_hash_set<void*>& region_ptrs)
             continue;
         }
 
-        XSIGMA_LOG_WARNING("Deallocate region with ptr = {}", it->ptr());
+        QUARISMA_LOG_WARNING("Deallocate region with ptr = {}", it->ptr());
         // Remove all chunk registrations from Bins.
         ChunkHandle h = region_manager_.get_handle(it->ptr());
         while (h != kInvalidChunkHandle)
@@ -699,7 +699,7 @@ void* allocator_bfc::AllocateRawInternal(
 {
     if (num_bytes == 0)
     {
-        XSIGMA_LOG_WARNING("tried to allocate 0 bytes");
+        QUARISMA_LOG_WARNING("tried to allocate 0 bytes");
         return nullptr;
     }
     // First, always allocate memory of at least kMinAllocationSize
@@ -719,7 +719,7 @@ void* allocator_bfc::AllocateRawInternal(
     void* ptr = FindChunkPtr(bin_num, rounded_bytes, num_bytes, freed_before);  //NOLINT
     if (ptr != nullptr)
     {
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
         AddTraceMe("MemoryAllocation", ptr);
 #endif
         return ptr;
@@ -731,7 +731,7 @@ void* allocator_bfc::AllocateRawInternal(
         ptr = FindChunkPtr(bin_num, rounded_bytes, num_bytes, freed_before);
         if (ptr != nullptr)
         {
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
             AddTraceMe("MemoryAllocation", ptr);
 #endif
             return ptr;
@@ -749,7 +749,7 @@ void* allocator_bfc::AllocateRawInternal(
             ptr = FindChunkPtr(bin_num, rounded_bytes, num_bytes, freed_before);
             if (ptr != nullptr)
             {
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
                 AddTraceMe("MemoryAllocation", ptr);
 #endif
                 return ptr;
@@ -766,7 +766,7 @@ void* allocator_bfc::AllocateRawInternal(
         ptr = FindChunkPtr(bin_num, rounded_bytes, num_bytes, freed_before);
         if (ptr != nullptr)
         {
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
             AddTraceMe("MemoryAllocation", ptr);
 #endif
             return ptr;
@@ -779,10 +779,10 @@ void* allocator_bfc::AllocateRawInternal(
     MaybeWriteMemoryMap();
     if (dump_log_on_failure)
     {
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "Allocator ({}) ran out of memory trying to allocate {} (rounded to {})requested by op "
             "\nIf the cause is memory fragmentation maybe the environment "
-            "variable 'XSIGMA_GPU_ALLOCATOR=cuda_malloc_async' will "
+            "variable 'QUARISMA_GPU_ALLOCATOR=cuda_malloc_async' will "
             "improve the situation. \nCurrent allocation summary follows."
             "\nCurrent allocation summary follows.",
             Name(),
@@ -790,7 +790,7 @@ void* allocator_bfc::AllocateRawInternal(
             rounded_bytes);
 
         DumpMemoryLog(rounded_bytes);
-        XSIGMA_LOG_WARNING("RenderOccupancy: {}", RenderOccupancy());
+        QUARISMA_LOG_WARNING("RenderOccupancy: {}", RenderOccupancy());
     }
     return nullptr;
 }
@@ -811,11 +811,11 @@ double allocator_bfc::GetFragmentation()
 {
     int64_t const bytes_available = stats_.pool_bytes.load(std::memory_order_relaxed) -
                                     stats_.bytes_in_use.load(std::memory_order_relaxed);
-    XSIGMA_CHECK_DEBUG(bytes_available >= 0);
+    QUARISMA_CHECK_DEBUG(bytes_available >= 0);
     return static_cast<double>(bytes_available - LargestFreeChunk()) / bytes_available;
 }
 
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 void allocator_bfc::AddTraceMe(std::string_view traceme_name, const void* ptr)
 {
     allocator_bfc::Chunk const* chunk = ChunkFromHandle(region_manager_.get_handle(ptr));
@@ -823,24 +823,24 @@ void allocator_bfc::AddTraceMe(std::string_view traceme_name, const void* ptr)
 }
 
 void allocator_bfc::AddTraceMe(
-    XSIGMA_UNUSED std::string_view traceme_name,
-    XSIGMA_UNUSED const void*      chunk_ptr,
-    XSIGMA_UNUSED int64_t          req_bytes,
-    XSIGMA_UNUSED int64_t          alloc_bytes)
+    QUARISMA_UNUSED std::string_view traceme_name,
+    QUARISMA_UNUSED const void*      chunk_ptr,
+    QUARISMA_UNUSED int64_t          req_bytes,
+    QUARISMA_UNUSED int64_t          alloc_bytes)
 {
-    xsigma::traceme::instant_activity(
-        [this, traceme_name, chunk_ptr, req_bytes, alloc_bytes]() XSIGMA_NO_THREAD_SAFETY_ANALYSIS
+    quarisma::traceme::instant_activity(
+        [this, traceme_name, chunk_ptr, req_bytes, alloc_bytes]() QUARISMA_NO_THREAD_SAFETY_ANALYSIS
         {
             int64_t bytes_available = memory_limit_ -
                                       stats_.bytes_reserved.load(std::memory_order_relaxed) -
                                       stats_.bytes_in_use.load(std::memory_order_relaxed);
-            const auto& annotation = xsigma::scoped_memory_debug_annotation::current_annotation();
+            const auto& annotation = quarisma::scoped_memory_debug_annotation::current_annotation();
             const auto* const op_name =
                 (annotation.pending_op_name != nullptr) ? annotation.pending_op_name : "(null)";
             const auto* const region_type = (annotation.pending_region_type != nullptr)
                                                 ? annotation.pending_region_type
                                                 : "(null)";
-            return xsigma::traceme_encode(
+            return quarisma::traceme_encode(
                 std::string(traceme_name),
                 {{"allocator_name", name_},
                  {"bytes_reserved", stats_.bytes_reserved.load(std::memory_order_relaxed)},
@@ -857,7 +857,7 @@ void allocator_bfc::AddTraceMe(
                  {"data_type", annotation.pending_data_type},
                  {"shape", annotation.pending_shape_func()}});
         },
-        /*level=*/static_cast<int>(xsigma::traceme_level_enum::INFO));
+        /*level=*/static_cast<int>(quarisma::traceme_level_enum::INFO));
 }
 #endif
 
@@ -874,7 +874,7 @@ void* allocator_bfc::FindChunkPtr(
         {
             const allocator_bfc::ChunkHandle h     = (*citer);
             allocator_bfc::Chunk*            chunk = ChunkFromHandle(h);
-            XSIGMA_CHECK_DEBUG(!chunk->in_use());
+            QUARISMA_CHECK_DEBUG(!chunk->in_use());
             if (freed_before > 0 && freed_before < chunk->freed_at_count)
             {
                 continue;
@@ -917,7 +917,7 @@ void* allocator_bfc::FindChunkPtr(
                 int64_t       peak_bytes = stats_.peak_bytes_in_use.load(std::memory_order_relaxed);
                 // if (current_bytes > peak_bytes)
                 // {
-                //     XSIGMA_LOG_INFO_DEBUG_BFC(
+                //     QUARISMA_LOG_INFO_DEBUG_BFC(
                 //         "New Peak memory usage of {} bytes for {}", current_bytes, Name());
                 // }
 
@@ -939,7 +939,7 @@ void* allocator_bfc::FindChunkPtr(
                     // Retry if another thread updated largest_size
                 }
 
-#ifdef XSIGMA_MEM_DEBUG
+#ifdef QUARISMA_MEM_DEBUG
                 if (ShouldRecordOpName())
                 {
                     const auto& annotation = ScopedMemoryDebugAnnotation::CurrentAnnotation();
@@ -949,7 +949,7 @@ void* allocator_bfc::FindChunkPtr(
                     }
                     else
                     {
-                        XSIGMA_LOG_INFO(
+                        QUARISMA_LOG_INFO(
                             "missing pending_op_name for {} reading addr {}\n{}",
                             Name(),
                             static_cast<const void*>(&annotation.pending_op_name),
@@ -963,7 +963,7 @@ void* allocator_bfc::FindChunkPtr(
                 }
 #endif
 
-                //XSIGMA_LOG_INFO_DEBUG_BFC("Returning: {}\nA: {}", chunk->ptr, RenderOccupancy());
+                //QUARISMA_LOG_INFO_DEBUG_BFC("Returning: {}\nA: {}", chunk->ptr, RenderOccupancy());
                 return chunk->ptr;
             }
         }
@@ -978,7 +978,7 @@ void allocator_bfc::SplitChunk(allocator_bfc::ChunkHandle h, size_t num_bytes)
     ChunkHandle const h_new_chunk = AllocateChunk();
 
     Chunk* c = ChunkFromHandle(h);
-    XSIGMA_CHECK(!c->in_use() && (c->bin_num == kInvalidBinNum));  //NOLINT
+    QUARISMA_CHECK(!c->in_use() && (c->bin_num == kInvalidBinNum));  //NOLINT
 
     // Create a new chunk starting num_bytes after c
     allocator_bfc::Chunk* new_chunk = ChunkFromHandle(h_new_chunk);
@@ -1014,7 +1014,7 @@ void allocator_bfc::SplitChunk(allocator_bfc::ChunkHandle h, size_t num_bytes)
 
 void allocator_bfc::deallocate_raw(void* ptr)
 {
-    XSIGMA_LOG_INFO_DEBUG_BFC(
+    QUARISMA_LOG_INFO_DEBUG_BFC(
         "deallocate_raw {} {} [mem-verbose] deallocate_raw, {},{},{}",
         Name(),
         (ptr ? RequestedSize(ptr) : 0),
@@ -1030,16 +1030,16 @@ void allocator_bfc::DeallocateRawInternal(void* ptr)
 {
     if (ptr == nullptr)
     {
-        XSIGMA_LOG(INFO, "tried to deallocate nullptr");
+        QUARISMA_LOG(INFO, "tried to deallocate nullptr");
         return;
     }
     std::scoped_lock const lock(mutex_);
 
     // Find the chunk from the ptr.
     allocator_bfc::ChunkHandle const h = region_manager_.get_handle(ptr);
-    XSIGMA_CHECK(h != kInvalidChunkHandle);
+    QUARISMA_CHECK(h != kInvalidChunkHandle);
 
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
     // Record chunk information before it's freed (only needed for profiling).
     const Chunk* const chunk       = ChunkFromHandle(h);
     void const* const  chunk_ptr   = chunk->ptr;
@@ -1060,13 +1060,13 @@ void allocator_bfc::DeallocateRawInternal(void* ptr)
         InsertFreeChunkIntoBin(TryToCoalesce(h, false));
     }
 
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
     // TraceMe needs to be added after MarkFree and InsertFreeChunkIntoBin for
     // correct aggregation stats (bytes_in_use, fragmentation).
     AddTraceMe("MemoryDeallocation", chunk_ptr, req_bytes, alloc_bytes);
 #endif
 
-    XSIGMA_LOG_INFO_DEBUG_BFC("F: {}", RenderOccupancy());
+    QUARISMA_LOG_INFO_DEBUG_BFC("F: {}", RenderOccupancy());
 }
 
 // Merges h1 and h2 when Chunk(h1)->next is h2 and Chunk(h2)->prev is c1.
@@ -1076,7 +1076,7 @@ void allocator_bfc::Merge(allocator_bfc::ChunkHandle h1, allocator_bfc::ChunkHan
     Chunk*       c1 = ChunkFromHandle(h1);
     Chunk const* c2 = ChunkFromHandle(h2);
     // We can only merge chunks that are not in use.
-    XSIGMA_CHECK(!c1->in_use() && !c2->in_use());  //NOLINT
+    QUARISMA_CHECK(!c1->in_use() && !c2->in_use());  //NOLINT
 
     // c1's prev doesn't change, still points to the same ptr, and is
     // still not in use.
@@ -1088,7 +1088,7 @@ void allocator_bfc::Merge(allocator_bfc::ChunkHandle h1, allocator_bfc::ChunkHan
 
     allocator_bfc::ChunkHandle const h3 = c2->next;
     c1->next                            = h3;
-    XSIGMA_CHECK(c2->prev == h1);
+    QUARISMA_CHECK(c2->prev == h1);
     if (h3 != kInvalidChunkHandle)
     {
         allocator_bfc::Chunk* c3 = ChunkFromHandle(h3);
@@ -1116,7 +1116,7 @@ void allocator_bfc::DeleteChunk(ChunkHandle h)
 void allocator_bfc::InsertFreeChunkIntoBin(allocator_bfc::ChunkHandle h)
 {
     Chunk* c = ChunkFromHandle(h);
-    XSIGMA_CHECK(!c->in_use() && (c->bin_num == kInvalidBinNum));  //NOLINT
+    QUARISMA_CHECK(!c->in_use() && (c->bin_num == kInvalidBinNum));  //NOLINT
     BinNum const bin_num = BinNumForSize(c->size);
     Bin*         new_bin = BinFromIndex(bin_num);
     c->bin_num           = bin_num;
@@ -1129,7 +1129,7 @@ void allocator_bfc::RemoveFreeChunkIterFromBin(
 {
     ChunkHandle const h = *citer;
     Chunk*            c = ChunkFromHandle(h);
-    XSIGMA_CHECK(!c->in_use() && (c->bin_num != kInvalidBinNum));  //NOLINT
+    QUARISMA_CHECK(!c->in_use() && (c->bin_num != kInvalidBinNum));  //NOLINT
     free_chunks->erase(citer);
     c->bin_num = kInvalidBinNum;
 }
@@ -1137,15 +1137,15 @@ void allocator_bfc::RemoveFreeChunkIterFromBin(
 void allocator_bfc::RemoveFreeChunkFromBin(allocator_bfc::ChunkHandle h)
 {
     Chunk* c = ChunkFromHandle(h);
-    XSIGMA_CHECK(!c->in_use() && (c->bin_num != kInvalidBinNum));  //NOLINT
-    XSIGMA_CHECK(BinFromIndex(c->bin_num)->free_chunks.erase(h) > 0, "Could not find chunk in bin");
+    QUARISMA_CHECK(!c->in_use() && (c->bin_num != kInvalidBinNum));  //NOLINT
+    QUARISMA_CHECK(BinFromIndex(c->bin_num)->free_chunks.erase(h) > 0, "Could not find chunk in bin");
     c->bin_num = kInvalidBinNum;
 }
 
 void allocator_bfc::MarkFree(allocator_bfc::ChunkHandle h)
 {
     Chunk* c = ChunkFromHandle(h);
-    XSIGMA_CHECK(c->in_use() && (c->bin_num == kInvalidBinNum));  //NOLINT
+    QUARISMA_CHECK(c->in_use() && (c->bin_num == kInvalidBinNum));  //NOLINT
 
     // Mark the chunk as no longer in use.
     c->allocation_id = -1;
@@ -1159,7 +1159,7 @@ void allocator_bfc::MarkFree(allocator_bfc::ChunkHandle h)
     // Updates the stats.
     stats_.bytes_in_use -= c->size;
 
-#ifdef XSIGMA_MEM_DEBUG
+#ifdef QUARISMA_MEM_DEBUG
     if (ShouldRecordOpName())
     {
         c->action_count     = ++action_counter_;
@@ -1184,7 +1184,7 @@ allocator_bfc::ChunkHandle allocator_bfc::TryToCoalesce(ChunkHandle h, bool igno
         Chunk const* n = ChunkFromHandle(c->next);
         if ((n->freed_at_count == 0) || ignore_freed_at)
         {
-            XSIGMA_LOG_INFO_DEBUG_BFC("Merging c->next {} with c {}", n->ptr, c->ptr);
+            QUARISMA_LOG_INFO_DEBUG_BFC("Merging c->next {} with c {}", n->ptr, c->ptr);
             RemoveFreeChunkFromBin(c->next);
             Merge(h, c->next);
         }
@@ -1196,7 +1196,7 @@ allocator_bfc::ChunkHandle allocator_bfc::TryToCoalesce(ChunkHandle h, bool igno
         Chunk const* n = ChunkFromHandle(c->prev);
         if ((n->freed_at_count == 0) || ignore_freed_at)
         {
-            XSIGMA_LOG_INFO_DEBUG_BFC("Merging c {} into c->prev {}", c->ptr, n->ptr);
+            QUARISMA_LOG_INFO_DEBUG_BFC("Merging c {} into c->prev {}", c->ptr, n->ptr);
             coalesced_chunk = c->prev;
             RemoveFreeChunkFromBin(c->prev);
             Merge(c->prev, h);
@@ -1223,7 +1223,7 @@ void allocator_bfc::SetSafeFrontier(uint64_t count) noexcept
 
 bool allocator_bfc::MergeTimestampedChunks(size_t required_bytes)
 {
-    XSIGMA_LOG_INFO_DEBUG_BFC(
+    QUARISMA_LOG_INFO_DEBUG_BFC(
         "MergeTimestampedChunks queue_len={} required_bytes={}",
         timestamped_chunks_.size(),
         required_bytes);
@@ -1236,7 +1236,7 @@ bool allocator_bfc::MergeTimestampedChunks(size_t required_bytes)
     {
         ChunkHandle h = timestamped_chunks_.front();
         timestamped_chunks_.pop_front();
-        XSIGMA_CHECK_DEBUG(h != kInvalidChunkHandle);
+        QUARISMA_CHECK_DEBUG(h != kInvalidChunkHandle);
         Chunk* c = ChunkFromHandle(h);
         // It's possible this chunk has already been merged so refetch and retest
         // the handle.
@@ -1256,7 +1256,7 @@ bool allocator_bfc::MergeTimestampedChunks(size_t required_bytes)
             continue;
         }
         // Chunk should be free and assigned to a bin.
-        XSIGMA_CHECK_DEBUG(c->bin_num != kInvalidBinNum);
+        QUARISMA_CHECK_DEBUG(c->bin_num != kInvalidBinNum);
         if (c->freed_at_count < safe_frontier_)
         {
             c->freed_at_count = 0;
@@ -1271,7 +1271,7 @@ bool allocator_bfc::MergeTimestampedChunks(size_t required_bytes)
             new_ts_queue.push_back(h);
         }
     }
-    XSIGMA_CHECK_DEBUG(timestamped_chunks_.empty());
+    QUARISMA_CHECK_DEBUG(timestamped_chunks_.empty());
     std::swap(timestamped_chunks_, new_ts_queue);
 
     // At this point all candidate chunks have been moved from timestamped_chunks_
@@ -1291,8 +1291,8 @@ bool allocator_bfc::MergeTimestampedChunks(size_t required_bytes)
         if (required_bytes == 0 || !satisfied)
         {
             Chunk const* c = ChunkFromHandle(h);
-            XSIGMA_CHECK_DEBUG(c->bin_num != kInvalidBinNum);
-            XSIGMA_CHECK_DEBUG(!c->in_use());
+            QUARISMA_CHECK_DEBUG(c->bin_num != kInvalidBinNum);
+            QUARISMA_CHECK_DEBUG(!c->in_use());
             RemoveFreeChunkFromBin(h);
             ChunkHandle const new_h = TryToCoalesce(h, (required_bytes > 0));
             InsertFreeChunkIntoBin(new_h);
@@ -1326,10 +1326,10 @@ bool allocator_bfc::tracks_allocation_sizes() const noexcept
 
 size_t allocator_bfc::RequestedSize(const void* ptr) const
 {
-    XSIGMA_CHECK(ptr != nullptr);
+    QUARISMA_CHECK(ptr != nullptr);
     std::scoped_lock const           lock(mutex_);
     allocator_bfc::ChunkHandle const h = region_manager_.get_handle(ptr);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         h != kInvalidChunkHandle, "Asked for requested size of pointer we never allocated: ", ptr);
 
     const allocator_bfc::Chunk* c = ChunkFromHandle(h);
@@ -1341,7 +1341,7 @@ size_t allocator_bfc::AllocatedSize(const void* ptr) const
     std::scoped_lock const           lock(mutex_);
     allocator_bfc::ChunkHandle const h = region_manager_.get_handle(ptr);
 
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         h != kInvalidChunkHandle, "Asked for allocated size of pointer we never allocated: ", ptr);
 
     const allocator_bfc::Chunk* c = ChunkFromHandle(h);
@@ -1353,7 +1353,7 @@ int64_t allocator_bfc::AllocationId(const void* ptr) const
     std::scoped_lock const           lock(mutex_);
     allocator_bfc::ChunkHandle const h = region_manager_.get_handle(ptr);
 
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         h != kInvalidChunkHandle, "Asked for allocation id of pointer we never allocated: ", ptr);
 
     const allocator_bfc::Chunk* c = ChunkFromHandle(h);
@@ -1377,10 +1377,10 @@ void RenderRegion(
     const char* ptr_c      = static_cast<const char*>(ptr);
 
     size_t const start_location = ((ptr_c - base_ptr_c + offset) * resolution) / total_render_size;
-    XSIGMA_CHECK_DEBUG(start_location < resolution);
+    QUARISMA_CHECK_DEBUG(start_location < resolution);
     size_t const end_location =
         ((ptr_c + size - 1 - base_ptr_c + offset) * resolution) / total_render_size;
-    XSIGMA_CHECK_DEBUG(end_location < resolution);
+    QUARISMA_CHECK_DEBUG(end_location < resolution);
 
     // Ensure we don't exceed array bounds (clang-analyzer check)
     size_t const safe_start = std::min(start_location, resolution - 1);
@@ -1462,16 +1462,16 @@ void allocator_bfc::DumpMemoryLog(size_t num_bytes)
 {
     const std::array<BinDebugInfo, kNumBins> bin_infos = get_bin_debug_info();
 
-    XSIGMA_LOG_INFO("allocator_bfc dump for {}", Name());
+    QUARISMA_LOG_INFO("allocator_bfc dump for {}", Name());
 
     for (BinNum bin_num = 0; bin_num < kNumBins; bin_num++)
     {
         Bin*                b        = BinFromIndex(bin_num);
         const BinDebugInfo& bin_info = bin_infos[bin_num];
-        XSIGMA_CHECK_DEBUG(
+        QUARISMA_CHECK_DEBUG(
             b->free_chunks.size() == bin_info.total_chunks_in_bin - bin_info.total_chunks_in_use);
 
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "Bin ({}): \tTotal Chunks: {}, Chunks in use: {}. {} allocated for chunks. {} in use "
             "in bin. {} client-requested in use in bin.",
             b->bin_size,
@@ -1486,7 +1486,7 @@ void allocator_bfc::DumpMemoryLog(size_t num_bytes)
     // can get some further analysis about fragmentation.
     Bin const* b = BinForSize(num_bytes);
 
-    XSIGMA_LOG_INFO(
+    QUARISMA_LOG_INFO(
         "Bin for {} was {}, Chunk State: ",
         format_human_readable_bytes(num_bytes),
         format_human_readable_bytes(b->bin_size));
@@ -1494,15 +1494,15 @@ void allocator_bfc::DumpMemoryLog(size_t num_bytes)
     for (ChunkHandle const h : b->free_chunks)
     {
         Chunk const* c = ChunkFromHandle(h);
-        XSIGMA_LOG_INFO("{}", c->debug_string(this, true));
+        QUARISMA_LOG_INFO("{}", c->debug_string(this, true));
     }
 
     // Next show the chunks that are in use, and also summarize their
     // number by size.
-    xsigma_map<size_t, int> in_use_by_size;
+    quarisma_map<size_t, int> in_use_by_size;
     for (const auto& region : region_manager_.regions())
     {
-        XSIGMA_LOG_INFO("Next region of size {}", region.memory_size());
+        QUARISMA_LOG_INFO("Next region of size {}", region.memory_size());
         ChunkHandle h = region_manager_.get_handle(region.ptr());
         while (h != kInvalidChunkHandle)
         {
@@ -1517,7 +1517,7 @@ void allocator_bfc::DumpMemoryLog(size_t num_bytes)
                 strings::format_hex(reinterpret_cast<uint64_t>(c->ptr)),
                 " of size ",
                 c->size);
-#ifdef XSIGMA_MEM_DEBUG
+#ifdef QUARISMA_MEM_DEBUG
             if (ShouldRecordOpName())
             {
                 strings::str_append(
@@ -1535,31 +1535,31 @@ void allocator_bfc::DumpMemoryLog(size_t num_bytes)
             {
                 strings::str_append(&buf, " freed_at_count ", c->freed_at_count);
             }
-            XSIGMA_LOG_INFO("{}", buf);
+            QUARISMA_LOG_INFO("{}", buf);
             h = c->next;
         }
     }
 
-    XSIGMA_LOG_INFO("     Summary of in-use Chunks by size: ");
+    QUARISMA_LOG_INFO("     Summary of in-use Chunks by size: ");
     size_t total_bytes = 0;
     for (auto& it : in_use_by_size)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "{} Chunks of size {} totalling {}",
             it.second,
             it.first,
             format_human_readable_bytes(it.first * it.second));
         total_bytes += (it.first * it.second);
     }
-    XSIGMA_LOG_INFO("Sum Total of in-use chunks: {}", format_human_readable_bytes(total_bytes));
-    XSIGMA_LOG_INFO(
+    QUARISMA_LOG_INFO("Sum Total of in-use chunks: {}", format_human_readable_bytes(total_bytes));
+    QUARISMA_LOG_INFO(
         "Total bytes in pool: {} memory_limit_: {} available bytes: {} "
         "curr_region_allocation_bytes_: {}",
         stats_.pool_bytes.load(std::memory_order_relaxed),
         memory_limit_,
         (memory_limit_ - stats_.pool_bytes.load(std::memory_order_relaxed)),
         curr_region_allocation_bytes_);
-    XSIGMA_LOG_INFO("Stats: \n{}", stats_.debug_string());
+    QUARISMA_LOG_INFO("Stats: \n{}", stats_.debug_string());
 }
 
 void allocator_bfc::MaybeWriteMemoryMap()
@@ -1574,14 +1574,14 @@ void allocator_bfc::MaybeWriteMemoryMap()
         std::Status status = Env::Default()->NewWritableFile(file_name, &dump_file);
         if (!status.ok())
         {
-            XSIGMA_LOG_ERROR("Failed to open file {}", file_name);
+            QUARISMA_LOG_ERROR("Failed to open file {}", file_name);
             return;
         }
         memory_dump md = RecordMemoryMapInternal();
         status        = dump_file->Append(md.SerializeAsstd::string());
         if (!status.ok())
         {
-            XSIGMA_LOG_ERROR("Error on writing to file {}: {}", gpu_memory_map_file, status);
+            QUARISMA_LOG_ERROR("Error on writing to file {}: {}", gpu_memory_map_file, status);
         }
     }
 #endif  // 0
@@ -1613,7 +1613,7 @@ memory_dump allocator_bfc::RecordMemoryMapInternal()
         const BinDebugInfo& bin_info = bin_infos[bin_num];
 #ifndef NDEBUG
         Bin const* b = BinFromIndex(bin_num);
-        XSIGMA_CHECK_DEBUG(
+        QUARISMA_CHECK_DEBUG(
             b->free_chunks.size() == bin_info.total_chunks_in_bin - bin_info.total_chunks_in_use);
 #endif
         BinSummary* bs = md.add_bin_summary();
@@ -1637,7 +1637,7 @@ memory_dump allocator_bfc::RecordMemoryMapInternal()
             mc->set_size(c->size);
             mc->set_requested_size(c->requested_size);
             mc->set_bin(c->bin_num);
-#ifdef XSIGMA_MEM_DEBUG
+#ifdef QUARISMA_MEM_DEBUG
             mc->set_op_name(c->op_name ? std::string(c->op_name) : "UNKNOWN");
             mc->set_step_id(c->step_id);
             mc->set_action_count(c->action_count);
@@ -1652,7 +1652,7 @@ memory_dump allocator_bfc::RecordMemoryMapInternal()
 
     mas->set_fragmentation_metric(GetFragmentation());
 
-#ifdef XSIGMA_MEM_DEBUG
+#ifdef QUARISMA_MEM_DEBUG
     // Record the recent size history
     int history_len = static_cast<int>(
         std::min(action_counter_, static_cast<int64>(MEM_DEBUG_SIZE_HISTORY_SIZE)));
@@ -1708,8 +1708,8 @@ std::array<allocator_bfc::BinDebugInfo, allocator_bfc::kNumBins> allocator_bfc::
             else
             {
                 Bin const* bin = BinFromIndex(bin_num);
-                XSIGMA_CHECK(bin->free_chunks.count(h) == 1);
-                XSIGMA_CHECK(c->bin_num == bin_num);
+                QUARISMA_CHECK(bin->free_chunks.count(h) == 1);
+                QUARISMA_CHECK(c->bin_num == bin_num);
             }
             h = c->next;
         }
@@ -1721,4 +1721,4 @@ allocator_memory_enum allocator_bfc::GetMemoryType() const noexcept
 {
     return sub_allocator_->GetMemoryType();
 }
-}  // namespace xsigma
+}  // namespace quarisma

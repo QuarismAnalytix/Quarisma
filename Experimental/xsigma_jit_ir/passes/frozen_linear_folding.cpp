@@ -6,10 +6,10 @@
 #include <torch/csrc/jit/passes/utils/optimization_utils.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/ones_like.h>
-#include <XSigma/ops/zeros_like.h>
+#include <Quarisma/ops/ones_like.h>
+#include <Quarisma/ops/zeros_like.h>
 #endif
 
 namespace torch::jit
@@ -18,7 +18,7 @@ namespace torch::jit
 namespace
 {
 
-using Tensor = xsigma::Tensor;
+using Tensor = quarisma::Tensor;
 
 bool supportedLinearNode(Node* n)
 {
@@ -42,9 +42,9 @@ bool FoldFrozenLinearBatchnorm(Block* b)
             graph_modified |= FoldFrozenLinearBatchnorm(block);
         }
 
-        if (n->kind() == aten::batch_norm && supportedLinearNode(n->inputs().xsigma(0)->node()))
+        if (n->kind() == aten::batch_norm && supportedLinearNode(n->inputs().quarisma(0)->node()))
         {
-            auto linear = n->inputs().xsigma(0)->node();
+            auto linear = n->inputs().quarisma(0)->node();
             auto bn     = n;
 
             if (nonConstantParameters(linear) || nonConstantParameters(bn))
@@ -89,16 +89,16 @@ bool FoldFrozenLinearBatchnorm(Block* b)
             Tensor linear_b;
             if (linear->namedInput("bias")->type() == NoneType::get())
             {
-                xsigma::ScalarType bias_dtype    = bn_rm.scalar_type();
-                xsigma::ScalarType weight_dtype  = linear_w.scalar_type();
-                xsigma::DeviceType weight_device = linear_w.device().type();
-                if (weight_device == xsigma::kCUDA &&
-                    (weight_dtype == xsigma::kHalf || weight_dtype == xsigma::kBFloat16) &&
-                    bias_dtype == xsigma::kFloat)
+                quarisma::ScalarType bias_dtype    = bn_rm.scalar_type();
+                quarisma::ScalarType weight_dtype  = linear_w.scalar_type();
+                quarisma::DeviceType weight_device = linear_w.device().type();
+                if (weight_device == quarisma::kCUDA &&
+                    (weight_dtype == quarisma::kHalf || weight_dtype == quarisma::kBFloat16) &&
+                    bias_dtype == quarisma::kFloat)
                 {
                     bias_dtype = weight_dtype;
                 }
-                linear_b = xsigma::zeros_like(bn_rm, xsigma::TensorOptions().dtype(bias_dtype));
+                linear_b = quarisma::zeros_like(bn_rm, quarisma::TensorOptions().dtype(bias_dtype));
             }
             else
             {
@@ -107,7 +107,7 @@ bool FoldFrozenLinearBatchnorm(Block* b)
             Tensor bn_w;
             if (bn->namedInput("weight")->type() == NoneType::get())
             {
-                bn_w = xsigma::ones_like(bn_rm);
+                bn_w = quarisma::ones_like(bn_rm);
             }
             else
             {
@@ -116,7 +116,7 @@ bool FoldFrozenLinearBatchnorm(Block* b)
             Tensor bn_b;
             if (n->namedInput("bias")->type() == NoneType::get())
             {
-                bn_b = xsigma::zeros_like(bn_rm);
+                bn_b = quarisma::zeros_like(bn_rm);
             }
             else
             {

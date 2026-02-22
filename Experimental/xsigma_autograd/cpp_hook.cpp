@@ -1,7 +1,7 @@
 #include <torch/csrc/autograd/cpp_hook.h>
 #include <torch/csrc/autograd/custom_function.h>
 #include <torch/csrc/autograd/variable.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <utility>
 
@@ -9,9 +9,9 @@ namespace
 {
 using torch::autograd::Variable;
 void check_single_result(
-    const xsigma::TensorBase& value, const xsigma::TensorBase& result, const std::string& hook_name)
+    const quarisma::TensorBase& value, const quarisma::TensorBase& result, const std::string& hook_name)
 {
-    XSIGMA_CHECK(value.defined(), "can't replace a empty gradient with a non-empty value");
+    QUARISMA_CHECK(value.defined(), "can't replace a empty gradient with a non-empty value");
     torch::autograd::check_variable_result(value, result, hook_name);
 }
 }  // namespace
@@ -28,7 +28,7 @@ CppFunctionTensorPreHook::CppFunctionTensorPreHook(
 variable_list CppFunctionTensorPreHook::operator()(const variable_list& values)
 {
     auto value = values[value_idx_];
-    for (const auto i : xsigma::irange(hooks_->size()))
+    for (const auto i : quarisma::irange(hooks_->size()))
     {
         auto& hook = (*hooks_)[i];
         if (!hook)
@@ -51,7 +51,7 @@ variable_list CppFunctionTensorPreHook::operator()(const variable_list& values)
 }
 
 CppFunctionSingleTensorPreHook::CppFunctionSingleTensorPreHook(
-    std::function<xsigma::TensorBase(const xsigma::TensorBase&)> hook, size_t value_idx)
+    std::function<quarisma::TensorBase(const quarisma::TensorBase&)> hook, size_t value_idx)
     : hook_(std::move(hook)), value_idx_(value_idx)
 {
 }

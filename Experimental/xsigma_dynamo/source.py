@@ -125,10 +125,10 @@ class LocalSource(Source):
     is_input: bool = False
 
     # Whether we know this input is dynamic (based on example_inputs)
-    # For non tensors, we simply look xsigma the first index of the tuple
+    # For non tensors, we simply look quarisma the first index of the tuple
     dynamism: Optional[frozenset[str]] = None
 
-    # Whether the item xsigma this source is the _content_ of a cell that is
+    # Whether the item quarisma this source is the _content_ of a cell that is
     # dereferenced from the root frame, i.e., it's a part of the `co_cellvars`
     # or `co_freevars`.
     is_derefed_cell_contents: bool = False
@@ -538,7 +538,7 @@ class DynamicScalarSource(ChainedSource):
         assert self.base is not None
 
     def reconstruct(self, codegen: "PyCodegen") -> None:
-        # Integer casting xsigma reconstruction helps reduce the amount of DynamicInts returned
+        # Integer casting quarisma reconstruction helps reduce the amount of DynamicInts returned
         # to the user, in favor of plain ints.
         # For example, a compiled region that only does int arithmetic could return a
         # DynamicInt without the casting here.

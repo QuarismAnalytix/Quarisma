@@ -1,5 +1,5 @@
-#include <XSigma/core/Tensor.h>
-#include <XSigma/core/jit_type.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/core/jit_type.h>
 #include <c10/core/GradMode.h>
 
 #include <utility>

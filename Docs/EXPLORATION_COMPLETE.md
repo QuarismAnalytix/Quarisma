@@ -1,8 +1,8 @@
-# Complete Exploration: Removing `parallel_thread_local` from XSigma
+# Complete Exploration: Removing `parallel_thread_local` from Quarisma
 
 ## Overview
 
-This exploration provides a comprehensive analysis of all viable options for completely removing `parallel_thread_local` from the XSigma codebase.
+This exploration provides a comprehensive analysis of all viable options for completely removing `parallel_thread_local` from the Quarisma codebase.
 
 ---
 

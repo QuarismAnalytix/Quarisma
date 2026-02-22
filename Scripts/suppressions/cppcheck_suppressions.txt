@@ -6,9 +6,9 @@
 *:Library/Core/experimental/*
 
 # Suppress unknown macro warnings
-unknownMacro:XSIGMA_UNLIKELY
-unknownMacro:XSIGMA_LIKELY
-unknownMacro:XSIGMA_CHECK
+unknownMacro:QUARISMA_UNLIKELY
+unknownMacro:QUARISMA_LIKELY
+unknownMacro:QUARISMA_CHECK
 unknownMacro:Library/Core/profiler/kineto/kineto_shim.cpp:171
 syntaxError:Library/Core/parallel/parallel.h:267
 syntaxError:Library/Core/profiler/common/record_function.cpp:316
@@ -24,7 +24,7 @@ missingInclude:*
 #virtualCallInConstructor:Library/Core/profiler/cpu/host_tracer.cpp:71
 
 # Test helper function - pointer is not modified
-#constParameterPointer:Library/Core/Testing/xsigmaTest.h:234
+#constParameterPointer:Library/Core/Testing/baseTest.h:234
 
 # Intentional design patterns
 

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
@@ -43,10 +43,10 @@ limitations under the License.
 #include <string_view>
 #include <vector>
 
-#include "logging/logger.h"  // for XSIGMA_LOG_ERROR
-#include "util/exception.h"  // for XSIGMA_CHECK
+#include "logging/logger.h"  // for QUARISMA_LOG_ERROR
+#include "util/exception.h"  // for QUARISMA_CHECK
 
-namespace xsigma
+namespace quarisma
 {
 bool read_bool_from_env_var(std::string_view env_var_name, bool default_val, bool* value)
 {
@@ -59,7 +59,7 @@ bool read_bool_from_env_var(std::string_view env_var_name, bool default_val, boo
     }
     std::string str_value = env_val;
 
-    str_value = xsigma::strings::to_lower(str_value);
+    str_value = quarisma::strings::to_lower(str_value);
 
     if (str_value == "0" || str_value == "false")
     {
@@ -72,7 +72,7 @@ bool read_bool_from_env_var(std::string_view env_var_name, bool default_val, boo
         return true;
     }
 
-    XSIGMA_LOG_ERROR(
+    QUARISMA_LOG_ERROR(
         "Failed to parse the env-var {} into bool: {}. Use the default value: {}",
         env_var_name,
         str_value,
@@ -97,7 +97,7 @@ bool read_int64_from_env_var(std::string_view env_var_name, int64_t default_val,
     size_t const end   = str.find_last_not_of(" \t\n\r");
     if (start == std::string::npos)
     {
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "InvalidArgument Failed to parse the env-var {} into int64: {}. Use the default "
             "value: {}",
             env_var_name,
@@ -115,7 +115,7 @@ bool read_int64_from_env_var(std::string_view env_var_name, int64_t default_val,
         return true;
     }
 
-    XSIGMA_LOG_ERROR(
+    QUARISMA_LOG_ERROR(
         "InvalidArgument Failed to parse the env-var {} into int64: {}. Use the default value: {}",
         env_var_name,
         tf_env_var_val,
@@ -141,7 +141,7 @@ bool read_float_from_env_var(std::string_view env_var_name, float default_val, f
     size_t const end   = str.find_last_not_of(" \t\n\r");
     if (start == std::string::npos)
     {
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "InvalidArgument Failed to parse the env-var {} into float: {}. Use the default "
             "value: {}",
             env_var_name,
@@ -159,7 +159,7 @@ bool read_float_from_env_var(std::string_view env_var_name, float default_val, f
         return true;
     }
 
-    XSIGMA_LOG_ERROR(
+    QUARISMA_LOG_ERROR(
         "InvalidArgument Failed to parse the env-var {} into float: {}. Use the default value: {}",
         env_var_name,
         tf_env_var_val,
@@ -186,7 +186,7 @@ bool read_strings_from_env_var(
     std::string_view env_var_name, std::string_view default_val, std::vector<std::string>& value)
 {
     std::string str_val;
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         read_string_from_env_var(env_var_name, default_val, str_val),
         "Failed to read string from env var: {}",
         env_var_name);
@@ -212,4 +212,4 @@ bool read_strings_from_env_var(
     return true;
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

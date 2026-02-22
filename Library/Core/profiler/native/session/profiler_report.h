@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -29,7 +29,7 @@
 #include "profiler/native/memory/memory_tracker.h"
 #include "profiler/native/session/profiler.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -38,14 +38,14 @@ namespace xsigma
  * Provides comprehensive report generation capabilities with multiple
  * output formats including console, JSON, CSV, and XML formats.
  */
-class XSIGMA_VISIBILITY profiler_report
+class QUARISMA_VISIBILITY profiler_report
 {
 public:
     /**
      * @brief Construct a new profiler report
      * @param session Reference to the profiler session to generate report from
      */
-    XSIGMA_API explicit profiler_report(const xsigma::profiler_session& session);
+    QUARISMA_API explicit profiler_report(const quarisma::profiler_session& session);
 
     /**
      * @brief Default destructor
@@ -56,25 +56,25 @@ public:
      * @brief Generate human-readable console report
      * @return String containing formatted console report
      */
-    XSIGMA_API std::string generate_console_report() const;
+    QUARISMA_API std::string generate_console_report() const;
 
     /**
      * @brief Generate JSON format report
      * @return String containing JSON formatted report
      */
-    XSIGMA_API std::string generate_json_report() const;
+    QUARISMA_API std::string generate_json_report() const;
 
     /**
      * @brief Generate CSV format report
      * @return String containing CSV formatted report
      */
-    XSIGMA_API std::string generate_csv_report() const;
+    QUARISMA_API std::string generate_csv_report() const;
 
     /**
      * @brief Generate XML format report
      * @return String containing XML formatted report
      */
-    XSIGMA_API std::string generate_xml_report() const;
+    QUARISMA_API std::string generate_xml_report() const;
 
     /**
      * @brief Export report to file in specified format
@@ -82,43 +82,43 @@ public:
      * @param format Output format to use
      * @return true if export successful, false otherwise
      */
-    XSIGMA_API bool export_to_file(
-        const std::string& filename, xsigma::profiler_options::output_format_enum format) const;
+    QUARISMA_API bool export_to_file(
+        const std::string& filename, quarisma::profiler_options::output_format_enum format) const;
 
     /**
      * @brief Export console report to file
      * @param filename Path to output file
      * @return true if export successful, false otherwise
      */
-    XSIGMA_API bool export_console_report(const std::string& filename) const;
+    QUARISMA_API bool export_console_report(const std::string& filename) const;
 
     /**
      * @brief Export JSON report to file
      * @param filename Path to output file
      * @return true if export successful, false otherwise
      */
-    XSIGMA_API bool export_json_report(const std::string& filename) const;
+    QUARISMA_API bool export_json_report(const std::string& filename) const;
 
     /**
      * @brief Export CSV report to file
      * @param filename Path to output file
      * @return true if export successful, false otherwise
      */
-    XSIGMA_API bool export_csv_report(const std::string& filename) const;
+    QUARISMA_API bool export_csv_report(const std::string& filename) const;
 
     /**
      * @brief Export XML report to file
      * @param filename Path to output file
      * @return true if export successful, false otherwise
      */
-    XSIGMA_API bool export_xml_report(const std::string& filename) const;
+    QUARISMA_API bool export_xml_report(const std::string& filename) const;
 
     // Print to console
-    XSIGMA_API static void print_summary();
-    XSIGMA_API void        print_detailed_report() const;
-    XSIGMA_API static void print_memory_report();
-    XSIGMA_API static void print_timing_report();
-    XSIGMA_API static void print_statistical_report();
+    QUARISMA_API static void print_summary();
+    QUARISMA_API void        print_detailed_report() const;
+    QUARISMA_API static void print_memory_report();
+    QUARISMA_API static void print_timing_report();
+    QUARISMA_API static void print_statistical_report();
 
     // Report customization
     void set_precision(int precision) { precision_ = precision; }
@@ -128,7 +128,7 @@ public:
     void set_include_hierarchical_data(bool include) { include_hierarchical_data_ = include; }
 
 private:
-    const xsigma::profiler_session& session_;
+    const quarisma::profiler_session& session_;
 
     // Formatting options
     int         precision_                 = 3;
@@ -169,20 +169,20 @@ private:
 
     // Hierarchical data processing
     void process_scope_data_recursive(
-        const xsigma::profiler_scope_data& scope, std::stringstream& ss, int indent = 0) const;
+        const quarisma::profiler_scope_data& scope, std::stringstream& ss, int indent = 0) const;
     void process_scope_data_json_recursive(
-        const xsigma::profiler_scope_data& scope, std::stringstream& ss, int indent = 0) const;
+        const quarisma::profiler_scope_data& scope, std::stringstream& ss, int indent = 0) const;
     void process_scope_data_csv_recursive(
-        const xsigma::profiler_scope_data& scope,
+        const quarisma::profiler_scope_data& scope,
         std::vector<std::string>&          rows,
         int                                depth = 0) const;
 };
 
 // Report builder with fluent interface
-class XSIGMA_VISIBILITY profiler_report_builder
+class QUARISMA_VISIBILITY profiler_report_builder
 {
 public:
-    XSIGMA_API explicit profiler_report_builder(const xsigma::profiler_session& session);
+    QUARISMA_API explicit profiler_report_builder(const quarisma::profiler_session& session);
 
     profiler_report_builder& with_precision(int precision)
     {
@@ -226,10 +226,10 @@ public:
         return *this;
     }
 
-    XSIGMA_API std::unique_ptr<xsigma::profiler_report> build() const;
+    QUARISMA_API std::unique_ptr<quarisma::profiler_report> build() const;
 
 private:
-    const xsigma::profiler_session& session_;
+    const quarisma::profiler_session& session_;
     int                             precision_                    = 3;
     std::string                     time_unit_                    = "ms";
     std::string                     memory_unit_                  = "MB";
@@ -239,4 +239,4 @@ private:
     bool                            include_memory_details_       = true;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

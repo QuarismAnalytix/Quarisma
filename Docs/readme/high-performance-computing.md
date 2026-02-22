@@ -1,6 +1,6 @@
 # High-Performance Computing Guide
 
-XSigma provides comprehensive support for high-performance computing through CPU vectorization (SIMD), GPU acceleration (CUDA/HIP), and multithreading capabilities.
+Quarisma provides comprehensive support for high-performance computing through CPU vectorization (SIMD), GPU acceleration (CUDA/HIP), and multithreading capabilities.
 
 ## Table of Contents
 
@@ -68,7 +68,7 @@ python setup.py config.build.test.ninja.clang.debug.avx2.coverage
 
 ## GPU Acceleration
 
-XSigma supports NVIDIA CUDA and AMD HIP for GPU-accelerated computing.
+Quarisma supports NVIDIA CUDA and AMD HIP for GPU-accelerated computing.
 
 ### CUDA Support
 
@@ -130,30 +130,30 @@ python setup.py config.build.ninja.clang.release.cuda.tbb
 
 #### CUDA Configuration
 
-**CMake Flag**: `XSIGMA_ENABLE_CUDA` (default: OFF)
+**CMake Flag**: `QUARISMA_ENABLE_CUDA` (default: OFF)
 
 **GPU Architecture Selection**:
 ```bash
 # Auto-detect GPU architecture (recommended)
-cmake -B build -S . -DXSIGMA_ENABLE_CUDA=ON -DXSIGMA_CUDA_ARCH_OPTIONS=native
+cmake -B build -S . -DQUARISMA_ENABLE_CUDA=ON -DQUARISMA_CUDA_ARCH_OPTIONS=native
 
 # Specific architecture
-cmake -B build -S . -DXSIGMA_ENABLE_CUDA=ON -DXSIGMA_CUDA_ARCH_OPTIONS=ampere
+cmake -B build -S . -DQUARISMA_ENABLE_CUDA=ON -DQUARISMA_CUDA_ARCH_OPTIONS=ampere
 
 # Multiple architectures
-cmake -B build -S . -DXSIGMA_ENABLE_CUDA=ON -DXSIGMA_CUDA_ARCH_OPTIONS=all
+cmake -B build -S . -DQUARISMA_ENABLE_CUDA=ON -DQUARISMA_CUDA_ARCH_OPTIONS=all
 ```
 
 **Memory Allocation Strategy**:
 ```bash
 # Synchronous allocation (default)
-cmake -B build -S . -DXSIGMA_ENABLE_CUDA=ON -DXSIGMA_GPU_ALLOC=SYNC
+cmake -B build -S . -DQUARISMA_ENABLE_CUDA=ON -DQUARISMA_GPU_ALLOC=SYNC
 
 # Asynchronous allocation
-cmake -B build -S . -DXSIGMA_ENABLE_CUDA=ON -DXSIGMA_GPU_ALLOC=ASYNC
+cmake -B build -S . -DQUARISMA_ENABLE_CUDA=ON -DQUARISMA_GPU_ALLOC=ASYNC
 
 # Pool-based asynchronous allocation
-cmake -B build -S . -DXSIGMA_ENABLE_CUDA=ON -DXSIGMA_GPU_ALLOC=POOL_ASYNC
+cmake -B build -S . -DQUARISMA_ENABLE_CUDA=ON -DQUARISMA_GPU_ALLOC=POOL_ASYNC
 ```
 
 #### Performance Metrics
@@ -192,7 +192,7 @@ python setup.py config.build.test.ninja.clang.debug.hip
 
 ## Multithreading
 
-XSigma provides flexible multithreading options for parallel computing.
+Quarisma provides flexible multithreading options for parallel computing.
 
 ### Intel Threading Building Blocks (TBB)
 
@@ -279,7 +279,7 @@ python setup.py config.build.ninja.clang.release.cuda
 
 ## Combining HPC Features
 
-XSigma allows combining multiple HPC features for maximum performance.
+Quarisma allows combining multiple HPC features for maximum performance.
 
 ### Recommended Combinations
 

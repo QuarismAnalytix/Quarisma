@@ -318,7 +318,7 @@ class CapabilityBasedPartitioner:
             prefix=prefix,
         )
 
-    # remove non-compute-ops that sits xsigma the boundary of a partition.
+    # remove non-compute-ops that sits quarisma the boundary of a partition.
     def remove_bookend_non_compute_ops(self, partitions: list[Partition]):
         non_compute_ops = set(self.non_compute_ops)
 

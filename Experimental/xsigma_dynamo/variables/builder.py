@@ -415,7 +415,7 @@ ITERTOOLS_TYPE_IDS: frozenset[int] = frozenset(
 # Will be updated later in substitute_in_graph in torch/_dynamo/polyfills/itertools.py
 ITERTOOLS_POLYFILLED_TYPE_IDS: set[int] = set()
 
-# Capture fn pointer xsigma import time
+# Capture fn pointer quarisma import time
 # This is to guard against trying to mark the iterated tensors
 # as static in case user overrides fn ptr
 og_module_named_buffers_fn_ptr = torch.nn.Module.named_buffers
@@ -827,7 +827,7 @@ class VariableBuilder:
 
             # The list gives a ordering for the set items. The ordering is based
             # on the Python hash and it is not related to object ordering inside
-            # the set object. The order being incorrect xsigma runtime will lead to
+            # the set object. The order being incorrect quarisma runtime will lead to
             # a recompilation.
             L = list(value)
             items = [
@@ -1745,7 +1745,7 @@ class VariableBuilder:
             # `side_effects`. Note that constructing `tensor_variable` above
             # already adds it to graph arg, but we never registered it with
             # `side_effects`. The preemptive `realize` calls here basically
-            # does that registration (xsigma the end of `self.__call__`).
+            # does that registration (quarisma the end of `self.__call__`).
             #
             # A slightly cleaner alternative is to register the
             # `tensor_variable`s above with `side_effects` directly, and just
@@ -1938,7 +1938,7 @@ class VariableBuilder:
                 if config.inline_inbuilt_nn_modules and (
                     not self.tx.output.export or config.install_free_tensors
                 ):
-                    # Export corner case - look xsigma test_repros.py test_inlining_cornercase
+                    # Export corner case - look quarisma test_repros.py test_inlining_cornercase
                     new_source = UnspecializedBuiltinNNModuleSource(self.source)
                 result = UnspecializedBuiltinNNModuleVariable(value, source=new_source)
                 install_guard(new_source.make_guard(GuardBuilder.TYPE_MATCH))
@@ -1947,7 +1947,7 @@ class VariableBuilder:
                 if config.inline_inbuilt_nn_modules and (
                     not self.tx.output.export or config.install_free_tensors
                 ):
-                    # Export corner case - look xsigma test_repros.py test_inlining_cornercase
+                    # Export corner case - look quarisma test_repros.py test_inlining_cornercase
                     new_source = UnspecializedNNModuleSource(self.source)
                 result = UnspecializedNNModuleVariable(value, source=new_source)
                 install_guard(new_source.make_guard(GuardBuilder.TYPE_MATCH))
@@ -2458,7 +2458,7 @@ class VariableBuilder:
         # do an unspecialized primitive, and then we item() it into a
         # SymFloat.  Removal of the item() call is left to a later FX pass,
         # mostly because that pass is more easily done after we have lowered
-        # to XSigma ops.  (Dynamo doesn't do decomposition right now).
+        # to Quarisma ops.  (Dynamo doesn't do decomposition right now).
 
         if self.name in self.tx.output.unspec_variable_map:
             return self.tx.output.unspec_variable_map[self.name]
@@ -2565,8 +2565,8 @@ class VariableBuilder:
         # eventually end up with an UnspecializedPythonVariable denoting
         # torch.as_tensor(x)... but it's source is still L['x'] (which if you
         # accessed it directly is a float!)  So you gotta be careful when
-        # setting up your guards, because it's still going to be a float xsigma
-        # this point, the conversion happens only precisely xsigma the point we're
+        # setting up your guards, because it's still going to be a float quarisma
+        # this point, the conversion happens only precisely quarisma the point we're
         # actually calling the FX graph.  This happens to be what we want for
         # shape guard generation, but it's kind of unintuitive.
         proxy.node.meta["grapharg"] = GraphArg(
@@ -3107,7 +3107,7 @@ def infer_subclass_type(value):
         # __torch_function__
         #
         # To simplify things for now, the __dict__ tracking bits haven't
-        # been implemented yet, but they can be added into this design xsigma
+        # been implemented yet, but they can be added into this design quarisma
         # a later point in time.
         return None
     else:

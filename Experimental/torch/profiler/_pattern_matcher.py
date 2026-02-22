@@ -5,17 +5,17 @@ import os
 import re
 from typing import Optional
 
-import xsigma
-import xsigma.utils.benchmark as benchmark
-from xsigma._C._profiler import (
+import quarisma
+import quarisma.utils.benchmark as benchmark
+from quarisma._C._profiler import (
     _EventType,
     _ExtraFields_PyCall,
     _ExtraFields_PyCCall,
     _ExtraFields_TorchOp,
     _ProfilerEvent,
 )
-from xsigma.profiler import profile
-from xsigma.profiler._utils import index_of_first_match, traverse_bfs, traverse_dfs
+from quarisma.profiler import profile
+from quarisma.profiler._utils import index_of_first_match, traverse_bfs, traverse_dfs
 
 
 class Pattern:
@@ -149,7 +149,7 @@ class NamePattern(Pattern):
 class ExtraCUDACopyPattern(Pattern):
     """
     This pattern identifies if we creates a constant tensor on CPU and immediately moves it to GPU.
-    example: xsigma.zeros((100, 100)).to("cuda")
+    example: quarisma.zeros((100, 100)).to("cuda")
 
     Pattern:
     built-in method                 |built-in method
@@ -222,10 +222,10 @@ class ExtraCUDACopyPattern(Pattern):
         for shape in shapes_factor_map:
             size = shape[0]
             to_timer = benchmark.Timer(
-                stmt='xsigma.ones(size).to("cuda")', globals={"size": size}
+                stmt='quarisma.ones(size).to("cuda")', globals={"size": size}
             )
             de_timer = benchmark.Timer(
-                stmt='xsigma.ones(size, device="cuda")', globals={"size": size}
+                stmt='quarisma.ones(size, device="cuda")', globals={"size": size}
             )
             to_time = to_timer.timeit(10).mean
             de_time = de_timer.timeit(10).mean
@@ -238,7 +238,7 @@ class ForLoopIndexingPattern(Pattern):
     This pattern identifies if we use a for loop to index a tensor that
     can be vectorized.
     example:
-    tensor = xsigma.empty((100, 100))
+    tensor = quarisma.empty((100, 100))
     for i in range(100):
         tensor[i] = i
 
@@ -302,19 +302,19 @@ class FP32MatMulPattern(Pattern):
         self.name = "FP32 MatMul Pattern"
         self.description = (
             "You are currently using GPU that supports TF32. "
-            "Please enable TF32 by setting 'xsigma.backends.cuda.matmul.allow_tf32 = True'"
+            "Please enable TF32 by setting 'quarisma.backends.cuda.matmul.allow_tf32 = True'"
         )
         self.url = "https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices"
 
     @property
     def skip(self):
-        if xsigma.version.hip is not None:
+        if quarisma.version.hip is not None:
             has_tf32 = False
         else:
             # Anything less than sm_80 is not Ampere which doesn't support TF32
             has_tf32 = all(
                 int(re.sub("sm_|compute_", "", arch)) >= 80
-                for arch in xsigma.cuda.get_arch_list()
+                for arch in quarisma.cuda.get_arch_list()
             )
         return has_tf32 is False or super().skip or not self.prof.record_shapes
 
@@ -334,18 +334,18 @@ class FP32MatMulPattern(Pattern):
     def benchmark(self, events: list[_ProfilerEvent]):
         shapes_factor_map = {input_shapes(event): 0.0 for event in events}
         for shape in shapes_factor_map:
-            matrixA = xsigma.randn(shape[0], device="cuda", dtype=xsigma.float32)
-            matrixB = xsigma.randn(shape[1], device="cuda", dtype=xsigma.float32)
+            matrixA = quarisma.randn(shape[0], device="cuda", dtype=quarisma.float32)
+            matrixB = quarisma.randn(shape[1], device="cuda", dtype=quarisma.float32)
             fp32_timer = benchmark.Timer(
-                stmt="xsigma.mm(matrixA, matrixB)",
+                stmt="quarisma.mm(matrixA, matrixB)",
                 globals={"matrixA": matrixA, "matrixB": matrixB},
             )
             tf32_timer = benchmark.Timer(
-                stmt="xsigma.mm(matrixA, matrixB)",
-                setup="xsigma.backends.cuda.matmul.allow_tf32 = True",
+                stmt="quarisma.mm(matrixA, matrixB)",
+                setup="quarisma.backends.cuda.matmul.allow_tf32 = True",
                 globals={"matrixA": matrixA, "matrixB": matrixB},
             )
-            xsigma.backends.cuda.matmul.allow_tf32 = False
+            quarisma.backends.cuda.matmul.allow_tf32 = False
             fp32_time = fp32_timer.timeit(10).mean
             tf32_time = tf32_timer.timeit(10).mean
             shapes_factor_map[shape] = tf32_time / fp32_time
@@ -356,7 +356,7 @@ class OptimizerSingleTensorPattern(Pattern):
     """
     This pattern identifies if we are using the single-tensor version of an optimizer.
     example:
-    optimizer = xsigma.optim.SGD(model.parameters(), lr=0.1)
+    optimizer = quarisma.optim.SGD(model.parameters(), lr=0.1)
     By adding foreach=True to enable multi-tensor optimizer, we can gain speedup when
     the kernels are relatively small.
 
@@ -388,7 +388,7 @@ class SynchronizedDataLoaderPattern(Pattern):
     """
     This pattern identifies if we are using num_workers=0 in DataLoader.
     example:
-    xsigma.utils.data.DataLoader(dataset, batch_size=batch_size)
+    quarisma.utils.data.DataLoader(dataset, batch_size=batch_size)
     Add num_workers=N to the arguments. N depends on system configuration.
 
     Pattern:
@@ -417,7 +417,7 @@ class SynchronizedDataLoaderPattern(Pattern):
     def match(self, event: _ProfilerEvent) -> bool:
         def is_dataloader_function(name: str, function_name: str):
             return name.startswith(
-                os.path.join("xsigma", "utils", "data", "dataloader.py")
+                os.path.join("quarisma", "utils", "data", "dataloader.py")
             ) and name.endswith(function_name)
 
         # TODO: fixme! Due to lifetime issues of the function name, this field might
@@ -552,7 +552,7 @@ class MatMulDimInFP16Pattern(Pattern):
         if not input_dtypes(event):
             return False
         arg_dtype = input_dtypes(event)[0]
-        if arg_dtype in (xsigma.bfloat16, xsigma.half) and not mutiple_of(
+        if arg_dtype in (quarisma.bfloat16, quarisma.half) and not mutiple_of(
             input_shapes(event), 8
         ):
             return True
@@ -564,20 +564,20 @@ class MatMulDimInFP16Pattern(Pattern):
 
         shapes_factor_map = {input_shapes(event): 0.0 for event in events}
         for shape in shapes_factor_map:
-            matrixA = xsigma.randn(shape[0], device="cuda", dtype=xsigma.float16)
-            matrixB = xsigma.randn(shape[1], device="cuda", dtype=xsigma.float16)
+            matrixA = quarisma.randn(shape[0], device="cuda", dtype=quarisma.float16)
+            matrixB = quarisma.randn(shape[1], device="cuda", dtype=quarisma.float16)
             not_aligned_dim_timer = benchmark.Timer(
-                stmt="xsigma.mm(matrixA, matrixB)",
+                stmt="quarisma.mm(matrixA, matrixB)",
                 globals={"matrixA": matrixA, "matrixB": matrixB},
             )
-            matrixA = xsigma.randn(
-                closest_multiple(shape[0], 8), device="cuda", dtype=xsigma.float16
+            matrixA = quarisma.randn(
+                closest_multiple(shape[0], 8), device="cuda", dtype=quarisma.float16
             )
-            matrixB = xsigma.randn(
-                closest_multiple(shape[1], 8), device="cuda", dtype=xsigma.float16
+            matrixB = quarisma.randn(
+                closest_multiple(shape[1], 8), device="cuda", dtype=quarisma.float16
             )
             aligned_dim_timer = benchmark.Timer(
-                stmt="xsigma.mm(matrixA, matrixB)",
+                stmt="quarisma.mm(matrixA, matrixB)",
                 globals={"matrixA": matrixA, "matrixB": matrixB},
             )
             not_aligned_dim_time = not_aligned_dim_timer.timeit(10).mean
@@ -592,7 +592,7 @@ def source_code_location(event: Optional[_ProfilerEvent]) -> str:
             assert isinstance(
                 event.extra_fields, (_ExtraFields_PyCall, _ExtraFields_PyCCall)
             )
-            if not event.extra_fields.caller.file_name.startswith("xsigma" + os.sep):
+            if not event.extra_fields.caller.file_name.startswith("quarisma" + os.sep):
                 return f"{event.extra_fields.caller.file_name}:{event.extra_fields.caller.line_number}"
         event = event.parent
     return "No source code location found"

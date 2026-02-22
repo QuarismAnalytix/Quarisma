@@ -1,12 +1,12 @@
 #pragma once
 
-#include <XSigma/core/ivalue.h>
+#include <Quarisma/core/ivalue.h>
 #include <torch/csrc/utils/generated_serialization_types.h>
 #include <torch/nativert/executor/Placement.h>
 #include <torch/nativert/graph/GraphSignature.h>
 #include <torch/nativert/graph/TensorMeta.h>
-#include <xsigma/util/IntrusiveList.h>
-#include <xsigma/util/Logging.h>
+#include <quarisma/util/IntrusiveList.h>
+#include <quarisma/util/Logging.h>
 
 #include <memory>
 #include <string>
@@ -43,8 +43,8 @@ public:
     // For CustomObj kind with classFqn
     explicit Type(Kind kind, const std::string& classFqn) : kind_(CustomObjData{classFqn})
     {
-        XSIGMA_CHECK(kind == Kind::CustomObj);
-        XSIGMA_CHECK(!classFqn.empty());
+        QUARISMA_CHECK(kind == Kind::CustomObj);
+        QUARISMA_CHECK(!classFqn.empty());
     }
 
     Kind kind() const
@@ -61,7 +61,7 @@ public:
 
     std::string classFqn() const
     {
-        XSIGMA_CHECK(kind() == Kind::CustomObj, "Only CustomObj type can have classFqn");
+        QUARISMA_CHECK(kind() == Kind::CustomObj, "Only CustomObj type can have classFqn");
         return std::get<CustomObjData>(kind_).classFqn;
     }
 
@@ -98,16 +98,16 @@ using Constant = std::variant<
     double,
     std::vector<double>,
     std::string,
-    xsigma::ScalarType,
-    xsigma::MemoryFormat,
-    xsigma::Layout,
-    xsigma::Device,
+    quarisma::ScalarType,
+    quarisma::MemoryFormat,
+    quarisma::Layout,
+    quarisma::Device,
     bool,
     std::vector<bool>,
     std::vector<std::string>,
     std::unique_ptr<Graph>>;
 
-xsigma::IValue constantToIValue(const Constant& constant);
+quarisma::IValue constantToIValue(const Constant& constant);
 
 class Node;
 
@@ -122,7 +122,7 @@ public:
     explicit Value(ValueId id, std::string name, Type t, Node* producer)
         : name_(std::move(name)), id_(id), type_(t), producer_(producer)
     {
-        XSIGMA_CHECK_DEBUG(name_ == this->name());
+        QUARISMA_CHECK_DEBUG(name_ == this->name());
     }
 
     // Each Value should be uniquely created and managed by a Graph. It's not
@@ -194,12 +194,12 @@ struct Attribute
 
 /**
  * Node represents a single unit of execution, typically a PyTorch operator.
- * Using an intrusive list allows us to allocate all the memory xsigma once for a
+ * Using an intrusive list allows us to allocate all the memory quarisma once for a
  * node. This also allows us to track nodes safely without passing around the
  * list object, as an intrusive list maintains a stronger invariant that
  * expiration will always cause unlinking.
  */
-class Node : public xsigma::IntrusiveListHook
+class Node : public quarisma::IntrusiveListHook
 {
 public:
     Node(
@@ -269,7 +269,7 @@ public:
     std::optional<std::string_view> getMetadata(std::string_view key) const
     {
         return metadata_.find(std::string{key}) != metadata_.end()
-                   ? std::optional(std::string_view{metadata_.xsigma(std::string{key})})
+                   ? std::optional(std::string_view{metadata_.quarisma(std::string{key})})
                    : std::nullopt;
     }
 
@@ -320,7 +320,7 @@ private:
     // If an aten operator, we expect this to be fully qualified, including an
     // overload name, e.g. "aten.unsqueeze.default"
     std::string target_;
-    // *Symbolic* inputs to this node. NOTE: this does not match the XSigma operator
+    // *Symbolic* inputs to this node. NOTE: this does not match the Quarisma operator
     // schema inputs directly. It only represents things that actually participate
     // in dataflow, like tensors/symints and lists thereof.
     //
@@ -371,7 +371,7 @@ public:
 
     void addConstantOutput(Constant c);
 
-    // Create and insert a node xsigma insertionPoint_
+    // Create and insert a node quarisma insertionPoint_
     Node* insertNode(
         std::string                                  target,
         std::vector<NamedArgument>                   inputs   = {},
@@ -381,7 +381,7 @@ public:
     Node* insertBefore(Node* toInsert, Node* insertionPoint);
     // Returns the inserted node.
     Node* insertAfter(Node* toInsert, Node* insertionPoint);
-    // Insert xsigma the insertionPoint. Returns the inserted node.
+    // Insert quarisma the insertionPoint. Returns the inserted node.
     Node* insert(Node* toInsert);
 
     // Create a node without inserting it into the execution graph.
@@ -422,7 +422,7 @@ public:
 
     // Override all weights in the graph if matching name is found in the map.
     void overrideWeightsDevice(
-        const std::unordered_map<std::string, std::optional<xsigma::Device>>& submodNameToDevice);
+        const std::unordered_map<std::string, std::optional<quarisma::Device>>& submodNameToDevice);
 
     std::string getUniqueValueName();
 
@@ -431,14 +431,14 @@ public:
     // NOTE: this range can be invalidated by mutations to the graph.
     const auto& inputs() const { return inputNode_->outputs(); }
 
-    xsigma::ArrayRef<const Value*> userInputs() const
+    quarisma::ArrayRef<const Value*> userInputs() const
     {
         size_t offset =
             signature().inputsToWeights().size() + signature().inputsToCustomObjs().size();
         return {inputs().data() + offset, inputs().data() + inputs().size()};
     }
 
-    xsigma::ArrayRef<const Value*> weightValues() const
+    quarisma::ArrayRef<const Value*> weightValues() const
     {
         return {inputs().data(), inputs().data() + signature().inputsToWeights().size()};
     }
@@ -507,20 +507,20 @@ public:
     {
         // This should never happen, since the last-most insertion point is the
         // prim.Outputs node, not end().
-        XSIGMA_CHECK(insertBefore_ != nodes_.end());
+        QUARISMA_CHECK(insertBefore_ != nodes_.end());
         auto& node = *insertBefore_;
         return &node;
     }
 
     void setInsertionPoint(Node* n)
     {
-        XSIGMA_CHECK(n != inputNode_, "can't insert before prim.Input");
+        QUARISMA_CHECK(n != inputNode_, "can't insert before prim.Input");
         insertBefore_ = nodes_.iterator_to(*n);
     }
 
     void setInsertionPointAfter(Node* n)
     {
-        XSIGMA_CHECK(n != outputNode_, "can't insert after prim.Output");
+        QUARISMA_CHECK(n != outputNode_, "can't insert after prim.Output");
         auto it = nodes_.iterator_to(*n);
         ++it;
         insertBefore_ = it;
@@ -555,7 +555,7 @@ public:
     void setWeightsMeta(
         const std::unordered_map<std::string, torch::_export::TensorMeta>& tensorsMeta)
     {
-        XSIGMA_CHECK(!placementApplied_);
+        QUARISMA_CHECK(!placementApplied_);
 
         for (auto [name, tensorMeta] : tensorsMeta)
         {
@@ -571,7 +571,7 @@ public:
         userInputsMeta.reserve(signature_.userInputs().size());
         for (auto inputName : signature_.userInputs())
         {
-            userInputsMeta.push_back(tensorValuesMeta_.xsigma(inputName));
+            userInputsMeta.push_back(tensorValuesMeta_.quarisma(inputName));
         }
         return userInputsMeta;
     }
@@ -579,7 +579,7 @@ public:
     void setTensorValuesMeta(
         const std::unordered_map<std::string, torch::_export::TensorMeta>& tensorsMeta)
     {
-        XSIGMA_CHECK(!placementApplied_);
+        QUARISMA_CHECK(!placementApplied_);
 
         for (auto [name, tensorMeta] : tensorsMeta)
         {
@@ -621,10 +621,10 @@ private:
     // maintained intrusively using nodes_.
     // This is to facilitate quick insertion before/after a given Node*.
     std::vector<std::unique_ptr<Node>> nodesOwner_;
-    xsigma::IntrusiveList<Node>        nodes_;
+    quarisma::IntrusiveList<Node>        nodes_;
     // The current insertion point. New nodes are inserted before this node.
     // Defaults to prim.Output.
-    xsigma::IntrusiveList<Node>::iterator insertBefore_;
+    quarisma::IntrusiveList<Node>::iterator insertBefore_;
 
     // Graphs always start with an input and output node.
     // "prim.input() -> Value[]" take no input, and produces some outputs. AKA
@@ -687,7 +687,7 @@ std::unique_ptr<Graph> stringToGraph(std::string_view source);
 
 // Standalone functions to parse common constructs
 // Parse something that looks like `Device{cuda:1}` to a device in json format.
-xsigma::Device convertDevice(std::string_view symbol);
+quarisma::Device convertDevice(std::string_view symbol);
 // We have separate functions for parsing atomic and list constants because
 // there are restrictive rules about which constants can go in lists (i.e.
 // it's not recursive).

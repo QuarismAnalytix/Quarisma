@@ -131,7 +131,7 @@ python_binary(
         target_file = os.path.join(self.subdir, "TARGETS")
         with open(target_file, "w") as fd:
             fd.write(self.build())
-        # log.warning("Wrote isolation TARGETS file xsigma %s", target_file)
+        # log.warning("Wrote isolation TARGETS file quarisma %s", target_file)
         cmd_split = BUCK_CMD_PREFIX + [self.cmd_line_path]
         if print_msg:
             log.warning(

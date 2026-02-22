@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -43,7 +43,7 @@ limitations under the License.
 
 #include "common/macros.h"
 
-namespace xsigma::profiler
+namespace quarisma::profiler
 {
 
 /**
@@ -104,7 +104,7 @@ void annotation_stack::push_annotation(std::string_view name)
     int64_t scope_range_id = scope_range_counter.fetch_add(1, std::memory_order_relaxed) + 1;
 
     // Handle overflow (extremely unlikely, but be safe)
-    if XSIGMA_UNLIKELY (scope_range_id == 0)
+    if QUARISMA_UNLIKELY (scope_range_id == 0)
     {
         scope_range_id = scope_range_counter.fetch_add(1, std::memory_order_relaxed) + 1;
     }
@@ -157,7 +157,7 @@ void annotation_stack::enable(bool enable)
 
 // annotation_stack::generation_ implementation must be lock-free for faster
 // execution of the scoped annotation API.
-XSIGMA_API std::atomic<int> annotation_stack::generation_{0};
+QUARISMA_API std::atomic<int> annotation_stack::generation_{0};
 static_assert(ATOMIC_INT_LOCK_FREE == 2, "Assumed atomic<int> was lock free");
 
-}  // namespace xsigma::profiler
+}  // namespace quarisma::profiler

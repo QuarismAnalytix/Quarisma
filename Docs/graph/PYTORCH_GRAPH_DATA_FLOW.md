@@ -1,15 +1,15 @@
-# XSigma Graph Data Flow and Practical Examples
+# Quarisma Graph Data Flow and Practical Examples
 
 ## 1. COMPLETE FORWARD-BACKWARD EXAMPLE
 
 ### 1.1 Simple Computation
 
 ```python
-import xsigma
+import quarisma
 
 # Step 1: Create leaf tensors
-x = xsigma.tensor([2.0], requires_grad=True)
-w = xsigma.tensor([3.0], requires_grad=True)
+x = quarisma.tensor([2.0], requires_grad=True)
+w = quarisma.tensor([3.0], requires_grad=True)
 
 # Step 2: Forward pass (graph construction)
 y = x * w        # Creates MulBackward0 node
@@ -44,9 +44,9 @@ print(w.grad)  # tensor([2.])
 ### 1.2 Graph with Multiple Paths
 
 ```python
-import xsigma
+import quarisma
 
-x = xsigma.tensor([2.0], requires_grad=True)
+x = quarisma.tensor([2.0], requires_grad=True)
 
 # Multiple paths to same node
 y = x * 3
@@ -73,7 +73,7 @@ print(x.grad)  # tensor([5.])
 
 ### 2.1 Edge Creation During Forward
 
-**File:** `xsigma/csrc/autograd/edge.h`
+**File:** `quarisma/csrc/autograd/edge.h`
 
 ```cpp
 // Edge represents: (target_node, input_index)
@@ -93,9 +93,9 @@ struct Edge {
 When multiple edges point to the same input:
 
 ```python
-import xsigma
+import quarisma
 
-x = xsigma.tensor([1.0], requires_grad=True)
+x = quarisma.tensor([1.0], requires_grad=True)
 
 # Create multiple paths
 y = x * 2
@@ -171,7 +171,7 @@ execute_graph_task()
 
 ### 4.1 InputBuffer Structure
 
-**File:** `xsigma/csrc/autograd/input_buffer.h`
+**File:** `quarisma/csrc/autograd/input_buffer.h`
 
 ```cpp
 // Accumulates gradients for a node's inputs
@@ -191,9 +191,9 @@ class InputBuffer {
 ### 4.2 Gradient Flow Example
 
 ```python
-import xsigma
+import quarisma
 
-x = xsigma.tensor([1.0, 2.0], requires_grad=True)
+x = quarisma.tensor([1.0, 2.0], requires_grad=True)
 
 # Multiple uses of x in same operation
 y = x + x  # x appears twice
@@ -218,9 +218,9 @@ print(x.grad)  # tensor([2., 2.])
 ### 5.1 .backward() - Full Accumulation
 
 ```python
-import xsigma
+import quarisma
 
-x = xsigma.tensor([1.0], requires_grad=True)
+x = quarisma.tensor([1.0], requires_grad=True)
 y = x * 2
 z = y * 3
 
@@ -235,14 +235,14 @@ print(x.grad)  # tensor([6.])
 ### 5.2 .grad() - Selective Capture
 
 ```python
-import xsigma
+import quarisma
 
-x = xsigma.tensor([1.0], requires_grad=True)
+x = quarisma.tensor([1.0], requires_grad=True)
 y = x * 2
 z = y * 3
 
 # Only compute gradient w.r.t. x, don't accumulate
-grad_x = xsigma.autograd.grad(z, x)
+grad_x = quarisma.autograd.grad(z, x)
 print(grad_x)  # (tensor([6.]),)
 
 # x.grad is still None
@@ -259,7 +259,7 @@ print(x.grad)  # None
 
 ### 6.1 ExecInfo Structure
 
-**File:** `xsigma/csrc/autograd/graph_task.h` (lines 47-130)
+**File:** `quarisma/csrc/autograd/graph_task.h` (lines 47-130)
 
 ```cpp
 struct ExecInfo {
@@ -282,17 +282,17 @@ struct ExecInfo {
 ### 6.2 Selective Execution Example
 
 ```python
-import xsigma
+import quarisma
 
-x = xsigma.tensor([1.0], requires_grad=True)
-y = xsigma.tensor([2.0], requires_grad=True)
+x = quarisma.tensor([1.0], requires_grad=True)
+y = quarisma.tensor([2.0], requires_grad=True)
 
 z = x * 2
 w = y * 3
 loss = z + w
 
 # Only compute gradient w.r.t. x
-grad_x = xsigma.autograd.grad(loss, x)
+grad_x = quarisma.autograd.grad(loss, x)
 
 # Execution graph:
 # - AddBackward0: EXECUTED (needed for output)
@@ -310,10 +310,10 @@ print(grad_x)  # (tensor([2.]),)
 ### 7.1 Anomaly Detection
 
 ```python
-import xsigma
+import quarisma
 
-with xsigma.autograd.anomaly_mode.set_detect_anomaly(True):
-    x = xsigma.tensor([1.0], requires_grad=True)
+with quarisma.autograd.anomaly_mode.set_detect_anomaly(True):
+    x = quarisma.tensor([1.0], requires_grad=True)
     y = x ** 2
     z = y.sum()
     z.backward()

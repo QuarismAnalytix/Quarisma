@@ -119,7 +119,7 @@ class AllocationTreeNode:
         raise NotImplementedError
 
     def get_symbolic_size(self) -> sympy.Expr:
-        """Number of bytes needed xsigma runtime"""
+        """Number of bytes needed quarisma runtime"""
         raise NotImplementedError
 
     def finalize(self, pool, offset) -> AllocationTreeNode:
@@ -529,7 +529,7 @@ class AllocationPools:
             )
 
     def finalize(self):
-        """Called xsigma the end of allocation process"""
+        """Called quarisma the end of allocation process"""
         for i, pool in enumerate(
             itertools.chain.from_iterable(self.device_to_pools.values())
         ):
@@ -571,7 +571,7 @@ class BufferGroup:
         assert isinstance(self.live_range.begin, int), "live ranges not computed"
         nbytes = self.sym_nbytes()
         # For now, fallback value will be used if we encounter an unbacked SymInt. The longer-term plan is to have
-        # size_hint() use better heuristics for unbackeds, xsigma which point the fallback value will be ignored.
+        # size_hint() use better heuristics for unbackeds, quarisma which point the fallback value will be ignored.
         size_hint = V.graph.sizevars.size_hint(nbytes, fallback=64)
         self.allocation = Allocation(
             self.node,

@@ -2,9 +2,9 @@
 
 #include <string>  // for string
 
-#include "common/export.h"                  // for XSIGMA_API
-#include "common/macros.h"                  // for XSIGMA_DELETE_COPY_AND_MOVE
-#include "common/wrapping_hints.h"          // for XSIGMA_FILEPATH
+#include "common/export.h"                  // for QUARISMA_API
+#include "common/macros.h"                  // for QUARISMA_DELETE_COPY_AND_MOVE
+#include "common/wrapping_hints.h"          // for QUARISMA_FILEPATH
 #include "fmt/format.h"                     // for FMT_STRING
 #include "logging/logger_verbosity_enum.h"  // for logger_verbosity_enum
 
@@ -12,20 +12,20 @@
 #if defined(__clang__) || defined(__GNUC__)
 // Helper macro for declaring functions as having similar signature to printf.
 // This allows the compiler to catch format errors at compile-time.
-#define XSIGMA_PRINTF_LIKE(fmtarg, firstvararg) \
+#define QUARISMA_PRINTF_LIKE(fmtarg, firstvararg) \
     __attribute__((__format__(__printf__, fmtarg, firstvararg)))
-#define XSIGMA_FORMAT_STRING_TYPE const char*
+#define QUARISMA_FORMAT_STRING_TYPE const char*
 #elif defined(_MSC_VER)
-#define XSIGMA_PRINTF_LIKE(fmtarg, firstvararg)
-#define XSIGMA_FORMAT_STRING_TYPE _In_z_ _Printf_format_string_ const char*
+#define QUARISMA_PRINTF_LIKE(fmtarg, firstvararg)
+#define QUARISMA_FORMAT_STRING_TYPE _In_z_ _Printf_format_string_ const char*
 #else
-#define XSIGMA_PRINTF_LIKE(fmtarg, firstvararg)
-#define XSIGMA_FORMAT_STRING_TYPE const char*
+#define QUARISMA_PRINTF_LIKE(fmtarg, firstvararg)
+#define QUARISMA_FORMAT_STRING_TYPE const char*
 #endif
 
-namespace xsigma
+namespace quarisma
 {
-class XSIGMA_VISIBILITY logger
+class QUARISMA_VISIBILITY logger
 {
 public:
     /**
@@ -63,8 +63,8 @@ public:
    * should be set to `false`.
    * @{
    */
-    XSIGMA_API static void Init(int& argc, char* argv[], const char* verbosity_flag = "-v");
-    XSIGMA_API static void Init();
+    QUARISMA_API static void Init(int& argc, char* argv[], const char* verbosity_flag = "-v");
+    QUARISMA_API static void Init();
     /** @} */
 
     /**
@@ -73,15 +73,15 @@ public:
    * stderr. Set to `VERBOSITY_OFF` to write nothing to stderr.
    * Default is 0.
    */
-    XSIGMA_API static void SetStderrVerbosity(logger_verbosity_enum level);
+    QUARISMA_API static void SetStderrVerbosity(logger_verbosity_enum level);
 
     /**
-   * Set internal messages verbosity level. The library used by XSIGMA, `loguru`
+   * Set internal messages verbosity level. The library used by QUARISMA, `loguru`
    * generates log messages during initialization and at exit. These are logged
    * as log level VERBOSITY_1, by default. One can change that using this
    * method. Typically, you want to call this before `logger::Init`.
    */
-    XSIGMA_API static void SetInternalVerbosityLevel(logger_verbosity_enum level);
+    QUARISMA_API static void SetInternalVerbosityLevel(logger_verbosity_enum level);
 
     /**
    * Support log file modes: `TRUNCATE` truncates the file clearing any existing
@@ -99,20 +99,20 @@ public:
    * will be included. This method will create all directories in the 'path' if
    * needed. To stop the file logging, call `EndLogToFile` with the same path.
    */
-    XSIGMA_API static void LogToFile(
+    QUARISMA_API static void LogToFile(
         const char* path, FileMode filemode, logger_verbosity_enum verbosity);
 
     /**
    * Stop logging to a file at the given path.
    */
-    XSIGMA_API static void EndLogToFile(const char* path);
+    QUARISMA_API static void EndLogToFile(const char* path);
 
     ///@{
     /**
    * Get/Set the name to identify the current thread in the log output.
    */
-    XSIGMA_API static void        SetThreadName(const std::string& name);
-    XSIGMA_API static std::string GetThreadName();
+    QUARISMA_API static void        SetThreadName(const std::string& name);
+    QUARISMA_API static std::string GetThreadName();
     ///@}
 
     /**
@@ -152,7 +152,7 @@ public:
    */
 #if !defined(__WRAP__)
 
-    XSIGMA_API static void AddCallback(
+    QUARISMA_API static void AddCallback(
         const char*           id,
         LogHandlerCallbackT   callback,
         void*                 user_data,
@@ -166,19 +166,19 @@ public:
    * Remove a callback using the id specified.
    * Returns true if and only if the callback was found (and removed).
    */
-    XSIGMA_API static bool RemoveCallback(const char* id);
+    QUARISMA_API static bool RemoveCallback(const char* id);
 
     /**
-   * Returns true if XSIGMA is built with logging support enabled.
+   * Returns true if QUARISMA is built with logging support enabled.
    */
-    XSIGMA_API static bool IsEnabled();
+    QUARISMA_API static bool IsEnabled();
 
     /**
    * Returns the maximum verbosity of all log outputs. A log item for a
    * verbosity higher than this will not be generated in any of the currently
    * active outputs.
    */
-    XSIGMA_API static logger_verbosity_enum GetCurrentVerbosityCutoff();
+    QUARISMA_API static logger_verbosity_enum GetCurrentVerbosityCutoff();
 
     /**
    * Convenience function to convert an integer to matching verbosity level. If
@@ -186,7 +186,7 @@ public:
    * logger::VERBOSITY_INVALID is returned. If value is greater than
    * logger::VERBOSITY_MAX, then logger::VERBOSITY_MAX is returned.
    */
-    XSIGMA_API static logger_verbosity_enum ConvertToVerbosity(int value);
+    QUARISMA_API static logger_verbosity_enum ConvertToVerbosity(int value);
 
     /**
    * Convenience function to convert a string to matching verbosity level.
@@ -194,7 +194,7 @@ public:
    * Accepted string values are OFF, ERROR, WARNING, INFO, TRACE, MAX, INVALID or ASCII
    * representation for an integer in the range [-9,9].
    */
-    XSIGMA_API static logger_verbosity_enum ConvertToVerbosity(const char* text);
+    QUARISMA_API static logger_verbosity_enum ConvertToVerbosity(const char* text);
 
     ///@{
     /**
@@ -202,43 +202,43 @@ public:
    *
    * Not intended for public use, please use the logging macros instead.
    */
-    XSIGMA_API static void Log(
+    QUARISMA_API static void Log(
         logger_verbosity_enum       verbosity,
-        XSIGMA_FILEPATH const char* fname,
+        QUARISMA_FILEPATH const char* fname,
         unsigned int                lineno,
         const char*                 txt);
-    XSIGMA_API static void StartScope(
+    QUARISMA_API static void StartScope(
         logger_verbosity_enum       verbosity,
         const char*                 id,
-        XSIGMA_FILEPATH const char* fname,
+        QUARISMA_FILEPATH const char* fname,
         unsigned int                lineno);
-    XSIGMA_API static void EndScope(const char* id);
+    QUARISMA_API static void EndScope(const char* id);
 #if !defined(__WRAP__)
-    XSIGMA_API static void LogF(
+    QUARISMA_API static void LogF(
         logger_verbosity_enum       verbosity,
-        XSIGMA_FILEPATH const char* fname,
+        QUARISMA_FILEPATH const char* fname,
         unsigned int                lineno,
-        XSIGMA_FORMAT_STRING_TYPE   format,
-        ...) XSIGMA_PRINTF_LIKE(4, 5);
-    XSIGMA_API static void StartScopeF(
+        QUARISMA_FORMAT_STRING_TYPE   format,
+        ...) QUARISMA_PRINTF_LIKE(4, 5);
+    QUARISMA_API static void StartScopeF(
         logger_verbosity_enum       verbosity,
         const char*                 id,
-        XSIGMA_FILEPATH const char* fname,
+        QUARISMA_FILEPATH const char* fname,
         unsigned int                lineno,
-        XSIGMA_FORMAT_STRING_TYPE   format,
-        ...) XSIGMA_PRINTF_LIKE(5, 6);
+        QUARISMA_FORMAT_STRING_TYPE   format,
+        ...) QUARISMA_PRINTF_LIKE(5, 6);
 
-    class XSIGMA_VISIBILITY LogScopeRAII
+    class QUARISMA_VISIBILITY LogScopeRAII
     {
     public:
-        XSIGMA_API LogScopeRAII();
-        XSIGMA_API LogScopeRAII(
+        QUARISMA_API LogScopeRAII();
+        QUARISMA_API LogScopeRAII(
             logger_verbosity_enum     verbosity,
             const char*               fname,
             unsigned int              lineno,
-            XSIGMA_FORMAT_STRING_TYPE format,
-            ...) XSIGMA_PRINTF_LIKE(5, 6);
-        XSIGMA_API ~LogScopeRAII();
+            QUARISMA_FORMAT_STRING_TYPE format,
+            ...) QUARISMA_PRINTF_LIKE(5, 6);
+        QUARISMA_API ~LogScopeRAII();
 #if defined(_MSC_VER) && _MSC_VER > 1800
         // see loguru.hpp for the reason why this is needed on MSVC
         LogScopeRAII(LogScopeRAII&& other) : Internals(other.Internals)
@@ -272,7 +272,7 @@ public:
     static bool EnableSigsegvHandler;
     static bool EnableSigtermHandler;
 
-    XSIGMA_DELETE_COPY_AND_MOVE(logger)
+    QUARISMA_DELETE_COPY_AND_MOVE(logger)
 
 protected:
     logger();
@@ -281,7 +281,7 @@ protected:
 private:
     static logger_verbosity_enum InternalVerbosityLevel;
 };
-}  // namespace xsigma
+}  // namespace quarisma
 
 ///@{
 /**
@@ -291,11 +291,11 @@ private:
  * efficient logging. All macros support compile-time format string checking via FMT_STRING.
  *
  * Examples:
- *     XSIGMA_LOG(INFO, "Simple message");
- *     XSIGMA_LOG(INFO, "Value: {}", 42);
- *     XSIGMA_LOG(INFO, "{} + {} = {}", 1, 2, 3);
- *     XSIGMA_LOG(INFO, "Pi: {:.2f}", 3.14159);
- *     XSIGMA_LOG_IF(WARNING, ptr == nullptr, "Pointer is null");
+ *     QUARISMA_LOG(INFO, "Simple message");
+ *     QUARISMA_LOG(INFO, "Value: {}", 42);
+ *     QUARISMA_LOG(INFO, "{} + {} = {}", 1, 2, 3);
+ *     QUARISMA_LOG(INFO, "Pi: {:.2f}", 3.14159);
+ *     QUARISMA_LOG_IF(WARNING, ptr == nullptr, "Pointer is null");
  */
 
 /**
@@ -304,14 +304,14 @@ private:
  * @param format_string Format string with {} placeholders
  * @param ... Optional arguments to format
  */
-#define XSIGMA_LOG(verbosity_name, format_string, ...)                          \
+#define QUARISMA_LOG(verbosity_name, format_string, ...)                          \
     do                                                                          \
     {                                                                           \
-        if (xsigma::logger_verbosity_enum::VERBOSITY_##verbosity_name <=        \
-            xsigma::logger::GetCurrentVerbosityCutoff())                        \
+        if (quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name <=        \
+            quarisma::logger::GetCurrentVerbosityCutoff())                        \
         {                                                                       \
-            xsigma::logger::Log(                                                \
-                xsigma::logger_verbosity_enum::VERBOSITY_##verbosity_name,      \
+            quarisma::logger::Log(                                                \
+                quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name,      \
                 __FILE__,                                                       \
                 __LINE__,                                                       \
                 fmt::format(FMT_STRING(format_string), ##__VA_ARGS__).c_str()); \
@@ -325,10 +325,10 @@ private:
  * @param ... Optional arguments to format
  */
 #ifndef NDEBUG
-#define XSIGMA_LOG_DEBUG(verbosity_name, format_string, ...) \
-    XSIGMA_LOG(verbosity_name, format_string, ##__VA_ARGS__)
+#define QUARISMA_LOG_DEBUG(verbosity_name, format_string, ...) \
+    QUARISMA_LOG(verbosity_name, format_string, ##__VA_ARGS__)
 #else
-#define XSIGMA_LOG_DEBUG(verbosity_name, format_string, ...)
+#define QUARISMA_LOG_DEBUG(verbosity_name, format_string, ...)
 #endif
 ///@}
 
@@ -337,8 +337,8 @@ private:
  * @brief Conditional logging macros - log only when condition is true.
  *
  * Examples:
- *     XSIGMA_LOG_IF(ERROR, ptr == nullptr, "Pointer is null");
- *     XSIGMA_VLOG_IF(1, value > 100, "Value {} exceeds threshold", value);
+ *     QUARISMA_LOG_IF(ERROR, ptr == nullptr, "Pointer is null");
+ *     QUARISMA_VLOG_IF(1, value > 100, "Value {} exceeds threshold", value);
  */
 
 /**
@@ -348,14 +348,14 @@ private:
  * @param format_string Format string with {} placeholders
  * @param ... Optional arguments to format
  */
-#define XSIGMA_VLOG_IF(level, cond, format_string, ...)                         \
+#define QUARISMA_VLOG_IF(level, cond, format_string, ...)                         \
     do                                                                          \
     {                                                                           \
-        if ((cond) && static_cast<xsigma::logger_verbosity_enum>(level) <=      \
-                          xsigma::logger::GetCurrentVerbosityCutoff())          \
+        if ((cond) && static_cast<quarisma::logger_verbosity_enum>(level) <=      \
+                          quarisma::logger::GetCurrentVerbosityCutoff())          \
         {                                                                       \
-            xsigma::logger::Log(                                                \
-                static_cast<xsigma::logger_verbosity_enum>(level),              \
+            quarisma::logger::Log(                                                \
+                static_cast<quarisma::logger_verbosity_enum>(level),              \
                 __FILE__,                                                       \
                 __LINE__,                                                       \
                 fmt::format(FMT_STRING(format_string), ##__VA_ARGS__).c_str()); \
@@ -369,14 +369,14 @@ private:
  * @param format_string Format string with {} placeholders
  * @param ... Optional arguments to format
  */
-#define XSIGMA_LOG_IF(verbosity_name, cond, format_string, ...)                    \
+#define QUARISMA_LOG_IF(verbosity_name, cond, format_string, ...)                    \
     do                                                                             \
     {                                                                              \
-        if ((cond) && xsigma::logger_verbosity_enum::VERBOSITY_##verbosity_name <= \
-                          xsigma::logger::GetCurrentVerbosityCutoff())             \
+        if ((cond) && quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name <= \
+                          quarisma::logger::GetCurrentVerbosityCutoff())             \
         {                                                                          \
-            xsigma::logger::Log(                                                   \
-                xsigma::logger_verbosity_enum::VERBOSITY_##verbosity_name,         \
+            quarisma::logger::Log(                                                   \
+                quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name,         \
                 __FILE__,                                                          \
                 __LINE__,                                                          \
                 fmt::format(FMT_STRING(format_string), ##__VA_ARGS__).c_str());    \
@@ -392,34 +392,34 @@ private:
  * The scope is automatically closed when the variable goes out of scope.
  *
  * Note: Scope logging with formatted messages is not supported in the fmt-style API.
- * Use XSIGMA_LOG_START_SCOPE and XSIGMA_LOG_END_SCOPE for explicit scope control.
+ * Use QUARISMA_LOG_START_SCOPE and QUARISMA_LOG_END_SCOPE for explicit scope control.
  *
  * Examples:
  *     {
- *         XSIGMA_LOG_SCOPE_FUNCTION(INFO);  // Logs function name
+ *         QUARISMA_LOG_SCOPE_FUNCTION(INFO);  // Logs function name
  *         // ... function body ...
  *     }  // Automatically logs exit
  *
- *     XSIGMA_LOG_START_SCOPE(INFO, "my-scope");
+ *     QUARISMA_LOG_START_SCOPE(INFO, "my-scope");
  *     // ... some work ...
- *     XSIGMA_LOG_END_SCOPE("my-scope");
+ *     QUARISMA_LOG_END_SCOPE("my-scope");
  */
 
-#define XSIGMALOG_CONCAT_IMPL(s1, s2) s1##s2
-#define XSIGMALOG_CONCAT(s1, s2) XSIGMALOG_CONCAT_IMPL(s1, s2)
-#define XSIGMALOG_ANONYMOUS_VARIABLE(x) XSIGMALOG_CONCAT(x, __LINE__)
+#define QUARISMALOG_CONCAT_IMPL(s1, s2) s1##s2
+#define QUARISMALOG_CONCAT(s1, s2) QUARISMALOG_CONCAT_IMPL(s1, s2)
+#define QUARISMALOG_ANONYMOUS_VARIABLE(x) QUARISMALOG_CONCAT(x, __LINE__)
 
 /**
  * @brief Log the current function name as a scope (RAII).
  * @param verbosity_name Verbosity level name
  */
-#define XSIGMA_LOG_SCOPE_FUNCTION(verbosity_name)                            \
-    auto XSIGMALOG_ANONYMOUS_VARIABLE(msg_context) =                         \
-        (xsigma::logger_verbosity_enum::VERBOSITY_##verbosity_name >         \
-         xsigma::logger::GetCurrentVerbosityCutoff())                        \
-            ? xsigma::logger::LogScopeRAII()                                 \
-            : xsigma::logger::LogScopeRAII(                                  \
-                  xsigma::logger_verbosity_enum::VERBOSITY_##verbosity_name, \
+#define QUARISMA_LOG_SCOPE_FUNCTION(verbosity_name)                            \
+    auto QUARISMALOG_ANONYMOUS_VARIABLE(msg_context) =                         \
+        (quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name >         \
+         quarisma::logger::GetCurrentVerbosityCutoff())                        \
+            ? quarisma::logger::LogScopeRAII()                                 \
+            : quarisma::logger::LogScopeRAII(                                  \
+                  quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name, \
                   __FILE__,                                                  \
                   __LINE__,                                                  \
                   "%s",                                                      \
@@ -429,13 +429,13 @@ private:
  * @brief Log the current function name as a scope with numeric verbosity (RAII).
  * @param level Numeric verbosity level
  */
-#define XSIGMA_VLOG_SCOPE_FUNCTION(level)                            \
-    auto XSIGMALOG_ANONYMOUS_VARIABLE(msg_context) =                 \
-        (static_cast<xsigma::logger_verbosity_enum>(level) >         \
-         xsigma::logger::GetCurrentVerbosityCutoff())                \
-            ? xsigma::logger::LogScopeRAII()                         \
-            : xsigma::logger::LogScopeRAII(                          \
-                  static_cast<xsigma::logger_verbosity_enum>(level), \
+#define QUARISMA_VLOG_SCOPE_FUNCTION(level)                            \
+    auto QUARISMALOG_ANONYMOUS_VARIABLE(msg_context) =                 \
+        (static_cast<quarisma::logger_verbosity_enum>(level) >         \
+         quarisma::logger::GetCurrentVerbosityCutoff())                \
+            ? quarisma::logger::LogScopeRAII()                         \
+            : quarisma::logger::LogScopeRAII(                          \
+                  static_cast<quarisma::logger_verbosity_enum>(level), \
                   __FILE__,                                          \
                   __LINE__,                                          \
                   "%s",                                              \
@@ -446,22 +446,22 @@ private:
  * @param verbosity_name Verbosity level name
  * @param id Unique identifier for the scope
  */
-#define XSIGMA_LOG_START_SCOPE(verbosity_name, id) \
-    xsigma::logger::StartScope(                    \
-        xsigma::logger_verbosity_enum::VERBOSITY_##verbosity_name, id, __FILE__, __LINE__)
+#define QUARISMA_LOG_START_SCOPE(verbosity_name, id) \
+    quarisma::logger::StartScope(                    \
+        quarisma::logger_verbosity_enum::VERBOSITY_##verbosity_name, id, __FILE__, __LINE__)
 
 /**
  * @brief Explicitly mark the start of a log scope with numeric verbosity.
  * @param level Numeric verbosity level
  * @param id Unique identifier for the scope
  */
-#define XSIGMA_VLOG_START_SCOPE(level, id) xsigma::logger::StartScope(level, id, __FILE__, __LINE__)
+#define QUARISMA_VLOG_START_SCOPE(level, id) quarisma::logger::StartScope(level, id, __FILE__, __LINE__)
 
 /**
  * @brief Explicitly mark the end of a log scope.
  * @param id Unique identifier for the scope (must match the start)
  */
-#define XSIGMA_LOG_END_SCOPE(id) xsigma::logger::EndScope(id)
+#define QUARISMA_LOG_END_SCOPE(id) quarisma::logger::EndScope(id)
 ///@}
 
 ///@{
@@ -471,10 +471,10 @@ private:
  * These macros provide shortcuts for the most commonly used severity levels.
  *
  * Examples:
- *     XSIGMA_LOG_INFO("Application started");
- *     XSIGMA_LOG_WARNING("Low memory: {} MB remaining", free_mb);
- *     XSIGMA_LOG_ERROR("Failed to open file: {}", filename);
- *     XSIGMA_LOG_FATAL("Critical error: {}", error_msg);
+ *     QUARISMA_LOG_INFO("Application started");
+ *     QUARISMA_LOG_WARNING("Low memory: {} MB remaining", free_mb);
+ *     QUARISMA_LOG_ERROR("Failed to open file: {}", filename);
+ *     QUARISMA_LOG_FATAL("Critical error: {}", error_msg);
  */
 
 /**
@@ -482,7 +482,7 @@ private:
  * @param format_string Format string with {} placeholders
  * @param ... Optional arguments to format
  */
-#define XSIGMA_LOG_INFO(format_string, ...) XSIGMA_LOG(INFO, format_string, ##__VA_ARGS__)
+#define QUARISMA_LOG_INFO(format_string, ...) QUARISMA_LOG(INFO, format_string, ##__VA_ARGS__)
 
 /**
  * @brief Log an informational message (debug builds only).
@@ -490,9 +490,9 @@ private:
  * @param ... Optional arguments to format
  */
 #ifndef NDEBUG
-#define XSIGMA_LOG_INFO_DEBUG(format_string, ...) XSIGMA_LOG_INFO(format_string, ##__VA_ARGS__)
+#define QUARISMA_LOG_INFO_DEBUG(format_string, ...) QUARISMA_LOG_INFO(format_string, ##__VA_ARGS__)
 #else
-#define XSIGMA_LOG_INFO_DEBUG(format_string, ...)
+#define QUARISMA_LOG_INFO_DEBUG(format_string, ...)
 #endif  // !NDEBUG
 
 /**
@@ -500,22 +500,22 @@ private:
  * @param format_string Format string with {} placeholders
  * @param ... Optional arguments to format
  */
-#define XSIGMA_LOG_WARNING(format_string, ...) XSIGMA_LOG(WARNING, format_string, ##__VA_ARGS__)
-//#define XSIGMA_WARN_ONCE(format_string, ...) XSIGMA_LOG_WARNING(format_string, ##__VA_ARGS__)
+#define QUARISMA_LOG_WARNING(format_string, ...) QUARISMA_LOG(WARNING, format_string, ##__VA_ARGS__)
+//#define QUARISMA_WARN_ONCE(format_string, ...) QUARISMA_LOG_WARNING(format_string, ##__VA_ARGS__)
 
 /**
  * @brief Log an error message.
  * @param format_string Format string with {} placeholders
  * @param ... Optional arguments to format
  */
-#define XSIGMA_LOG_ERROR(format_string, ...) XSIGMA_LOG(ERROR, format_string, ##__VA_ARGS__)
+#define QUARISMA_LOG_ERROR(format_string, ...) QUARISMA_LOG(ERROR, format_string, ##__VA_ARGS__)
 
 /**
  * @brief Log a fatal error message.
  * @param format_string Format string with {} placeholders
  * @param ... Optional arguments to format
  */
-#define XSIGMA_LOG_FATAL(format_string, ...) XSIGMA_LOG(FATAL, format_string, ##__VA_ARGS__)
+#define QUARISMA_LOG_FATAL(format_string, ...) QUARISMA_LOG(FATAL, format_string, ##__VA_ARGS__)
 ///@}
 
 /**
@@ -525,17 +525,17 @@ private:
 #define START_LOG_TO_FILE(file_name)                                                        \
     if (!file_name.empty())                                                                 \
     {                                                                                       \
-        xsigma::logger::SetStderrVerbosity(xsigma::logger_verbosity_enum::VERBOSITY_TRACE); \
-        xsigma::logger::LogToFile(                                                          \
+        quarisma::logger::SetStderrVerbosity(quarisma::logger_verbosity_enum::VERBOSITY_TRACE); \
+        quarisma::logger::LogToFile(                                                          \
             file_name.c_str(),                                                              \
-            xsigma::logger::FileMode::TRUNCATE,                                             \
-            xsigma::logger_verbosity_enum::VERBOSITY_TRACE);                                \
+            quarisma::logger::FileMode::TRUNCATE,                                             \
+            quarisma::logger_verbosity_enum::VERBOSITY_TRACE);                                \
     }
 
 #define END_LOG_TO_FILE(file_name)                       \
     if (!file_name.empty())                              \
     {                                                    \
-        xsigma::logger::EndLogToFile(file_name.c_str()); \
+        quarisma::logger::EndLogToFile(file_name.c_str()); \
     }
 
 /**

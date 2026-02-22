@@ -1,15 +1,15 @@
 #define TORCH_ASSERT_NO_OPERATORS
-#include <XSigma/Dispatch.h>
-#include <XSigma/Dispatch_v2.h>
-#include <XSigma/Parallel.h>
-#include <XSigma/TensorIteratorInternal.h>
-#include <XSigma/cpu/vec/functional.h>
-#include <XSigma/native/Copy.h>
-#include <XSigma/native/TensorIterator.h>
-#include <XSigma/native/UnaryOps.h>
-#include <XSigma/native/cpu/CopyKernel.h>
-#include <XSigma/native/cpu/Loops.h>
-#include <XSigma/native/cpu/zmath.h>
+#include <Quarisma/Dispatch.h>
+#include <Quarisma/Dispatch_v2.h>
+#include <Quarisma/Parallel.h>
+#include <Quarisma/TensorIteratorInternal.h>
+#include <Quarisma/cpu/vec/functional.h>
+#include <Quarisma/native/Copy.h>
+#include <Quarisma/native/TensorIterator.h>
+#include <Quarisma/native/UnaryOps.h>
+#include <Quarisma/native/cpu/CopyKernel.h>
+#include <Quarisma/native/cpu/Loops.h>
+#include <Quarisma/native/cpu/zmath.h>
 #include <c10/util/TypeCast.h>
 namespace at::native
 {

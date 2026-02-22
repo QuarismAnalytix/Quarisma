@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * Portions of this code are based on VTK (Visualization Toolkit):
 
@@ -30,15 +30,15 @@
 #include "parallel/common/parallel_tools_impl.h"
 #include "parallel/parallel.h"
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 #include "parallel/tbb/parallel_tools_impl.h"
-#elif XSIGMA_HAS_OPENMP
+#elif QUARISMA_HAS_OPENMP
 #include "parallel/openmp/parallel_tools_impl.h"
 #else
 #include "parallel/std_thread/parallel_tools_impl.h"
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace detail
 {
@@ -47,9 +47,9 @@ namespace parallel
 
 // Compile-time backend selection based on availability
 // Priority: TBB > OpenMP > std_thread
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 constexpr backend_type selected_backend_tools = backend_type::TBB;
-#elif XSIGMA_HAS_OPENMP
+#elif QUARISMA_HAS_OPENMP
 constexpr backend_type selected_backend_tools = backend_type::OpenMP;
 #else
 constexpr backend_type selected_backend_tools = backend_type::std_thread;
@@ -57,41 +57,41 @@ constexpr backend_type selected_backend_tools = backend_type::std_thread;
 
 using selected_parallel_tools_impl = parallel_tools_impl<selected_backend_tools>;
 
-class XSIGMA_VISIBILITY parallel_tools_api
+class QUARISMA_VISIBILITY parallel_tools_api
 {
 public:
     //--------------------------------------------------------------------------------
-    XSIGMA_API static parallel_tools_api& instance();
+    QUARISMA_API static parallel_tools_api& instance();
 
     //--------------------------------------------------------------------------------
-    XSIGMA_API static backend_type get_backend_type();
+    QUARISMA_API static backend_type get_backend_type();
 
     //--------------------------------------------------------------------------------
-    XSIGMA_API static const char* get_backend();
+    QUARISMA_API static const char* get_backend();
 
     //--------------------------------------------------------------------------------
-    XSIGMA_API bool set_backend(const char* type);
+    QUARISMA_API bool set_backend(const char* type);
 
     //--------------------------------------------------------------------------------
-    XSIGMA_API void initialize(int num_threads = 0);
+    QUARISMA_API void initialize(int num_threads = 0);
 
     //--------------------------------------------------------------------------------
-    XSIGMA_API int estimated_number_of_threads();
+    QUARISMA_API int estimated_number_of_threads();
 
     //--------------------------------------------------------------------------------
-    XSIGMA_API int estimated_default_number_of_threads();
+    QUARISMA_API int estimated_default_number_of_threads();
 
     //------------------------------------------------------------------------------
-    XSIGMA_API void set_nested_parallelism(bool is_nested);
+    QUARISMA_API void set_nested_parallelism(bool is_nested);
 
     //--------------------------------------------------------------------------------
-    XSIGMA_API bool nested_parallelism();
+    QUARISMA_API bool nested_parallelism();
 
     //--------------------------------------------------------------------------------
-    XSIGMA_API bool is_parallel_scope();
+    QUARISMA_API bool is_parallel_scope();
 
     //--------------------------------------------------------------------------------
-    XSIGMA_API bool single_thread();
+    QUARISMA_API bool single_thread();
 
     //--------------------------------------------------------------------------------
     int get_internal_desired_number_of_thread() { return desired_number_of_thread_; }
@@ -129,10 +129,10 @@ public:
 
 private:
     //--------------------------------------------------------------------------------
-    XSIGMA_API parallel_tools_api();
+    QUARISMA_API parallel_tools_api();
 
     //--------------------------------------------------------------------------------
-    XSIGMA_API void refresh_number_of_thread();
+    QUARISMA_API void refresh_number_of_thread();
 
     //--------------------------------------------------------------------------------
     template <typename Config>
@@ -157,6 +157,6 @@ private:
 
 }  // namespace parallel
 }  // namespace detail
-}  // namespace xsigma
+}  // namespace quarisma
 
 #endif

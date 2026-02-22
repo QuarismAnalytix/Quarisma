@@ -7,7 +7,7 @@
 
 // ${generated_comment}
 
-#include <XSigma/Tensor.h>
+#include <Quarisma/Tensor.h>
 
 ${namespace_prologue}
 

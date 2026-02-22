@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides a high-level summary of IncrediBuild integration feasibility for the XSigma project.
+This document provides a high-level summary of IncrediBuild integration feasibility for the Quarisma project.
 
 ---
 
@@ -11,7 +11,7 @@ This document provides a high-level summary of IncrediBuild integration feasibil
 ### ✅ What Works
 - **CMake Integration**: IncrediBuild has proven CMake support
 - **Windows Builds**: Full support for MSVC and Clang on Windows
-- **Compiler Support**: Compatible with all XSigma compilers (Clang, MSVC, GCC)
+- **Compiler Support**: Compatible with all Quarisma compilers (Clang, MSVC, GCC)
 - **Non-Breaking**: Can be implemented as optional feature without affecting existing builds
 - **Performance**: 2-4x speedup on Windows builds (with distribution + caching)
 

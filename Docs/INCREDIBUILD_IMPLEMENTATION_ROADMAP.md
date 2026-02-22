@@ -33,7 +33,7 @@
 
 ## Phase 2: Build Script Integration (Days 2-3)
 
-### 2.1 Update XsigmaFlags Class
+### 2.1 Update QuarismaFlags Class
 **File**: `Scripts/setup.py`
 - Add "incredibuild" to __key list
 - Add description to __description list

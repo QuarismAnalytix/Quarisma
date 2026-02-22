@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,12 +13,12 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
-#ifndef XSIGMA_TEST_H
-#define XSIGMA_TEST_H
+#ifndef QUARISMA_TEST_H
+#define QUARISMA_TEST_H
 
 #include <iostream>
 #include <sstream>
@@ -30,12 +30,12 @@
 #include "logging/logger.h"
 
 // Include Google Test if available
-#if XSIGMA_HAS_GTEST
+#if QUARISMA_HAS_GTEST
 #include <gtest/gtest.h>
 #endif
 
 // Logging macros for tests
-#if XSIGMA_HAS_GTEST
+#if QUARISMA_HAS_GTEST
 // Google Test functions are void, so END_TEST should not return anything
 #define END_TEST()
 #else
@@ -44,17 +44,17 @@
 #endif
 
 // Test assertion macros
-#if XSIGMA_HAS_GTEST
+#if QUARISMA_HAS_GTEST
 // Use Google Test macros when available (Google Test uses EXPECT_*, not GTEST_EXPECT_*)
 // Note: The macros are already defined by Google Test, so we don't need to redefine them
 // Just ensure they're available by including gtest.h above
 
 // Google Test main function
-#define XSIGMATEST(module, name) TEST(module, name)
+#define QUARISMATEST(module, name) TEST(module, name)
 
-#define XSIGMATEST_VOID(module, name) TEST(module, name)
+#define QUARISMATEST_VOID(module, name) TEST(module, name)
 
-#define XSIGMATEST_CALL(module, name)
+#define QUARISMATEST_CALL(module, name)
 
 #else
 // Simple assertion macros for non-Google Test builds
@@ -213,17 +213,17 @@
     } while (0)
 
 // Standard test main function
-#define XSIGMATEST(module, testname) \
-    int Test##testname(XSIGMA_UNUSED int argc, XSIGMA_UNUSED char* argv[])
+#define QUARISMATEST(module, testname) \
+    int Test##testname(QUARISMA_UNUSED int argc, QUARISMA_UNUSED char* argv[])
 
-#define XSIGMATEST_VOID(module, testname) \
-    void test_##module##testname(XSIGMA_UNUSED int argc, XSIGMA_UNUSED char* argv[])
+#define QUARISMATEST_VOID(module, testname) \
+    void test_##module##testname(QUARISMA_UNUSED int argc, QUARISMA_UNUSED char* argv[])
 
-#define XSIGMATEST_CALL(module, testname) test_##module##testname(argc, argv);
+#define QUARISMATEST_CALL(module, testname) test_##module##testname(argc, argv);
 
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 // Helper function to check memory alignment
 inline bool IsAligned(void* ptr, size_t alignment)
@@ -243,6 +243,6 @@ inline bool ValidateMemory(const void* ptr, size_t size, uint8_t pattern)
     }
     return true;
 }
-}  // namespace xsigma
+}  // namespace quarisma
 
-#endif  // XSIGMA_TEST_H
+#endif  // QUARISMA_TEST_H

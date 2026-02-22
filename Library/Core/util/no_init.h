@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2024 The TensorFlow Authors. All Rights Reserved.
@@ -36,7 +36,7 @@ limitations under the License.
 
 #include <utility>
 
-namespace xsigma
+namespace quarisma
 {
 
 // Wraps T into a union so that we can avoid the cost of automatic construction
@@ -54,7 +54,7 @@ union no_init
         new (&value) T(std::forward<Ts>(args)...);
     }
 
-    // XSigma standards-compliant lowercase aliases
+    // Quarisma standards-compliant lowercase aliases
     template <typename... Ts>
     void emplace(Ts&&... args)
     {
@@ -70,10 +70,10 @@ union no_init
         return v;
     }
 
-    // XSigma standards-compliant lowercase alias
+    // Quarisma standards-compliant lowercase alias
     T consume() && { return std::move(*this).Consume(); }
 
     T value;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

@@ -44,7 +44,7 @@ Add conditional include for TBB:
 #include "common/export.h"
 #include "parallel/common/parallel_tools_api.h"
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 #include <tbb/enumerable_thread_specific.h>
 #endif
 ```
@@ -56,11 +56,11 @@ Add conditional include for TBB:
 **Location**: In `Library/Core/parallel/parallel_tools.h` before the struct definition
 
 ```cpp
-namespace xsigma {
+namespace quarisma {
 namespace detail {
 namespace parallel {
 
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
 // Static storage for OpenMP threadprivate
 // Each thread gets its own copy automatically
 thread_local unsigned char parallel_tools_functor_initialized = 0;
@@ -84,27 +84,27 @@ struct parallel_tools_functor_internal<Functor, true>
 {
     Functor& f_;
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
     // TBB backend: Use enumerable_thread_specific
     mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 #endif
 
     parallel_tools_functor_internal(Functor& f) : f_(f)
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
         , initialized_(0)
 #endif
     {}
 
     void Execute(size_t first, size_t last)
     {
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
         // OpenMP backend: Use threadprivate static
         if (!parallel_tools_functor_initialized)
         {
             this->f_.Initialize();
             parallel_tools_functor_initialized = 1;
         }
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
         // TBB backend: Use enumerable_thread_specific
         unsigned char& inited = initialized_.local();
         if (!inited)

@@ -10,7 +10,7 @@ from torch.utils._ordered_set import OrderedSet
 aten = torch.ops.aten
 
 # We would like to split modules into two subgraphs for runtime weight updates to work correctly.
-# The use case and more information could be found xsigma:
+# The use case and more information could be found quarisma:
 # https://docs.google.com/document/d/1inZC-8KarJ6gKB7G9egmYLx1V_dKX_apxon0w4zPC0Q/edit?usp=sharing
 META_TAG = "MODULE_TYPE"
 MODULE_TAG = "_MAIN_MODULE"

@@ -102,7 +102,7 @@ def should_decompose_mm(mat1, mat2) -> bool:
             - Both matrices must be 2-dimensional.
             - If the configuration option `skip_dynamic_shape_dim_check` is False:
                 - Decomposition is only considered for statically-shaped matrices.
-                - For CUDA devices: `mat1.shape[0]` must be xsigma least `min_first_dimension_decomposition`,
+                - For CUDA devices: `mat1.shape[0]` must be quarisma least `min_first_dimension_decomposition`,
                   and both dimensions of `mat2` must be less than `max_other_dimension_decomposition`.
                 - For CPU devices: All relevant dimensions must be less than or equal to their respective
                   CPU decomposition thresholds.

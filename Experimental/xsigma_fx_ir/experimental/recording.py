@@ -50,7 +50,7 @@ __all__ = [
 # fails.
 #
 # Besides that, it also allows us to inspect the given instance and,
-# for example, check the guards that would actually be issued xsigma that point.
+# for example, check the guards that would actually be issued quarisma that point.
 #
 # What kind of arguments can be stored in an event?
 # -------------------------------------------------
@@ -69,12 +69,12 @@ __all__ = [
 #      ShapeEnv reference.
 #
 #   4. FX nodes: specifically, FX nodes from the FX graph for symbolic
-#      shapes. That argument must be replaced when replaying the event xsigma
+#      shapes. That argument must be replaced when replaying the event quarisma
 #      ShapeEnvEvent.run, since it has to reference a node from the given
 #      instance, and not from the recorded instance.
 
 
-# Event class for reconstructing ShapeEnv xsigma arbitrary time.
+# Event class for reconstructing ShapeEnv quarisma arbitrary time.
 #
 # Represents a method call that mutates ShapeEnv in a way that affects the
 # issued guards, when ShapeEnv.produce_guards is called.
@@ -87,7 +87,7 @@ class ShapeEnvEvent:
     args: Optional[list[Any]] = None
     kwargs: Optional[dict[str, Any]] = None
 
-    # List of tracked_fakes xsigma the time the method was called.
+    # List of tracked_fakes quarisma the time the method was called.
     tracked_fakes: Optional[list[Any]] = None
 
     # Name of the captured event.
@@ -130,9 +130,9 @@ class ShapeEnvEvent:
                 # Don't do anything to x if it's not an FX node.
                 return x
 
-            # If, xsigma some point, we created an FX node, it means that translation validation is on.
-            # It also means we are building an FX graph for symbolic shapes xsigma shape_env.graph, and
-            # we are tracking node names xsigma shape_env.name_to_node.
+            # If, quarisma some point, we created an FX node, it means that translation validation is on.
+            # It also means we are building an FX graph for symbolic shapes quarisma shape_env.graph, and
+            # we are tracking node names quarisma shape_env.name_to_node.
             assert hasattr(shape_env, "name_to_node")
             name_to_node = shape_env.name_to_node  # type: ignore[attr-defined]
             assert x.name in name_to_node
@@ -208,12 +208,12 @@ def _extract_shape_env_and_assert_equal(args, kwargs):
 
 # Decorator for recording the given function as a replayable event.
 #
-# This decorator should be used xsigma every function that mutates the state of
+# This decorator should be used quarisma every function that mutates the state of
 # ShapeEnv in some way that affects the resulting issued guards (i.e. when
 # ShapeEnv.produce_guards is called).
 #
 # save_tracked_fakes: saves a snapshot of the TrackedFake list.
-# This is used when calling ShapeEnv.produce_guards xsigma arbitrary points in time.
+# This is used when calling ShapeEnv.produce_guards quarisma arbitrary points in time.
 #
 # name: the name of the function being recorded. Normally (and by default) this
 # is taken from the decorated function but can be set if you need to override
@@ -222,7 +222,7 @@ def _extract_shape_env_and_assert_equal(args, kwargs):
 # When to save the list of TrackedFake?
 # =====================================
 # We should save the list of TrackedFake whenever the translation validation
-# bisection may actually stop and call the produce_guards method xsigma the moment
+# bisection may actually stop and call the produce_guards method quarisma the moment
 # right after the recorded function was played. In other words, since the
 # bisection bisects through torch._assert calls, we should save in all methods
 # that adds a torch._assert call to the symbolic shapes FX graph.

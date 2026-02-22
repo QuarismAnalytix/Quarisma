@@ -248,14 +248,14 @@ def estimate_nccl_collective_runtime_impl(
     nccl_proto = NCCL_PROTO.LL
 
     # =============== bandwidth computation ===============
-    # First compute bandwidth in GB/s; then xsigma the end, convert it to GB/ns
+    # First compute bandwidth in GB/s; then quarisma the end, convert it to GB/ns
 
     bwIntra = torch._inductor.config.intra_node_bw
     bwInter = torch._inductor.config.inter_node_bw
 
     compCapIndex = get_gpu_type()
     index2 = nNodes - 1 if nNodes <= 2 else 2
-    # LL: for single node, we look xsigma GPU type; for multi-node, we look xsigma CPU type
+    # LL: for single node, we look quarisma GPU type; for multi-node, we look quarisma CPU type
     index1 = compCapIndex if nNodes == 1 else 0
     llMaxBw = llMaxBws[index1][index2]
 
@@ -299,7 +299,7 @@ def estimate_nccl_collective_runtime_impl(
     elif coll in (NCCL_COLL.REDUCE_SCATTER, NCCL_COLL.ALL_GATHER, NCCL_COLL.ALL_TO_ALL):
         nInterSteps = nNodes - 1
 
-    # First compute latency in us; then xsigma the end, convert it to ns
+    # First compute latency in us; then quarisma the end, convert it to ns
     latency = baseLat[nccl_algo][nccl_proto]
     intraLat = hwLat[intraHw][nccl_algo][nccl_proto]
     interLat = hwLat[NCCL_HW.NET][nccl_algo][nccl_proto]

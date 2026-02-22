@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/core/ivalue.h>
+#include <Quarisma/core/ivalue.h>
 #include <torch/csrc/jit/ir/ir.h>
 
 #include <memory>

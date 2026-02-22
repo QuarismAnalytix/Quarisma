@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
@@ -11,18 +11,18 @@
 #include <sstream>
 
 #include "profiler/native/analysis/stats_calculator.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // ============================================================================
 // Consolidated Stat Template Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, stat_basic_operations_and_initialization)
+QUARISMATEST(Profiler, stat_basic_operations_and_initialization)
 {
     // Test 1: Empty initialization
-    xsigma::stat<int64_t> s;
+    quarisma::stat<int64_t> s;
     EXPECT_TRUE(s.empty());
     EXPECT_EQ(s.count(), 0);
 
@@ -48,9 +48,9 @@ XSIGMATEST(Profiler, stat_basic_operations_and_initialization)
     EXPECT_DOUBLE_EQ(avg, 20.0);
 }
 
-XSIGMATEST(Profiler, stat_min_max_and_aggregations)
+QUARISMATEST(Profiler, stat_min_max_and_aggregations)
 {
-    xsigma::stat<int64_t> s;
+    quarisma::stat<int64_t> s;
 
     // Test min/max tracking
     s.update_stat(10);
@@ -60,7 +60,7 @@ XSIGMATEST(Profiler, stat_min_max_and_aggregations)
     EXPECT_EQ(s.max(), 20);
 
     // Test squared_sum calculation (4 + 9 + 16 = 29)
-    xsigma::stat<int64_t> s2;
+    quarisma::stat<int64_t> s2;
     s2.update_stat(2);
     s2.update_stat(3);
     s2.update_stat(4);
@@ -68,10 +68,10 @@ XSIGMATEST(Profiler, stat_min_max_and_aggregations)
     EXPECT_EQ(squared_sum, 29.0);
 }
 
-XSIGMATEST(Profiler, stat_variance_and_statistical_calculations)
+QUARISMATEST(Profiler, stat_variance_and_statistical_calculations)
 {
     // Test 1: All same values - variance should be 0
-    xsigma::stat<int64_t> s1;
+    quarisma::stat<int64_t> s1;
     s1.update_stat(10);
     s1.update_stat(10);
     s1.update_stat(10);
@@ -80,13 +80,13 @@ XSIGMATEST(Profiler, stat_variance_and_statistical_calculations)
     EXPECT_EQ(s1.std_deviation(), 0);
 
     // Test 2: Different values - variance should be > 0
-    xsigma::stat<int64_t> s2;
+    quarisma::stat<int64_t> s2;
     s2.update_stat(10);
     s2.update_stat(20);
     EXPECT_FALSE(s2.all_same());
 
     // Test 3: Variance calculation with multiple values
-    xsigma::stat<int64_t> s3;
+    quarisma::stat<int64_t> s3;
     s3.update_stat(1);
     s3.update_stat(2);
     s3.update_stat(3);
@@ -96,7 +96,7 @@ XSIGMATEST(Profiler, stat_variance_and_statistical_calculations)
     EXPECT_GT(variance, 0);
 
     // Test 4: Sample variance
-    xsigma::stat<int64_t> s4;
+    quarisma::stat<int64_t> s4;
     s4.update_stat(1);
     s4.update_stat(2);
     s4.update_stat(3);
@@ -104,9 +104,9 @@ XSIGMATEST(Profiler, stat_variance_and_statistical_calculations)
     EXPECT_GE(sample_var, 0);
 }
 
-XSIGMATEST(Profiler, stat_reset_and_state_management)
+QUARISMATEST(Profiler, stat_reset_and_state_management)
 {
-    xsigma::stat<int64_t> s;
+    quarisma::stat<int64_t> s;
     s.update_stat(10);
     s.update_stat(20);
     s.update_stat(30);
@@ -119,17 +119,17 @@ XSIGMATEST(Profiler, stat_reset_and_state_management)
     EXPECT_EQ(s.sum(), 0);
 }
 
-XSIGMATEST(Profiler, stat_output_stream_operations)
+QUARISMATEST(Profiler, stat_output_stream_operations)
 {
     // Test 1: Empty stat output
-    xsigma::stat<int64_t> s1;
+    quarisma::stat<int64_t> s1;
     std::ostringstream    oss1;
     s1.output_to_stream(&oss1);
     std::string output1 = oss1.str();
     EXPECT_NE(output1.find("count=0"), std::string::npos);
 
     // Test 2: Output with data
-    xsigma::stat<int64_t> s2;
+    quarisma::stat<int64_t> s2;
     s2.update_stat(10);
     s2.update_stat(20);
     std::ostringstream oss2;
@@ -138,7 +138,7 @@ XSIGMATEST(Profiler, stat_output_stream_operations)
     EXPECT_NE(output2.find("count=2"), std::string::npos);
 
     // Test 3: Output with all same values
-    xsigma::stat<int64_t> s3;
+    quarisma::stat<int64_t> s3;
     s3.update_stat(10);
     s3.update_stat(10);
     s3.update_stat(10);
@@ -148,7 +148,7 @@ XSIGMATEST(Profiler, stat_output_stream_operations)
     EXPECT_NE(output3.find("all same"), std::string::npos);
 
     // Test 4: Output stream operator
-    xsigma::stat<int64_t> s4;
+    quarisma::stat<int64_t> s4;
     s4.update_stat(10);
     s4.update_stat(20);
     std::ostringstream oss4;
@@ -157,10 +157,10 @@ XSIGMATEST(Profiler, stat_output_stream_operations)
     EXPECT_NE(output4.find("count=2"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, stat_edge_cases_and_special_values)
+QUARISMATEST(Profiler, stat_edge_cases_and_special_values)
 {
     // Test 1: Negative values
-    xsigma::stat<int64_t> s1;
+    quarisma::stat<int64_t> s1;
     s1.update_stat(-10);
     s1.update_stat(-5);
     s1.update_stat(0);
@@ -171,7 +171,7 @@ XSIGMATEST(Profiler, stat_edge_cases_and_special_values)
     EXPECT_EQ(s1.sum(), 0);
 
     // Test 2: Large values
-    xsigma::stat<int64_t> s2;
+    quarisma::stat<int64_t> s2;
     s2.update_stat(1000000000);
     s2.update_stat(2000000000);
     s2.update_stat(3000000000);
@@ -179,7 +179,7 @@ XSIGMATEST(Profiler, stat_edge_cases_and_special_values)
     EXPECT_EQ(s2.sum(), 6000000000LL);
 
     // Test 3: Double type support
-    xsigma::stat<double> s3;
+    quarisma::stat<double> s3;
     s3.update_stat(1.5);
     s3.update_stat(2.5);
     s3.update_stat(3.5);
@@ -188,14 +188,14 @@ XSIGMATEST(Profiler, stat_edge_cases_and_special_values)
     EXPECT_DOUBLE_EQ(s3.sum(), 7.5);
 }
 
-XSIGMATEST(Profiler, stat_with_percentiles_basic_operations)
+QUARISMATEST(Profiler, stat_with_percentiles_basic_operations)
 {
     // Test 1: Empty initialization
-    xsigma::stat_with_percentiles<int64_t> s1;
+    quarisma::stat_with_percentiles<int64_t> s1;
     EXPECT_TRUE(s1.empty());
 
     // Test 2: Multiple updates and count tracking
-    xsigma::stat_with_percentiles<int64_t> s2;
+    quarisma::stat_with_percentiles<int64_t> s2;
     for (int i = 1; i <= 100; ++i)
     {
         s2.update_stat(i);
@@ -203,13 +203,13 @@ XSIGMATEST(Profiler, stat_with_percentiles_basic_operations)
     EXPECT_EQ(s2.count(), 100);
 
     // Test 3: Single value percentile
-    xsigma::stat_with_percentiles<int64_t> s3;
+    quarisma::stat_with_percentiles<int64_t> s3;
     s3.update_stat(42);
     int64_t p50_single = s3.percentile(50);
     EXPECT_EQ(p50_single, 42);
 
     // Test 4: Two values percentile
-    xsigma::stat_with_percentiles<int64_t> s4;
+    quarisma::stat_with_percentiles<int64_t> s4;
     s4.update_stat(10);
     s4.update_stat(20);
     int64_t p50_two = s4.percentile(50);
@@ -217,10 +217,10 @@ XSIGMATEST(Profiler, stat_with_percentiles_basic_operations)
     EXPECT_LE(p50_two, 20);
 }
 
-XSIGMATEST(Profiler, stat_with_percentiles_calculations)
+QUARISMATEST(Profiler, stat_with_percentiles_calculations)
 {
     // Prepare dataset 1-100
-    xsigma::stat_with_percentiles<int64_t> s;
+    quarisma::stat_with_percentiles<int64_t> s;
     for (int i = 1; i <= 100; ++i)
     {
         s.update_stat(i);
@@ -258,9 +258,9 @@ XSIGMATEST(Profiler, stat_with_percentiles_calculations)
     EXPECT_TRUE(std::isnan(static_cast<double>(p_invalid)) || p_invalid == 0);
 }
 
-XSIGMATEST(Profiler, stat_with_percentiles_output_stream)
+QUARISMATEST(Profiler, stat_with_percentiles_output_stream)
 {
-    xsigma::stat_with_percentiles<int64_t> s;
+    quarisma::stat_with_percentiles<int64_t> s;
     for (int i = 1; i <= 100; ++i)
     {
         s.update_stat(i);
@@ -276,4 +276,4 @@ XSIGMATEST(Profiler, stat_with_percentiles_output_stream)
     EXPECT_NE(output.find("p95="), std::string::npos);
 }
 
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

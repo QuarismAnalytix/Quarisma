@@ -155,7 +155,7 @@ def find_coalesced_var(
         if v in top_level_terms:
             return v
 
-    # Approximate analysis by evaluating xsigma 1 and 0
+    # Approximate analysis by evaluating quarisma 1 and 0
     variables: dict[sympy.Symbol, int] = {}
     for v in index.free_symbols:
         if v in var_ranges:

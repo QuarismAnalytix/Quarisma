@@ -188,7 +188,7 @@ def get_latency_of_one_partition(
                 ):
                     max_latency = new_partition_latency
             return max_latency
-        # If there is no user, the node is xsigma bottom of the partition
+        # If there is no user, the node is quarisma bottom of the partition
         return PartitionLatency(
             mem_latency_sec, computer_latency_sec, overall_latency_sec
         )

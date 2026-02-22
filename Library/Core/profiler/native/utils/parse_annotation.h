@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -32,15 +32,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef XSIGMA_PROFILER_UTILS_PARSE_ANNOTATION_H_
-#define XSIGMA_PROFILER_UTILS_PARSE_ANNOTATION_H_
+#ifndef QUARISMA_PROFILER_UTILS_PARSE_ANNOTATION_H_
+#define QUARISMA_PROFILER_UTILS_PARSE_ANNOTATION_H_
 
 #include <string_view>
 #include <vector>
 
 #include "common/macros.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace profiler
 {
@@ -74,7 +74,7 @@ struct annotation
  * @param annotation_str The annotation string to parse
  * @return Parsed annotation with name and metadata
  */
-XSIGMA_API annotation parse_annotation(std::string_view annotation_str);
+QUARISMA_API annotation parse_annotation(std::string_view annotation_str);
 
 /**
  * @brief Checks if an annotation string contains metadata.
@@ -98,9 +98,9 @@ inline bool has_metadata(std::string_view annotation_str)
  * Result: [{name="outer_func", metadata=[{key="level", value="1"}]},
  *          {name="inner_func", metadata=[{key="level", value="2"}]}]
  */
-XSIGMA_API std::vector<annotation> parse_annotation_stack(std::string_view annotation_stack);
+QUARISMA_API std::vector<annotation> parse_annotation_stack(std::string_view annotation_stack);
 
 }  // namespace profiler
-}  // namespace xsigma
+}  // namespace quarisma
 
-#endif  // XSIGMA_PROFILER_UTILS_PARSE_ANNOTATION_H_
+#endif  // QUARISMA_PROFILER_UTILS_PARSE_ANNOTATION_H_

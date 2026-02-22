@@ -30,7 +30,7 @@ public:
     using reverse_iterator       = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-#ifndef __XSIGMA_WRAP__
+#ifndef __QUARISMA_WRAP__
     // Static constant for dynamic extent
     static constexpr size_type dynamic_extent = static_cast<size_type>(-1);
 #endif  // DEBUG
@@ -113,7 +113,7 @@ public:
     // Observers
     constexpr size_type size() const noexcept { return size_; }
     constexpr size_type size_bytes() const noexcept { return size_ * sizeof(element_type); }
-    XSIGMA_NODISCARD constexpr bool empty() const noexcept { return size_ == 0; }
+    QUARISMA_NODISCARD constexpr bool empty() const noexcept { return size_ == 0; }
 
     // Subviews
     constexpr span<element_type> first(size_type count) const
@@ -145,7 +145,7 @@ private:
     size_type size_;
 };
 
-#ifndef __XSIGMA_WRAP__
+#ifndef __QUARISMA_WRAP__
 // Deduction guides
 template <typename T, size_t N>
 span(T (&)[N]) -> span<T>;

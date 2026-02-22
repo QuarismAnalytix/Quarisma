@@ -1,4 +1,4 @@
-# LTO Recommendations & Best Practices for XSigma
+# LTO Recommendations & Best Practices for Quarisma
 
 **Purpose**: Actionable recommendations for LTO configuration and usage
 
@@ -8,7 +8,7 @@
 
 ### Current Status: ✅ ACCEPTABLE
 
-**Verdict**: Current LTO configuration is acceptable for XSigma with documented limitations.
+**Verdict**: Current LTO configuration is acceptable for Quarisma with documented limitations.
 
 **Rationale**:
 - ✅ Provides 5-15% performance improvement for release builds
@@ -30,18 +30,18 @@
 # In CMakeLists.txt (after CMAKE_BUILD_TYPE is set)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
-  set(XSIGMA_ENABLE_LTO_DEFAULT ON)
+  set(QUARISMA_ENABLE_LTO_DEFAULT ON)
 else()
-  set(XSIGMA_ENABLE_LTO_DEFAULT OFF)
+  set(QUARISMA_ENABLE_LTO_DEFAULT OFF)
 endif()
 
-option(XSIGMA_ENABLE_LTO "Enable Link Time Optimization" ${XSIGMA_ENABLE_LTO_DEFAULT})
+option(QUARISMA_ENABLE_LTO "Enable Link Time Optimization" ${QUARISMA_ENABLE_LTO_DEFAULT})
 ```
 
 **Benefits**
 - ✅ Automatic optimization for release builds
 - ✅ Fast development builds by default
-- ✅ Explicit control still available via `-DXSIGMA_ENABLE_LTO=ON/OFF`
+- ✅ Explicit control still available via `-DQUARISMA_ENABLE_LTO=ON/OFF`
 
 **Impact**
 - Development builds: 20-30% faster linking
@@ -175,8 +175,8 @@ Windows (Clang):
 ```bash
 cmake -B build -S . \
   -DCMAKE_BUILD_TYPE=Release \
-  -DXSIGMA_ENABLE_LTO=ON \
-  -DXSIGMA_LINKER_CHOICE=default
+  -DQUARISMA_ENABLE_LTO=ON \
+  -DQUARISMA_LINKER_CHOICE=default
 ```
 
 **Expected Performance**
@@ -198,7 +198,7 @@ cmake -B build -S . \
 ```bash
 cmake -B build -S . \
   -DCMAKE_BUILD_TYPE=Release \
-  -DXSIGMA_ENABLE_LTO=ON
+  -DQUARISMA_ENABLE_LTO=ON
 ```
 
 **Expected Performance**
@@ -220,7 +220,7 @@ cmake -B build -S . \
 ```bash
 cmake -B build -S . \
   -DCMAKE_BUILD_TYPE=Release \
-  -DXSIGMA_ENABLE_LTO=ON
+  -DQUARISMA_ENABLE_LTO=ON
 ```
 
 **Expected Performance**
@@ -242,8 +242,8 @@ cmake -B build -S . \
 ```bash
 cmake -B build -S . \
   -DCMAKE_BUILD_TYPE=Release \
-  -DXSIGMA_ENABLE_LTO=ON \
-  -DXSIGMA_LINKER_CHOICE=lld-link
+  -DQUARISMA_ENABLE_LTO=ON \
+  -DQUARISMA_LINKER_CHOICE=lld-link
 ```
 
 **Expected Performance**
@@ -263,19 +263,19 @@ cmake -B build -S . \
 ```
 LTO Build Fails?
 ├─ Out of Memory?
-│  ├─ Disable LTO: -DXSIGMA_ENABLE_LTO=OFF
+│  ├─ Disable LTO: -DQUARISMA_ENABLE_LTO=OFF
 │  ├─ Increase swap/RAM
 │  └─ Use default linker (automatic with LTO)
 │
 ├─ Compiler Crash?
 │  ├─ Update compiler to latest version
-│  ├─ Disable LTO: -DXSIGMA_ENABLE_LTO=OFF
+│  ├─ Disable LTO: -DQUARISMA_ENABLE_LTO=OFF
 │  └─ Report issue with compiler version
 │
 ├─ Linking Fails?
 │  ├─ Check linker selection (should be default with LTO)
-│  ├─ Disable LTO: -DXSIGMA_ENABLE_LTO=OFF
-│  └─ Try different linker: -DXSIGMA_LINKER_CHOICE=default
+│  ├─ Disable LTO: -DQUARISMA_ENABLE_LTO=OFF
+│  └─ Try different linker: -DQUARISMA_LINKER_CHOICE=default
 │
 └─ Slow Builds?
    ├─ Expected with LTO (20-50% slower linking)
@@ -322,7 +322,7 @@ ls -lh build_no_lto/lib/libCore.so
 ls -lh build_lto/lib/libCore.so
 
 echo "Performance test:"
-./build_lto/bin/xsigma_benchmark
+./build_lto/bin/quarisma_benchmark
 ```
 
 ---
@@ -349,7 +349,7 @@ echo "Performance test:"
 ### Medium Term (2-4 months)
 
 1. **Performance Benchmarking**
-   - Measure LTO impact on XSigma
+   - Measure LTO impact on Quarisma
    - Document performance improvements
    - Estimated effort: 8-16 hours
 

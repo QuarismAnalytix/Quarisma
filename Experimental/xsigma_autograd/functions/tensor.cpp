@@ -1,4 +1,4 @@
-#include <XSigma/XSigma.h>
+#include <Quarisma/Quarisma.h>
 #include <torch/csrc/autograd/function.h>
 #include <torch/csrc/autograd/functions/basic_ops.h>
 #include <torch/csrc/autograd/functions/tensor.h>
@@ -6,7 +6,7 @@
 #include <torch/csrc/autograd/graph_task.h>
 #include <torch/csrc/autograd/variable.h>
 #include <torch/csrc/dynamo/compiled_autograd.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <memory>
 #include <stdexcept>
@@ -20,7 +20,7 @@ using torch::dynamo::autograd::IValuePacker;
 static variable_list CopyBackwards_apply_functional(
     variable_list&&              grads,
     std::array<bool, 2>          needs_input_grad,
-    const xsigma::TensorOptions& src_options)
+    const quarisma::TensorOptions& src_options)
 {
     check_input_variables("CopyBackwards", grads, 1, -1, true);
     auto&         grad = std::move(grads)[0];
@@ -29,18 +29,18 @@ static variable_list CopyBackwards_apply_functional(
     {
         if (needs_input_grad[0])
         {
-            grad_inputs[0] = xsigma::zeros_like(grad, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
+            grad_inputs[0] = quarisma::zeros_like(grad, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
         }
         if (needs_input_grad[1])
         {
             // Handle R->C copies without raising a warning
             const auto src_type = src_options.dtype().toScalarType();
-            if (!xsigma::isComplexType(src_type) && grad.is_complex())
+            if (!quarisma::isComplexType(src_type) && grad.is_complex())
             {
-                grad = xsigma::real(grad);
+                grad = quarisma::real(grad);
             }
 
-            xsigma::DeviceGuard device_guard(src_options.device());
+            quarisma::DeviceGuard device_guard(src_options.device());
             grad_inputs[1] = grad.to(src_options);
         }
     }
@@ -52,7 +52,7 @@ static variable_list CopyBackwards_apply_functional_ivalue(
 {
     PackedArgs r(args);
     auto       needs_input_grad = r.unpack<std::array<bool, 2>>();
-    auto       src_options      = r.unpack<xsigma::TensorOptions>();
+    auto       src_options      = r.unpack<quarisma::TensorOptions>();
     return CopyBackwards_apply_functional(variable_list(grads), needs_input_grad, src_options);
 }
 
@@ -76,9 +76,9 @@ variable_list CopyBackwards::apply_with_saved(
 
     static bool flag [[maybe_unused]] = [&]()
     {
-        std::vector<xsigma::TypePtr> schema = {
+        std::vector<quarisma::TypePtr> schema = {
             IValuePacker<std::array<bool, 2>>::packed_type(),
-            IValuePacker<xsigma::TensorOptions>::packed_type()};
+            IValuePacker<quarisma::TensorOptions>::packed_type()};
         const auto& interface = torch::dynamo::autograd::getPyCompilerInterface();
         interface->bind_function(
             saved.get_py_compiler(), name(), CopyBackwards_apply_functional_ivalue, schema);
@@ -109,7 +109,7 @@ variable_list CopyBackwards::apply_with_saved(
 
 CopySlices::CopySlices(
     const Variable&           base_var,
-    xsigma::TensorGeometry    view_,
+    quarisma::TensorGeometry    view_,
     std::unique_ptr<ViewFunc> view_fn_,
     std::shared_ptr<Node>     fn_)
     : base(base_var), view(std::move(view_)), view_fn(std::move(view_fn_)), fn(std::move(fn_))
@@ -120,7 +120,7 @@ CopySlices::CopySlices(
     const auto num_outputs = fn->num_outputs();
     next_edges_.reserve(num_outputs);
     add_next_edge(impl::gradient_edge(base_var));
-    for (const auto i : xsigma::irange(1, num_outputs))
+    for (const auto i : quarisma::irange(1, num_outputs))
     {
         add_next_edge(fn->next_edge(i));
     }
@@ -157,7 +157,7 @@ void CopySlices::update_exec_info()
                     // know that nothing downstream of fn->next_edge(0) is needed either
                     // (otherwise the whole path from that Node to this->next_edge(0)
                     // would be needed as well). This means that no other Node will ever
-                    // look xsigma fn->next_edge(0) metadata and thus there is no need to
+                    // look quarisma fn->next_edge(0) metadata and thus there is no need to
                     // clean them up.
                 }
             }
@@ -171,7 +171,7 @@ void CopySlices::update_exec_info()
     // Sanity check that the graph was never modified after the fact (it is
     // read-only!)
     TORCH_INTERNAL_ASSERT(num_outputs() == fn->num_outputs());
-    for (const auto i : xsigma::irange(1, this->num_outputs()))
+    for (const auto i : quarisma::irange(1, this->num_outputs()))
     {
         TORCH_INTERNAL_ASSERT(fn->next_edge(i).function.get() == this->next_edge(i).function.get());
     }
@@ -192,12 +192,12 @@ inline variable_list CopySlices::apply_impl(variable_list&& inputs, const T& cal
     // see Note [Thread Safety on Autograd Node]
     std::lock_guard<std::mutex> lock(mutex_);
 
-    XSIGMA_CHECK(fn, ERR_BACKWARD_TWICE);
+    QUARISMA_CHECK(fn, ERR_BACKWARD_TWICE);
 
     auto result = grad.new_empty_strided_symint(base.sym_sizes(), base.sym_strides());
     result.copy_(grad);
 
-    xsigma::Tensor grad_slice;
+    quarisma::Tensor grad_slice;
     if (view_fn)
     {
         grad_slice = (*view_fn)(result);
@@ -213,10 +213,10 @@ inline variable_list CopySlices::apply_impl(variable_list&& inputs, const T& cal
     // TODO: We clone grad_slice because we modify it below and "fn" might save
     // it for the backward of res. We might be able to avoid the clone() if
     // double-backprop is disabled.
-    auto res = call_fn({grad_slice.clone(xsigma::MemoryFormat::Contiguous)});
+    auto res = call_fn({grad_slice.clone(quarisma::MemoryFormat::Contiguous)});
 
     variable_list grad_inputs(num_outputs());
-    for (const auto i : xsigma::irange(res.size()))
+    for (const auto i : quarisma::irange(res.size()))
     {
         if (task_should_compute_output(i))
         {
@@ -251,7 +251,7 @@ void CopySlices::release_variables()
 
 void CopySlices::compiled_args(CompiledNodeArgs& args) const
 {
-    XSIGMA_CHECK(!view_fn, "view_fn not supported by compiled autograd")
+    QUARISMA_CHECK(!view_fn, "view_fn not supported by compiled autograd")
     TORCH_INTERNAL_ASSERT((bool)fn);
     args.collect(base);
     args.collect(view);
@@ -267,11 +267,11 @@ variable_list CopySlices::apply_with_saved(const variable_list& grads, SwapSaved
     auto results = variable_list(num_outputs());
     if (grads[0].defined())
     {
-        XSIGMA_CHECK(fn, ERR_BACKWARD_TWICE);
+        QUARISMA_CHECK(fn, ERR_BACKWARD_TWICE);
         update_exec_info();
 
         std::vector<bool> needs_input_grad;
-        for (const auto i : xsigma::irange(num_outputs()))
+        for (const auto i : quarisma::irange(num_outputs()))
         {
             needs_input_grad.emplace_back(task_should_compute_output(i));
         }

@@ -2,7 +2,7 @@
 #include <torch/csrc/jit/ir/ir_views.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <unordered_map>
 
@@ -11,7 +11,7 @@ namespace torch::jit
 
 namespace prim
 {
-using namespace ::xsigma::prim;
+using namespace ::quarisma::prim;
 }
 
 class DeadCodeEliminator
@@ -70,15 +70,15 @@ private:
             // loop body.
             for (size_t i = 0; i < g.inputs().size(); ++i)
             {
-                if (!g.inputs().xsigma(i)->hasUses())
+                if (!g.inputs().quarisma(i)->hasUses())
                 {
                     GRAPH_UPDATE(
                         "Dead ",
                         i,
                         "-th input ",
-                        node->inputs().xsigma(i)->debugName(),
+                        node->inputs().quarisma(i)->debugName(),
                         "(",
-                        g.inputs().xsigma(i)->debugName(),
+                        g.inputs().quarisma(i)->debugName(),
                         " in a subgraph) will be removed");
                     g.eraseInput(i);
                     node->removeInput(i);
@@ -116,30 +116,30 @@ private:
         auto outerNode = node->owningBlock()->owningNode();
         if (outerNode == nullptr || outerNode->kind() == prim::Reverse)
         {
-            // If there's no outer node, we're looking xsigma the graph's top-level
+            // If there's no outer node, we're looking quarisma the graph's top-level
             // return block. We consider all graph outputs to be "used", so just mark
             // this node normally.
             return mark(node);
         }
 
         // Collect all inputs that are actually live
-        if (outerNode->kind() == prim::Loop || outerNode->kind() == xsigma::onnx::Loop)
+        if (outerNode->kind() == prim::Loop || outerNode->kind() == quarisma::onnx::Loop)
         {
             // Special handling to deal with loop carried dependencies.
             auto loop = LoopView(outerNode);
-            for (const auto i : xsigma::irange(loop.carriedOutputs().size()))
+            for (const auto i : quarisma::irange(loop.carriedOutputs().size()))
             {
-                if (outerNode->kind() == xsigma::onnx::Loop)
+                if (outerNode->kind() == quarisma::onnx::Loop)
                 {
                     // Special handling for onnx loop.
                     // The number of body carried inputs and outputs are different.
                     // They cannot be mapped to each other easily by the same index.
-                    insertLiveValue(loop.bodyCarriedOutputs().xsigma(i));
+                    insertLiveValue(loop.bodyCarriedOutputs().quarisma(i));
                     continue;
                 }
-                auto innerInput  = loop.bodyCarriedInputs().xsigma(i);
-                auto innerOutput = loop.bodyCarriedOutputs().xsigma(i);
-                auto outerOutput = loop.carriedOutputs().xsigma(i);
+                auto innerInput  = loop.bodyCarriedInputs().quarisma(i);
+                auto innerOutput = loop.bodyCarriedOutputs().quarisma(i);
+                auto outerOutput = loop.carriedOutputs().quarisma(i);
                 if (liveValuesContains(outerOutput) || innerInput->hasUses())
                 {
                     insertLiveValue(innerOutput);
@@ -153,7 +153,7 @@ private:
         else
         {
             AT_ASSERT(outerNode->outputs().size() == node->inputs().size());
-            for (const auto i : xsigma::irange(outerNode->outputs().size()))
+            for (const auto i : quarisma::irange(outerNode->outputs().size()))
             {
                 auto innerOutput = node->inputs()[i];
                 auto outerOutput = outerNode->outputs()[i];
@@ -195,7 +195,7 @@ private:
         bool anyMarked = false;
         do
         {
-            marked = mark(node->blocks().xsigma(0));
+            marked = mark(node->blocks().quarisma(0));
             anyMarked |= marked;
         } while (marked);
         return anyMarked;
@@ -327,7 +327,7 @@ private:
                     "Node ",
                     it->kind().toQualString(),
                     " which outputs ",
-                    (!node->outputs().empty() ? node->outputs().xsigma(0)->debugName() : "n/a"),
+                    (!node->outputs().empty() ? node->outputs().quarisma(0)->debugName() : "n/a"),
                     " will be removed");
                 it.destroyCurrent();
             }
@@ -392,13 +392,13 @@ private:
         for (size_t i_1 = node->outputs().size(); i_1 > 0; --i_1)
         {
             size_t i = i_1 - 1;
-            if (!node->outputs().xsigma(i)->hasUses())
+            if (!node->outputs().quarisma(i)->hasUses())
             {
                 GRAPH_UPDATE(
                     "Dead ",
                     i,
                     "-th output ",
-                    node->outputs().xsigma(i)->debugName(),
+                    node->outputs().quarisma(i)->debugName(),
                     " of node ",
                     node->kind().toQualString(),
                     " will be removed");
@@ -407,7 +407,7 @@ private:
                 {
                     GRAPH_UPDATE(
                         "\tCorresponding block output ",
-                        b->outputs().xsigma(i)->debugName(),
+                        b->outputs().quarisma(i)->debugName(),
                         " will be removed");
                     b->eraseOutput(i);
                 }
@@ -419,7 +419,7 @@ private:
     {
         if (node->kind() != prim::Loop)
             return;
-        auto loop_body         = node->blocks().xsigma(0);
+        auto loop_body         = node->blocks().quarisma(0);
         auto loop_input_offset = 2;  // offset of loop carried deps in input list
         auto loop_body_offset =
             1;  // offset to the loop carried dependencies in block inputs/outputs
@@ -427,8 +427,8 @@ private:
         for (size_t i_1 = node->outputs().size(); i_1 > 0; --i_1)
         {
             size_t i = i_1 - 1;
-            if (!node->outputs().xsigma(i)->hasUses() &&
-                !loop_body->inputs().xsigma(loop_body_offset + i)->hasUses())
+            if (!node->outputs().quarisma(i)->hasUses() &&
+                !loop_body->inputs().quarisma(loop_body_offset + i)->hasUses())
             {
                 logDeadLoopOutputs(node, i, loop_input_offset, loop_body_offset);
                 node->eraseOutput(i);
@@ -441,25 +441,25 @@ private:
 
     void logDeadLoopOutputs(Node* node, size_t i, size_t loop_input_offset, size_t loop_body_offset)
     {
-        auto loop_body = node->blocks().xsigma(0);
+        auto loop_body = node->blocks().quarisma(0);
         GRAPH_UPDATE(
             "Dead ",
             loop_input_offset + i,
             "-th input ",
-            node->inputs().xsigma(i)->debugName(),
+            node->inputs().quarisma(i)->debugName(),
             " will be removed");
         GRAPH_UPDATE(
-            "Dead ", i, "-th output ", node->outputs().xsigma(i)->debugName(), " will be removed");
+            "Dead ", i, "-th output ", node->outputs().quarisma(i)->debugName(), " will be removed");
         GRAPH_UPDATE(
             "\tDead block input ",
-            loop_body->inputs().xsigma(loop_body_offset + i)->debugName(),
-            "xsigma offset ",
+            loop_body->inputs().quarisma(loop_body_offset + i)->debugName(),
+            "quarisma offset ",
             loop_body_offset + i,
             " will be removed");
         GRAPH_UPDATE(
             "\tDead block output ",
-            loop_body->outputs().xsigma(loop_body_offset + i)->debugName(),
-            "xsigma offset ",
+            loop_body->outputs().quarisma(loop_body_offset + i)->debugName(),
+            "quarisma offset ",
             loop_body_offset + i,
             " will be removed");
     }
@@ -537,7 +537,7 @@ private:
     std::unordered_map<Node*, bool> memo_;
     std::unordered_set<Node*>       marked_;
 
-    // we should have xsigma most 1 of these as a non-nullptr; they are lazily
+    // we should have quarisma most 1 of these as a non-nullptr; they are lazily
     // initialized. liveValuesAndMemoryLocations_ is used if we are using AliasDb
     //   (in order to store aliasing info),
     // otherwise liveValuesSet_ is used.

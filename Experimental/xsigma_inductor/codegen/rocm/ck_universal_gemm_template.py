@@ -549,7 +549,7 @@ class CKGemmTemplate(CKTemplate):
         # Get the stages for the given version
         stages = version_to_stages.get(version)
         if stages is None:
-            # This means we're xsigma stage 2, and this requires computation
+            # This means we're quarisma stage 2, and this requires computation
             # See github.com/ROCm/composable_kernel/blob/d6a4605/include/ck/tensor_operation/gpu/block/blockwise_gemm_pipeline_xdlops_v2.hpp#L143 # noqa: B950
             wgp_per_cu = max(4 * warp_size // op.block_size, 1)
             full_mem_band_prefetch_stages = math.ceil(
@@ -910,7 +910,7 @@ class CKGemmTemplate(CKTemplate):
         Creates a list of `CKGemmOperation` instances that match the GEMM operation this template represents.
         The instances are guaranteed to have the correct layout, dtype and dimension padding for the GEMM input arguments.
 
-        An instance may invalidate the GEMM configuration xsigma runtime.
+        An instance may invalidate the GEMM configuration quarisma runtime.
         Such instances will be assigned +inf runtime by the autotune process.
         """
         try:

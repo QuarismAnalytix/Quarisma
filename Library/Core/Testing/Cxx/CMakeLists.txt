@@ -22,7 +22,7 @@ foreach(_test_source IN ITEMS ${test_sources})
 
   # Exclude GPU-related test files based on compile flags When both CUDA and HIP are disabled,
   # exclude all GPU tests
-  if(NOT XSIGMA_ENABLE_CUDA AND NOT XSIGMA_ENABLE_HIP)
+  if(NOT QUARISMA_ENABLE_CUDA AND NOT QUARISMA_ENABLE_HIP)
     if(file_name MATCHES "TestGpu" OR file_name MATCHES "TestGPU")
       message(STATUS "Excluding GPU test (no GPU support): ${file_name}")
       continue()
@@ -30,7 +30,7 @@ foreach(_test_source IN ITEMS ${test_sources})
   endif()
 
   # When CUDA is disabled, exclude CUDA-specific tests
-  if(NOT XSIGMA_ENABLE_CUDA)
+  if(NOT QUARISMA_ENABLE_CUDA)
     if(file_name MATCHES "TestCuda")
       message(STATUS "Excluding CUDA test (CUDA disabled): ${file_name}")
       continue()
@@ -38,7 +38,7 @@ foreach(_test_source IN ITEMS ${test_sources})
   endif()
 
   # When HIP is disabled, exclude HIP-specific tests
-  if(NOT XSIGMA_ENABLE_HIP)
+  if(NOT QUARISMA_ENABLE_HIP)
     if(file_name MATCHES "TestHip")
       message(STATUS "Excluding HIP test (HIP disabled): ${file_name}")
       continue()
@@ -46,7 +46,7 @@ foreach(_test_source IN ITEMS ${test_sources})
   endif()
 
   # When Kineto is disabled, exclude Kineto-specific tests
-  if(NOT XSIGMA_ENABLE_KINETO)
+  if(NOT QUARISMA_ENABLE_KINETO)
     if(file_name MATCHES "TestKineto")
       message(STATUS "Excluding Kineto test (Kineto disabled): ${file_name}")
       continue()
@@ -54,7 +54,7 @@ foreach(_test_source IN ITEMS ${test_sources})
   endif()
 
   # When Enzyme is disabled, exclude Enzyme-specific tests
-  if(NOT XSIGMA_ENABLE_ENZYME)
+  if(NOT QUARISMA_ENABLE_ENZYME)
     if(file_name MATCHES "TestEnzyme")
       message(STATUS "Excluding Enzyme test (Enzyme disabled): ${file_name}")
       continue()
@@ -65,7 +65,7 @@ foreach(_test_source IN ITEMS ${test_sources})
   list(APPEND TestFiles "${_test_source}")
 endforeach()
 
-set(XSIGMA_NATIVE_PROFILER_TESTS
+set(QUARISMA_NATIVE_PROFILER_TESTS
     "${CMAKE_CURRENT_SOURCE_DIR}/TestProfilerBackendIntegration.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/TestProfilerPlatform.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/TestProfilerXPlane.cpp"
@@ -90,8 +90,8 @@ set(XSIGMA_NATIVE_PROFILER_TESTS
     "${CMAKE_CURRENT_SOURCE_DIR}/TestProfilerMemoryAndStats.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/TestXPlaneBuilder.cpp")
 
-if(NOT XSIGMA_ENABLE_NATIVE_PROFILER)
-  list(REMOVE_ITEM TestFiles ${XSIGMA_NATIVE_PROFILER_TESTS})
+if(NOT QUARISMA_ENABLE_NATIVE_PROFILER)
+  list(REMOVE_ITEM TestFiles ${QUARISMA_NATIVE_PROFILER_TESTS})
   message(STATUS "Native profiler disabled: excluding native-only Core tests")
 endif()
 
@@ -101,7 +101,7 @@ endif()
 add_executable(CoreCxxTests ${TestFiles})
 
 # Compile definitions
-target_compile_definitions(CoreCxxTests PRIVATE XSIGMA_GOOGLE_TEST USE_GTEST _VARIADIC_MAX=10)
+target_compile_definitions(CoreCxxTests PRIVATE QUARISMA_GOOGLE_TEST USE_GTEST _VARIADIC_MAX=10)
 
 # Workaround for Clang 20/21.x compiler crash in register allocator
 # The crash occurs in the Greedy Register Allocator pass when compiling with -O3
@@ -117,8 +117,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 # Link libraries Core library is linked which transitively brings in all centralized dependencies
-# via XSIGMA_DEPENDENCY_LIBS
-target_link_libraries(CoreCxxTests PRIVATE XSigma::gtest XSigma::gtest_main XSigma::Core)
+# via QUARISMA_DEPENDENCY_LIBS
+target_link_libraries(CoreCxxTests PRIVATE Quarisma::gtest Quarisma::gtest_main Quarisma::Core)
 
 # Set target properties
 set_target_properties(
@@ -139,14 +139,14 @@ add_test(NAME CoreCxxTests COMMAND CoreCxxTests
 set_tests_properties(CoreCxxTests PROPERTIES TIMEOUT 300 LABELS "Core;Unit")
 
 # Set coverage environment variable if enabled
-if(XSIGMA_ENABLE_COVERAGE AND DEFINED XSIGMA_LLVM_PROFILE_FILE)
+if(QUARISMA_ENABLE_COVERAGE AND DEFINED QUARISMA_LLVM_PROFILE_FILE)
   set_tests_properties(
-    CoreCxxTests PROPERTIES ENVIRONMENT "LLVM_PROFILE_FILE=${XSIGMA_LLVM_PROFILE_FILE}"
+    CoreCxxTests PROPERTIES ENVIRONMENT "LLVM_PROFILE_FILE=${QUARISMA_LLVM_PROFILE_FILE}"
   )
 endif()
 
-if(XSIGMA_ENABLE_ENZYME)
-  target_link_libraries(CoreCxxTests PRIVATE XSigma::enzyme)
+if(QUARISMA_ENABLE_ENZYME)
+  target_link_libraries(CoreCxxTests PRIVATE Quarisma::enzyme)
 endif()
 
 message(STATUS "✓ CoreCxxTests registered with CTest")
@@ -155,8 +155,8 @@ message(STATUS "  - Working directory: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 # ============================================================================= Output Directory
 # Configuration
 # =============================================================================
-if(COMMAND xsigma_set_target_output_directories)
-  xsigma_set_target_output_directories(CoreCxxTests)
+if(COMMAND quarisma_set_target_output_directories)
+  quarisma_set_target_output_directories(CoreCxxTests)
 endif()
 
 # ============================================================================= Individual Benchmark
@@ -168,7 +168,7 @@ endif()
 # - Independent execution (run specific benchmarks in isolation)
 # - Better CTest integration (individual test reporting)
 # =============================================================================
-if(XSIGMA_ENABLE_BENCHMARK)
+if(QUARISMA_ENABLE_BENCHMARK)
 
   # Discover all benchmark source files
   file(GLOB_RECURSE bench_sources LIST_DIRECTORIES false
@@ -181,7 +181,7 @@ if(XSIGMA_ENABLE_BENCHMARK)
     get_filename_component(file_name "${_bench_source}" NAME)
 
     # Exclude CUDA-related benchmarks when GPU support is disabled
-    if(NOT XSIGMA_ENABLE_CUDA AND NOT XSIGMA_ENABLE_HIP)
+    if(NOT QUARISMA_ENABLE_CUDA AND NOT QUARISMA_ENABLE_HIP)
       if(file_name MATCHES ".*[Cc]uda.*")
         message(STATUS "Excluding CUDA benchmark (no GPU support): ${file_name}")
         continue()
@@ -207,13 +207,13 @@ if(XSIGMA_ENABLE_BENCHMARK)
     add_executable(${target_name} "${_bench_source}")
 
     # Link libraries
-    # - XSigma::benchmark: Google Benchmark library
-    # - XSigma::benchmark_main: Provides main() function
-    # - XSigma::Core: Core library with all dependencies
+    # - Quarisma::benchmark: Google Benchmark library
+    # - Quarisma::benchmark_main: Provides main() function
+    # - Quarisma::Core: Core library with all dependencies
     target_link_libraries(${target_name} PRIVATE
-      XSigma::benchmark
-      XSigma::benchmark_main
-      XSigma::Core
+      Quarisma::benchmark
+      Quarisma::benchmark_main
+      Quarisma::Core
     )
 
     # Set target properties
@@ -222,10 +222,10 @@ if(XSIGMA_ENABLE_BENCHMARK)
       OUTPUT_NAME "${target_name}"
     )
 
-    # Apply XSigma output directory configuration
-    # This ensures benchmarks are placed in ${XSIGMA_BINARY_DIR}/bin
-    if(COMMAND xsigma_set_target_output_directories)
-      xsigma_set_target_output_directories(${target_name})
+    # Apply Quarisma output directory configuration
+    # This ensures benchmarks are placed in ${QUARISMA_BINARY_DIR}/bin
+    if(COMMAND quarisma_set_target_output_directories)
+      quarisma_set_target_output_directories(${target_name})
     else()
       # Fallback: use standard output directories
       set_target_properties(${target_name} PROPERTIES

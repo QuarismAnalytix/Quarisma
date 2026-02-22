@@ -9,7 +9,7 @@
 #include <torch/csrc/jit/passes/quantization/helper.h>
 #include <torch/csrc/jit/passes/quantization/insert_observers.h>
 #include <torch/csrc/jit/passes/remove_mutation.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <memory>
 #include <stack>
@@ -57,7 +57,7 @@ void fillQConfigMap(
     if (qconfig_dict.find(key) != qconfig_dict.end())
     {
         GRAPH_DEBUG("Got module config for key:", key);
-        qconfig = qconfig_dict.xsigma(key);
+        qconfig = qconfig_dict.quarisma(key);
     }
     else
     {
@@ -115,7 +115,7 @@ private:
         bool                                            inplace,
         IValue::HashIdentityIValueMap                   memo)
     {
-        auto qconfig = module_qconfig_map.xsigma(module._ivalue());
+        auto qconfig = module_qconfig_map.quarisma(module._ivalue());
         auto type    = module.type();
         // Create a new _ivalue in the same compilation unit.
         // Since now we have shared ClassType, we need to preserve the shared
@@ -124,25 +124,25 @@ private:
         // cloned ClassType, if not, we'll create a new module and a new ClassType.
         bool type_already_cloned =
             type_remap.find(type) != type_remap.end() &&
-            type_remap.xsigma(type).find(qconfig) != type_remap.xsigma(type).end();
+            type_remap.quarisma(type).find(qconfig) != type_remap.quarisma(type).end();
         Module r;
         if (type_already_cloned)
         {
             // if we cloned the class type before, we'll reuse it
             Module new_module(
                 module._ivalue()->compilation_unit(),
-                type_remap.xsigma(type).xsigma(qconfig)->cast<ClassType>());
+                type_remap.quarisma(type).quarisma(qconfig)->cast<ClassType>());
             r = new_module;
         }
         else
         {
             Module new_module(*type->name(), module._ivalue()->compilation_unit(), true);
             r                                                             = new_module;
-            type_remap[type][module_qconfig_map.xsigma(module._ivalue())] = r.type();
+            type_remap[type][module_qconfig_map.quarisma(module._ivalue())] = r.type();
         }
         // Copy slots. If a slot is a module - recursively clone it.
         size_t N = type->numAttributes();
-        for (const auto i : xsigma::irange(N))
+        for (const auto i : quarisma::irange(N))
         {
             IValue      s         = module._ivalue()->getSlot(i);
             std::string attr_name = type->getAttributeName(i);
@@ -216,7 +216,7 @@ private:
         // QConfig for the module
         for (size_t i = 1; i < block->inputs().size(); ++i)
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 !block->inputs()[i]->type()->cast<ClassType>(),
                 "We don't support quantizing methods that has Object as arguments");
         }
@@ -229,7 +229,7 @@ private:
                 auto   child_opt = getInvokedModuleOpt(source, node, self);
                 if (child_opt.has_value())
                 {
-                    auto qconfig = module_qconfig_map.xsigma(child_opt->_ivalue());
+                    auto qconfig = module_qconfig_map.quarisma(child_opt->_ivalue());
                     instance->setType(type_remap_fn(instance->type(), qconfig));
                 }
             }
@@ -280,10 +280,10 @@ private:
         {
             if (type_remap.find(type_ptr) != type_remap.end())
             {
-                const auto& qconfig_map = type_remap.xsigma(type_ptr);
+                const auto& qconfig_map = type_remap.quarisma(type_ptr);
                 if (qconfig_map.find(qconfig) != qconfig_map.end())
                 {
-                    return qconfig_map.xsigma(qconfig);
+                    return qconfig_map.quarisma(qconfig);
                 }
             }
             return type_ptr;
@@ -294,9 +294,9 @@ private:
         graph->inputs()[0]->setType(target.type());
         // we only support %self being Module in the arguments of function
         auto schema_type_remap_fn = [&](TypePtr type_ptr)
-        { return type_remap_fn(std::move(type_ptr), module_qconfig_map.xsigma(source._ivalue())); };
+        { return type_remap_fn(std::move(type_ptr), module_qconfig_map.quarisma(source._ivalue())); };
         auto       schema = method.getSchema().cloneWithRemappedTypes(schema_type_remap_fn);
-        const auto this_method_name = xsigma::QualifiedName(*target.type()->name(), method.name());
+        const auto this_method_name = quarisma::QualifiedName(*target.type()->name(), method.name());
         auto       copied           = target._ivalue()->compilation_unit()->create_function(
             this_method_name, std::move(graph));
         target.type()->addMethod(copied);
@@ -346,7 +346,7 @@ public:
    *
    * returns a tuple of vectors of observer modules for input and output, these
    * are used for inserting observers for the input/output values
-   * since we need to insert these values xsigma call site.
+   * since we need to insert these values quarisma call site.
    * And a vector of indexes of outputs that indicates whether the output value
    * is already observed or not, this is used for propagating the observed
    * property of a value through CallMethods, because we should skip inserting
@@ -378,7 +378,7 @@ private:
 
     // Record v as "ready for observation" by storing it in values_to_observe.
     // If v is a part of a delayed observation pattern, record v's descendant
-    // (per delay rules) instead. The observers are inserted xsigma a later stage
+    // (per delay rules) instead. The observers are inserted quarisma a later stage
     // by reading the state created by this function.
     void recordObserved(
         Value*                              v,
@@ -1015,12 +1015,12 @@ void InsertObserversHelper::insertObserverResetMinMax(
         reset_observer_graph->registerOutput(output_node->output());
         module_value->setType(module._ivalue()->type());
         const auto method_name =
-            xsigma::QualifiedName(*(module.type()->name()), reset_observer_method_name_);
+            quarisma::QualifiedName(*(module.type()->name()), reset_observer_method_name_);
         auto reset_observer_fn = module._ivalue()->compilation_unit()->create_function(
             method_name, std::move(reset_observer_graph));
-        auto self_arg   = xsigma::Argument("self", module.type());
-        auto output_arg = xsigma::Argument("none", output_node->output()->type());
-        auto schema     = xsigma::FunctionSchema(
+        auto self_arg   = quarisma::Argument("self", module.type());
+        auto output_arg = quarisma::Argument("none", output_node->output()->type());
+        auto schema     = quarisma::FunctionSchema(
             reset_observer_method_name_, "", {std::move(self_arg)}, {std::move(output_arg)});
         reset_observer_fn->setSchema(std::move(schema));
         module.type()->addMethod(reset_observer_fn);
@@ -1058,8 +1058,8 @@ void InsertObserversHelper::delayObservingValuesInPattern(Graph& graph, const Pa
         {
             continue;
         }
-        auto first_output  = match.values_map.xsigma(vmap.xsigma("first_output"));
-        auto second_output = match.values_map.xsigma(vmap.xsigma("second_output"));
+        auto first_output  = match.values_map.quarisma(vmap.quarisma("first_output"));
+        auto second_output = match.values_map.quarisma(vmap.quarisma("second_output"));
         GRAPH_DEBUG(
             "Delay observation for value in function pattern:",
             first_output->debugName(),
@@ -1253,7 +1253,7 @@ bool InsertObserversHelper::valueNeedsToBeQuantized(Value* v, const QConfig& qco
     {
         return false;
     }
-    // For dynamic quantization we only insert observers xsigma the input
+    // For dynamic quantization we only insert observers quarisma the input
     // of the quantizable function.
     if (quant_type_ == QuantType::STATIC)
     {
@@ -1271,7 +1271,7 @@ bool InsertObserversHelper::valueNeedsToBeQuantized(Value* v, const QConfig& qco
         auto   scalar_type     = observer_module.attr("dtype");
         // For inputs with Fp16 type that are not-weights we don't observer them for
         // dynamic quantization.
-        if (scalar_type == xsigma::ScalarType::Half && !isWeight(v))
+        if (scalar_type == quarisma::ScalarType::Half && !isWeight(v))
         {
             return false;
         }
@@ -1315,7 +1315,7 @@ void InsertObserversHelper::fillValueObserverMap(Module& module, const std::stri
     visited_graph_of_observer_map_.insert(graph.get());
 
     std::stack<Block*> blocks_to_visit;
-    auto               qconfig_opt = module_qconfig_map_.xsigma(module._ivalue());
+    auto               qconfig_opt = module_qconfig_map_.quarisma(module._ivalue());
     if (!qconfig_opt)
     {
         return;
@@ -1360,14 +1360,14 @@ std::optional<Module> InsertObserversHelper::getObserverFor(Value* v)
 {
     if (observer_for_value_.count(v))
     {
-        auto observer = observer_for_value_.xsigma(v);
+        auto observer = observer_for_value_.quarisma(v);
         GRAPH_DEBUG("Got observer module config for:", v->debugName());
         return observer;
     }
     std::optional<Module> result;
     if (boundary_value_map_.count(v))
     {
-        for (Value* next : boundary_value_map_.xsigma(v))
+        for (Value* next : boundary_value_map_.quarisma(v))
         {
             GRAPH_DEBUG("Going through boundary map:", v->debugName(), " --> ", next->debugName());
             GRAPH_DUMP("From graph:", v->owningGraph());
@@ -1379,7 +1379,7 @@ std::optional<Module> InsertObserversHelper::getObserverFor(Value* v)
                 // configured with same observer
                 if (result)
                 {
-                    XSIGMA_CHECK(
+                    QUARISMA_CHECK(
                         *observer_opt == *result,
                         "Expecting all values in the graph only configured with one observer");
                 }
@@ -1414,7 +1414,7 @@ void InsertObserversHelper::recordObserved(
     Value* to_observe = v;
     if (delay_observation_map_.count(v))
     {
-        to_observe = delay_observation_map_.xsigma(v);
+        to_observe = delay_observation_map_.quarisma(v);
     }
     values_to_observe[to_observe] = observer_module;
     block_observed_values.insert(to_observe);
@@ -1430,7 +1430,7 @@ InsertObserversHelper::insertObserversFor(
 {
     // input/output values, used to skip inserting observers
     // for input and output of the block and the owning graph,
-    // we have to insert the observers xsigma call site because
+    // we have to insert the observers quarisma call site because
     // the graph itself can be shared
     std::unordered_set<Value*> inputs_outputs;
     // list of observer modules for input values
@@ -1485,7 +1485,7 @@ InsertObserversHelper::insertObserversFor(
     if (visited)
     {
         // instance clone of observer module and setAttr
-        for (const auto& observer_attrs : block_observer_map_.xsigma(block))
+        for (const auto& observer_attrs : block_observer_map_.quarisma(block))
         {
             const auto& name     = std::get<0>(observer_attrs);
             const auto& observer = std::get<1>(observer_attrs);
@@ -1648,7 +1648,7 @@ InsertObserversHelper::insertObserversFor(
                     }
                     if (!aggregated_output_observe_state.empty())
                     {
-                        XSIGMA_CHECK(
+                        QUARISMA_CHECK(
                             aggregated_output_observe_state == subblock_output_observe_state,
                             "branches for `if` should return values that are observed "
                             "consistently, if node:",
@@ -1707,7 +1707,7 @@ InsertObserversHelper::insertObserversFor(
         {
             auto* v        = item.first;
             auto  observer = item.second;
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 !is_user_defined_function,
                 "Inserting observers for user defined functions is not "
                 "supported right now");
@@ -1730,7 +1730,7 @@ void InsertObserversHelper::propagateObservedProperty(
         // since the vector is always non-empty, we will
         // not return the initial value
         bool all_observed = true;
-        for (Value* v : pass_through_value_map_.xsigma(output))
+        for (Value* v : pass_through_value_map_.quarisma(output))
         {
             all_observed &= observed_values_.count(v) || block_observed_values.count(v);
         }

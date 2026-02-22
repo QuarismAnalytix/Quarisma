@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -43,7 +43,7 @@ limitations under the License.
 #include "profiler/native/exporters/xplane/xplane_visitor.h"
 #include "util/flat_hash.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 // Returns a timespan from an xevent.
@@ -84,8 +84,8 @@ std::vector<xplane*> find_mutable_planes(x_space* space, const F& predicate)
 }
 
 // Returns the plane with the given name or nullptr if not found.
-XSIGMA_API const xplane* find_plane_with_name(const x_space& space, std::string_view name);
-XSIGMA_API xplane*       find_mutable_plane_with_name(x_space* space, std::string_view name);
+QUARISMA_API const xplane* find_plane_with_name(const x_space& space, std::string_view name);
+QUARISMA_API xplane*       find_mutable_plane_with_name(x_space* space, std::string_view name);
 
 // Returns the planes with the given names, if found.
 std::vector<const xplane*> find_planes_with_names(
@@ -93,18 +93,18 @@ std::vector<const xplane*> find_planes_with_names(
 
 // Returns the plane with the given name in the container. If necessary, adds a
 // new plane to the container.
-XSIGMA_API xplane* find_or_add_mutable_plane_with_name(x_space* space, std::string_view name);
+QUARISMA_API xplane* find_or_add_mutable_plane_with_name(x_space* space, std::string_view name);
 
 // Returns all the planes with a given prefix.
-XSIGMA_API std::vector<const xplane*> find_planes_with_prefix(
+QUARISMA_API std::vector<const xplane*> find_planes_with_prefix(
     const x_space& space, std::string_view prefix);
-XSIGMA_API std::vector<xplane*> find_mutable_planes_with_prefix(
+QUARISMA_API std::vector<xplane*> find_mutable_planes_with_prefix(
     x_space* space, std::string_view prefix);
 
 // Returns the plane with the given id/name or nullptr if not found.
-XSIGMA_API const xline* find_line_with_id(const xplane& plane, int64_t id);
-XSIGMA_API std::vector<const xline*> find_lines_with_id(const xplane& plane, int64_t id);
-XSIGMA_API const xline* find_line_with_name(const xplane& plane, std::string_view name);
+QUARISMA_API const xline* find_line_with_id(const xplane& plane, int64_t id);
+QUARISMA_API std::vector<const xline*> find_lines_with_id(const xplane& plane, int64_t id);
+QUARISMA_API const xline* find_line_with_name(const xplane& plane, std::string_view name);
 
 xstat* find_or_add_mutable_stat(const x_stat_metadata& stat_metadata, xevent* event);
 
@@ -143,7 +143,7 @@ void sort_x_space(x_space* space);
 // Functor that compares xevents for sorting by timespan.
 struct xevents_comparator
 {
-    XSIGMA_API bool operator()(const xevent& a, const xevent& b) const;
+    QUARISMA_API bool operator()(const xevent& a, const xevent& b) const;
 };
 
 // Returns a sorted vector of all XEvents in the given XPlane.
@@ -183,10 +183,10 @@ void MergePlanes(const std::vector<const xplane*>& src_planes, xplane* dst_plane
 int64_t GetStartTimestampNs(const xplane& plane);
 
 // Returns true if there are no XEvents.
-XSIGMA_API bool IsEmpty(const x_space& space);
+QUARISMA_API bool IsEmpty(const x_space& space);
 
 // Return true if grouping/step-tracking is done on the Xspace already.
-XSIGMA_API bool IsXSpaceGrouped(const x_space& space);
+QUARISMA_API bool IsXSpaceGrouped(const x_space& space);
 
 // Mutate the XPlane by adding predefined XFlow. e.g. GPU kernel launches =>
 // GPU kernel events.
@@ -243,12 +243,12 @@ private:
 void AggregateXPlane(const xplane& full_trace, xplane& aggregated_trace);
 
 // Return whether this is a custom plan.
-XSIGMA_API bool IsCustomPlane(const xplane& plane);
+QUARISMA_API bool IsCustomPlane(const xplane& plane);
 
 // Return whether this is a host plan.
-XSIGMA_API bool IsHostPlane(const xplane& plane);
+QUARISMA_API bool IsHostPlane(const xplane& plane);
 
 // Return whether this is a device plan.
-XSIGMA_API bool IsDevicePlane(const xplane& plane);
+QUARISMA_API bool IsDevicePlane(const xplane& plane);
 
-}  // namespace xsigma
+}  // namespace quarisma

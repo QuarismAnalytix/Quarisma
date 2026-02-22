@@ -5,7 +5,7 @@
 
 #include "util.h"
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 using GlobalManager = GlobalStateManager<ProfilerStateBase>;
@@ -70,12 +70,12 @@ ProfilerConfig::ProfilerConfig(
 
 bool ProfilerConfig::disabled() const
 {
-    return state == xsigma::profiler::impl::ProfilerState::Disabled;
+    return state == quarisma::profiler::impl::ProfilerState::Disabled;
 }
 
 bool ProfilerConfig::global() const
 {
-    return state == xsigma::profiler::impl::ProfilerState::KINETO_ONDEMAND;
+    return state == quarisma::profiler::impl::ProfilerState::KINETO_ONDEMAND;
 }
 
 bool ProfilerConfig::pushGlobalCallbacks() const
@@ -94,9 +94,9 @@ enum ProfilerIValueIdx
 };
 }  // namespace
 
-xsigma::IValue ProfilerConfig::toIValue() const
+quarisma::IValue ProfilerConfig::toIValue() const
 {
-    xsigma::impl::GenericList eventIValueList(xsigma::AnyType::get());
+    quarisma::impl::GenericList eventIValueList(quarisma::AnyType::get());
     eventIValueList.reserve(NUM_PROFILER_CFG_IVALUE_IDX);
     eventIValueList.emplace_back(static_cast<int64_t>(state));
     eventIValueList.emplace_back(report_input_shapes);
@@ -104,14 +104,14 @@ xsigma::IValue ProfilerConfig::toIValue() const
     return eventIValueList;
 }
 
-ProfilerConfig ProfilerConfig::fromIValue(const xsigma::IValue& profilerConfigIValue)
+ProfilerConfig ProfilerConfig::fromIValue(const quarisma::IValue& profilerConfigIValue)
 {
-    XSIGMA_CHECK(
-        profilerConfigIValue.isList(), "Expected IValue to contain type xsigma::impl::GenericList");
+    QUARISMA_CHECK(
+        profilerConfigIValue.isList(), "Expected IValue to contain type quarisma::impl::GenericList");
     auto ivalues = profilerConfigIValue.toList();
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         ivalues.size() == NUM_PROFILER_CFG_IVALUE_IDX,
-        xsigma::str(
+        quarisma::str(
             "Expected exactly ",
             NUM_PROFILER_CFG_IVALUE_IDX,
             " ivalues to resconstruct ProfilerConfig."));
@@ -125,7 +125,7 @@ ProfilerConfig ProfilerConfig::fromIValue(const xsigma::IValue& profilerConfigIV
 // -- Profiler base class -----------------------------------------------------
 // ----------------------------------------------------------------------------
 /*explicit*/ ProfilerStateBase::ProfilerStateBase(ProfilerConfig config)
-    : xsigma::MemoryReportingInfoBase(), config_(std::move(config))
+    : quarisma::MemoryReportingInfoBase(), config_(std::move(config))
 {
 }
 
@@ -142,22 +142,22 @@ ProfilerStateBase::~ProfilerStateBase()
 /*static*/ ProfilerStateBase* ProfilerStateBase::get(bool global)
 {
     auto* out = global ? GlobalManager::get()
-                       : static_cast<ProfilerStateBase*>(xsigma::thread_local_debug_info::get(
-                             xsigma::DebugInfoKind::PROFILER_STATE));
-    XSIGMA_CHECK_DEBUG(!out || out->config().pushGlobalCallbacks() == global);
+                       : static_cast<ProfilerStateBase*>(quarisma::thread_local_debug_info::get(
+                             quarisma::DebugInfoKind::PROFILER_STATE));
+    QUARISMA_CHECK_DEBUG(!out || out->config().pushGlobalCallbacks() == global);
     return out;
 }
 
 /*static*/ void ProfilerStateBase::push(std::shared_ptr<ProfilerStateBase>&& state)
 {
-    XSIGMA_CHECK(state != nullptr);
+    QUARISMA_CHECK(state != nullptr);
     if (state->config().pushGlobalCallbacks())
     {
         GlobalManager::push(std::move(state));
     }
     else
     {
-        xsigma::thread_local_debug_info::_push(xsigma::DebugInfoKind::PROFILER_STATE, state);
+        quarisma::thread_local_debug_info::_push(quarisma::DebugInfoKind::PROFILER_STATE, state);
     }
 }
 
@@ -167,11 +167,11 @@ std::shared_ptr<ProfilerStateBase> popTLS()
 {
     // If there is no active thread local profiler then we simply return null.
     // However if there is an active profiler but it is not the top
-    // `DebugInfoBase`then `xsigma::thread_local_debug_info::_pop` will throw.
+    // `DebugInfoBase`then `quarisma::thread_local_debug_info::_pop` will throw.
     // TODO(robieta): make `noexcept` version.
-    return xsigma::thread_local_debug_info::get(xsigma::DebugInfoKind::PROFILER_STATE)
+    return quarisma::thread_local_debug_info::get(quarisma::DebugInfoKind::PROFILER_STATE)
                ? std::static_pointer_cast<ProfilerStateBase>(
-                     xsigma::thread_local_debug_info::_pop(xsigma::DebugInfoKind::PROFILER_STATE))
+                     quarisma::thread_local_debug_info::_pop(quarisma::DebugInfoKind::PROFILER_STATE))
                : nullptr;
 }
 }  // namespace
@@ -179,15 +179,15 @@ std::shared_ptr<ProfilerStateBase> popTLS()
 /*static*/ std::shared_ptr<ProfilerStateBase> ProfilerStateBase::pop(bool global)
 {
     auto out = global ? GlobalManager::pop() : popTLS();
-    XSIGMA_CHECK_DEBUG(!out || out->config().global() == global);
+    QUARISMA_CHECK_DEBUG(!out || out->config().global() == global);
     return out;
 }
 
-void ProfilerStateBase::setCallbackHandle(xsigma::CallbackHandle handle)
+void ProfilerStateBase::setCallbackHandle(quarisma::CallbackHandle handle)
 {
     if (handle_)
     {
-        xsigma::removeCallback(handle_);
+        quarisma::removeCallback(handle_);
         SOFT_ASSERT(
             false,
             "ProfilerStateBase already has a registered callback. "
@@ -201,7 +201,7 @@ void ProfilerStateBase::removeCallback()
 {
     if (handle_)
     {
-        xsigma::removeCallback(handle_);
+        quarisma::removeCallback(handle_);
         handle_ = 0;
     }
 }
@@ -212,18 +212,18 @@ bool profilerEnabled()
     return state_ptr && !state_ptr->config().disabled();
 }
 
-XSIGMA_API ActiveProfilerType profilerType()
+QUARISMA_API ActiveProfilerType profilerType()
 {
     auto* state_ptr = ProfilerStateBase::get(/*global=*/false);
     return state_ptr == nullptr ? ActiveProfilerType::NONE : state_ptr->profilerType();
 }
 
-xsigma::profiler::impl::ProfilerConfig getProfilerConfig()
+quarisma::profiler::impl::ProfilerConfig getProfilerConfig()
 {
     auto* state_ptr = ProfilerStateBase::get(/*global=*/false);
-    XSIGMA_CHECK(state_ptr, "Tried to access profiler config, but profiler is not enabled!");
+    QUARISMA_CHECK(state_ptr, "Tried to access profiler config, but profiler is not enabled!");
     return state_ptr->config();
 }
 
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl
 #endif

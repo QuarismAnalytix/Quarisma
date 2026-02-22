@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,13 +13,13 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Modifications for XSigma:
- * - Adapted for XSigma quantitative computing requirements
+ * Modifications for Quarisma:
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance GPU memory allocation optimizations
  * - Integrated CUDA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -46,11 +46,11 @@
 #include "memory/gpu/gpu_resource_tracker.h"
 #include "memory/unified_memory_stats.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -78,7 +78,7 @@ enum class gpu_tracking_log_level : int
  * Captures detailed CUDA error information including error codes, messages,
  * and context information for debugging GPU memory allocation issues.
  */
-struct XSIGMA_VISIBILITY cuda_error_info
+struct QUARISMA_VISIBILITY cuda_error_info
 {
     int         error_code{0};      ///< CUDA error code (cudaError_t)
     std::string error_message;      ///< Human-readable error message
@@ -100,7 +100,7 @@ struct XSIGMA_VISIBILITY cuda_error_info
      * @param size Size of allocation that failed
      * @param device Device index where error occurred
      */
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     cuda_error_info(
         cudaError_t cuda_error, const char* function_name, size_t size, int device) noexcept;
 #endif
@@ -120,7 +120,7 @@ struct XSIGMA_VISIBILITY cuda_error_info
  *
  * **Performance Impact**: O(1) for basic metrics, O(n) for detailed analysis
  */
-struct XSIGMA_VISIBILITY gpu_bandwidth_metrics
+struct QUARISMA_VISIBILITY gpu_bandwidth_metrics
 {
     double   peak_bandwidth_gbps{0.0};       ///< Peak theoretical bandwidth (GB/s)
     double   effective_bandwidth_gbps{0.0};  ///< Measured effective bandwidth (GB/s)
@@ -152,7 +152,7 @@ struct XSIGMA_VISIBILITY gpu_bandwidth_metrics
  * Extended allocation record that includes GPU-specific metadata for detailed
  * memory usage analysis, performance profiling, and CUDA debugging.
  */
-struct XSIGMA_VISIBILITY enhanced_gpu_alloc_record
+struct QUARISMA_VISIBILITY enhanced_gpu_alloc_record
 {
     size_t          requested_bytes{0};              ///< Originally requested size
     size_t          allocated_bytes{0};              ///< Actual allocated size
@@ -210,14 +210,14 @@ struct XSIGMA_VISIBILITY enhanced_gpu_alloc_record
  * - Stream-aware allocation tracking
  * - Device memory hierarchy monitoring
  * - Thread-safe operation with fine-grained locking
- * - Integration with XSigma GPU resource management
+ * - Integration with Quarisma GPU resource management
  *
  * **Design Principles**:
  * - Wrapper pattern around existing GPU allocation functions
  * - Minimal performance overhead when tracking disabled
  * - Comprehensive CUDA debugging information when enabled
  * - Safe lifecycle management with RAII principles
- * - Integration with XSigma device management framework
+ * - Integration with Quarisma device management framework
  *
  * **Use Cases**:
  * - GPU memory usage optimization for Monte Carlo simulations
@@ -231,7 +231,7 @@ struct XSIGMA_VISIBILITY enhanced_gpu_alloc_record
  * **Memory Overhead**: Small fixed overhead plus tracking data structures
  * **CUDA Integration**: Full integration with CUDA runtime and events
  */
-class XSIGMA_VISIBILITY gpu_allocator_tracking
+class QUARISMA_VISIBILITY gpu_allocator_tracking
 {
 public:
     /**
@@ -242,14 +242,14 @@ public:
      * @param enable_enhanced_tracking Whether to enable comprehensive analytics
      * @param enable_bandwidth_tracking Whether to track memory bandwidth metrics
      *
-     * **Device Management**: Integrates with XSigma device manager
+     * **Device Management**: Integrates with Quarisma device manager
      * **Enhanced Tracking**: Enables detailed analytics, timing, and source location tracking
      * **Bandwidth Tracking**: Monitors memory transfer performance and efficiency
      * **Thread Safety**: Constructor is not thread-safe
      * **Performance Impact**: Enhanced tracking adds minimal overhead (~5-10%)
      * **CUDA Integration**: Automatically detects and integrates with CUDA runtime
      */
-    XSIGMA_API explicit gpu_allocator_tracking(
+    QUARISMA_API explicit gpu_allocator_tracking(
         device_enum device_type               = device_enum::CUDA,
         int         device_index              = 0,
         bool        enable_enhanced_tracking  = true,
@@ -262,7 +262,7 @@ public:
      * **Resource Management**: Cleans up tracking data structures
      * **Thread Safety**: Destructor assumes no concurrent access
      */
-    XSIGMA_API ~gpu_allocator_tracking();
+    QUARISMA_API ~gpu_allocator_tracking();
 
     // ========== Core GPU Allocation Interface ==========
 
@@ -340,7 +340,7 @@ public:
      * @param stream Optional CUDA stream for asynchronous operations
      * @return Pointer to allocated GPU memory, or nullptr on failure
      */
-    XSIGMA_API void* allocate_raw(
+    QUARISMA_API void* allocate_raw(
         size_t                           bytes,
         size_t                           alignment = 256ULL,
         std::shared_ptr<gpu_memory_pool> pool      = nullptr,
@@ -354,7 +354,7 @@ public:
      * @param bytes Number of bytes being deallocated
      * @param stream Optional CUDA stream for asynchronous operations
      */
-    XSIGMA_API void deallocate_raw(void* ptr, size_t bytes, void* stream = nullptr);
+    QUARISMA_API void deallocate_raw(void* ptr, size_t bytes, void* stream = nullptr);
 
     // ========== GPU-Specific Analytics and Metrics ==========
 
@@ -377,7 +377,7 @@ public:
      * - Memory coalescing analysis
      * - GPU cluster resource planning
      */
-    XSIGMA_API gpu_bandwidth_metrics GetBandwidthMetrics() const;
+    QUARISMA_API gpu_bandwidth_metrics GetBandwidthMetrics() const;
 
     /**
      * @brief Retrieves detailed GPU performance timing statistics.
@@ -398,7 +398,7 @@ public:
      * - Total operation counts and cumulative timing data
      * - CUDA synchronization overhead analysis
      */
-    XSIGMA_API atomic_timing_stats GetGPUTimingStats() const noexcept;
+    QUARISMA_API atomic_timing_stats GetGPUTimingStats() const noexcept;
 
     /**
      * @brief Retrieves enhanced GPU allocation records with comprehensive metadata.
@@ -419,7 +419,7 @@ public:
      * - Memory bandwidth utilization per allocation
      * - CUDA error information for failed allocations
      */
-    XSIGMA_API std::vector<enhanced_gpu_alloc_record> GetEnhancedGPURecords() const;
+    QUARISMA_API std::vector<enhanced_gpu_alloc_record> GetEnhancedGPURecords() const;
 
     /**
      * @brief Configures logging verbosity for GPU tracking operations.
@@ -435,7 +435,7 @@ public:
      * **Default**: INFO level logging
      * **CUDA Integration**: TRACE level includes detailed CUDA API call logging
      */
-    XSIGMA_API void SetGPULoggingLevel(gpu_tracking_log_level level) noexcept;
+    QUARISMA_API void SetGPULoggingLevel(gpu_tracking_log_level level) noexcept;
 
     /**
      * @brief Gets current GPU logging verbosity level.
@@ -445,7 +445,7 @@ public:
      * **Performance**: O(1) atomic read
      * **Thread Safety**: Thread-safe atomic operation
      */
-    XSIGMA_API gpu_tracking_log_level GetGPULoggingLevel() const noexcept;
+    QUARISMA_API gpu_tracking_log_level GetGPULoggingLevel() const noexcept;
 
     /**
      * @brief Resets all GPU performance timing statistics.
@@ -459,7 +459,7 @@ public:
      * **Preservation**: Keeps GPU allocation records and memory statistics
      * **CUDA Integration**: Resets CUDA event timing data
      */
-    XSIGMA_API void ResetGPUTimingStats() noexcept;
+    QUARISMA_API void ResetGPUTimingStats() noexcept;
 
     /**
      * @brief Calculates current GPU memory efficiency metrics.
@@ -479,7 +479,7 @@ public:
      * **Performance**: O(1) for cached metrics, O(n) for detailed analysis
      * **CUDA Integration**: Uses CUDA memory info APIs for accurate metrics
      */
-    XSIGMA_API std::tuple<double, double, double> GetGPUEfficiencyMetrics() const;
+    QUARISMA_API std::tuple<double, double, double> GetGPUEfficiencyMetrics() const;
 
     /**
      * @brief Generates comprehensive GPU memory usage report.
@@ -504,7 +504,7 @@ public:
      * - GPU efficiency recommendations
      * - Optional detailed allocation history
      */
-    XSIGMA_API std::string GenerateGPUReport(
+    QUARISMA_API std::string GenerateGPUReport(
         bool include_allocations = false, bool include_cuda_info = true) const;
 
     /**
@@ -515,7 +515,7 @@ public:
      * **Thread Safety**: Thread-safe read operation
      * **CUDA Integration**: Queries current CUDA device properties
      */
-    XSIGMA_API gpu_device_info GetDeviceInfo() const noexcept;
+    QUARISMA_API gpu_device_info GetDeviceInfo() const noexcept;
 
     /**
      * @brief Gets total GPU memory usage across all memory types.
@@ -525,7 +525,7 @@ public:
      * **Thread Safety**: Thread-safe with shared lock
      * **CUDA Integration**: Queries CUDA memory info APIs
      */
-    XSIGMA_API std::tuple<size_t, size_t, size_t> GetGPUMemoryUsage() const;
+    QUARISMA_API std::tuple<size_t, size_t, size_t> GetGPUMemoryUsage() const;
 
 private:
     // ========== Core Configuration ==========
@@ -555,7 +555,7 @@ private:
 
     // ========== CUDA-Specific Members ==========
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     cudaEvent_t start_event_;                     ///< CUDA event for timing start
     cudaEvent_t end_event_;                       ///< CUDA event for timing end
     bool        cuda_events_initialized_{false};  ///< CUDA events initialization flag
@@ -588,9 +588,9 @@ T* gpu_allocator_tracking::allocate(
     std::shared_ptr<gpu_memory_pool> pool,
     const std::string&               tag,
     void*                            stream,
-    XSIGMA_UNUSED const char*        source_file,
-    XSIGMA_UNUSED int                source_line,
-    XSIGMA_UNUSED const char*        function_name)
+    QUARISMA_UNUSED const char*        source_file,
+    QUARISMA_UNUSED int                source_line,
+    QUARISMA_UNUSED const char*        function_name)
 {
     if (count == 0)
         return nullptr;
@@ -611,18 +611,18 @@ void gpu_allocator_tracking::deallocate(T* ptr, size_t count, void* stream)
 }
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma
 
 // ========== Convenience Macros for GPU Allocation Tracking ==========
 
 /**
  * @brief Convenience macro for tracked GPU allocation with automatic source location
  */
-#define XSIGMA_GPU_ALLOCATE_TRACKED(tracker, type, count, alignment, pool, tag, stream) \
+#define QUARISMA_GPU_ALLOCATE_TRACKED(tracker, type, count, alignment, pool, tag, stream) \
     (tracker).allocate<type>(count, alignment, pool, tag, stream, __FILE__, __LINE__, __FUNCTION__)
 
 /**
  * @brief Convenience macro for tracked GPU deallocation
  */
-#define XSIGMA_GPU_DEALLOCATE_TRACKED(tracker, ptr, count, stream) \
+#define QUARISMA_GPU_DEALLOCATE_TRACKED(tracker, ptr, count, stream) \
     (tracker).deallocate(ptr, count, stream)

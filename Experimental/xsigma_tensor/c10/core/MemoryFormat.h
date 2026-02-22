@@ -247,7 +247,7 @@ inline bool is_channels_last_strides_3d_s5(const ArrayRef<T> sizes, const ArrayR
 // conversion); Best effort to maintain the ChannelsLast flag.
 //
 // Due to the fact that this is not a bulletproof solution, through testing
-// (aten/src/XSigma/test/memory_format_test.cpp)
+// (aten/src/Quarisma/test/memory_format_test.cpp)
 //   a. we ensure that the common tasks are supported;
 //   a. we identify corner cases where the implementation compromises on.
 //

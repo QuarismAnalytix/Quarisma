@@ -1,11 +1,11 @@
 #include "profiler/pytorch_profiler/python/combined_traceback.h"
 
-#include <xsigma/csrc/python_headers.h>
-#include <xsigma/csrc/utils/pybind.h>
-#include <xsigma/csrc/utils/pythoncapi_compat.h>
+#include <quarisma/csrc/python_headers.h>
+#include <quarisma/csrc/utils/pybind.h>
+#include <quarisma/csrc/utils/pythoncapi_compat.h>
 namespace py = pybind11;
 
-namespace xsigma
+namespace quarisma
 {
 // Locking:
 // We need to free PyCodeObjects when ~StackContext runs, but
@@ -24,7 +24,7 @@ namespace
 {
 static std::mutex                              to_free_frames_mutex;
 static std::vector<CapturedTraceback::PyFrame> to_free_frames;
-class XSIGMA_VISIBILITY PythonTraceback : public CapturedTraceback::Python
+class QUARISMA_VISIBILITY PythonTraceback : public CapturedTraceback::Python
 {
     std::vector<CapturedTraceback::PyFrame> gather() override
     {
@@ -86,11 +86,11 @@ class XSIGMA_VISIBILITY PythonTraceback : public CapturedTraceback::Python
         py::str                name_s     = "name";
         py::str                filename_s = "filename";
 
-        auto       xsigma = py::module::import("xsigma");
+        auto       quarisma = py::module::import("quarisma");
         py::object stack_frames_for_code;
-        if (py::hasattr(xsigma, "_inductor"))
+        if (py::hasattr(quarisma, "_inductor"))
         {
-            py::object inductor = xsigma.attr("_inductor");
+            py::object inductor = quarisma.attr("_inductor");
             if (py::hasattr(inductor, "codecache"))
             {
                 stack_frames_for_code =
@@ -248,4 +248,4 @@ void installCapturedTracebackPython()
     CapturedTraceback::addPythonUnwinder(new PythonTraceback());
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

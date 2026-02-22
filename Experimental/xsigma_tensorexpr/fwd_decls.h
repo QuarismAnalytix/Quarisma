@@ -1,5 +1,5 @@
 #pragma once
-#include <xsigma/core/ScalarType.h>
+#include <quarisma/core/ScalarType.h>
 
 #include <memory>
 

@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
@@ -13,15 +13,15 @@
 #include <thread>
 
 #include "profiler/native/session/profiler.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // ============================================================================
 // Chrome Trace Export with Hierarchical Profiling Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, chrome_trace_hierarchical_single_scope)
+QUARISMATEST(Profiler, chrome_trace_hierarchical_single_scope)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -41,7 +41,7 @@ XSIGMATEST(Profiler, chrome_trace_hierarchical_single_scope)
     EXPECT_NE(json.find("traceEvents"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_hierarchical_nested_scopes)
+QUARISMATEST(Profiler, chrome_trace_hierarchical_nested_scopes)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -63,7 +63,7 @@ XSIGMATEST(Profiler, chrome_trace_hierarchical_nested_scopes)
     EXPECT_NE(json.find("inner_scope"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_hierarchical_multiple_threads)
+QUARISMATEST(Profiler, chrome_trace_hierarchical_multiple_threads)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -94,7 +94,7 @@ XSIGMATEST(Profiler, chrome_trace_hierarchical_multiple_threads)
     EXPECT_NE(json.find("thread2_scope"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_write_to_file)
+QUARISMATEST(Profiler, chrome_trace_write_to_file)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -127,7 +127,7 @@ XSIGMATEST(Profiler, chrome_trace_write_to_file)
     std::remove(filename.c_str());
 }
 
-XSIGMATEST(Profiler, chrome_trace_hierarchical_deep_nesting)
+QUARISMATEST(Profiler, chrome_trace_hierarchical_deep_nesting)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -157,7 +157,7 @@ XSIGMATEST(Profiler, chrome_trace_hierarchical_deep_nesting)
     EXPECT_NE(json.find("level4"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_hierarchical_sibling_scopes)
+QUARISMATEST(Profiler, chrome_trace_hierarchical_sibling_scopes)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -184,7 +184,7 @@ XSIGMATEST(Profiler, chrome_trace_hierarchical_sibling_scopes)
     EXPECT_NE(json.find("child2"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_json_format_validation)
+QUARISMATEST(Profiler, chrome_trace_json_format_validation)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -211,7 +211,7 @@ XSIGMATEST(Profiler, chrome_trace_json_format_validation)
     EXPECT_NE(json.find("\"dur\""), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_empty_session)
+QUARISMATEST(Profiler, chrome_trace_empty_session)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -224,7 +224,7 @@ XSIGMATEST(Profiler, chrome_trace_empty_session)
     EXPECT_NE(json.find("traceEvents"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_scope_with_special_characters)
+QUARISMATEST(Profiler, chrome_trace_scope_with_special_characters)
 {
     profiler_options opts;
     auto             session = std::make_unique<profiler_session>(opts);
@@ -243,4 +243,4 @@ XSIGMATEST(Profiler, chrome_trace_scope_with_special_characters)
     // Should contain escaped quotes
     EXPECT_NE(json.find("\\\""), std::string::npos);
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

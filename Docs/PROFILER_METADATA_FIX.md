@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document summarizes the critical fixes applied to enable comprehensive metadata collection in the XSigma Profiler system.
+This document summarizes the critical fixes applied to enable comprehensive metadata collection in the Quarisma Profiler system.
 
 ## Changes Made
 
@@ -130,7 +130,7 @@ for (const auto& [key, val] : op_event.extra_meta_)
 if (config_ && !config_->experimental_config.performance_events.empty())
 {
     auto& event_names = config_->experimental_config.performance_events;
-    for (const auto i : xsigma::irange(op_event.perf_event_counters_->size()))
+    for (const auto i : quarisma::irange(op_event.perf_event_counters_->size()))
     {
         addMetadata(event_names[i], std::to_string((*op_event.perf_event_counters_)[i]));
     }
@@ -183,14 +183,14 @@ if (op_event.sequence_number_ >= 0)
 
 **AFTER:**
 ```cpp
-XSIGMA_LOG_WARNING(
+QUARISMA_LOG_WARNING(
     "Inputted stream is not an int for op: {} skipping", op_event.name_);
 ```
 
 **Benefits:**
-- Uses proper XSigma logging macros
+- Uses proper Quarisma logging macros
 - Format-safe string handling
-- Consistent with XSigma codebase style
+- Consistent with Quarisma codebase style
 
 ---
 

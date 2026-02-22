@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <XSigma/ArrayRef.h>
-#include <XSigma/SmallVector.h>
-#include <XSigma/Tensor.h>
+#include <Quarisma/ArrayRef.h>
+#include <Quarisma/SmallVector.h>
+#include <Quarisma/Tensor.h>
 
 #include <bitset>
 

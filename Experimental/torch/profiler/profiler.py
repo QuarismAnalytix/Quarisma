@@ -12,20 +12,20 @@ from typing import Any, Optional
 from typing_extensions import Self
 from warnings import warn
 
-import xsigma
-import xsigma.autograd.profiler as prof
-from xsigma._C import _get_privateuse1_backend_name
-from xsigma._C._profiler import (
+import quarisma
+import quarisma.autograd.profiler as prof
+from quarisma._C import _get_privateuse1_backend_name
+from quarisma._C._profiler import (
     _add_execution_trace_observer,
     _disable_execution_trace_observer,
     _enable_execution_trace_observer,
     _ExperimentalConfig,
     _remove_execution_trace_observer,
 )
-from xsigma._environment import is_fbcode
-from xsigma._utils_internal import profiler_allow_cudagraph_cupti_lazy_reinit_cuda12
-from xsigma.autograd import kineto_available, ProfilerActivity
-from xsigma.profiler._memory_profiler import MemoryProfile, MemoryProfileTimeline
+from quarisma._environment import is_fbcode
+from quarisma._utils_internal import profiler_allow_cudagraph_cupti_lazy_reinit_cuda12
+from quarisma.autograd import kineto_available, ProfilerActivity
+from quarisma.profiler._memory_profiler import MemoryProfile, MemoryProfileTimeline
 
 
 __all__ = [
@@ -68,11 +68,11 @@ def supported_activities():
     Note: profiler uses CUPTI library to trace on-device CUDA kernels.
     In case when CUDA is enabled but CUPTI is not available, passing
     ``ProfilerActivity.CUDA`` to profiler results in using the legacy CUDA
-    profiling code (same as in the legacy ``xsigma.autograd.profiler``).
+    profiling code (same as in the legacy ``quarisma.autograd.profiler``).
     This, in turn, results in including CUDA time in the profiler table output,
     but not in the JSON trace.
     """
-    return xsigma.autograd._supported_activities()
+    return quarisma.autograd._supported_activities()
 
 
 class _ITraceObserver(ABC):
@@ -97,8 +97,8 @@ class _KinetoProfile:
 
     Args:
         activities (iterable): list of activity groups (CPU, CUDA) to use in profiling, supported values:
-            ``xsigma.profiler.ProfilerActivity.CPU``, ``xsigma.profiler.ProfilerActivity.CUDA``,
-            ``xsigma.profiler.ProfilerActivity.XPU``.
+            ``quarisma.profiler.ProfilerActivity.CPU``, ``quarisma.profiler.ProfilerActivity.CUDA``,
+            ``quarisma.profiler.ProfilerActivity.XPU``.
             Default value: ProfilerActivity.CPU and (when available) ProfilerActivity.CUDA
             or (when available) ProfilerActivity.XPU.
         record_shapes (bool): save information about operator's input shapes.
@@ -187,8 +187,8 @@ class _KinetoProfile:
         self.stop_trace()
 
     def prepare_trace(self) -> None:
-        if hasattr(xsigma, "_inductor"):
-            import xsigma._inductor.config as inductor_config
+        if hasattr(quarisma, "_inductor"):
+            import quarisma._inductor.config as inductor_config
 
             self.has_cudagraphs = inductor_config.triton.cudagraphs
         if (self.profiler is None) or (not self.acc_events):
@@ -232,10 +232,10 @@ class _KinetoProfile:
                 )
 
             cuda_version = None
-            if hasattr(xsigma, "version"):
-                from xsigma.torch_version import TorchVersion
+            if hasattr(quarisma, "version"):
+                from quarisma.torch_version import TorchVersion
 
-                cuda_version = TorchVersion(getattr(xsigma.version, "cuda", "0.0"))
+                cuda_version = TorchVersion(getattr(quarisma.version, "cuda", "0.0"))
 
             if self.has_cudagraphs and (
                 (cuda_version and cuda_version < "12.6")
@@ -295,23 +295,23 @@ class _KinetoProfile:
 
         Args:
             activities (iterable): list of activity groups to use in profiling, supported values:
-                ``xsigma.profiler.ProfilerActivity.CPU``, ``xsigma.profiler.ProfilerActivity.CUDA``
+                ``quarisma.profiler.ProfilerActivity.CPU``, ``quarisma.profiler.ProfilerActivity.CUDA``
         Examples:
 
         .. code-block:: python
 
-            with xsigma.profiler.profile(
+            with quarisma.profiler.profile(
                 activities=[
-                    xsigma.profiler.ProfilerActivity.CPU,
-                    xsigma.profiler.ProfilerActivity.CUDA,
+                    quarisma.profiler.ProfilerActivity.CPU,
+                    quarisma.profiler.ProfilerActivity.CUDA,
                 ]
             ) as p:
                 code_to_profile_0()
                 // turn off collection of all CUDA activity
-                p.toggle_collection_dynamic(False, [xsigma.profiler.ProfilerActivity.CUDA])
+                p.toggle_collection_dynamic(False, [quarisma.profiler.ProfilerActivity.CUDA])
                 code_to_profile_1()
                 // turn on collection of all CUDA activity
-                p.toggle_collection_dynamic(True, [xsigma.profiler.ProfilerActivity.CUDA])
+                p.toggle_collection_dynamic(True, [quarisma.profiler.ProfilerActivity.CUDA])
                 code_to_profile_2()
             print(p.key_averages().table(
                 sort_by="self_cuda_time_total", row_limit=-1))
@@ -352,14 +352,14 @@ class _KinetoProfile:
         into the trace file
         """
         wrapped_value = '"' + value.replace('"', '\\"') + '"'
-        xsigma.autograd._add_metadata_json(key, wrapped_value)
+        quarisma.autograd._add_metadata_json(key, wrapped_value)
 
     def add_metadata_json(self, key: str, value: str) -> None:
         """
         Adds a user defined metadata with a string key and a valid json value
         into the trace file
         """
-        xsigma.autograd._add_metadata_json(key, value)
+        quarisma.autograd._add_metadata_json(key, value)
 
     def preset_metadata_json(self, key: str, value: str) -> None:
         """
@@ -370,7 +370,7 @@ class _KinetoProfile:
         self.preset_metadata[key] = value
 
     def _get_distributed_info(self):
-        import xsigma.distributed as dist
+        import quarisma.distributed as dist
 
         if not dist.is_available() or not dist.is_initialized():
             return None
@@ -381,10 +381,10 @@ class _KinetoProfile:
             "rank": dist.get_rank(),
             "world_size": dist.get_world_size(),
             "pg_count": dist.get_pg_count(),
-            "pg_config": dist.distributed_xsigmad._get_all_pg_configs(),
+            "pg_config": dist.distributed_quarismad._get_all_pg_configs(),
         }
         if backend == "nccl":
-            nccl_version = xsigma.cuda.nccl.version()
+            nccl_version = quarisma.cuda.nccl.version()
             # pyrefly: ignore [unsupported-operation]
             dist_info["nccl_version"] = ".".join(str(v) for v in nccl_version)
         return dist_info
@@ -416,7 +416,7 @@ class _KinetoProfile:
           event will consist of ``(timestamp, action, numbytes, category)``, where
           ``action`` is one of ``[PREEXISTING, CREATE, INCREMENT_VERSION, DESTROY]``,
           and ``category`` is one of the enums from
-          ``xsigma.profiler._memory_profiler.Category``.
+          ``quarisma.profiler._memory_profiler.Category``.
 
         Output: Memory timeline written as gzipped JSON, JSON, or HTML.
         """
@@ -425,7 +425,7 @@ class _KinetoProfile:
             if self.use_device and self.use_device != "cuda":
                 device = self.use_device + ":0"
             else:
-                device = "cuda:0" if xsigma.cuda.is_available() else "cpu"
+                device = "cuda:0" if quarisma.cuda.is_available() else "cpu"
 
         # Construct the memory timeline plot data
         self.mem_tl = MemoryProfileTimeline(self._memory_profile())
@@ -562,8 +562,8 @@ class profile(_KinetoProfile):
 
     Args:
         activities (iterable): list of activity groups (CPU, CUDA) to use in profiling, supported values:
-            ``xsigma.profiler.ProfilerActivity.CPU``, ``xsigma.profiler.ProfilerActivity.CUDA``,
-            ``xsigma.profiler.ProfilerActivity.XPU``.
+            ``quarisma.profiler.ProfilerActivity.CPU``, ``quarisma.profiler.ProfilerActivity.CUDA``,
+            ``quarisma.profiler.ProfilerActivity.XPU``.
             Default value: ProfilerActivity.CPU and (when available) ProfilerActivity.CUDA
             or (when available) ProfilerActivity.XPU.
         schedule (Callable): callable that takes step (int) as a single parameter and returns
@@ -594,7 +594,7 @@ class profile(_KinetoProfile):
                 use ``activities`` instead.
 
     .. note::
-        Use :func:`~xsigma.profiler.schedule` to generate the callable schedule.
+        Use :func:`~quarisma.profiler.schedule` to generate the callable schedule.
         Non-default schedules are useful when profiling long training jobs
         and allow the user to obtain multiple traces at the different iterations
         of the training process.
@@ -602,9 +602,9 @@ class profile(_KinetoProfile):
         duration of the context manager.
 
     .. note::
-        Use :func:`~xsigma.profiler.tensorboard_trace_handler` to generate result files for TensorBoard:
+        Use :func:`~quarisma.profiler.tensorboard_trace_handler` to generate result files for TensorBoard:
 
-        ``on_trace_ready=xsigma.profiler.tensorboard_trace_handler(dir_name)``
+        ``on_trace_ready=quarisma.profiler.tensorboard_trace_handler(dir_name)``
 
         After profiling, result files can be found in the specified directory. Use the command:
 
@@ -625,10 +625,10 @@ class profile(_KinetoProfile):
 
     .. code-block:: python
 
-        with xsigma.profiler.profile(
+        with quarisma.profiler.profile(
             activities=[
-                xsigma.profiler.ProfilerActivity.CPU,
-                xsigma.profiler.ProfilerActivity.CUDA,
+                quarisma.profiler.ProfilerActivity.CPU,
+                quarisma.profiler.ProfilerActivity.CUDA,
             ]
         ) as p:
             code_to_profile()
@@ -648,10 +648,10 @@ class profile(_KinetoProfile):
             # prof.export_chrome_trace("/tmp/test_trace_" + str(prof.step_num) + ".json")
 
 
-        with xsigma.profiler.profile(
+        with quarisma.profiler.profile(
             activities=[
-                xsigma.profiler.ProfilerActivity.CPU,
-                xsigma.profiler.ProfilerActivity.CUDA,
+                quarisma.profiler.ProfilerActivity.CPU,
+                quarisma.profiler.ProfilerActivity.CUDA,
             ],
             # In this example with wait=1, warmup=1, active=2, repeat=1,
             # profiler will skip the first step/iteration,
@@ -660,9 +660,9 @@ class profile(_KinetoProfile):
             # after which the trace will become available
             # and on_trace_ready (when set) is called;
             # the cycle repeats starting with the next step
-            schedule=xsigma.profiler.schedule(wait=1, warmup=1, active=2, repeat=1),
+            schedule=quarisma.profiler.schedule(wait=1, warmup=1, active=2, repeat=1),
             on_trace_ready=trace_handler,
-            # on_trace_ready=xsigma.profiler.tensorboard_trace_handler('./log')
+            # on_trace_ready=quarisma.profiler.tensorboard_trace_handler('./log')
             # used when outputting for tensorboard
         ) as p:
             for iter in range(N):
@@ -674,7 +674,7 @@ class profile(_KinetoProfile):
 
     .. code-block:: python
 
-        with xsigma.profiler.profile(
+        with quarisma.profiler.profile(
             ...
             execution_trace_observer=(
                 ExecutionTraceObserver().register_callback("./execution_trace.json")
@@ -922,13 +922,13 @@ class ExecutionTraceObserver(_ITraceObserver):
     def build_execution_trace_obs_from_env() -> Optional["ExecutionTraceObserver"]:
         """
         Returns an ExecutionTraceObserver instance if the environment variable
-        ENABLE_PYXSIGMA_EXECUTION_TRACE is set to 1, otherwise returns None.
+        ENABLE_PYQUARISMA_EXECUTION_TRACE is set to 1, otherwise returns None.
 
         Configures the observer to also collect extra resources if the environment variable
-        ``ENABLE_PYXSIGMA_EXECUTION_TRACE_EXTRAS=1``. These are resources such as generated kernels,
+        ``ENABLE_PYQUARISMA_EXECUTION_TRACE_EXTRAS=1``. These are resources such as generated kernels,
         index tensor data etc. that are required to make the Execution Trace replayable.
         """
-        if os.environ.get("ENABLE_PYXSIGMA_EXECUTION_TRACE", "0") == "1":
+        if os.environ.get("ENABLE_PYQUARISMA_EXECUTION_TRACE", "0") == "1":
             try:
                 fp = tempfile.NamedTemporaryFile("w+t", suffix=".et.json", delete=False)
             except Exception as e:
@@ -941,7 +941,7 @@ class ExecutionTraceObserver(_ITraceObserver):
             et = ExecutionTraceObserver()
             et.register_callback(fp.name)
             # additionally, check if the env requires us to collect extra resources
-            if os.environ.get("ENABLE_PYXSIGMA_EXECUTION_TRACE_EXTRAS", "0") == "1":
+            if os.environ.get("ENABLE_PYQUARISMA_EXECUTION_TRACE_EXTRAS", "0") == "1":
                 et.set_extra_resource_collection(True)
             else:
                 et.set_extra_resource_collection(False)
@@ -1046,7 +1046,7 @@ class ExecutionTraceObserver(_ITraceObserver):
                 return
 
             # Save the kernel paths for the generated kernels
-            from xsigma._inductor.codecache import PyCodeCache
+            from quarisma._inductor.codecache import PyCodeCache
 
             kernel_files = [
                 v.__file__
@@ -1132,11 +1132,11 @@ class ExecutionTraceObserver(_ITraceObserver):
         #  ## process_group:init ##
         if (
             self.is_registered
-            and xsigma.distributed.is_available()
-            and xsigma.distributed.is_initialized()
+            and quarisma.distributed.is_available()
+            and quarisma.distributed.is_initialized()
         ):
-            pg_config_info = xsigma.distributed.distributed_xsigmad._world.pg_config_info
-            xsigma.autograd._record_function_with_args_enter(
+            pg_config_info = quarisma.distributed.distributed_quarismad._world.pg_config_info
+            quarisma.autograd._record_function_with_args_enter(
                 "## process_group:init ##",
                 json.dumps(pg_config_info, cls=_NumpyEncoder),
             )

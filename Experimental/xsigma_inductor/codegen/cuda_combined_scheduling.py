@@ -82,11 +82,11 @@ class CUDACombinedScheduling(BaseScheduling):
             if self._cuda_cpp_scheduling.is_cuda_cpp_template(node):
                 return self._cuda_cpp_scheduling.can_fuse_horizontal(
                     node1, node2
-                )  # always False xsigma the moment
+                )  # always False quarisma the moment
             if self._cutedsl_scheduling.is_cutedsl_template(node):
                 return self._cutedsl_scheduling.can_fuse_horizontal(
                     node1, node2
-                )  # always False xsigma the moment
+                )  # always False quarisma the moment
         return self._triton_scheduling.can_fuse_horizontal(node1, node2)
 
     def group_fn(

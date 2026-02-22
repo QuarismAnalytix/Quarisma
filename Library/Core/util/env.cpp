@@ -13,7 +13,7 @@
 #include "logging/logger.h"
 #include "util/exception.h"
 
-namespace xsigma::utils
+namespace quarisma::utils
 {
 
 static std::shared_mutex& get_env_mutex()
@@ -40,12 +40,12 @@ void set_env(const char* name, const char* value, bool overwrite)
     auto full_env_variable = fmt::format("{}={}", name, value);
     // NOLINTNEXTLINE(concurrency-mt-unsafe)
     auto err = putenv(full_env_variable.c_str());
-    XSIGMA_CHECK(err == 0, "putenv failed for environment \"", name, "\", the error is: ", err);
+    QUARISMA_CHECK(err == 0, "putenv failed for environment \"", name, "\", the error is: ", err);
 #pragma warning(pop)
 #else
     // NOLINTNEXTLINE(concurrency-mt-unsafe)
     auto err = setenv(name, value, static_cast<int>(overwrite));
-    XSIGMA_CHECK(err == 0, "setenv failed for environment \"", name, "\", the error is: ", err);
+    QUARISMA_CHECK(err == 0, "setenv failed for environment \"", name, "\", the error is: ", err);
 #endif
 }
 
@@ -95,7 +95,7 @@ std::optional<bool> check_env(const char* name)
         {
             return true;
         }
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "Ignoring invalid value for boolean flag ",
             name,
             ": ",
@@ -133,7 +133,7 @@ bool read_env_bool(const char* name, bool default_val, bool* value)
         return true;
     }
 
-    XSIGMA_LOG_ERROR(
+    QUARISMA_LOG_ERROR(
         "Failed to parse the env-var {} into bool: {}. Use the default value: {}",
         env_name,
         str_value,
@@ -156,7 +156,7 @@ bool read_env_int64(const char* name, int64_t default_val, int64_t* value)
     auto        end   = str.find_last_not_of(" \t\n\r");
     if (start == std::string::npos || end == std::string::npos)
     {
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "Failed to parse the env-var {} into int64: {}. Use the default value: {}",
             env_name,
             str,
@@ -177,7 +177,7 @@ bool read_env_int64(const char* name, int64_t default_val, int64_t* value)
     }
     catch (std::exception const& e)
     {
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "Failed to parse the env-var {} into int64: {}. Use the default value: {} ({})",
             env_name,
             str,
@@ -186,11 +186,11 @@ bool read_env_int64(const char* name, int64_t default_val, int64_t* value)
         return false;
     }
 
-    XSIGMA_LOG_ERROR(
+    QUARISMA_LOG_ERROR(
         "Failed to parse the env-var {} into int64: {}. Use the default value: {}",
         env_name,
         str,
         default_val);
     return false;
 }
-}  // namespace xsigma::utils
+}  // namespace quarisma::utils

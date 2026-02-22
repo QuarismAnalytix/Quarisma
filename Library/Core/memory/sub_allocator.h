@@ -1,6 +1,6 @@
 /*
- * XSigma: High-Performance Quantitative Library
- * Copyright 2025 XSigma Contributors
+ * Quarisma: High-Performance Quantitative Library
+ * Copyright 2025 Quarisma Contributors
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
 
@@ -13,7 +13,7 @@
 #include "common/export.h"
 #include "common/macros.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -133,7 +133,7 @@ enum class allocator_memory_enum : uint8_t
  * // Then serve thousands of small allocations from this region
  * ```
  */
-class XSIGMA_VISIBILITY sub_allocator
+class QUARISMA_VISIBILITY sub_allocator
 {
 public:
     /**
@@ -162,7 +162,7 @@ public:
      * **Exception Safety**: Visitor exceptions may propagate
      * **Performance**: Visitor overhead is per large allocation, not per user allocation
      */
-    XSIGMA_API sub_allocator(
+    QUARISMA_API sub_allocator(
         const std::vector<Visitor>& alloc_visitors = {},
         const std::vector<Visitor>& free_visitors  = {});
 
@@ -275,7 +275,7 @@ protected:
      * **Exception Handling**: Visitor exceptions may propagate
      * **Performance**: O(n) where n is number of visitors
      */
-    XSIGMA_API void VisitAlloc(void* ptr, int index, size_t num_bytes);
+    QUARISMA_API void VisitAlloc(void* ptr, int index, size_t num_bytes);
 
     /**
      * @brief Notifies deallocation visitors of memory release.
@@ -291,10 +291,10 @@ protected:
      * **Exception Handling**: Visitor exceptions may propagate
      * **Performance**: O(n) where n is number of visitors
      */
-    XSIGMA_API void VisitFree(void* ptr, int index, size_t num_bytes);
+    QUARISMA_API void VisitFree(void* ptr, int index, size_t num_bytes);
 
     const std::vector<Visitor> alloc_visitors_;  ///< Allocation monitoring callbacks
     const std::vector<Visitor> free_visitors_;   ///< Deallocation monitoring callbacks
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

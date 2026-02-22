@@ -5,7 +5,7 @@
 
 #include <cstddef>
 
-namespace xsigma
+namespace quarisma
 {
 bool cpu_info::initialize()
 {
@@ -121,12 +121,12 @@ void cpu_info::info()
     fmt::print("                     Flags                        \n");
     fmt::print("==================================================\n");
 
-#if XSIGMA_HAS_MKL
+#if QUARISMA_HAS_MKL
     fmt::print("MKL is enabled!\n");
-#endif  // XSIGMA_HAS_MKL
-#if XSIGMA_HAS_TBB
+#endif  // QUARISMA_HAS_MKL
+#if QUARISMA_HAS_TBB
     fmt::print("TBB is enabled!\n");
-#endif  // XSIGMA_HAS_MKL
+#endif  // QUARISMA_HAS_MKL
 }
 
 void cpu_info::cpuinfo_cach(
@@ -143,4 +143,4 @@ void cpu_info::cpuinfo_cach(
 
     cpuinfo_deinitialize();
 }
-};  // namespace xsigma
+};  // namespace quarisma

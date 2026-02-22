@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "profiler_report.h"
@@ -37,7 +37,7 @@
 #include "profiler/native/analysis/statistical_analyzer.h"
 #include "profiler/native/session/profiler.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace
 {
@@ -124,7 +124,7 @@ std::vector<std::pair<std::string, ValueT>> sort_map_by_value_desc(
 // profiler_report Implementation
 //=============================================================================
 
-profiler_report::profiler_report(const xsigma::profiler_session& session) : session_(session) {}
+profiler_report::profiler_report(const quarisma::profiler_session& session) : session_(session) {}
 
 std::string profiler_report::generate_console_report() const
 {
@@ -307,23 +307,23 @@ std::string profiler_report::generate_xml_report() const
 }
 
 bool profiler_report::export_to_file(
-    const std::string& filename, xsigma::profiler_options::output_format_enum format) const
+    const std::string& filename, quarisma::profiler_options::output_format_enum format) const
 {
     std::string content;
 
     switch (format)
     {
-    case xsigma::profiler_options::output_format_enum::CONSOLE:
-    case xsigma::profiler_options::output_format_enum::FILE:
+    case quarisma::profiler_options::output_format_enum::CONSOLE:
+    case quarisma::profiler_options::output_format_enum::FILE:
         content = generate_console_report();
         break;
-    case xsigma::profiler_options::output_format_enum::JSON:
+    case quarisma::profiler_options::output_format_enum::JSON:
         content = generate_json_report();
         break;
-    case xsigma::profiler_options::output_format_enum::CSV:
+    case quarisma::profiler_options::output_format_enum::CSV:
         content = generate_csv_report();
         break;
-    case xsigma::profiler_options::output_format_enum::STRUCTURED:
+    case quarisma::profiler_options::output_format_enum::STRUCTURED:
         content = generate_xml_report();
         break;
     default:
@@ -344,53 +344,53 @@ bool profiler_report::export_to_file(
 
 bool profiler_report::export_console_report(const std::string& filename) const
 {
-    return export_to_file(filename, xsigma::profiler_options::output_format_enum::CONSOLE);
+    return export_to_file(filename, quarisma::profiler_options::output_format_enum::CONSOLE);
 }
 
 bool profiler_report::export_json_report(const std::string& filename) const
 {
-    return export_to_file(filename, xsigma::profiler_options::output_format_enum::JSON);
+    return export_to_file(filename, quarisma::profiler_options::output_format_enum::JSON);
 }
 
 bool profiler_report::export_csv_report(const std::string& filename) const
 {
-    return export_to_file(filename, xsigma::profiler_options::output_format_enum::CSV);
+    return export_to_file(filename, quarisma::profiler_options::output_format_enum::CSV);
 }
 
 bool profiler_report::export_xml_report(const std::string& filename) const
 {
-    return export_to_file(filename, xsigma::profiler_options::output_format_enum::STRUCTURED);
+    return export_to_file(filename, quarisma::profiler_options::output_format_enum::STRUCTURED);
 }
 
 void profiler_report::print_summary()
 {
-    XSIGMA_LOG_WARNING(
+    QUARISMA_LOG_WARNING(
         "profiler_report::print_summary() requires a report instance. "
         "Create a profiler_session report via profiler_session::generate_report().");
 }
 
 void profiler_report::print_detailed_report() const
 {
-    XSIGMA_LOG_INFO("{}", generate_console_report());
+    QUARISMA_LOG_INFO("{}", generate_console_report());
 }
 
 void profiler_report::print_memory_report()
 {
-    XSIGMA_LOG_WARNING(
+    QUARISMA_LOG_WARNING(
         "profiler_report::print_memory_report() is deprecated. "
         "Use profiler_session::generate_report()->generate_memory_section().");
 }
 
 void profiler_report::print_timing_report()
 {
-    XSIGMA_LOG_WARNING(
+    QUARISMA_LOG_WARNING(
         "profiler_report::print_timing_report() is deprecated. "
         "Use profiler_session::generate_report()->generate_timing_section().");
 }
 
 void profiler_report::print_statistical_report()
 {
-    XSIGMA_LOG_WARNING(
+    QUARISMA_LOG_WARNING(
         "profiler_report::print_statistical_report() is deprecated. "
         "Use profiler_session::generate_report()->generate_statistical_section().");
 }
@@ -455,7 +455,7 @@ std::string profiler_report::format_double(double value) const
 std::string profiler_report::generate_header_section() const
 {
     std::stringstream ss;
-    ss << "=== XSigma Profiler Report ===\n";
+    ss << "=== Quarisma Profiler Report ===\n";
     ss << "Session active: " << (session_.is_active() ? "yes" : "no") << "\n";
 
     auto const start_time = session_.session_start_time();
@@ -876,14 +876,14 @@ void profiler_report::process_scope_data_csv_recursive(
 // profiler_report_builder Implementation
 //=============================================================================
 
-profiler_report_builder::profiler_report_builder(const xsigma::profiler_session& session)
+profiler_report_builder::profiler_report_builder(const quarisma::profiler_session& session)
     : session_(session)
 {
 }
 
-std::unique_ptr<xsigma::profiler_report> profiler_report_builder::build() const
+std::unique_ptr<quarisma::profiler_report> profiler_report_builder::build() const
 {
-    auto report = std::make_unique<xsigma::profiler_report>(session_);
+    auto report = std::make_unique<quarisma::profiler_report>(session_);
     report->set_precision(precision_);
     report->set_time_unit(time_unit_);
     report->set_memory_unit(memory_unit_);
@@ -892,4 +892,4 @@ std::unique_ptr<xsigma::profiler_report> profiler_report_builder::build() const
     return report;
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

@@ -6,12 +6,12 @@ from collections import deque
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from xsigma.autograd.profiler import profile
-from xsigma.profiler import DeviceType
+from quarisma.autograd.profiler import profile
+from quarisma.profiler import DeviceType
 
 
 if TYPE_CHECKING:
-    from xsigma.autograd import _KinetoEvent
+    from quarisma.autograd import _KinetoEvent
 
 
 def _traverse(tree, next_fn, children_fn=lambda x: x.children, reverse: bool = False):
@@ -282,7 +282,7 @@ class BasicEvaluation:
         """
 
         # Find the interval when qd is falling to 0
-        import xsigma
+        import quarisma
 
         queue_depth_list = list(reversed(self.queue_depth_list))
         qd_values = [e.queue_depth for e in queue_depth_list]
@@ -320,16 +320,16 @@ class BasicEvaluation:
             if event.intervals_overlap(decrease_interval)
         ]
         if event_list:
-            self_time = xsigma.tensor(
+            self_time = quarisma.tensor(
                 [self.metrics[event].self_time_ns for event in event_list],
-                dtype=xsigma.float32,
+                dtype=quarisma.float32,
             )
-            idle_time = xsigma.tensor(
+            idle_time = quarisma.tensor(
                 [self.metrics[event].fraction_idle_time for event in event_list],
-                dtype=xsigma.float32,
+                dtype=quarisma.float32,
             )
-            normalized_gain = (idle_time - xsigma.mean(idle_time)) / xsigma.std(idle_time)
-            normalized_self = (self_time - xsigma.mean(self_time)) / xsigma.std(self_time)
+            normalized_gain = (idle_time - quarisma.mean(idle_time)) / quarisma.std(idle_time)
+            normalized_self = (self_time - quarisma.mean(self_time)) / quarisma.std(self_time)
             heuristic_score_list = normalized_gain + 0.6 * normalized_self
 
             # Sort events by heuristic
@@ -396,7 +396,7 @@ def source_code_location(event):
 # TODO(dberard) - deprecate / remove workaround for CUDA >= 12, when
 # we stop supporting older CUDA versions.
 def _init_for_cuda_graphs() -> None:
-    from xsigma.autograd.profiler import profile
+    from quarisma.autograd.profiler import profile
 
     with profile():
         pass

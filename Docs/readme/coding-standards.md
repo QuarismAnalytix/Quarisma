@@ -1,8 +1,8 @@
-# XSigma Coding Standards
+# Quarisma Coding Standards
 
 ## Overview
 
-XSigma maintains strict coding standards to ensure code quality, consistency, and maintainability across the entire codebase. All contributions must adhere to these standards. This document provides a comprehensive guide to XSigma's coding conventions, best practices, and requirements.
+Quarisma maintains strict coding standards to ensure code quality, consistency, and maintainability across the entire codebase. All contributions must adhere to these standards. This document provides a comprehensive guide to Quarisma's coding conventions, best practices, and requirements.
 
 For a quick reference, see the [Coding Standards section in README.md](../../README.md#coding-standards).
 
@@ -47,9 +47,9 @@ For a quick reference, see the [Coding Standards section in README.md](../../REA
   - [Using the Builder](#using-the-builder)
   - [Builder Conventions Summary](#builder-conventions-summary)
   - [Constructor Visibility for Classes with Builders](#constructor-visibility-for-classes-with-builders)
-  - [XSigma Macros Usage](#xsigma-macros-usage)
-    - [XSIGMA_NODISCARD](#xsigma_nodiscard)
-    - [XSIGMA_UNUSED](#xsigma_unused)
+  - [Quarisma Macros Usage](#quarisma-macros-usage)
+    - [QUARISMA_NODISCARD](#quarisma_nodiscard)
+    - [QUARISMA_UNUSED](#quarisma_unused)
     - [noexcept](#noexcept)
     - [Macro Usage Summary](#macro-usage-summary)
     - [Benefits of Using These Macros](#benefits-of-using-these-macros)
@@ -76,7 +76,7 @@ For a quick reference, see the [Coding Standards section in README.md](../../REA
 
 ### 1. No Exceptions
 
-XSigma **prohibits exception-based error handling**. Instead, use return values to communicate success or failure:
+Quarisma **prohibits exception-based error handling**. Instead, use return values to communicate success or failure:
 
 ```cpp
 // ❌ Incorrect - Never use exceptions
@@ -189,7 +189,7 @@ const std::string kDefaultName = "default";
 
 ## Naming Conventions
 
-XSigma uses `snake_case` for most identifiers, following the Google C++ Style Guide:
+Quarisma uses `snake_case` for most identifiers, following the Google C++ Style Guide:
 
 | Element | Convention | Example | Notes |
 |---------|-----------|---------|-------|
@@ -199,7 +199,7 @@ XSigma uses `snake_case` for most identifiers, following the Google C++ Style Gu
 | Member Variable | `snake_case_` | `int count_;` | Trailing underscore distinguishes from locals |
 | Local Variable | `snake_case` | `int local_value` | No trailing underscore |
 | Constant | `kConstantName` | `const int kMaxCount = 100;` | Prefer `kConstantName` for readability |
-| Namespace | `snake_case` | `namespace xsigma` | All lowercase |
+| Namespace | `snake_case` | `namespace quarisma` | All lowercase |
 | Enum | `snake_case` | `enum class color_type` | Use `enum class` for type safety |
 | Enum Value | `snake_case` | `color_type::dark_red` | All lowercase |
 
@@ -264,7 +264,7 @@ enum class status_type {
 
 ### Automatic Formatting
 
-XSigma uses `clang-format` for automatic code formatting. Configuration is in `.clang-format`:
+Quarisma uses `clang-format` for automatic code formatting. Configuration is in `.clang-format`:
 
 - **Line length**: 100 characters maximum
 - **Indentation**: 2 spaces (no tabs)
@@ -341,23 +341,23 @@ Apply these macros for correct symbol visibility on all platforms (Windows, Linu
 
 | Context | Macro | Usage | Purpose |
 |---------|-------|-------|---------|
-| Function | `XSIGMA_API` | Before function return type | Export function symbol |
-| Class | `XSIGMA_VISIBILITY` | Before `class` keyword | Export class symbol |
+| Function | `QUARISMA_API` | Before function return type | Export function symbol |
+| Class | `QUARISMA_VISIBILITY` | Before `class` keyword | Export class symbol |
 
 ### DLL Export Examples
 
 ```cpp
 // ✅ Correct DLL export usage
-class XSIGMA_VISIBILITY my_class {
+class QUARISMA_VISIBILITY my_class {
  public:
-  XSIGMA_API void do_something();
-  XSIGMA_API int calculate(int value);
-  XSIGMA_API std::string get_name() const;
+  QUARISMA_API void do_something();
+  QUARISMA_API int calculate(int value);
+  QUARISMA_API std::string get_name() const;
 };
 
 // ✅ Correct for standalone functions
-XSIGMA_API void process_data(const std::vector<int>& data);
-XSIGMA_API bool validate_input(const std::string& input);
+QUARISMA_API void process_data(const std::vector<int>& data);
+QUARISMA_API bool validate_input(const std::string& input);
 ```
 
 **Important:** Omitting these macros will cause linking errors on Windows and symbol visibility issues on Linux/macOS.
@@ -368,7 +368,7 @@ XSIGMA_API bool validate_input(const std::string& input);
 
 - **Minimum 98% code coverage** required for all new code
 - Tests must be deterministic, reproducible, and isolated
-- Use the `XSIGMATEST` macro exclusively (not `TEST` or `TEST_F`)
+- Use the `QUARISMATEST` macro exclusively (not `TEST` or `TEST_F`)
 
 ### Test File Naming and Structure
 
@@ -392,22 +392,22 @@ Tests must cover:
 ### Writing Tests
 
 ```cpp
-XSIGMATEST(my_class_test, handles_valid_input) {
+QUARISMATEST(my_class_test, handles_valid_input) {
   my_class obj;
   EXPECT_TRUE(obj.do_something());
 }
 
-XSIGMATEST(my_class_test, handles_invalid_input) {
+QUARISMATEST(my_class_test, handles_invalid_input) {
   my_class obj;
   EXPECT_FALSE(obj.do_something_with(-1));
 }
 
-XSIGMATEST(my_class_test, handles_null_pointer) {
+QUARISMATEST(my_class_test, handles_null_pointer) {
   my_class obj;
   EXPECT_FALSE(obj.process(nullptr));
 }
 
-XSIGMATEST(my_class_test, handles_empty_collection) {
+QUARISMATEST(my_class_test, handles_empty_collection) {
   my_class obj;
   std::vector<int> empty;
   EXPECT_TRUE(obj.process_collection(empty));
@@ -449,7 +449,7 @@ python setup.py config.build.ninja.clang.iwyu
  * @param b Second integer
  * @return Sum of a and b
  */
-XSIGMA_API int add(int a, int b);
+QUARISMA_API int add(int a, int b);
 
 /**
  * @brief Processes data from the input buffer.
@@ -539,7 +539,7 @@ class thread_safe_counter {
 
 ### Prefer STL Algorithms Over Raw Loops
 
-XSigma requires developers to use existing STL algorithms instead of reimplementing equivalent functionality with raw loops. The C++ Standard Library provides a comprehensive set of algorithms that are optimized, well-tested, and more readable than manual loops.
+Quarisma requires developers to use existing STL algorithms instead of reimplementing equivalent functionality with raw loops. The C++ Standard Library provides a comprehensive set of algorithms that are optimized, well-tested, and more readable than manual loops.
 
 ### Common STL Algorithms
 
@@ -669,28 +669,28 @@ Function declarations and their implementations must follow a consistent naming 
 
 #include <string>
 
-namespace xsigma {
+namespace quarisma {
 
-class XSIGMA_VISIBILITY my_class {
+class QUARISMA_VISIBILITY my_class {
  public:
-  XSIGMA_API my_class();
-  XSIGMA_API ~my_class();
+  QUARISMA_API my_class();
+  QUARISMA_API ~my_class();
 
-  XSIGMA_API void process_data(const std::string& input);
-  XSIGMA_API std::string get_result() const;
+  QUARISMA_API void process_data(const std::string& input);
+  QUARISMA_API std::string get_result() const;
 
  private:
   std::string result_;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma
 ```
 
 **File: `Core/data/my_class.cpp`** (✅ Correct)
 ```cpp
 #include "data/my_class.h"
 
-namespace xsigma {
+namespace quarisma {
 
 my_class::my_class() : result_("") {}
 
@@ -704,7 +704,7 @@ std::string my_class::get_result() const {
   return result_;
 }
 
-}  // namespace xsigma
+}  // namespace quarisma
 ```
 
 **File: `Core/data/my_class_impl.cpp`** (❌ Incorrect - Wrong naming)
@@ -718,13 +718,13 @@ For small, performance-critical functions, implementations can be inline in the 
 
 ```cpp
 // ✅ Correct - Inline implementation in header
-class XSIGMA_VISIBILITY my_class {
+class QUARISMA_VISIBILITY my_class {
  public:
   // Simple getter - can be inline
   int get_value() const { return value_; }
 
   // Complex method - should be in .cpp file
-  XSIGMA_API void process_complex_data(const std::vector<int>& data);
+  QUARISMA_API void process_complex_data(const std::vector<int>& data);
 
  private:
   int value_;
@@ -733,18 +733,18 @@ class XSIGMA_VISIBILITY my_class {
 
 ### Header and Implementation File Extensions
 
-XSigma uses **strict file extension conventions** to maintain consistency across the codebase:
+Quarisma uses **strict file extension conventions** to maintain consistency across the codebase:
 
 - **Header files**: `.h` (not `.hpp`, `.hxx`, or other variants)
 - **Implementation files**: `.cpp` (not `.cpp`, `.cc`, `.c++`, or other variants)
 
-This convention applies to all C++ source files in the XSigma project.
+This convention applies to all C++ source files in the Quarisma project.
 
 **Rationale:**
 - **Consistency**: Uniform extensions across the entire codebase make it easier to identify file types
 - **Build System Integration**: CMake and other build tools are configured to recognize `.h` and `.cpp` files
 - **Cross-Platform Compatibility**: `.cpp` is more portable than `.cpp` on some systems
-- **Clarity**: Distinguishes XSigma files from third-party code that may use different conventions
+- **Clarity**: Distinguishes Quarisma files from third-party code that may use different conventions
 
 **Examples:**
 
@@ -810,9 +810,9 @@ Core/processing/processor.h
 ```cpp
 // ✅ Acceptable - Helper class only used within primary class
 // File: Core/data/my_class.h
-namespace xsigma {
+namespace quarisma {
 
-class XSIGMA_VISIBILITY my_class {
+class QUARISMA_VISIBILITY my_class {
  public:
   // ... public interface ...
  private:
@@ -824,7 +824,7 @@ class XSIGMA_VISIBILITY my_class {
   internal_helper helper_;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma
 ```
 
 ### File Names Must Match Class Names
@@ -900,7 +900,7 @@ Core/
 
 ### Overview
 
-XSigma uses the builder pattern for constructing complex objects. Builder classes follow strict naming and implementation conventions to ensure consistency and enable fluent method chaining.
+Quarisma uses the builder pattern for constructing complex objects. Builder classes follow strict naming and implementation conventions to ensure consistency and enable fluent method chaining.
 
 ### Builder Class Naming
 
@@ -946,69 +946,69 @@ All setter methods **must** follow the `with_<field>` naming convention:
 |-------------|------|---------|
 | Method name | Start with `with_` | `with_name()`, `with_value()` |
 | Parameters | Exactly one parameter | `with_name(const std::string& name)` |
-| Return type | Start with `xsigma::` | `xsigma::my_class_builder&` |
+| Return type | Start with `quarisma::` | `quarisma::my_class_builder&` |
 | Documentation | Descriptive comment required | `/// Sets the name for the object` |
 
 ### Complete Builder Example
 
 ```cpp
 // ✅ Correct builder implementation
-namespace xsigma {
+namespace quarisma {
 
 /// Builder for constructing my_class instances with fluent interface.
-class XSIGMA_VISIBILITY my_class_builder {
+class QUARISMA_VISIBILITY my_class_builder {
  public:
   /// Creates a new builder for my_class.
-  XSIGMA_API my_class_builder();
+  QUARISMA_API my_class_builder();
 
   /// Sets the name for the object being constructed.
   /// @param name The name to set
   /// @return Reference to this builder for method chaining
-  XSIGMA_API xsigma::my_class_builder& with_name(const std::string& name);
+  QUARISMA_API quarisma::my_class_builder& with_name(const std::string& name);
 
   /// Sets the value for the object being constructed.
   /// @param value The value to set
   /// @return Reference to this builder for method chaining
-  XSIGMA_API xsigma::my_class_builder& with_value(int value);
+  QUARISMA_API quarisma::my_class_builder& with_value(int value);
 
   /// Sets the description for the object being constructed.
   /// @param description The description to set
   /// @return Reference to this builder for method chaining
-  XSIGMA_API xsigma::my_class_builder& with_description(
+  QUARISMA_API quarisma::my_class_builder& with_description(
       const std::string& description);
 
   /// Builds and returns the constructed my_class instance.
   /// @return Constructed my_class object
-  XSIGMA_API my_class build();
+  QUARISMA_API my_class build();
 
  private:
   ptr_mutable<my_class> object_;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma
 ```
 
 ### Builder Implementation Example
 
 ```cpp
 // ✅ Correct builder implementation in .cpp file
-namespace xsigma {
+namespace quarisma {
 
 my_class_builder::my_class_builder()
     : object_(std::make_unique<my_class>()) {}
 
-xsigma::my_class_builder& my_class_builder::with_name(
+quarisma::my_class_builder& my_class_builder::with_name(
     const std::string& name) {
   object_->set_name(name);
   return *this;
 }
 
-xsigma::my_class_builder& my_class_builder::with_value(int value) {
+quarisma::my_class_builder& my_class_builder::with_value(int value) {
   object_->set_value(value);
   return *this;
 }
 
-xsigma::my_class_builder& my_class_builder::with_description(
+quarisma::my_class_builder& my_class_builder::with_description(
     const std::string& description) {
   object_->set_description(description);
   return *this;
@@ -1018,14 +1018,14 @@ my_class my_class_builder::build() {
   return *object_;
 }
 
-}  // namespace xsigma
+}  // namespace quarisma
 ```
 
 ### Using the Builder
 
 ```cpp
 // ✅ Fluent builder usage
-xsigma::my_class obj = xsigma::my_class_builder()
+quarisma::my_class obj = quarisma::my_class_builder()
     .with_name("example")
     .with_value(42)
     .with_description("An example object")
@@ -1040,7 +1040,7 @@ xsigma::my_class obj = xsigma::my_class_builder()
 | **Member variable** | Preferred | Use `ptr_mutable<xxx>` to hold the object being constructed | `ptr_mutable<my_class> object_;` |
 | **Setter method name** | Must | Follows `with_<field>` naming | `with_name()` |
 | **Setter parameters** | Must | Exactly one parameter | `with_name(const std::string& name)` |
-| **Setter return type** | Must | Starts with `xsigma::` for fluent chaining | `xsigma::my_class_builder&` |
+| **Setter return type** | Must | Starts with `quarisma::` for fluent chaining | `quarisma::my_class_builder&` |
 | **Method documentation** | Must | Each method must have a descriptive comment | `/// Sets the name for the object` |
 | **Class documentation** | Must | Describes the role of the builder | `/// Builder for constructing my_class instances` |
 
@@ -1060,15 +1060,15 @@ The builder class should be declared as a `friend` to access the private constru
 
 ```cpp
 // ✅ Correct - Private constructor with builder as friend
-namespace xsigma {
+namespace quarisma {
 
-class XSIGMA_VISIBILITY my_class {
+class QUARISMA_VISIBILITY my_class {
  public:
   // No public constructors - use builder instead
 
   // Public methods
-  XSIGMA_API void process_data(const std::string& input);
-  XSIGMA_API std::string get_result() const;
+  QUARISMA_API void process_data(const std::string& input);
+  QUARISMA_API std::string get_result() const;
 
  private:
   // Private constructor - only accessible to builder
@@ -1081,41 +1081,41 @@ class XSIGMA_VISIBILITY my_class {
 };
 
 /// Builder for constructing my_class instances
-class XSIGMA_VISIBILITY my_class_builder {
+class QUARISMA_VISIBILITY my_class_builder {
  public:
-  XSIGMA_API my_class_builder();
-  XSIGMA_API xsigma::my_class_builder& with_name(const std::string& name);
-  XSIGMA_API my_class build();
+  QUARISMA_API my_class_builder();
+  QUARISMA_API quarisma::my_class_builder& with_name(const std::string& name);
+  QUARISMA_API my_class build();
 
  private:
   ptr_mutable<my_class> object_;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma
 ```
 
 **❌ Incorrect - Public constructor allows direct instantiation:**
 
 ```cpp
-namespace xsigma {
+namespace quarisma {
 
-class XSIGMA_VISIBILITY my_class {
+class QUARISMA_VISIBILITY my_class {
  public:
   // ❌ Wrong - Public constructor bypasses builder
-  XSIGMA_API my_class();
+  QUARISMA_API my_class();
 
-  XSIGMA_API void process_data(const std::string& input);
-  XSIGMA_API std::string get_result() const;
+  QUARISMA_API void process_data(const std::string& input);
+  QUARISMA_API std::string get_result() const;
 
  private:
   std::string result_;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma
 
 // Users can now bypass the builder:
 // ❌ This should not be allowed
-xsigma::my_class obj;  // Direct instantiation - bypasses builder logic
+quarisma::my_class obj;  // Direct instantiation - bypasses builder logic
 ```
 
 **Protected Constructor Exception:**
@@ -1124,7 +1124,7 @@ Use `protected` constructors when the class is meant to be subclassed:
 
 ```cpp
 // ✅ Correct - Protected constructor for base classes
-class XSIGMA_VISIBILITY base_class {
+class QUARISMA_VISIBILITY base_class {
  public:
   // No public constructors
 
@@ -1136,11 +1136,11 @@ class XSIGMA_VISIBILITY base_class {
 };
 ```
 
-### XSigma Macros Usage
+### Quarisma Macros Usage
 
-XSigma provides several important macros from `macros.h` that must be used throughout the codebase to improve code quality, enable compiler warnings, and support static analysis.
+Quarisma provides several important macros from `macros.h` that must be used throughout the codebase to improve code quality, enable compiler warnings, and support static analysis.
 
-#### XSIGMA_NODISCARD
+#### QUARISMA_NODISCARD
 
 **Purpose:** Marks functions whose return values should not be ignored. The compiler will warn if the return value is discarded.
 
@@ -1156,31 +1156,31 @@ XSigma provides several important macros from `macros.h` that must be used throu
 
 **Examples:**
 
-✅ **Correct - Using XSIGMA_NODISCARD:**
+✅ **Correct - Using QUARISMA_NODISCARD:**
 ```cpp
 // Error code should not be ignored
-XSIGMA_NODISCARD XSIGMA_API bool validate_input(const std::string& input);
+QUARISMA_NODISCARD QUARISMA_API bool validate_input(const std::string& input);
 
 // Resource handle should not be ignored
-XSIGMA_NODISCARD XSIGMA_API std::unique_ptr<resource> create_resource();
+QUARISMA_NODISCARD QUARISMA_API std::unique_ptr<resource> create_resource();
 
 // Important result should not be ignored
-XSIGMA_NODISCARD XSIGMA_API int calculate_value(int x, int y);
+QUARISMA_NODISCARD QUARISMA_API int calculate_value(int x, int y);
 
 // Optional result should not be ignored
-XSIGMA_NODISCARD XSIGMA_API std::optional<data> fetch_data(int id);
+QUARISMA_NODISCARD QUARISMA_API std::optional<data> fetch_data(int id);
 ```
 
-❌ **Incorrect - Missing XSIGMA_NODISCARD:**
+❌ **Incorrect - Missing QUARISMA_NODISCARD:**
 ```cpp
 // ❌ Error code can be accidentally ignored
-XSIGMA_API bool validate_input(const std::string& input);
+QUARISMA_API bool validate_input(const std::string& input);
 
 // ❌ Resource handle can be accidentally ignored
-XSIGMA_API std::unique_ptr<resource> create_resource();
+QUARISMA_API std::unique_ptr<resource> create_resource();
 
 // ❌ Important result can be accidentally ignored
-XSIGMA_API int calculate_value(int x, int y);
+QUARISMA_API int calculate_value(int x, int y);
 ```
 
 **Usage Example:**
@@ -1194,7 +1194,7 @@ if (validate_input(user_input)) {
 validate_input(user_input);  // Warning: nodiscard attribute ignored
 ```
 
-#### XSIGMA_UNUSED
+#### QUARISMA_UNUSED
 
 **Purpose:** Marks intentionally unused parameters to suppress compiler warnings. Used in interface implementations or callbacks where not all parameters are needed.
 
@@ -1210,12 +1210,12 @@ validate_input(user_input);  // Warning: nodiscard attribute ignored
 
 **Examples:**
 
-✅ **Correct - Using XSIGMA_UNUSED:**
+✅ **Correct - Using QUARISMA_UNUSED:**
 ```cpp
 // Interface implementation that doesn't use all parameters
 class my_handler : public event_handler {
  public:
-  void on_event(XSIGMA_UNUSED int event_id, const std::string& message) override {
+  void on_event(QUARISMA_UNUSED int event_id, const std::string& message) override {
     // Only uses message, not event_id
     log_message(message);
   }
@@ -1223,22 +1223,22 @@ class my_handler : public event_handler {
 
 // Callback that doesn't use all parameters
 void process_with_callback(
-    std::function<void(XSIGMA_UNUSED int status, const data& result)> callback) {
+    std::function<void(QUARISMA_UNUSED int status, const data& result)> callback) {
   data result = compute();
   callback(0, result);  // Caller might not use status
 }
 
 // Virtual function override
-class XSIGMA_VISIBILITY my_processor : public base_processor {
+class QUARISMA_VISIBILITY my_processor : public base_processor {
  public:
-  XSIGMA_API void process(XSIGMA_UNUSED const config& cfg) override {
+  QUARISMA_API void process(QUARISMA_UNUSED const config& cfg) override {
     // Uses default configuration, doesn't need cfg parameter
     process_with_defaults();
   }
 };
 ```
 
-❌ **Incorrect - Missing XSIGMA_UNUSED:**
+❌ **Incorrect - Missing QUARISMA_UNUSED:**
 ```cpp
 // ❌ Compiler warning: unused parameter 'event_id'
 class my_handler : public event_handler {
@@ -1258,7 +1258,7 @@ void process_with_callback(
 
 #### noexcept
 
-**Purpose:** Specifies that a function is guaranteed not to throw exceptions. Aligns with XSigma's no-exceptions policy and enables compiler optimizations.
+**Purpose:** Specifies that a function is guaranteed not to throw exceptions. Aligns with Quarisma's no-exceptions policy and enables compiler optimizations.
 
 **When Required:**
 - Destructors (always use `noexcept`)
@@ -1275,22 +1275,22 @@ void process_with_callback(
 
 ✅ **Correct - Using noexcept:**
 ```cpp
-class XSIGMA_VISIBILITY my_class {
+class QUARISMA_VISIBILITY my_class {
  public:
   // Destructor - always noexcept
-  XSIGMA_API ~my_class() noexcept;
+  QUARISMA_API ~my_class() noexcept;
 
   // Move constructor - should be noexcept
-  XSIGMA_API my_class(my_class&& other) noexcept;
+  QUARISMA_API my_class(my_class&& other) noexcept;
 
   // Move assignment - should be noexcept
-  XSIGMA_API my_class& operator=(my_class&& other) noexcept;
+  QUARISMA_API my_class& operator=(my_class&& other) noexcept;
 
   // Simple getter - can be noexcept
-  XSIGMA_API int get_value() const noexcept { return value_; }
+  QUARISMA_API int get_value() const noexcept { return value_; }
 
   // Function that handles errors without throwing
-  XSIGMA_API bool process_data(const std::string& data) noexcept;
+  QUARISMA_API bool process_data(const std::string& data) noexcept;
 
  private:
   int value_;
@@ -1299,16 +1299,16 @@ class XSIGMA_VISIBILITY my_class {
 
 ❌ **Incorrect - Missing noexcept:**
 ```cpp
-class XSIGMA_VISIBILITY my_class {
+class QUARISMA_VISIBILITY my_class {
  public:
   // ❌ Destructors should always be noexcept
-  XSIGMA_API ~my_class();
+  QUARISMA_API ~my_class();
 
   // ❌ Move constructor should be noexcept
-  XSIGMA_API my_class(my_class&& other);
+  QUARISMA_API my_class(my_class&& other);
 
   // ❌ Simple getter could be noexcept
-  XSIGMA_API int get_value() const { return value_; }
+  QUARISMA_API int get_value() const { return value_; }
 
  private:
   int value_;
@@ -1319,8 +1319,8 @@ class XSIGMA_VISIBILITY my_class {
 
 | Macro | Purpose | Required | Optional | Example |
 |-------|---------|----------|----------|---------|
-| **XSIGMA_NODISCARD** | Mark return values that shouldn't be ignored | Error codes, resource handles, important results | Void functions, obvious side effects | `XSIGMA_NODISCARD XSIGMA_API bool validate();` |
-| **XSIGMA_UNUSED** | Mark intentionally unused parameters | Interface implementations, callbacks | Actually used parameters | `void handler(XSIGMA_UNUSED int id, const data& d)` |
+| **QUARISMA_NODISCARD** | Mark return values that shouldn't be ignored | Error codes, resource handles, important results | Void functions, obvious side effects | `QUARISMA_NODISCARD QUARISMA_API bool validate();` |
+| **QUARISMA_UNUSED** | Mark intentionally unused parameters | Interface implementations, callbacks | Actually used parameters | `void handler(QUARISMA_UNUSED int id, const data& d)` |
 | **noexcept** | Guarantee no exceptions thrown | Destructors, move operations | Simple getters, error-handling functions | `~my_class() noexcept;` |
 
 #### Benefits of Using These Macros
@@ -1337,7 +1337,7 @@ class XSIGMA_VISIBILITY my_class {
 
 ### Overview
 
-**Clang-Tidy** is a static analysis tool that enforces code quality, consistency, and best practices across the XSigma codebase. All code must pass clang-tidy checks before being merged into the main branch.
+**Clang-Tidy** is a static analysis tool that enforces code quality, consistency, and best practices across the Quarisma codebase. All code must pass clang-tidy checks before being merged into the main branch.
 
 Clang-Tidy performs automated checks for:
 - **Modernization**: Using modern C++ features and idioms
@@ -1363,7 +1363,7 @@ clang-tidy -p . ../Core/path/to/file.cpp
 
 ### Enabled Clang-Tidy Checks
 
-XSigma's `.clang-tidy` configuration enables the following check categories:
+Quarisma's `.clang-tidy` configuration enables the following check categories:
 
 | Category | Purpose | Examples |
 |----------|---------|----------|
@@ -1493,7 +1493,7 @@ Clang-Tidy output typically looks like:
 
 ### Clang-Tidy Configuration File
 
-XSigma's clang-tidy configuration is defined in `.clang-tidy` at the project root. This file specifies:
+Quarisma's clang-tidy configuration is defined in `.clang-tidy` at the project root. This file specifies:
 - Which checks are enabled/disabled
 - Check-specific options and severity levels
 - Header filter patterns
@@ -1526,7 +1526,7 @@ int explicit_type_needed = calculate_value();
 
 ### Overview
 
-The `auto` keyword in C++ allows the compiler to deduce types automatically. XSigma uses `auto` strategically to improve code clarity and reduce verbosity while maintaining type safety.
+The `auto` keyword in C++ allows the compiler to deduce types automatically. Quarisma uses `auto` strategically to improve code clarity and reduce verbosity while maintaining type safety.
 
 ### When `auto` is Required
 
@@ -1712,7 +1712,7 @@ void process(auto&& value) {
 
 ### Clang-Tidy Auto Enforcement
 
-XSigma's clang-tidy configuration includes `modernize-use-auto` which enforces appropriate `auto` usage:
+Quarisma's clang-tidy configuration includes `modernize-use-auto` which enforces appropriate `auto` usage:
 
 ```cpp
 // ✅ Passes clang-tidy
@@ -1746,11 +1746,11 @@ std::unique_ptr<my_class> obj = std::make_unique<my_class>();
 - ❌ Violating include path rules (starting with `Core/`)
 - ❌ Mixing naming conventions (e.g., `camelCase` with `snake_case`)
 - ❌ Using `m_` prefix for member variables (e.g., `m_count`, `m_value`) instead of trailing underscore (`count_`, `value_`)
-- ❌ Omitting required macros (`XSIGMA_API`, `XSIGMA_VISIBILITY`)
+- ❌ Omitting required macros (`QUARISMA_API`, `QUARISMA_VISIBILITY`)
 - ❌ Submitting untested or low-coverage code (below 98%)
 - ❌ Using raw pointers for ownership
 - ❌ Exposing mutable shared state without synchronization
-- ❌ Using `TEST` or `TEST_F` instead of `XSIGMATEST` macro
+- ❌ Using `TEST` or `TEST_F` instead of `QUARISMATEST` macro
 - ❌ Using `auto` for primitive types where explicit types improve clarity (e.g., `auto count = 0;`)
 - ❌ Using `auto` in public API declarations where type clarity is important
 - ❌ Using `auto` when the deduced type is not obvious from context
@@ -1762,8 +1762,8 @@ std::unique_ptr<my_class> obj = std::make_unique<my_class>();
 - ❌ Using suffixes like `_impl`, `_implementation`, or `_helper` in file names when they should match the class name exactly
 - ❌ Public constructors in classes that have builder classes (should be `private` or `protected`)
 - ❌ Not declaring the builder class as a `friend` when using private constructors
-- ❌ Not using `XSIGMA_NODISCARD` on functions returning error codes, resource handles, or important results
-- ❌ Not using `XSIGMA_UNUSED` on intentionally unused parameters in interface implementations or callbacks
+- ❌ Not using `QUARISMA_NODISCARD` on functions returning error codes, resource handles, or important results
+- ❌ Not using `QUARISMA_UNUSED` on intentionally unused parameters in interface implementations or callbacks
 - ❌ Not using `noexcept` on destructors, move constructors, or move assignment operators
 - ❌ Ignoring compiler warnings about unused return values or unused parameters
 
@@ -1776,5 +1776,5 @@ std::unique_ptr<my_class> obj = std::make_unique<my_class>();
 ---
 
 **Last Updated:** 2025-11-03  
-**Maintained by:** XSigma Development Team
+**Maintained by:** Quarisma Development Team
 

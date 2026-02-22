@@ -612,7 +612,7 @@ void initTensorExprBindings(PyObject* module)
             py::return_value_policy::reference)
         .def_static(
             "compute_at",
-            [](const StmtPtr& s, const ForPtr& xsigma) { LoopNest::computeAt(s, xsigma); })
+            [](const StmtPtr& s, const ForPtr& quarisma) { LoopNest::computeAt(s, quarisma); })
         .def(
             "compute_inline",
             [](LoopNest& self, const StmtPtr& s) { self.computeInline(s); },
@@ -669,7 +669,7 @@ void initTensorExprBindings(PyObject* module)
            const std::vector<ExprHandle>& outputShape,
            Dtype                          outputType)
         {
-            auto                  op = xsigma::Symbol::fromQualString(op_str);
+            auto                  op = quarisma::Symbol::fromQualString(op_str);
             std::vector<ArgValue> argInputs;
             for (auto inp : inputs)
             {
@@ -678,9 +678,9 @@ void initTensorExprBindings(PyObject* module)
             if (NNCLoweringFunction lowering = getStandardLoweringFor(op.toQualString()))
             {
                 std::vector<ExprHandle> outputStrides =
-                    xsigma::fmap<ExprHandle>(make_channels_last_strides(outputShape));
+                    quarisma::fmap<ExprHandle>(make_channels_last_strides(outputShape));
                 return lowering(
-                    argInputs, outputShape, outputStrides, outputType.scalar_type(), xsigma::kCPU);
+                    argInputs, outputShape, outputStrides, outputType.scalar_type(), quarisma::kCPU);
             }
             std::string msg =
                 std::string("Unhandled node kind (in te.lower): ") + op.toQualString();
@@ -700,7 +700,7 @@ void initTensorExprBindings(PyObject* module)
         .def("as_buflist", [](const ArgValue& self) { return std::get<BufList>(self); })
         .def("as_intlist", [](const ArgValue& self) { return std::get<IntList>(self); });
 
-    py::class_<xsigma::ScalarType> give_me_a_name(te, "ScalarType");
+    py::class_<quarisma::ScalarType> give_me_a_name(te, "ScalarType");
 
     using TSGraph = std::shared_ptr<Graph>;
     py::class_<TensorExprKernel>(te, "TensorExprKernel")
@@ -712,11 +712,11 @@ void initTensorExprBindings(PyObject* module)
                    std::vector<int64_t> symbolic_shape_inputs,
                    bool                 pre_alloc = false)
                 {
-                    std::unordered_map<xsigma::Symbol, NNCLoweringFunction> custom_lowerings;
+                    std::unordered_map<quarisma::Symbol, NNCLoweringFunction> custom_lowerings;
                     custom_lowerings.reserve(custom_lowerings_str.size());
                     for (auto& kv : custom_lowerings_str)
                     {
-                        custom_lowerings[xsigma::Symbol::fromQualString(kv.first)] = kv.second;
+                        custom_lowerings[quarisma::Symbol::fromQualString(kv.first)] = kv.second;
                     }
                     return std::make_unique<TensorExprKernel>(
                         g,
@@ -797,7 +797,7 @@ void initTensorExprBindings(PyObject* module)
                     }
                     else
                     {
-                        value_ptrs.emplace_back(value.cast<xsigma::Tensor>().data_ptr());
+                        value_ptrs.emplace_back(value.cast<quarisma::Tensor>().data_ptr());
                     }
                 }
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -831,7 +831,7 @@ void initTensorExprBindings(PyObject* module)
                     }
                     else
                     {
-                        value_ptrs.emplace_back(value.cast<xsigma::Tensor>().data_ptr());
+                        value_ptrs.emplace_back(value.cast<quarisma::Tensor>().data_ptr());
                     }
                 }
 #else

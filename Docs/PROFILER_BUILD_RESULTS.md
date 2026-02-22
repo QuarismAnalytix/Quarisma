@@ -1,4 +1,4 @@
-# XSigma Profiler - Build Results & Final Status
+# Quarisma Profiler - Build Results & Final Status
 
 ## Build Status: ✅ SUCCESS
 
@@ -27,8 +27,8 @@ The profiler metadata collection has been successfully **uncommented, fixed, and
 **Changes:**
 ```cpp
 // Added namespace qualification
-addMetadata("Module Hierarchy", xsigma::profiler::impl::stacksToStr(module_hierarchy.vec(), "."));
-addMetadata("Call stack", xsigma::profiler::impl::stacksToStr(kineto_event.stack().vec(), ";"));
+addMetadata("Module Hierarchy", quarisma::profiler::impl::stacksToStr(module_hierarchy.vec(), "."));
+addMetadata("Call stack", quarisma::profiler::impl::stacksToStr(kineto_event.stack().vec(), ";"));
 ```
 
 #### 2. AddGenericMetadata::operator() (Lines 267-364)
@@ -46,9 +46,9 @@ addMetadata("Call stack", xsigma::profiler::impl::stacksToStr(kineto_event.stack
 **Changes:**
 ```cpp
 // All helper function calls now properly namespace-qualified
-addMetadata("Input Dims", xsigma::profiler::impl::shapesToStr(arg_data.shapesForKinetoEvent));
-addMetadata("Input type", xsigma::profiler::impl::strListToStr(arg_data.dtypes));
-addMetadata("Concrete Inputs", xsigma::profiler::impl::ivalueListToStr(arg_data.concreteInputs));
+addMetadata("Input Dims", quarisma::profiler::impl::shapesToStr(arg_data.shapesForKinetoEvent));
+addMetadata("Input type", quarisma::profiler::impl::strListToStr(arg_data.dtypes));
+addMetadata("Concrete Inputs", quarisma::profiler::impl::ivalueListToStr(arg_data.concreteInputs));
 
 // Fixed clang-tidy warnings
 if (config_ != nullptr && !config_->experimental_config.performance_events.empty())
@@ -60,7 +60,7 @@ if (config_ != nullptr && !config_->experimental_config.performance_events.empty
 
 **⏸️ TEMPORARILY DISABLED (for future implementation):**
 - Keyword arguments metadata (lines 289-338)
-  - **Reason:** The `xsigma::IValue` class is currently a stub without the required methods (`isInt()`, `isDouble()`, `isString()`, `isBool()`, `isList()`, `toListRef()`)
+  - **Reason:** The `quarisma::IValue` class is currently a stub without the required methods (`isInt()`, `isDouble()`, `isString()`, `isBool()`, `isList()`, `toListRef()`)
   - **Status:** Code preserved in comments with clear documentation for future activation
   - **Action Required:** Implement full `IValue` class or integrate with existing IValue implementation
 
@@ -71,22 +71,22 @@ if (config_ != nullptr && !config_->experimental_config.performance_events.empty
 ### Issue #1: Namespace Qualification
 **Error:**
 ```
-use of undeclared identifier 'stacksToStr'; did you mean '::xsigma::profiler::impl::stacksToStr'?
+use of undeclared identifier 'stacksToStr'; did you mean '::quarisma::profiler::impl::stacksToStr'?
 ```
 
 **Fix:**
 Added proper namespace qualification to all helper function calls:
-- `stacksToStr` → `xsigma::profiler::impl::stacksToStr`
-- `variantShapesToStr` → `xsigma::profiler::impl::variantShapesToStr`
-- `shapesToStr` → `xsigma::profiler::impl::shapesToStr`
-- `strListToStr` → `xsigma::profiler::impl::strListToStr`
-- `ivalueListToStr` → `xsigma::profiler::impl::ivalueListToStr`
+- `stacksToStr` → `quarisma::profiler::impl::stacksToStr`
+- `variantShapesToStr` → `quarisma::profiler::impl::variantShapesToStr`
+- `shapesToStr` → `quarisma::profiler::impl::shapesToStr`
+- `strListToStr` → `quarisma::profiler::impl::strListToStr`
+- `ivalueListToStr` → `quarisma::profiler::impl::ivalueListToStr`
 
 ### Issue #2: IValue API Unavailable
 **Error:**
 ```
-no member named 'isInt' in 'xsigma::IValue'
-no member named 'isDouble' in 'xsigma::IValue'
+no member named 'isInt' in 'quarisma::IValue'
+no member named 'isDouble' in 'quarisma::IValue'
 ...
 ```
 
@@ -96,7 +96,7 @@ Temporarily disabled keyword arguments metadata collection (lines 289-338) until
 ### Issue #3: Clang-Tidy Warnings
 **Warning 1:**
 ```
-implicit conversion 'const xsigma::profiler::impl::ProfilerConfig *' -> 'bool'
+implicit conversion 'const quarisma::profiler::impl::ProfilerConfig *' -> 'bool'
 ```
 
 **Fix:**
@@ -212,7 +212,7 @@ const auto& event_names = config_->experimental_config.performance_events;
 ```cpp
 #include "profiler/kineto/profiler_kineto.h"
 
-using namespace xsigma::profiler::impl;
+using namespace quarisma::profiler::impl;
 
 // Configure profiler
 ProfilerConfig config(ProfilerState::KINETO);
@@ -240,7 +240,7 @@ result->save("trace.json");
 
 ```cpp
 // Enable globally before profiling
-xsigma::profiler::impl::set_record_concrete_inputs_enabled(true);
+quarisma::profiler::impl::set_record_concrete_inputs_enabled(true);
 
 // Now profiler will capture actual tensor values and strides
 // WARNING: Significant performance impact and large trace files

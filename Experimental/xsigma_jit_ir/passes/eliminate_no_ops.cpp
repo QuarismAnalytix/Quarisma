@@ -52,7 +52,7 @@ bool containsInvalidOp(std::shared_ptr<Graph>& graph)
 
 }  // namespace
 
-bool EliminateNoOps(std::shared_ptr<Graph>& graph, std::unordered_set<xsigma::Symbol> custom_ops)
+bool EliminateNoOps(std::shared_ptr<Graph>& graph, std::unordered_set<quarisma::Symbol> custom_ops)
 {
     GRAPH_DUMP("Before EliminateNoOps: ", graph);
     if (containsInvalidOp(graph))
@@ -60,7 +60,7 @@ bool EliminateNoOps(std::shared_ptr<Graph>& graph, std::unordered_set<xsigma::Sy
         return false;
     }
     // Ops here should be of the form x = f(x, ...)
-    std::unordered_set<xsigma::Symbol> no_ops{aten::detach};
+    std::unordered_set<quarisma::Symbol> no_ops{aten::detach};
     no_ops.insert(custom_ops.begin(), custom_ops.end());
 
     bool changed = false;

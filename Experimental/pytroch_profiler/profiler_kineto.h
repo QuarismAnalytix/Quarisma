@@ -8,7 +8,7 @@
 #include "stubs/base.h"
 #include "util.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 namespace profiler::impl
@@ -22,13 +22,13 @@ struct ActivityTraceWrapper;
 
 namespace autograd::profiler
 {
-using experimental_event_t = std::shared_ptr<xsigma::profiler::impl::Result>;
+using experimental_event_t = std::shared_ptr<quarisma::profiler::impl::Result>;
 using extra_meta_t         = std::unordered_map<std::string, std::string>;
 
-struct XSIGMA_API KinetoEvent
+struct QUARISMA_API KinetoEvent
 {
     KinetoEvent(
-        const std::shared_ptr<const xsigma::profiler::impl::Result>& /*result*/,
+        const std::shared_ptr<const quarisma::profiler::impl::Result>& /*result*/,
         const bool verbose);
 
     uint64_t                                              startThreadId() const;
@@ -36,25 +36,25 @@ struct XSIGMA_API KinetoEvent
     uint8_t                                               activityType() const;
     uint64_t                                              fwdThreadId() const;
     bool                                                  hasShapes() const;
-    const xsigma::array_ref<std::vector<int64_t>>         shapes() const;
+    const quarisma::array_ref<std::vector<int64_t>>         shapes() const;
     bool                                                  hasTypes() const;
-    const xsigma::array_ref<std::string>                  dtypes() const;
+    const quarisma::array_ref<std::string>                  dtypes() const;
     bool                                                  hasConcreteInputs() const;
-    const xsigma::array_ref<xsigma::IValue>               concreteInputs() const;
+    const quarisma::array_ref<quarisma::IValue>               concreteInputs() const;
     bool                                                  hasKwinputs() const;
     bool                                                  isHiddenEvent() const;
-    const std::unordered_map<std::string, xsigma::IValue> kwinputs() const;
+    const std::unordered_map<std::string, quarisma::IValue> kwinputs() const;
     uint64_t                                              flops() const;
     int64_t                                               sequenceNr() const;
     bool                                                  hasStack() const;
-    const xsigma::array_ref<std::string>                  stack() const;
+    const quarisma::array_ref<std::string>                  stack() const;
     uint8_t                                               scope() const;
     bool                                                  hasModuleHierarchy() const;
-    const xsigma::array_ref<std::string>                  moduleHierarchy() const;
+    const quarisma::array_ref<std::string>                  moduleHierarchy() const;
     int64_t                                               debugHandle() const;
     std::string                                           name() const;
     std::string                                           overload_name() const;
-    xsigma::device_enum                                   deviceType() const;
+    quarisma::device_enum                                   deviceType() const;
     int                                                   deviceIndex() const;
     int64_t                                               nBytes() const;
     uint64_t                                              startNs() const;
@@ -68,34 +68,34 @@ struct XSIGMA_API KinetoEvent
     bool                                                  isPythonFunction() const;
     int64_t                                               cudaElapsedUs() const;
     int64_t                                               privateuse1ElapsedUs() const;
-    void         getPerfEventCounters(xsigma::profiler::perf_counters_t& /*in*/) const;
+    void         getPerfEventCounters(quarisma::profiler::perf_counters_t& /*in*/) const;
     extra_meta_t extraMeta() const;
     std::string  metadataJson() const;
 
 private:
-    xsigma::profiler::impl::ProfilerVoidEventStub fallbackStart() const;
-    xsigma::profiler::impl::ProfilerVoidEventStub fallbackEnd() const;
+    quarisma::profiler::impl::ProfilerVoidEventStub fallbackStart() const;
+    quarisma::profiler::impl::ProfilerVoidEventStub fallbackEnd() const;
 
-    std::shared_ptr<const xsigma::profiler::impl::Result> result_;
+    std::shared_ptr<const quarisma::profiler::impl::Result> result_;
     std::vector<std::string>                              python_stack_;
 
     // Copy fields from result so we can return ArrayRefs.
     std::vector<std::vector<int64_t>>               shapes_;
     std::vector<std::string>                        dtypes_;
-    std::vector<xsigma::IValue>                     concrete_inputs_;
-    std::unordered_map<std::string, xsigma::IValue> kwinputs_;
+    std::vector<quarisma::IValue>                     concrete_inputs_;
+    std::unordered_map<std::string, quarisma::IValue> kwinputs_;
 };
 
 // Consolidating events returned directly from Kineto
 // with events manually created by us (e.g. start/stop marks,
 // memory allocation events)
-struct XSIGMA_API ProfilerResult
+struct QUARISMA_API ProfilerResult
 {
     ProfilerResult();
     ProfilerResult(
         uint64_t                                                                start_time,
         std::vector<KinetoEvent>                                                events,
-        std::unique_ptr<xsigma::profiler::impl::kineto::ActivityTraceWrapper>&& trace,
+        std::unique_ptr<quarisma::profiler::impl::kineto::ActivityTraceWrapper>&& trace,
         std::vector<experimental_event_t>&&                                     event_tree);
     ~ProfilerResult();
 
@@ -110,7 +110,7 @@ struct XSIGMA_API ProfilerResult
 private:
     uint64_t                                                              trace_start_ns_ = 0;
     std::vector<KinetoEvent>                                              events_;
-    std::unique_ptr<xsigma::profiler::impl::kineto::ActivityTraceWrapper> trace_;
+    std::unique_ptr<quarisma::profiler::impl::kineto::ActivityTraceWrapper> trace_;
     std::vector<experimental_event_t>                                     event_tree_;
 };
 
@@ -135,18 +135,18 @@ private:
  * @param event_name: name of the event, e.g. op name
  * @param backend_name: name of the backend where the event took place.
  */
-XSIGMA_API void reportBackendEventToActiveKinetoProfiler(
+QUARISMA_API void reportBackendEventToActiveKinetoProfiler(
     const int64_t             start_time_us,
     const int64_t             end_time_us,
     const int64_t             debug_handle,
-    const xsigma::RecordScope scope,
+    const quarisma::RecordScope scope,
     const std::string&        event_name,
     const std::string&        backend_name);
 
-XSIGMA_API void enableProfiler(
-    const xsigma::profiler::impl::ProfilerConfig&         config,
-    const std::set<xsigma::profiler::impl::ActivityType>& activities,
-    const std::unordered_set<xsigma::RecordScope>&        scopes = {});
+QUARISMA_API void enableProfiler(
+    const quarisma::profiler::impl::ProfilerConfig&         config,
+    const std::set<quarisma::profiler::impl::ActivityType>& activities,
+    const std::unordered_set<quarisma::RecordScope>&        scopes = {});
 
 /*
  * Same as enableProfiler but with callback to do post-processing of
@@ -160,7 +160,7 @@ XSIGMA_API void enableProfiler(
  * LITE_INTERPRETER. In this case lite interpreter runtime, records debug
  * handles in RecordFunction, along with other information. Debug handles are
  * eventually passed down to KinetoEvent and recorded as part of the event.
- * KinetoEdgeCPUProfiler, in xsigma/csrc/jit/mobile/profiler_edge.cpp, enables
+ * KinetoEdgeCPUProfiler, in quarisma/csrc/jit/mobile/profiler_edge.cpp, enables
  * profiler using post-processing callback, via
  * enableProfilerWithEventPostProcess, that takes these debug handles and
  * generates stack trace and module hierarchy information, once profiling is
@@ -170,24 +170,24 @@ using post_process_t = std::function<void(
     /*debug_handle */ int64_t,
     /*jit_stack    */ std::vector<std::string>&,
     /*jit_modules  */ std::vector<std::string>&)>;
-XSIGMA_API void enableProfilerWithEventPostProcess(
-    const xsigma::profiler::impl::ProfilerConfig&         config,
-    const std::set<xsigma::profiler::impl::ActivityType>& activities,
+QUARISMA_API void enableProfilerWithEventPostProcess(
+    const quarisma::profiler::impl::ProfilerConfig&         config,
+    const std::set<quarisma::profiler::impl::ActivityType>& activities,
     post_process_t&&                                      cb,
-    const std::unordered_set<xsigma::RecordScope>&        scopes = {});
+    const std::unordered_set<quarisma::RecordScope>&        scopes = {});
 
-XSIGMA_API std::unique_ptr<ProfilerResult> disableProfiler();
+QUARISMA_API std::unique_ptr<ProfilerResult> disableProfiler();
 
-XSIGMA_API void prepareProfiler(
-    const xsigma::profiler::impl::ProfilerConfig&         config,
-    const std::set<xsigma::profiler::impl::ActivityType>& activities);
+QUARISMA_API void prepareProfiler(
+    const quarisma::profiler::impl::ProfilerConfig&         config,
+    const std::set<quarisma::profiler::impl::ActivityType>& activities);
 
-XSIGMA_API void toggleCollectionDynamic(
-    const bool enable, const std::set<xsigma::profiler::impl::ActivityType>& activities);
+QUARISMA_API void toggleCollectionDynamic(
+    const bool enable, const std::set<quarisma::profiler::impl::ActivityType>& activities);
 
-XSIGMA_API void startMemoryProfile();
-XSIGMA_API void stopMemoryProfile();
-XSIGMA_API void exportMemoryProfile(const std::string& path);
+QUARISMA_API void startMemoryProfile();
+QUARISMA_API void stopMemoryProfile();
+QUARISMA_API void exportMemoryProfile(const std::string& path);
 
 /**
  * When a C++ thread really has no control over how the profiler was enabled,
@@ -196,7 +196,7 @@ XSIGMA_API void exportMemoryProfile(const std::string& path);
  * Without calling these functions, the symptom may be "not seeing GPU events
  * from some child C++ threads". This is an example on how to use them,
  *
- *    using namespace xsigma::autograd::profiler;
+ *    using namespace quarisma::autograd::profiler;
  *    bool enabled = isProfilerEnabledInMainThread();
  *    if (enabled != saved_enabled_state) {
  *      if (enabled) {
@@ -207,9 +207,9 @@ XSIGMA_API void exportMemoryProfile(const std::string& path);
  *      saved_enabled_state = enabled;
  *    }
  */
-XSIGMA_API bool isProfilerEnabledInMainThread();
-XSIGMA_API void enableProfilerInChildThread();
-XSIGMA_API void disableProfilerInChildThread();
+QUARISMA_API bool isProfilerEnabledInMainThread();
+QUARISMA_API void enableProfilerInChildThread();
+QUARISMA_API void disableProfilerInChildThread();
 
 }  // namespace autograd::profiler
 
@@ -217,8 +217,8 @@ namespace profiler::impl
 {
 
 // Experimental.
-XSIGMA_API void _reportVulkanEventToProfiler(vulkan_id_t id);
+QUARISMA_API void _reportVulkanEventToProfiler(vulkan_id_t id);
 
 }  // namespace profiler::impl
 
-}  // namespace xsigma
+}  // namespace quarisma

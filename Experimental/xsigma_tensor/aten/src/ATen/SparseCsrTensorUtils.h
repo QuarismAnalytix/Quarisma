@@ -1,16 +1,16 @@
 #pragma once
 
-#include <XSigma/SparseCsrTensorImpl.h>
-#include <XSigma/SparseTensorImpl.h>
-#include <XSigma/core/Tensor.h>
+#include <Quarisma/SparseCsrTensorImpl.h>
+#include <Quarisma/SparseTensorImpl.h>
+#include <Quarisma/core/Tensor.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
-#include <XSigma/NativeFunctions.h>
-#include <XSigma/Operators.h>
+#include <Quarisma/Functions.h>
+#include <Quarisma/NativeFunctions.h>
+#include <Quarisma/Operators.h>
 #else
-#include <XSigma/ops/_sparse_compressed_tensor_unsafe.h>
-#include <XSigma/ops/resize_as_sparse_native.h>
+#include <Quarisma/ops/_sparse_compressed_tensor_unsafe.h>
+#include <Quarisma/ops/resize_as_sparse_native.h>
 #endif
 
 #define AT_DISPATCH_ALL_SPARSE_COMPRESSED_LAYOUTS(LAYOUT, NAME, ...)                            \

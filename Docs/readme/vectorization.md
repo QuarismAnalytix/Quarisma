@@ -1,6 +1,6 @@
 # Vectorization Support
 
-XSigma supports multiple CPU SIMD (Single Instruction, Multiple Data) instruction sets for high-performance computing. Vectorization allows the CPU to process multiple data elements simultaneously, significantly improving performance for data-parallel operations.
+Quarisma supports multiple CPU SIMD (Single Instruction, Multiple Data) instruction sets for high-performance computing. Vectorization allows the CPU to process multiple data elements simultaneously, significantly improving performance for data-parallel operations.
 
 ## Table of Contents
 
@@ -13,7 +13,7 @@ XSigma supports multiple CPU SIMD (Single Instruction, Multiple Data) instructio
 
 ## Supported Vectorization Types
 
-XSigma supports the following CPU SIMD instruction sets:
+Quarisma supports the following CPU SIMD instruction sets:
 
 | Type | Description | GCC/Clang Flags | MSVC Flags | CPU Requirements |
 |------|-------------|-----------------|------------|------------------|
@@ -29,16 +29,16 @@ XSigma supports the following CPU SIMD instruction sets:
 
 ```bash
 # AVX2 vectorization (default - good balance of performance and compatibility)
-cmake -B build -S . -DXSIGMA_VECTORIZATION_TYPE=avx2
+cmake -B build -S . -DQUARISMA_VECTORIZATION_TYPE=avx2
 
 # SSE for older CPUs
-cmake -B build -S . -DXSIGMA_VECTORIZATION_TYPE=sse
+cmake -B build -S . -DQUARISMA_VECTORIZATION_TYPE=sse
 
 # AVX-512 for latest CPUs
-cmake -B build -S . -DXSIGMA_VECTORIZATION_TYPE=avx512
+cmake -B build -S . -DQUARISMA_VECTORIZATION_TYPE=avx512
 
 # Disable vectorization
-cmake -B build -S . -DXSIGMA_VECTORIZATION_TYPE=no
+cmake -B build -S . -DQUARISMA_VECTORIZATION_TYPE=no
 ```
 
 ### Combined with Other Options
@@ -47,8 +47,8 @@ cmake -B build -S . -DXSIGMA_VECTORIZATION_TYPE=no
 # High-performance build with AVX2 and LTO
 cmake -B build -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_LTO=ON \
-    -DXSIGMA_VECTORIZATION_TYPE=avx2
+    -DQUARISMA_ENABLE_LTO=ON \
+    -DQUARISMA_VECTORIZATION_TYPE=avx2
 
 cmake --build build --config Release
 ```
@@ -69,25 +69,25 @@ cmake --build build --config Release
 
 **Maximum Compatibility:**
 ```bash
-cmake -B build -S . -DXSIGMA_VECTORIZATION_TYPE=sse
+cmake -B build -S . -DQUARISMA_VECTORIZATION_TYPE=sse
 ```
 Use SSE for software that needs to run on a wide range of systems.
 
 **Balanced Performance (Recommended):**
 ```bash
-cmake -B build -S . -DXSIGMA_VECTORIZATION_TYPE=avx2
+cmake -B build -S . -DQUARISMA_VECTORIZATION_TYPE=avx2
 ```
 AVX2 is the default and provides excellent performance on most modern CPUs (2013+).
 
 **Maximum Performance:**
 ```bash
-cmake -B build -S . -DXSIGMA_VECTORIZATION_TYPE=avx512
+cmake -B build -S . -DQUARISMA_VECTORIZATION_TYPE=avx512
 ```
 Use AVX-512 for high-end servers and workstations with latest CPUs.
 
 **Cross-Platform Distribution:**
 ```bash
-cmake -B build -S . -DXSIGMA_VECTORIZATION_TYPE=no
+cmake -B build -S . -DQUARISMA_VECTORIZATION_TYPE=no
 ```
 Disable vectorization for maximum portability across different CPU architectures.
 
@@ -99,7 +99,7 @@ Disable vectorization for maximum portability across different CPU architectures
 # AVX2 build on Windows
 cmake -B build -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_VECTORIZATION_TYPE=avx2
+    -DQUARISMA_VECTORIZATION_TYPE=avx2
 
 cmake --build build --config Release
 ```
@@ -115,7 +115,7 @@ cmake --build build --config Release
 # AVX2 build on Linux
 cmake -B build -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_VECTORIZATION_TYPE=avx2
+    -DQUARISMA_VECTORIZATION_TYPE=avx2
 
 cmake --build build -j$(nproc)
 ```
@@ -131,7 +131,7 @@ cmake --build build -j$(nproc)
 # Optimized for Apple Silicon or Intel
 cmake -B build -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_VECTORIZATION_TYPE=avx2
+    -DQUARISMA_VECTORIZATION_TYPE=avx2
 
 cmake --build build -j$(sysctl -n hw.ncpu)
 ```
@@ -139,7 +139,7 @@ cmake --build build -j$(sysctl -n hw.ncpu)
 **Notes:**
 - Apple Silicon (M1/M2) uses ARM NEON instead of x86 SIMD
 - Intel Macs support AVX2 (2013+ models)
-- XSigma automatically detects the architecture
+- Quarisma automatically detects the architecture
 
 ## Troubleshooting
 
@@ -150,11 +150,11 @@ If vectorization fails to compile:
 1. **Check CPU compatibility** - ensure your CPU supports the selected instruction set
 2. **Use lower vectorization level**:
    ```bash
-   cmake -B build -S . -DXSIGMA_VECTORIZATION_TYPE=avx  # instead of avx2
+   cmake -B build -S . -DQUARISMA_VECTORIZATION_TYPE=avx  # instead of avx2
    ```
 3. **Disable vectorization**:
    ```bash
-   cmake -B build -S . -DXSIGMA_VECTORIZATION_TYPE=no
+   cmake -B build -S . -DQUARISMA_VECTORIZATION_TYPE=no
    ```
 
 ### Runtime Errors (Illegal Instruction)
@@ -164,7 +164,7 @@ If the program crashes with "Illegal instruction" error:
 1. **The binary was built with instructions not supported by the CPU**
 2. **Solution**: Rebuild with a lower vectorization level:
    ```bash
-   cmake -B build -S . -DXSIGMA_VECTORIZATION_TYPE=sse
+   cmake -B build -S . -DQUARISMA_VECTORIZATION_TYPE=sse
    ```
 
 ### Performance Not Improving
@@ -184,7 +184,7 @@ If vectorization doesn't improve performance:
 # Development build without vectorization (faster compilation)
 cmake -B build_dev -S . \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DXSIGMA_VECTORIZATION_TYPE=no
+    -DQUARISMA_VECTORIZATION_TYPE=no
 ```
 
 ### Production Builds
@@ -193,8 +193,8 @@ cmake -B build_dev -S . \
 # Production build with optimal vectorization
 cmake -B build_prod -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_LTO=ON \
-    -DXSIGMA_VECTORIZATION_TYPE=avx2
+    -DQUARISMA_ENABLE_LTO=ON \
+    -DQUARISMA_VECTORIZATION_TYPE=avx2
 ```
 
 ### Testing Multiple Configurations
@@ -203,19 +203,19 @@ Test your application with different vectorization levels to ensure correctness:
 
 ```bash
 # Test with no vectorization
-cmake -B build_no_vec -S . -DXSIGMA_VECTORIZATION_TYPE=no
+cmake -B build_no_vec -S . -DQUARISMA_VECTORIZATION_TYPE=no
 cmake --build build_no_vec
 ./build_no_vec/tests
 
 # Test with AVX2
-cmake -B build_avx2 -S . -DXSIGMA_VECTORIZATION_TYPE=avx2
+cmake -B build_avx2 -S . -DQUARISMA_VECTORIZATION_TYPE=avx2
 cmake --build build_avx2
 ./build_avx2/tests
 ```
 
 ### CPU Feature Detection
 
-XSigma includes cpuinfo for runtime CPU feature detection. Use it to verify available features:
+Quarisma includes cpuinfo for runtime CPU feature detection. Use it to verify available features:
 
 ```cpp
 #include <cpuinfo.h>

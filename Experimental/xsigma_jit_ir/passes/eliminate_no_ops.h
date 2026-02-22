@@ -10,6 +10,6 @@ namespace torch::jit
 // This function also takes a set of custom ops to eliminate. All ops in this
 // set must take their output as their first input, i.e. x = f(x, ...)
 TORCH_API bool EliminateNoOps(
-    std::shared_ptr<Graph>& graph, std::unordered_set<xsigma::Symbol> custom_ops = {});
+    std::shared_ptr<Graph>& graph, std::unordered_set<quarisma::Symbol> custom_ops = {});
 
 }  // namespace torch::jit

@@ -1,12 +1,12 @@
-#include <XSigma/core/interned_strings.h>
+#include <Quarisma/core/interned_strings.h>
 #include <torch/csrc/jit/api/function_impl.h>
 #include <torch/csrc/jit/ir/alias_analysis.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/inliner.h>
 #include <torch/csrc/jit/passes/utils/subgraph_utils.h>
 #include <torch/csrc/jit/runtime/operator.h>
-#include <xsigma/util/flat_hash_map.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/flat_hash_map.h>
+#include <quarisma/util/irange.h>
 
 #include <fstream>
 #include <iostream>
@@ -17,11 +17,11 @@ namespace torch::jit
 namespace
 {
 
-xsigma::MaybeOwned<TypePtr> toSingleType(const AliasTypeSet& mut_types)
+quarisma::MaybeOwned<TypePtr> toSingleType(const AliasTypeSet& mut_types)
 {
     return mut_types.size() == 1
-               ? xsigma::MaybeOwned<TypePtr>::borrowed(mut_types[0])
-               : xsigma::MaybeOwned<TypePtr>::owned(xsigma::UnionType::create(mut_types));
+               ? quarisma::MaybeOwned<TypePtr>::borrowed(mut_types[0])
+               : quarisma::MaybeOwned<TypePtr>::owned(quarisma::UnionType::create(mut_types));
 }
 
 // This class determines whether a type is mutable, and, if so, it maps
@@ -31,7 +31,7 @@ xsigma::MaybeOwned<TypePtr> toSingleType(const AliasTypeSet& mut_types)
 class MutableTypePtrHelper
 {
 public:
-    explicit MutableTypePtrHelper(xsigma::flat_hash_map<TypePtr, AliasTypeSet>* mutable_type_cache)
+    explicit MutableTypePtrHelper(quarisma::flat_hash_map<TypePtr, AliasTypeSet>* mutable_type_cache)
         : mutable_type_cache_(mutable_type_cache)
     {
     }
@@ -74,7 +74,7 @@ public:
 
     const AliasTypeSet* mapTypeToBorrowedAliasTypeSet(const TypePtr& type)
     {
-        XSIGMA_CHECK_DEBUG(mutable_type_cache_ != nullptr);
+        QUARISMA_CHECK_DEBUG(mutable_type_cache_ != nullptr);
         auto maybe_type_mapping = mutable_type_cache_->find(type);
         if (maybe_type_mapping != mutable_type_cache_->end())
         {
@@ -174,11 +174,11 @@ private:
             return std::nullopt;
         }
     }
-    xsigma::flat_hash_map<TypePtr, AliasTypeSet>* mutable_type_cache_;
+    quarisma::flat_hash_map<TypePtr, AliasTypeSet>* mutable_type_cache_;
 };
 
 bool isMutableTypeImpl(
-    const TypePtr& type, xsigma::flat_hash_map<TypePtr, AliasTypeSet>* mutable_type_cache)
+    const TypePtr& type, quarisma::flat_hash_map<TypePtr, AliasTypeSet>* mutable_type_cache)
 {
     // Check common cases to avoid recursively constructing type in
     // `mapTypeToAliasTypeSetPtrImpl`
@@ -229,7 +229,7 @@ const AliasTypeSet* AliasDb::mapTypeToAliasTypeSetPtr(const TypePtr& type) const
     return helper.mapTypeToBorrowedAliasTypeSet(type);
 }
 
-// Structure used during analysis to keep track of all writes xsigma a high
+// Structure used during analysis to keep track of all writes quarisma a high
 // level. When the analysis is completed, this will be used to construct
 // a more efficient WriteIndex
 struct AliasDb::WriteRegistry
@@ -291,7 +291,7 @@ AliasDb::AliasDb(std::shared_ptr<Graph> graph, bool isFrozen, bool descendFuncti
         const std::vector<const Value*>& writtenValues = write.second;
         for (const Value* writtenValue : writtenValues)
         {
-            auto            elem = elementMap_.xsigma(writtenValue);
+            auto            elem = elementMap_.quarisma(writtenValue);
             MemoryLocations writtenMemoryLocations;
             memoryDAG_->collectAllContainedMemoryLocations(elem, writtenMemoryLocations);
             writeIndex[node] |= writtenMemoryLocations;
@@ -378,7 +378,7 @@ void AliasDb::getWritesImpl(Node* n, MemoryLocations& ret) const
 {
     if (writeIndex_->count(n))
     {
-        const auto& writes = writeIndex_->xsigma(n);
+        const auto& writes = writeIndex_->quarisma(n);
         ret |= writes;
     }
 
@@ -699,7 +699,7 @@ void AliasDb::analyzeImpl(Node* node)
         const auto analysis = op->aliasAnalysisKind();
 
         const bool registeredAsSpecialCase = analysis == AliasAnalysisKind::INTERNAL_SPECIAL_CASE;
-        if XSIGMA_UNLIKELY (registeredAsSpecialCase && !hasSpecialCase)
+        if QUARISMA_UNLIKELY (registeredAsSpecialCase && !hasSpecialCase)
         {
             TORCH_INTERNAL_ASSERT(
                 false,
@@ -708,7 +708,7 @@ void AliasDb::analyzeImpl(Node* node)
                 " is registered with AliasAnalysisKind::INTERNAL_SPECIAL_CASE but doesn't have a "
                 "special case.");
         }
-        else if XSIGMA_UNLIKELY (!registeredAsSpecialCase && hasSpecialCase)
+        else if QUARISMA_UNLIKELY (!registeredAsSpecialCase && hasSpecialCase)
         {
             TORCH_INTERNAL_ASSERT(
                 false,
@@ -716,7 +716,7 @@ void AliasDb::analyzeImpl(Node* node)
                 node->kind().toDisplayString(),
                 " has a special case and should be registered with "
                 "AliasAnalysisKind::INTERNAL_SPECIAL_CASE but is registered with ",
-                xsigma::toString(analysis));
+                quarisma::toString(analysis));
         }
     }
     else
@@ -779,8 +779,8 @@ void AliasDb::analyzeImpl(Node* node)
         return analyzeGradOf(node);
     case prim::BroadcastMKLDNNTensors:
     {
-        makePointerTo(node->outputs().xsigma(0), node->inputs().xsigma(0));
-        makePointerTo(node->outputs().xsigma(1), node->inputs().xsigma(1));
+        makePointerTo(node->outputs().quarisma(0), node->inputs().quarisma(0));
+        makePointerTo(node->outputs().quarisma(1), node->inputs().quarisma(1));
         return;
     }
     // TODO: think more about TensorExpr alias correctness
@@ -835,24 +835,24 @@ void AliasDb::analyzeImpl(Node* node)
         return analyzeSetAttr(node);
     case prim::profile_ivalue:
     case prim::profile:
-        makePointerTo(node->output(), node->inputs().xsigma(0));
+        makePointerTo(node->output(), node->inputs().quarisma(0));
         return;
     case prim::TypeCheck:
     case prim::RequiresGradCheck:
     {
         auto num_inputs = node->inputs().size();
-        for (const auto i : xsigma::irange(num_inputs))
+        for (const auto i : quarisma::irange(num_inputs))
         {
-            makePointerTo(node->outputs().xsigma(i), node->inputs().xsigma(i));
+            makePointerTo(node->outputs().quarisma(i), node->inputs().quarisma(i));
         }
         return;
     }
     case prim::BailOut:
-        TORCH_INTERNAL_ASSERT(node->inputs().xsigma(0)->node()->kind() == prim::BailoutTemplate);
-        makePointerTo(node->output(), node->inputs().xsigma(1));
+        TORCH_INTERNAL_ASSERT(node->inputs().quarisma(0)->node()->kind() == prim::BailoutTemplate);
+        makePointerTo(node->output(), node->inputs().quarisma(1));
         return;
     case prim::Guard:
-        makePointerTo(node->output(), node->inputs().xsigma(0));
+        makePointerTo(node->output(), node->inputs().quarisma(0));
         return;
     case prim::CallFunction:
     case prim::CallMethod:
@@ -959,10 +959,10 @@ void AliasDb::analyzeImpl(Node* node)
     // Bind the schema's "formal" alias annotation to the actual values those
     // schema arguments represent
     std::unordered_map<Symbol, Value*> formalToActual;
-    for (const auto i : xsigma::irange(schema.arguments().size()))
+    for (const auto i : quarisma::irange(schema.arguments().size()))
     {
-        const xsigma::AliasInfo* formal      = schema.arguments()[i].alias_info();
-        const auto&              actualValue = node->inputs().xsigma(i);
+        const quarisma::AliasInfo* formal      = schema.arguments()[i].alias_info();
+        const auto&              actualValue = node->inputs().quarisma(i);
 
         // Skip if there's no alias annotation
         if (!formal)
@@ -1026,10 +1026,10 @@ void AliasDb::analyzeImpl(Node* node)
     }
 
     // Use the formal-actual mapping to give aliases to the outputs
-    for (const auto i : xsigma::irange(schema.returns().size()))
+    for (const auto i : quarisma::irange(schema.returns().size()))
     {
-        const auto               actual = node->outputs().xsigma(i);
-        const xsigma::AliasInfo* formal = schema.returns()[i].alias_info();
+        const auto               actual = node->outputs().quarisma(i);
+        const quarisma::AliasInfo* formal = schema.returns()[i].alias_info();
         if (!formal)
         {
             // This is a fresh tensor
@@ -1068,7 +1068,7 @@ void AliasDb::analyzeImpl(Node* node)
             if (formalToActual.count(formalAlias))
             {
                 inputs_has_alias = true;
-                auto toAlias     = formalToActual.xsigma(formalAlias);
+                auto toAlias     = formalToActual.quarisma(formalAlias);
                 makePointerTo(actual, toAlias);
             }
         }
@@ -1113,17 +1113,17 @@ void AliasDb::analyzeIf(Node* node)
 {
     // For if statements, the alias set of an output is the union of the
     // alias sets generated by the if and else block
-    const auto trueBlock  = node->blocks().xsigma(0);
-    const auto falseBlock = node->blocks().xsigma(1);
+    const auto trueBlock  = node->blocks().quarisma(0);
+    const auto falseBlock = node->blocks().quarisma(1);
     analyze(trueBlock);
     analyze(falseBlock);
 
-    for (const auto i : xsigma::irange(node->outputs().size()))
+    for (const auto i : quarisma::irange(node->outputs().size()))
     {
         const auto nodeOutput = node->outputs()[i];
 
-        const auto trueOutput  = trueBlock->outputs().xsigma(i);
-        const auto falseOutput = falseBlock->outputs().xsigma(i);
+        const auto trueOutput  = trueBlock->outputs().quarisma(i);
+        const auto falseOutput = falseBlock->outputs().quarisma(i);
 
         makePointerTo(nodeOutput, trueOutput);
         makePointerTo(nodeOutput, falseOutput);
@@ -1132,7 +1132,7 @@ void AliasDb::analyzeIf(Node* node)
 
 void AliasDb::analyzeLoop(Node* node)
 {
-    const auto bodyBlock         = node->blocks().xsigma(0);
+    const auto bodyBlock         = node->blocks().quarisma(0);
     const auto loopCarriedInputs = node->inputs().slice(2);        // skip max, cond
     const auto blockInputs       = bodyBlock->inputs().slice(1);   // skip trip
     const auto blockOutputs      = bodyBlock->outputs().slice(1);  // skip trip
@@ -1152,7 +1152,7 @@ void AliasDb::analyzeLoop(Node* node)
 
 void AliasDb::analyzeGradOf(Node* node)
 {
-    const auto grad_of_block = node->blocks().xsigma(0);
+    const auto grad_of_block = node->blocks().quarisma(0);
     analyze(grad_of_block);
     mapAliases(node->outputs(), grad_of_block->outputs());
 }
@@ -1355,11 +1355,11 @@ void AliasDb::analyzeInstanceNorm(Node* node)
 // SetAttr: writes to the `self` field
 void AliasDb::analyzeSetAttr(Node* node)
 {
-    const auto self = node->inputs().xsigma(0);
+    const auto self = node->inputs().quarisma(0);
     TORCH_INTERNAL_ASSERT(self->type()->kind() == TypeKind::ClassType);
     registerWrite(self, node);
     // Also the value being set must become a wildcard.
-    const auto newValue = node->inputs().xsigma(1);
+    const auto newValue = node->inputs().quarisma(1);
     setWildcard(newValue);
 }
 
@@ -1387,7 +1387,7 @@ bool AliasDb::functionalNonEscapingListUse(const Use& use) const
 {
     Node*  n         = use.user;
     size_t offset    = use.offset;
-    Value* container = n->inputs().xsigma(offset);
+    Value* container = n->inputs().quarisma(offset);
 
     // only consider aten op uses of lists
     if (!container->type()->cast<ListType>())
@@ -1439,7 +1439,7 @@ bool AliasDb::functionalNonEscapingTupleUse(const Use& use) const
 {
     Node*  n         = use.user;
     size_t offset    = use.offset;
-    Value* container = n->inputs().xsigma(offset);
+    Value* container = n->inputs().quarisma(offset);
     if (!container->type()->cast<TupleType>())
     {
         return false;
@@ -1474,8 +1474,8 @@ void AliasDb::analyzeContainerConstruct(Node* node)
     // doesn't alias the input, then we can add all inputs to the list's
     // contained elements instead of the wildcard set.
     if (container->uses().size() == 1 &&
-        (functionalNonEscapingListUse(container->uses().xsigma(0)) ||
-         functionalNonEscapingTupleUse(container->uses().xsigma(0))))
+        (functionalNonEscapingListUse(container->uses().quarisma(0)) ||
+         functionalNonEscapingTupleUse(container->uses().quarisma(0))))
     {
         giveFreshAlias(container, false);
         for (Value* v : node->inputs())
@@ -1486,7 +1486,7 @@ void AliasDb::analyzeContainerConstruct(Node* node)
     }
 
     giveFreshAlias(container);
-    auto container_elem = elementMap_.xsigma(container);
+    auto container_elem = elementMap_.quarisma(container);
     for (auto input : node->inputs())
     {
         auto maybe_wildcard_elem = setWildcard(input);
@@ -1504,14 +1504,14 @@ void AliasDb::analyzeBroadcastingChunk(Node* node)
     auto inputs  = node->inputs();
     auto outputs = node->outputs();
     auto nchunks = node->i(attr::chunks);
-    for (const auto index : xsigma::irange(inputs.size()))
+    for (const auto index : quarisma::irange(inputs.size()))
     {
         // Each inputs[i] is aliased by exactly `nchunks` distinct output tensors:
         // inputs[i] produces chunks outputs[i * nchunks + k] for k in [0..nchunks)
         auto output_begin = outputs.begin() + index * nchunks;
         for (auto it = output_begin; it != output_begin + nchunks; ++it)
         {
-            makePointerTo(*it, inputs.xsigma(index));
+            makePointerTo(*it, inputs.quarisma(index));
         }
     }
 }
@@ -1584,7 +1584,7 @@ bool AliasDb::mayAlias(const Value* a, const Value* b) const
         return false;
     }
 
-    return memoryDAG_->mayAlias(elementMap_.xsigma(a), elementMap_.xsigma(b));
+    return memoryDAG_->mayAlias(elementMap_.quarisma(a), elementMap_.quarisma(b));
 }
 
 bool AliasDb::mayAlias(const ValueSet& a, const ValueSet& b) const
@@ -1627,44 +1627,44 @@ bool AliasDb::mayContainAlias(Value* a, Value* b) const
     {
         return false;
     }
-    return memoryDAG_->mayContainAlias(elementMap_.xsigma(a), elementMap_.xsigma(b));
+    return memoryDAG_->mayContainAlias(elementMap_.quarisma(a), elementMap_.quarisma(b));
 }
 
-std::vector<Element*> AliasDb::getElements(xsigma::ArrayRef<Value*> vs) const
+std::vector<Element*> AliasDb::getElements(quarisma::ArrayRef<Value*> vs) const
 {
     std::vector<Element*> elements;
     for (const auto& val : vs)
     {
         if (isMutableTypeInternal(val))
         {
-            elements.push_back(elementMap_.xsigma(val));
+            elements.push_back(elementMap_.quarisma(val));
         }
     }
     return elements;
 }
 
 bool AliasDb::mayContainAlias(
-    const xsigma::ArrayRef<Value*> a, const xsigma::ArrayRef<Value*> b) const
+    const quarisma::ArrayRef<Value*> a, const quarisma::ArrayRef<Value*> b) const
 {
     auto a_elems = getElements(a);
     return a_elems.empty() ? false : memoryDAG_->mayContainAlias(a_elems, getElements(b));
 }
 
-bool AliasDb::mayContainAlias(Value* a, const xsigma::ArrayRef<Value*> b) const
+bool AliasDb::mayContainAlias(Value* a, const quarisma::ArrayRef<Value*> b) const
 {
     if (!isMutableTypeInternal(a))
     {
         return false;
     }
     auto b_elems = getElements(b);
-    return b_elems.empty() ? false : memoryDAG_->mayContainAlias(elementMap_.xsigma(a), b_elems);
+    return b_elems.empty() ? false : memoryDAG_->mayContainAlias(elementMap_.quarisma(a), b_elems);
 }
 
 // Make each value in the `from` list point to its partner in the `to` list
-void AliasDb::mapAliases(xsigma::ArrayRef<Value*> from, xsigma::ArrayRef<Value*> to)
+void AliasDb::mapAliases(quarisma::ArrayRef<Value*> from, quarisma::ArrayRef<Value*> to)
 {
     TORCH_INTERNAL_ASSERT(to.size() == from.size());
-    for (const auto i : xsigma::irange(to.size()))
+    for (const auto i : quarisma::irange(to.size()))
     {
         makePointerTo(from[i], to[i]);
     }
@@ -1717,7 +1717,7 @@ Element* AliasDb::getOrCreateElement(const Value* value)
     {
         giveFreshAlias(value);
     }
-    return elementMap_.xsigma(value);
+    return elementMap_.quarisma(value);
 }
 
 void AliasDb::replaceWithNewValue(Value* existing, Value* new_value)
@@ -1734,7 +1734,7 @@ void AliasDb::replaceWithNewValue(Value* existing, Value* new_value)
     {
         return;
     }
-    auto existing_elem     = elementMap_.xsigma(existing);
+    auto existing_elem     = elementMap_.quarisma(existing);
     elementMap_[new_value] = existing_elem;
     elementMap_.erase(existing);
     existing_elem->values = {new_value};
@@ -1754,7 +1754,7 @@ void AliasDb::copyValue(Value* from, Value* to)
     {
         return;
     }
-    auto origElem   = elementMap_.xsigma(from);
+    auto origElem   = elementMap_.quarisma(from);
     elementMap_[to] = origElem;
     origElem->values.insert(to);
 }
@@ -1786,13 +1786,13 @@ bool AliasDb::couldMoveBeforeTopologically(Node* n, Node* movePoint)
     return tryMove(n, movePoint, MoveSide::BEFORE, /*dryRun=*/true);
 }
 
-bool AliasDb::hasWriters(const xsigma::ArrayRef<Value*>& values) const
+bool AliasDb::hasWriters(const quarisma::ArrayRef<Value*>& values) const
 {
     return std::any_of(
         values.begin(), values.end(), [&](Value* value) { return hasWriters(value); });
 }
 
-bool AliasDb::escapesScope(const xsigma::ArrayRef<Value*>& vs) const
+bool AliasDb::escapesScope(const quarisma::ArrayRef<Value*>& vs) const
 {
     return mayContainAlias(graph_->inputs(), vs) || mayContainAlias(graph_->outputs(), vs) ||
            mayAliasWildcard(vs);
@@ -1803,7 +1803,7 @@ bool AliasDb::escapesScope(const xsigma::ArrayRef<Value*>& vs) const
 // cannot escape the current graph scope. Values can escape the current scope
 // by aliasing a graph output or input, or by aliasing the wildcard set.
 bool AliasDb::safeToChangeAliasingRelationship(
-    const xsigma::ArrayRef<Value*>& a, const xsigma::ArrayRef<Value*>& b) const
+    const quarisma::ArrayRef<Value*>& a, const quarisma::ArrayRef<Value*>& b) const
 {
     if (hasWriters(a) || hasWriters(b))
     {
@@ -1968,7 +1968,7 @@ private:
         else
         {
             // This user is in a sub-block. Traverse the blockchain upward until
-            // we arrive xsigma a node that shares a block with `this`
+            // we arrive quarisma a node that shares a block with `this`
             auto curNode = target;
             while (curNode->owningBlock() != n->owningBlock())
             {
@@ -2011,7 +2011,7 @@ private:
 // is possible
 //
 // The basic approach is: have a "working set" that we are moving forward, one
-// node xsigma a time. When we can't move past a node (because it depends on the
+// node quarisma a time. When we can't move past a node (because it depends on the
 // working set), then add it to the working set and keep moving until we hit
 // `moveAfter`.
 bool AliasDb::tryMove(Node* toMove, Node* movePoint, MoveSide moveSide, bool dryRun)
@@ -2051,7 +2051,7 @@ bool AliasDb::tryMove(Node* toMove, Node* movePoint, MoveSide moveSide, bool dry
         return false;
     }
 
-    // Move forward one node xsigma a time
+    // Move forward one node quarisma a time
     while (curNode != movePoint)
     {
         // never valid to reorder around a node with side effects
@@ -2156,7 +2156,7 @@ bool AliasDb::writesToWildcard(Node* n) const
     {
         return false;
     }
-    const auto& writes = writeIndex_->xsigma(n);
+    const auto& writes = writeIndex_->quarisma(n);
 
     // Are any of these memoryLocs a wildcard element?
     for (const auto& pr : wildcardIndex_)
@@ -2174,13 +2174,13 @@ bool AliasDb::mayAliasWildcard(const Value* v) const
 {
     if (auto e = getWildcard(v->type()))
     {
-        return memoryDAG_->mayAlias(elementMap_.xsigma(v), e);
+        return memoryDAG_->mayAlias(elementMap_.quarisma(v), e);
     }
     // There were no wildcards of this type, so return false.
     return false;
 }
 
-bool AliasDb::mayAliasWildcard(const xsigma::ArrayRef<Value*> vs) const
+bool AliasDb::mayAliasWildcard(const quarisma::ArrayRef<Value*> vs) const
 {
     return std::any_of(vs.begin(), vs.end(), [&](Value* v) { return mayAliasWildcard(v); });
 }

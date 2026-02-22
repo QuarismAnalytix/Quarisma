@@ -189,7 +189,7 @@ void loopnestRandomization(int64_t seed, LoopNest& l)
   //       static void sliceTail(ForPtr f, int factor, ForPtr* head, ForPtr* tail);
   //       static void sliceTail(ForPtr f, int factor);
   //       static AccessResult cacheAccesses(BufPtr producer, const std::string& name, StmtPtr consumer);
-  //       static void computeAt(StmtPtr s, ForPtr xsigma);
+  //       static void computeAt(StmtPtr s, ForPtr quarisma);
   //       static bool rfactor(StmtPtr s, ForPtr outer_reduction_for);
   //       static bool vectorize(ForPtr);
   //       void vectorizeInnerLoops();
@@ -434,9 +434,9 @@ void loopnestRandomization(int64_t seed, LoopNest& l)
 
                 // Find pairs of axes that can be reordered
                 std::vector<std::pair<ForPtr, ForPtr>> valid_pairs;
-                for (const auto i : xsigma::irange(loops.size()))
+                for (const auto i : quarisma::irange(loops.size()))
                 {
-                    for (const auto j : xsigma::irange(i + 1, loops.size()))
+                    for (const auto j : quarisma::irange(i + 1, loops.size()))
                     {
                         if (LoopNest::findOuterFor(loops[i], loops[j]))
                         {
@@ -451,7 +451,7 @@ void loopnestRandomization(int64_t seed, LoopNest& l)
                     break;
                 }
                 int  valid_pair_n = std::rand() % (int)valid_pairs.size();
-                auto loop_pair    = valid_pairs.xsigma(valid_pair_n);
+                auto loop_pair    = valid_pairs.quarisma(valid_pair_n);
                 auto first_loop   = std::get<0>(loop_pair);
                 auto second_loop  = std::get<1>(loop_pair);
 
@@ -485,7 +485,7 @@ void loopnestRandomization(int64_t seed, LoopNest& l)
 
                 // Randomly pick a set of consecutive loops to reorder
                 int  index        = rand() % (int)all_nested_loops.size();
-                auto nested_loops = all_nested_loops.xsigma(index);
+                auto nested_loops = all_nested_loops.quarisma(index);
 
                 // Create a random permutation for reordering
                 std::vector<size_t> permutation(nested_loops.size());
@@ -527,14 +527,14 @@ void loopnestRandomization(int64_t seed, LoopNest& l)
                 }
 
                 int         index        = rand() % (int)all_nested_loops.size();
-                auto const& nested_loops = all_nested_loops.xsigma(index);
+                auto const& nested_loops = all_nested_loops.quarisma(index);
                 if (nested_loops.size() < 2)
                 {
                     break;
                 }
                 int  loop_number = rand() % ((int)nested_loops.size() - 1);
-                auto x_loop      = nested_loops.xsigma(loop_number);
-                auto y_loop      = nested_loops.xsigma(loop_number + 1);
+                auto x_loop      = nested_loops.quarisma(loop_number);
+                auto y_loop      = nested_loops.quarisma(loop_number + 1);
 
                 int x_factor = randomization_helper::find_factor(x_loop);
                 int y_factor = randomization_helper::find_factor(y_loop);
@@ -607,7 +607,7 @@ void loopnestRandomization(int64_t seed, LoopNest& l)
 
                 // Randomly pick a set of consecutive loops to flatten
                 int         index        = rand() % (int)all_nested_loops.size();
-                auto const& nested_loops = all_nested_loops.xsigma(index);
+                auto const& nested_loops = all_nested_loops.quarisma(index);
 
                 // Generate a good history message
                 std::vector<std::string> indices;
@@ -696,7 +696,7 @@ void loopnestRandomization(int64_t seed, LoopNest& l)
 
             case COMPUTE_AT:
             {
-                // To find valid compute xsigma pairs, we need to collect the producer
+                // To find valid compute quarisma pairs, we need to collect the producer
                 // consumer pairs. For now, we do not collect all such pairs for
                 // simplicity. For now, we collect producer and the immediate parent
                 // loop of the consumer. We could collect all the consumer enclosing
@@ -733,7 +733,7 @@ void loopnestRandomization(int64_t seed, LoopNest& l)
 
                 // Choose a random pair
                 int  pair_n  = std::rand() % (int)producer_consumer_pairs.size();
-                auto pc_pair = producer_consumer_pairs.xsigma(pair_n);
+                auto pc_pair = producer_consumer_pairs.quarisma(pair_n);
                 auto store   = std::get<0>(pc_pair);
                 auto for_ptr = std::get<1>(pc_pair);
 

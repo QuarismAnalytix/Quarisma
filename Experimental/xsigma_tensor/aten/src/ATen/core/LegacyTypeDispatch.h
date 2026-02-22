@@ -1,6 +1,6 @@
 #pragma once
 
-// The legacy mechanism for dispatching operators in XSigma is a Type
+// The legacy mechanism for dispatching operators in Quarisma is a Type
 // object, which is essentially a giant virtual dispatch table
 // for every operation we support dynamically dispatching over.
 //
@@ -19,7 +19,7 @@ namespace at
 // NOTE [ Treating Variables as non-Variables in type dispatch ]
 //
 // What exactly does AutoDispatchBelowAutograd do?  The short answer is, it causes
-// dispatches on XSigma functions to go to the non-variable implementation,
+// dispatches on Quarisma functions to go to the non-variable implementation,
 // bypassing autograd handling (and also profiling and tracing).
 //
 // To understand why this guard exists, it's helpful to understand the history

@@ -1,11 +1,11 @@
 #pragma once
 
 #include <torch/csrc/Export.h>
-#include <xsigma/core/InferenceMode.h>
+#include <quarisma/core/InferenceMode.h>
 
 namespace torch::autograd
 {
 
-using InferenceMode = xsigma::InferenceMode;
+using InferenceMode = quarisma::InferenceMode;
 
 }

@@ -6,7 +6,7 @@
 // This behaviour is needed and used only in backward graphs.
 
 #include <torch/csrc/autograd/variable.h>
-#include <xsigma/core/Stream.h>
+#include <quarisma/core/Stream.h>
 
 #include <optional>
 #include <utility>
@@ -26,14 +26,14 @@ struct InputBuffer
     explicit InputBuffer(variable_list&& inputs) : buffer(std::move(inputs)) {}
     InputBuffer& operator=(InputBuffer&& other) = default;
 
-    // Accumulates the variable xsigma a specified index.
+    // Accumulates the variable quarisma a specified index.
     // The optional CUDA streams determine which stream the accumulation
     // is run on and how the addition is synchronized.
     TORCH_API void add(
         size_t                               pos,
         Variable&&                           var,
-        const std::optional<xsigma::Stream>& opt_producer_stream,
-        const std::optional<xsigma::Stream>& opt_consumer_stream);
+        const std::optional<quarisma::Stream>& opt_producer_stream,
+        const std::optional<quarisma::Stream>& opt_consumer_stream);
 
     Variable operator[](size_t pos) { return buffer[pos]; }
 
@@ -42,13 +42,13 @@ struct InputBuffer
 
     std::vector<Variable> buffer;
     // The stream used for accumulation when a variable is used multiple times.
-    std::vector<std::optional<xsigma::Stream>> opt_accum_streams;
+    std::vector<std::optional<quarisma::Stream>> opt_accum_streams;
     // The events you need to wait for to ensure the corresponding buffers
     // are ready. The events are updated as we accumulate into the buffer.
-    std::vector<std::optional<xsigma::Event>> ready_events;
+    std::vector<std::optional<quarisma::Event>> ready_events;
     // The streams corresponding to the events above. This is only used to
     // check if more synchronization is needed or not.
-    std::vector<std::optional<xsigma::Stream>> ready_streams;
+    std::vector<std::optional<quarisma::Stream>> ready_streams;
 };
 
 }  // namespace torch::autograd

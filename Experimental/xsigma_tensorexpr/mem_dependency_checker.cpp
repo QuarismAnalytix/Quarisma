@@ -1,5 +1,5 @@
 #include <torch/csrc/jit/tensorexpr/mem_dependency_checker.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <fstream>
 #include <iostream>
@@ -812,7 +812,7 @@ void MemDependencyChecker::visit(const ForPtr& v)
     // hard to determine, so here's our heuristic I hope it's conservative
     // enough.
 
-    // the size of xsigma least one dependent index must be >= the size of the
+    // the size of quarisma least one dependent index must be >= the size of the
     // loop.
 
     // First step is to infer the stride relative to each dimension of each
@@ -832,7 +832,7 @@ void MemDependencyChecker::visit(const ForPtr& v)
         loopIndicesStride.resize(indices.size());
 
         // index expr must depend on the loop var in some way to have a stride.
-        for (const auto i : xsigma::irange(indices.size()))
+        for (const auto i : quarisma::irange(indices.size()))
         {
             VarFinder vf;
             if (vf.find(indices[i]).count(var) == 0)
@@ -915,7 +915,7 @@ void MemDependencyChecker::visit(const ForPtr& v)
     bool parallelized =
         v->loop_options().is_gpu_block_index() || v->loop_options().is_gpu_thread_index();
 
-    // Store buffers allocated xsigma this scope.
+    // Store buffers allocated quarisma this scope.
     std::unordered_set<VarPtr> local_intermediates;
 
     // Scanning from the top of the loop, we look for accesses which may depend

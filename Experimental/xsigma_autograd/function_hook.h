@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/Tensor.h>
+#include <Quarisma/Tensor.h>
 #include <torch/csrc/Export.h>
 
 #include <string>
@@ -18,7 +18,7 @@ struct PackedArgs;
 namespace torch::autograd
 {
 
-using Variable      = xsigma::Tensor;
+using Variable      = quarisma::Tensor;
 using variable_list = std::vector<Variable>;
 
 struct TORCH_API FunctionPreHook

@@ -16,10 +16,10 @@
 │                  Compile-Time Decision                      │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  Is XSIGMA_HAS_OPENMP enabled?                             │
+│  Is QUARISMA_HAS_OPENMP enabled?                             │
 │  ├─ YES → Use #pragma omp threadprivate (Zero overhead)   │
 │  │                                                         │
-│  └─ NO → Is XSIGMA_HAS_TBB enabled?                        │
+│  └─ NO → Is QUARISMA_HAS_TBB enabled?                        │
 │     ├─ YES → Use tbb::enumerable_thread_specific           │
 │     │        (Minimal overhead)                            │
 │     │                                                      │
@@ -64,7 +64,7 @@
 
 ### OpenMP Backend
 ```cpp
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
 thread_local unsigned char parallel_tools_functor_initialized = 0;
 #pragma omp threadprivate(parallel_tools_functor_initialized)
 
@@ -78,7 +78,7 @@ if (!parallel_tools_functor_initialized) {
 
 ### TBB Backend
 ```cpp
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
 mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 
 // In Execute():
@@ -135,7 +135,7 @@ if (!initialized) {
 - Future-proof design
 
 ✅ **Code Quality**
-- Follows XSigma coding standards
+- Follows Quarisma coding standards
 - Clear conditional compilation
 - Well-commented code
 

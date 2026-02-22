@@ -2,10 +2,10 @@
 
 // Indexing tensors by tensors
 
-#include <XSigma/core/List.h>
-#include <XSigma/core/Tensor.h>
-#include <XSigma/native/DispatchStub.h>
-#include <XSigma/native/ReductionType.h>
+#include <Quarisma/core/List.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/native/DispatchStub.h>
+#include <Quarisma/native/ReductionType.h>
 
 namespace at
 {

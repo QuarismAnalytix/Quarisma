@@ -32,7 +32,7 @@ incredibuild                  profiler.<kineto|native|itt>: select profiler back
 
 ### Command
 ```bash
-cd c:\dev\XSigma\Scripts
+cd c:\dev\Quarisma\Scripts
 python setup.py config.build.incredibuild
 ```
 
@@ -40,7 +40,7 @@ python setup.py config.build.incredibuild
 ```
 [INFO] Starting build configuration for Windows
 ================= Windows platform =================
-[INFO] Build directory: C:\dev\XSigma\build_ninja
+[INFO] Build directory: C:\dev\Quarisma\build_ninja
 [INFO] Configuring build...
 build enum: Release
 CMake Error at Cmake/tools/incredibuild.cmake:41 (message):
@@ -68,7 +68,7 @@ Call Stack (most recent call first):
 
 ### Command
 ```bash
-cd c:\dev\XSigma\Scripts
+cd c:\dev\Quarisma\Scripts
 python setup.py config.build
 ```
 
@@ -100,7 +100,7 @@ include(incredibuild)
 
 **From incredibuild.cmake (line 26-28)**:
 ```cmake
-if(NOT XSIGMA_ENABLE_INCREDIBUILD)
+if(NOT QUARISMA_ENABLE_INCREDIBUILD)
   return()
 endif()
 ```
@@ -116,7 +116,7 @@ endif()
 if(NOT WIN32)
   message(FATAL_ERROR "IncrediBuild is only supported on Windows. "
     "Current platform: ${CMAKE_SYSTEM_NAME}. "
-    "Please disable XSIGMA_ENABLE_INCREDIBUILD on non-Windows platforms.")
+    "Please disable QUARISMA_ENABLE_INCREDIBUILD on non-Windows platforms.")
 endif()
 ```
 
@@ -141,10 +141,10 @@ if self.__value.get("incredibuild") == self.ON:
 
 ### Icecream Conflict (Cmake/tools/cache.cmake:18-23)
 ```cmake
-if(XSIGMA_ENABLE_ICECC AND XSIGMA_ENABLE_INCREDIBUILD)
+if(QUARISMA_ENABLE_ICECC AND QUARISMA_ENABLE_INCREDIBUILD)
   message(WARNING "Both IncrediBuild and Icecream are enabled. "
     "These tools are mutually exclusive. Disabling Icecream in favor of IncrediBuild.")
-  set(XSIGMA_ENABLE_ICECC OFF CACHE BOOL "Use Icecream distributed compilation" FORCE)
+  set(QUARISMA_ENABLE_ICECC OFF CACHE BOOL "Use Icecream distributed compilation" FORCE)
 endif()
 ```
 

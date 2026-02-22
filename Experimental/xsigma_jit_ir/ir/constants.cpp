@@ -1,4 +1,4 @@
-#include <XSigma/core/functional.h>
+#include <Quarisma/core/functional.h>
 #include <torch/csrc/autograd/variable.h>
 #include <torch/csrc/jit/ir/constants.h>
 #include <torch/csrc/jit/ir/ir.h>
@@ -11,7 +11,7 @@
 namespace torch::jit
 {
 
-static bool insertableTensor(const xsigma::Tensor& ten)
+static bool insertableTensor(const quarisma::Tensor& ten)
 {
     // bail if tensor has no storage i.e. opaque tensor used in MKLdnn.
     // or gradients because we have no way of serializing them & are mutable
@@ -31,7 +31,7 @@ static bool insertableIValue(const IValue& ivalue)
     }
     if (ivalue.isList() || ivalue.isTuple())
     {
-        xsigma::ArrayRef<IValue> elems;
+        quarisma::ArrayRef<IValue> elems;
         if (ivalue.isTuple())
         {
             elems = ivalue.toTupleRef().elements();
@@ -66,7 +66,7 @@ Value* insertConstant(
     {
         return *value;
     }
-    XSIGMA_CHECK(false, "Unsupported value kind: ", val.tagKind());
+    QUARISMA_CHECK(false, "Unsupported value kind: ", val.tagKind());
 }
 
 // IValue -> Constant node
@@ -76,7 +76,7 @@ std::optional<Value*> tryInsertConstant(
     Node* n = g.create(prim::Constant);
     if (val.isTensor())
     {
-        xsigma::Tensor ref = val.toTensor();
+        quarisma::Tensor ref = val.toTensor();
         if (!insertableTensor(val.toTensor()))
         {
             n->destroy();
@@ -252,7 +252,7 @@ std::optional<IValue> toIValue(const Value* v)
     }
     else if (type == DeviceObjType::get())
     {
-        auto d = xsigma::Device(node->s(attr::value));
+        auto d = quarisma::Device(node->s(attr::value));
         return d;
     }
     else if (type == GeneratorType::get())
@@ -282,7 +282,7 @@ std::optional<IValue> toIValue(const Value* v)
     }
     else
     {
-        XSIGMA_CHECK(false, "constant literal not supported for: ", type->str());
+        QUARISMA_CHECK(false, "constant literal not supported for: ", type->str());
     }
 }
 

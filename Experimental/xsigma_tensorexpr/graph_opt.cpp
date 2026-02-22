@@ -39,7 +39,7 @@ static Node* moveCatAfterUse(Node* cat, Node* user, const std::shared_ptr<Graph>
     auto cat_list   = cat->input(0)->node();
     auto cat_inputs = cat_list->inputs();
 
-    auto user_tensor_type = user->output()->type()->cast<xsigma::TensorType>();
+    auto user_tensor_type = user->output()->type()->cast<quarisma::TensorType>();
     TORCH_INTERNAL_ASSERT(user_tensor_type, buildErrorMessage("Unexpected user tensor type"));
     std::unordered_map<Value*, Value*> new_cat_inputs;
     for (auto inp : cat_inputs)
@@ -48,7 +48,7 @@ static Node* moveCatAfterUse(Node* cat, Node* user, const std::shared_ptr<Graph>
             subgraph->createClone(user, [&](Value* k) { return (k == cat->output()) ? inp : k; });
         // Since we are cloning user, its result should be the same scalar type
         // as the user. But the dims should correspond to that of the input.
-        auto input_tensor_type = inp->type()->cast<xsigma::TensorType>();
+        auto input_tensor_type = inp->type()->cast<quarisma::TensorType>();
         TORCH_INTERNAL_ASSERT(input_tensor_type, buildErrorMessage("Unexpected input tensor type"));
         auto new_input_type = input_tensor_type->withScalarType(user_tensor_type->scalarType());
         new_cat_input->output()->setType(new_input_type);
@@ -83,7 +83,7 @@ static int numTensorInputs(Node* node)
     int count = 0;
     for (auto v : node->inputs())
     {
-        if (v->type()->cast<xsigma::TensorType>())
+        if (v->type()->cast<quarisma::TensorType>())
         {
             ++count;
         }
@@ -103,10 +103,10 @@ static bool doesCatPromoteTypes(Node* node)
         buildErrorMessage("aten::cat inputs are not expected."));
     auto inputs = node->input(0)->node()->inputs();
     TORCH_INTERNAL_ASSERT(!inputs.empty(), buildErrorMessage("Empty inputs of ListConstruct"));
-    auto scalar_type = inputs.front()->type()->cast<xsigma::TensorType>()->scalarType();
+    auto scalar_type = inputs.front()->type()->cast<quarisma::TensorType>()->scalarType();
     for (size_t i = 1; i < inputs.size(); ++i)
     {
-        auto inp_scalar_type = inputs[i]->type()->cast<xsigma::TensorType>()->scalarType();
+        auto inp_scalar_type = inputs[i]->type()->cast<quarisma::TensorType>()->scalarType();
         if (scalar_type != inp_scalar_type)
         {
             return true;
@@ -187,7 +187,7 @@ bool OptimizeCat(const std::shared_ptr<Graph>& graph)
 
 void annotateInputShapes(
     const std::shared_ptr<Graph>&                     graph,
-    const std::vector<std::optional<xsigma::Tensor>>& example_inputs)
+    const std::vector<std::optional<quarisma::Tensor>>& example_inputs)
 {
     TORCH_INTERNAL_ASSERT(
         graph->inputs().size() == example_inputs.size(),
@@ -197,7 +197,7 @@ void annotateInputShapes(
         if (auto t = example_inputs[idx])
         {
             auto concrete_tensor_type = tensorTypeInCurrentExecutionContext(*t);
-            graph->inputs().xsigma(idx)->setType(concrete_tensor_type);
+            graph->inputs().quarisma(idx)->setType(concrete_tensor_type);
         }
     }
 }
@@ -208,7 +208,7 @@ std::shared_ptr<Graph> removeUnusedSelfArgument(const std::shared_ptr<Graph>& gr
     {
         return graph;
     }
-    jit::Value* self_argument = graph->inputs().xsigma(0);
+    jit::Value* self_argument = graph->inputs().quarisma(0);
     if (!self_argument->uses().empty() || !self_argument->type()->is_module())
     {
         return graph;
@@ -244,7 +244,7 @@ std::vector<int64_t> makeShapesSymbolic(
     std::vector<int64_t>                 new_syms;
     for (int64_t size_val : size_vals)
     {
-        auto new_shape_symbol        = xsigma::ShapeSymbol::newSymbol().value();
+        auto new_shape_symbol        = quarisma::ShapeSymbol::newSymbol().value();
         shape_to_sym_shape[size_val] = new_shape_symbol;
         new_syms.push_back(new_shape_symbol);
         graph->addInput("sym_shape")->setType(IntType::get());
@@ -261,20 +261,20 @@ std::vector<int64_t> makeShapesSymbolic(
         {
             continue;
         }
-        std::vector<xsigma::ShapeSymbol> shape_vec = *tt->symbolic_sizes().sizes();
+        std::vector<quarisma::ShapeSymbol> shape_vec = *tt->symbolic_sizes().sizes();
 
-        auto new_sizes = xsigma::fmap(
+        auto new_sizes = quarisma::fmap(
             shape_vec,
-            [&](const xsigma::ShapeSymbol& shape)
+            [&](const quarisma::ShapeSymbol& shape)
             {
                 auto value = shape.value();
                 if (shape_to_sym_shape.count(value))
                 {
-                    return shape_to_sym_shape.xsigma(value);
+                    return shape_to_sym_shape.quarisma(value);
                 }
                 return value;
             });
-        v->setType(tt->withSymbolicShapes(xsigma::SymbolicShape(new_sizes)));
+        v->setType(tt->withSymbolicShapes(quarisma::SymbolicShape(new_sizes)));
     }
 
     return new_syms;
@@ -330,7 +330,7 @@ bool isGraphCompilable(const std::shared_ptr<Graph>& graph)
 }
 
 static void fixupTypeInfoForValue(
-    Value* v, std::optional<xsigma::ScalarType> scalar_type, std::optional<xsigma::Device> device)
+    Value* v, std::optional<quarisma::ScalarType> scalar_type, std::optional<quarisma::Device> device)
 {
     Node*       n = v->node();
     auto const& t = v->type();
@@ -366,9 +366,9 @@ static void fixupTypeInfoForValue(
     v->setType(new_tt);
 }
 
-static std::optional<xsigma::ScalarType> inferScalarType(Node* n)
+static std::optional<quarisma::ScalarType> inferScalarType(Node* n)
 {
-    std::optional<xsigma::ScalarType> scalar_type;
+    std::optional<quarisma::ScalarType> scalar_type;
     for (auto v : n->inputs())
     {
         auto const& t = v->type();
@@ -389,9 +389,9 @@ static std::optional<xsigma::ScalarType> inferScalarType(Node* n)
     return scalar_type;
 }
 
-static std::optional<xsigma::Device> inferDevice(Node* n)
+static std::optional<quarisma::Device> inferDevice(Node* n)
 {
-    std::optional<xsigma::Device> device;
+    std::optional<quarisma::Device> device;
     for (auto v : n->inputs())
     {
         auto const& t = v->type();
@@ -411,7 +411,7 @@ static std::optional<xsigma::Device> inferDevice(Node* n)
     }
     if (!device)
     {
-        device = xsigma::kCPU;
+        device = quarisma::kCPU;
     }
     return device;
 }
@@ -430,14 +430,14 @@ void fixupMissingShapeInfo(const std::shared_ptr<Graph>& graph)
                 return;
             }
             fixupTypeInfoForValue(
-                input, tt->scalarType(), tt->device() ? tt->device() : xsigma::kCPU);
+                input, tt->scalarType(), tt->device() ? tt->device() : quarisma::kCPU);
         }
     }
 
     for (auto n : graph->nodes())
     {
-        std::optional<xsigma::ScalarType> scalar_type = inferScalarType(n);
-        std::optional<xsigma::Device>     device      = inferDevice(n);
+        std::optional<quarisma::ScalarType> scalar_type = inferScalarType(n);
+        std::optional<quarisma::Device>     device      = inferDevice(n);
 
         for (auto v : n->outputs())
         {
@@ -509,13 +509,13 @@ static std::shared_ptr<Graph> dequantizeResults(const std::shared_ptr<Graph>& gr
         if (t->kind() == TypeKind::TensorType)
         {
             auto tt = t->cast<TensorType>();
-            if (!tt->scalarType() || !xsigma::isQIntType(*tt->scalarType()))
+            if (!tt->scalarType() || !quarisma::isQIntType(*tt->scalarType()))
             {
                 continue;
             }
             Node* deq = graph->create(aten::dequantize, {v});
             graph->appendNode(deq);
-            deq->output()->setType(tt->withScalarType(xsigma::kFloat));
+            deq->output()->setType(tt->withScalarType(quarisma::kFloat));
             v->replaceAllUsesAfterNodeWith(deq, deq->output());
         }
     }

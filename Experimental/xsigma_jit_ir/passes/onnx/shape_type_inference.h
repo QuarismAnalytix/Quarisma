@@ -48,7 +48,7 @@ TORCH_API void ONNXSetDynamicInputShape(
 // dynamic axes, hence it takes precedence over types of output Tensors.
 TORCH_API void ONNXAssignOutputShape(
     std::shared_ptr<Graph>&          graph,
-    xsigma::ArrayRef<xsigma::Tensor> outputs,
+    quarisma::ArrayRef<quarisma::Tensor> outputs,
     const python::IODescriptor&      desc,
     bool                             onnx_shape_inference,
     bool                             is_script,

@@ -8,12 +8,12 @@
 #include "common/export.h"
 #include "memory/device.h"
 #include "record_function.h"
-namespace xsigma
+namespace quarisma
 {
 typedef uint64_t CallbackHandle;
 }
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 // ----------------------------------------------------------------------------
@@ -112,7 +112,7 @@ struct ExperimentalConfig
    * profiler was enabled, similar to on_demand mode */
     bool profile_all_threads;
 
-    /* controls whether overload names are queried from an XSigma
+    /* controls whether overload names are queried from an Quarisma
    * function schema and stored in the profile  */
     bool capture_overload_names;
 
@@ -201,7 +201,7 @@ struct  ProfilerStateBase
 
     const ProfilerConfig& config() const { return config_; }
 
-    void setCallbackHandle(xsigma::CallbackHandle handle);
+    void setCallbackHandle(quarisma::CallbackHandle handle);
     void removeCallback();
 
     virtual bool memoryProfilingEnabled() const  { return config_.profile_memory; }
@@ -213,7 +213,7 @@ struct  ProfilerStateBase
         int64_t /*alloc_size*/,
         size_t /*total_allocated*/,
         size_t /*total_reserved*/,
-        xsigma::device_option /*device*/) 
+        quarisma::device_option /*device*/) 
     {
     }
 
@@ -223,13 +223,13 @@ protected:
     // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
     ProfilerConfig config_ = ProfilerConfig(ProfilerState::Disabled);
     // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
-    xsigma::CallbackHandle handle_ = 0;
+    quarisma::CallbackHandle handle_ = 0;
 };
 
 // Note: The following are only for the active *thread local* profiler.
-XSIGMA_API bool               profilerEnabled();
-XSIGMA_API ActiveProfilerType profilerType();
-XSIGMA_API ProfilerConfig     getProfilerConfig();
+QUARISMA_API bool               profilerEnabled();
+QUARISMA_API ActiveProfilerType profilerType();
+QUARISMA_API ProfilerConfig     getProfilerConfig();
 
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl
 #endif

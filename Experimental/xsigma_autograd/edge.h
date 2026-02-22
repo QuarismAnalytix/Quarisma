@@ -1,6 +1,6 @@
 #pragma once
 
-#include <xsigma/util/hash.h>
+#include <quarisma/util/hash.h>
 
 #include <cstdint>
 #include <functional>
@@ -54,7 +54,7 @@ struct hash<torch::autograd::Edge>
     using return_type   = size_t;
     return_type operator()(const argument_type& edge) const noexcept
     {
-        return xsigma::get_hash(edge.function, edge.input_nr);
+        return quarisma::get_hash(edge.function, edge.input_nr);
     }
 };
 }  // namespace std

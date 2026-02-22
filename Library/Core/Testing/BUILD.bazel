@@ -1,5 +1,5 @@
 # =============================================================================
-# XSigma Core Testing Headers
+# Quarisma Core Testing Headers
 # =============================================================================
 # Exposes test headers for use in test targets
 # =============================================================================
@@ -11,8 +11,8 @@ package(default_visibility = ["//visibility:public"])
 # =============================================================================
 
 cc_library(
-    name = "xsigmaTest_header",
-    hdrs = ["xsigmaTest.h"],
+    name = "quarismaTest_header",
+    hdrs = ["baseTest.h"],
     includes = [
         ".",
         "../..",

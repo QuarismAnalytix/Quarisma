@@ -15,7 +15,7 @@ namespace torch::jit
 // By that time, it will have shape/type of upstream operators available. After
 // the conversion is complete, the placeholder node will be removed, and nodes
 // inside its sub-block converted. NodeToONNX will be called for these
-// nodes, and they will be converted from XSigma operator to ONNX operator.
+// nodes, and they will be converted from Quarisma operator to ONNX operator.
 //
 // Note: Edit Pattern Conversion
 //

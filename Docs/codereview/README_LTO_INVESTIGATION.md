@@ -24,7 +24,7 @@
 - **Purpose**: Detailed technical analysis
 - **Length**: ~300 lines
 - **Best for**: Technical deep dive
-- **Contains**: Full advantages/disadvantages, XSigma interactions, issues
+- **Contains**: Full advantages/disadvantages, Quarisma interactions, issues
 
 ### 4. **LTO_TECHNICAL_REFERENCE.md** 🔧 TECHNICAL DETAILS
 - **Purpose**: Implementation and troubleshooting reference
@@ -94,7 +94,7 @@
 ## 📊 Investigation Summary
 
 ### Current Configuration
-- **Default**: LTO enabled (`XSIGMA_ENABLE_LTO=ON`)
+- **Default**: LTO enabled (`QUARISMA_ENABLE_LTO=ON`)
 - **Applies to**: Release builds
 - **Can be toggled**: Yes
 
@@ -144,7 +144,7 @@ python setup.py config.build.ninja.clang.release
 
 ### Disable LTO Explicitly
 ```bash
-cmake -B build -S . -DXSIGMA_ENABLE_LTO=OFF
+cmake -B build -S . -DQUARISMA_ENABLE_LTO=OFF
 ```
 
 ---
@@ -154,7 +154,7 @@ cmake -B build -S . -DXSIGMA_ENABLE_LTO=OFF
 - ✅ Examined current LTO configuration
 - ✅ Researched LTO advantages
 - ✅ Researched LTO disadvantages
-- ✅ Analyzed XSigma-specific interactions
+- ✅ Analyzed Quarisma-specific interactions
 - ✅ Checked compiler compatibility
 - ✅ Identified known issues
 - ✅ Provided recommendations
@@ -171,10 +171,10 @@ cmake -B build -S . -DXSIGMA_ENABLE_LTO=OFF
 ## 🔍 Investigation Scope
 
 ### What Was Investigated
-✅ Current LTO configuration in XSigma  
+✅ Current LTO configuration in Quarisma  
 ✅ Advantages of LTO for C++ projects  
 ✅ Disadvantages of LTO for C++ projects  
-✅ XSigma-specific interactions  
+✅ Quarisma-specific interactions  
 ✅ Compiler support (GCC, Clang, MSVC, Apple Clang)  
 ✅ Known issues and limitations  
 ✅ Recommendations for configuration  
@@ -182,7 +182,7 @@ cmake -B build -S . -DXSIGMA_ENABLE_LTO=OFF
 ✅ CI/CD pipeline implications  
 
 ### What Was NOT Investigated
-❌ Actual performance benchmarking on XSigma codebase  
+❌ Actual performance benchmarking on Quarisma codebase  
 ❌ Profile-Guided Optimization (PGO) integration  
 ❌ Detailed Windows DLL testing  
 ❌ Comparison with other optimization techniques  
@@ -248,7 +248,7 @@ cmake -B build -S . -DXSIGMA_ENABLE_LTO=OFF
 
 ## ✨ Key Takeaways
 
-1. **LTO is beneficial** for XSigma Release builds
+1. **LTO is beneficial** for Quarisma Release builds
 2. **Performance improvement** of 5-15% is significant
 3. **Trade-offs are acceptable** for production use
 4. **Known issues are mitigated** by current configuration
@@ -279,7 +279,7 @@ cmake -B build -S . -DXSIGMA_ENABLE_LTO=OFF
 | Total Lines | ~2,100 |
 | Total Size | ~77 KB |
 | Audience | All technical levels |
-| Scope | XSigma C++ Project |
+| Scope | Quarisma C++ Project |
 
 ---
 
@@ -296,6 +296,6 @@ cmake -B build -S . -DXSIGMA_ENABLE_LTO=OFF
 ---
 
 **Last Updated**: November 2024  
-**Maintained By**: XSigma Development Team  
+**Maintained By**: Quarisma Development Team  
 **Questions?**: See LTO_INVESTIGATION_INDEX.md for navigation
 

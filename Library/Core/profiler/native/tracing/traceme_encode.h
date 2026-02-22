@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
@@ -43,7 +43,7 @@ limitations under the License.
 #include "util/exception.h"
 #include "util/string_util.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -87,7 +87,7 @@ struct TraceMeArg
      * @param k Argument key
      * @param v String value (must remain valid during encoding)
      */
-    TraceMeArg(std::string_view k, XSIGMA_LIFETIME_BOUND const std::string& v) : key(k), value(v) {}
+    TraceMeArg(std::string_view k, QUARISMA_LIFETIME_BOUND const std::string& v) : key(k), value(v) {}
 
     /**
      * @brief Constructs an argument from string_view key and numeric value.
@@ -155,13 +155,13 @@ namespace traceme_internal
  * **Safety**: Requires pre-allocated buffer with sufficient space
  * **Format**: Metadata uses '#' as delimiter, so it's forbidden in content
  */
-XSIGMA_FORCE_INLINE char* append(char* out, std::string_view str)
+QUARISMA_FORCE_INLINE char* append(char* out, std::string_view str)
 {
-    XSIGMA_CHECK_DEBUG(
+    QUARISMA_CHECK_DEBUG(
         !strings::str_contains(str, '#'), "'#' is not a valid character in traceme_encode {}", str);
 
     const size_t str_size = str.size();
-    if XSIGMA_LIKELY (str_size > 0)
+    if QUARISMA_LIKELY (str_size > 0)
     {
         memcpy(out, str.data(), str_size);
         out += str_size;
@@ -191,10 +191,10 @@ XSIGMA_FORCE_INLINE char* append(char* out, std::string_view str)
  * - Input: name="matrix_op", args={{"rows", 100}, {"cols", 50}}
  * - Output: "matrix_op#rows=100,cols=50#"
  */
-XSIGMA_FORCE_INLINE std::string append_args(
+QUARISMA_FORCE_INLINE std::string append_args(
     std::string name, std::initializer_list<TraceMeArg> args)
 {
-    if XSIGMA_LIKELY (args.size() > 0)
+    if QUARISMA_LIKELY (args.size() > 0)
     {
         const auto old_size = name.size();
         auto       new_size =
@@ -215,7 +215,7 @@ XSIGMA_FORCE_INLINE std::string append_args(
             *out++ = ',';  // Separator (will be replaced with '#' for last arg)
         }
         *(out - 1) = '#';  // Replace final ',' with closing '#'
-        XSIGMA_CHECK_DEBUG(
+        QUARISMA_CHECK_DEBUG(
             out == begin + new_size,
             "out={} is not equal to begin={} + new_size={}",
             out,
@@ -247,9 +247,9 @@ XSIGMA_FORCE_INLINE std::string append_args(
  * - Before: name="op#param1=value1#", new_metadata="#param2=value2#"
  * - After: name="op#param1=value1,param2=value2#"
  */
-XSIGMA_FORCE_INLINE void append_metadata(std::string* name, std::string_view new_metadata)
+QUARISMA_FORCE_INLINE void append_metadata(std::string* name, std::string_view new_metadata)
 {
-    if XSIGMA_UNLIKELY (new_metadata.empty())
+    if QUARISMA_UNLIKELY (new_metadata.empty())
     {
         return;  // No metadata to append
     }
@@ -257,7 +257,7 @@ XSIGMA_FORCE_INLINE void append_metadata(std::string* name, std::string_view new
     if (!name->empty() && name->back() == '#')
     {                        // name already has metadata - merge it
         name->back() = ',';  // Replace closing '#' with separator ','
-        if XSIGMA_LIKELY (new_metadata.front() == '#')
+        if QUARISMA_LIKELY (new_metadata.front() == '#')
         {
             new_metadata.remove_prefix(1);  // Skip leading '#' to avoid duplication
         }
@@ -293,7 +293,7 @@ XSIGMA_FORCE_INLINE void append_metadata(std::string* name, std::string_view new
  * });
  * ```
  */
-XSIGMA_FORCE_INLINE std::string traceme_encode(
+QUARISMA_FORCE_INLINE std::string traceme_encode(
     std::string name, std::initializer_list<TraceMeArg> args)
 {
     return traceme_internal::append_args(std::move(name), args);
@@ -305,7 +305,7 @@ XSIGMA_FORCE_INLINE std::string traceme_encode(
  * @param args Key-value pairs to encode as metadata
  * @return Formatted trace name with embedded metadata
  */
-XSIGMA_FORCE_INLINE std::string traceme_encode(
+QUARISMA_FORCE_INLINE std::string traceme_encode(
     std::string_view name, std::initializer_list<TraceMeArg> args)
 {
     return traceme_internal::append_args(std::string(name), args);
@@ -317,7 +317,7 @@ XSIGMA_FORCE_INLINE std::string traceme_encode(
  * @param args Key-value pairs to encode as metadata
  * @return Formatted trace name with embedded metadata
  */
-XSIGMA_FORCE_INLINE std::string traceme_encode(
+QUARISMA_FORCE_INLINE std::string traceme_encode(
     const char* name, std::initializer_list<TraceMeArg> args)
 {
     return traceme_internal::append_args(std::string(name), args);
@@ -349,7 +349,7 @@ XSIGMA_FORCE_INLINE std::string traceme_encode(
  * });
  * ```
  */
-XSIGMA_FORCE_INLINE std::string traceme_encode(std::initializer_list<TraceMeArg> args)
+QUARISMA_FORCE_INLINE std::string traceme_encode(std::initializer_list<TraceMeArg> args)
 {
     return traceme_internal::append_args(std::string(), args);
 }
@@ -367,7 +367,7 @@ XSIGMA_FORCE_INLINE std::string traceme_encode(std::initializer_list<TraceMeArg>
  *
  * **Example**: `traceme_op("MatMul", "GPU")` returns `"MatMul:GPU"`
  */
-XSIGMA_FORCE_INLINE std::string traceme_op(std::string_view op_name, std::string_view op_type)
+QUARISMA_FORCE_INLINE std::string traceme_op(std::string_view op_name, std::string_view op_type)
 {
     return strings::str_cat(op_name, ":", op_type);
 }
@@ -378,7 +378,7 @@ XSIGMA_FORCE_INLINE std::string traceme_op(std::string_view op_name, std::string
  * @param op_type Operation type as C-string
  * @return Formatted operation name
  */
-XSIGMA_FORCE_INLINE std::string traceme_op(const char* op_name, const char* op_type)
+QUARISMA_FORCE_INLINE std::string traceme_op(const char* op_name, const char* op_type)
 {
     return strings::str_cat(op_name, ":", op_type);
 }
@@ -389,7 +389,7 @@ XSIGMA_FORCE_INLINE std::string traceme_op(const char* op_name, const char* op_t
  * @param op_type Operation type to append
  * @return Modified op_name with appended type
  */
-XSIGMA_FORCE_INLINE std::string traceme_op(std::string&& op_name, std::string_view op_type)
+QUARISMA_FORCE_INLINE std::string traceme_op(std::string&& op_name, std::string_view op_type)
 {
     strings::str_append(&op_name, ":", op_type);
     return op_name;
@@ -409,7 +409,7 @@ XSIGMA_FORCE_INLINE std::string traceme_op(std::string&& op_name, std::string_vi
  * **Use Case**: TensorFlow kernel profiling where the actual kernel name should
  * be replaced with the high-level TF operation name for better user understanding.
  */
-XSIGMA_FORCE_INLINE std::string traceme_op_override(
+QUARISMA_FORCE_INLINE std::string traceme_op_override(
     std::string_view op_name, std::string_view op_type)
 {
     return strings::str_cat("#tf_op=", op_name, ":", op_type, "#");
@@ -421,9 +421,9 @@ XSIGMA_FORCE_INLINE std::string traceme_op_override(
  * @param op_type TensorFlow operation type as C-string
  * @return TensorFlow operation override metadata
  */
-XSIGMA_FORCE_INLINE std::string traceme_op_override(const char* op_name, const char* op_type)
+QUARISMA_FORCE_INLINE std::string traceme_op_override(const char* op_name, const char* op_type)
 {
     return strings::str_cat("#tf_op=", op_name, ":", op_type, "#");
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

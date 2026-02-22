@@ -1,5 +1,5 @@
-#include <XSigma/core/PythonOpRegistrationTrampoline.h>
-#include <XSigma/core/dispatch/Dispatcher.h>
+#include <Quarisma/core/PythonOpRegistrationTrampoline.h>
+#include <Quarisma/core/dispatch/Dispatcher.h>
 #include <c10/util/env.h>
 
 #include <list>
@@ -123,7 +123,7 @@ C10_EXPORT Dispatcher& Dispatcher::realSingleton()
 std::optional<OperatorHandle> Dispatcher::findOp(const OperatorName& overload_name)
 {
     return operatorLookupTable_.read(
-        [&](const xsigma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
+        [&](const quarisma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
             -> std::optional<OperatorHandle>
         {
             auto found = operatorLookupTable.find(overload_name);
@@ -230,7 +230,7 @@ OperatorHandle Dispatcher::findSchemaOrThrow(const char* name, const char* overl
 const std::vector<OperatorName> Dispatcher::getAllOpNames()
 {
     return operatorLookupTable_.read(
-        [&](const xsigma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
+        [&](const quarisma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
             -> std::vector<OperatorName>
         {
             std::vector<OperatorName> allOpNames;
@@ -245,7 +245,7 @@ const std::vector<OperatorName> Dispatcher::getAllOpNames()
 const std::vector<OperatorName> Dispatcher::getAllOpNamesForDispatchKey(DispatchKey k)
 {
     return operatorLookupTable_.read(
-        [&](const xsigma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
+        [&](const quarisma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
             -> std::vector<OperatorName>
         {
             std::vector<OperatorName> allOpNames;
@@ -273,7 +273,7 @@ OperatorHandle Dispatcher::findOrRegisterName_(const OperatorName& op_name)
     operators_.emplace_back(OperatorName(op_name));
     OperatorHandle handle(--operators_.end());
     operatorLookupTable_.write(
-        [&](xsigma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
+        [&](quarisma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
         { operatorLookupTable.emplace(op_name, handle); });
 
     return handle;
@@ -553,7 +553,7 @@ void Dispatcher::cleanup(const OperatorHandle& op, const OperatorName& op_name)
         // stores operatorIterator_!
         operators_.erase(op.operatorIterator_);
         operatorLookupTable_.write(
-            [&](xsigma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
+            [&](quarisma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
             { operatorLookupTable.erase(op_name); });
     }
 }
@@ -647,7 +647,7 @@ void Dispatcher::checkInvariants() const
 std::vector<OperatorHandle> Dispatcher::findDanglingImpls() const
 {
     return operatorLookupTable_.read(
-        [&](const xsigma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
+        [&](const quarisma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
             -> std::vector<OperatorHandle>
         {
             std::vector<OperatorHandle> opsWithDanglingImpls;
@@ -666,7 +666,7 @@ std::vector<OperatorName> Dispatcher::getRegistrationsForDispatchKey(
     std::optional<DispatchKey> k) const
 {
     return operatorLookupTable_.read(
-        [&](const xsigma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
+        [&](const quarisma::flat_hash_map<OperatorName, OperatorHandle>& operatorLookupTable)
             -> std::vector<OperatorName>
         {
             std::vector<OperatorName> op_names;

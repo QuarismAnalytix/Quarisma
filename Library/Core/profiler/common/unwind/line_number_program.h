@@ -8,7 +8,7 @@
 #include "profiler/common/unwind/unwind_error.h"
 #include "util/irange.h"
 
-namespace xsigma::unwind
+namespace quarisma::unwind
 {
 
 struct LineNumberProgram
@@ -89,7 +89,7 @@ struct LineNumberProgram
                 }
             }
 
-            for (auto i : xsigma::irange(directories_count))
+            for (auto i : quarisma::irange(directories_count))
             {
                 (void)i;
                 LOG_INFO("{} {}\n", i, include_directories_[i]);
@@ -129,7 +129,7 @@ struct LineNumberProgram
                     }
                 }
             }
-            for (auto i : xsigma::irange(files_count))
+            for (auto i : quarisma::irange(files_count))
             {
                 (void)i;
                 LOG_INFO("{} {} {}\n", i, file_names_[i], file_directory_index_[i]);
@@ -389,4 +389,4 @@ private:
     RangeTable<Entry>              ranges_;
 };
 
-}  // namespace xsigma::unwind
+}  // namespace quarisma::unwind

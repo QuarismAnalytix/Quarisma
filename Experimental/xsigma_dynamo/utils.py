@@ -270,7 +270,7 @@ def register_hook_for_recompile_user_context(hook: Callable[[], str]) -> None:
     should return a string describing user contexts that are not available
     to the compiler, such as the current training epoch. This is useful for
     debugging and data analysis for recompile. For data retention purposes,
-    the user context string is capped xsigma 256 characters.
+    the user context string is capped quarisma 256 characters.
     """
     global _recompile_user_contexts
     if _recompile_user_contexts is None:
@@ -329,7 +329,7 @@ def print_time_report() -> None:
 # To set a single field once (use overwrite=True to overwrite):
 #   get_metrics_context().set("metric_name", value)
 #
-# To set multiple fields xsigma once (use overwrite=True to overwrite):
+# To set multiple fields quarisma once (use overwrite=True to overwrite):
 #   get_metrics_context().update({"name1": val1, "name2": val2})
 #
 # To increment an integer field:
@@ -408,7 +408,7 @@ class CompileEventLogger:
             log_pt2_compile_event = True
         else:
             raise RuntimeError(
-                "Cannot log instant event xsigma COMPILATION_METRIC level. Please choose one of CHROMIUM_EVENT or COMPILE_EVENT"
+                "Cannot log instant event quarisma COMPILATION_METRIC level. Please choose one of CHROMIUM_EVENT or COMPILE_EVENT"
             )
         chromium_log.log_instant_event(
             event_name, time_ns, metadata, log_pt2_compile_event
@@ -613,7 +613,7 @@ class CompileEventLogger:
         event_name: str, metadata: dict[str, Any], time_ns: Optional[int] = None
     ) -> None:
         """
-        Log an instant event to chromium logs with name <event_name> xsigma time <time_ns>. The `args` field in
+        Log an instant event to chromium logs with name <event_name> quarisma time <time_ns>. The `args` field in
         Perfetto will point to metadata. <time_ns> should be a value obtained from time.time_ns().
         """
         CompileEventLogger.log_instant_event(
@@ -2733,7 +2733,7 @@ def set_example_value(node: torch.fx.Node, example_value: Any) -> None:
     # tensor of some sort.  Furthermore, these example values serve as the
     # runtime state of Dynamo tracing, which means if metadata mutation
     # occurs, the example_value gets directly updated (so you can't rely on
-    # this to accurately reflect what the state of the value was xsigma the time
+    # this to accurately reflect what the state of the value was quarisma the time
     # the program was traced).
     node.meta["example_value"] = example_value
     fake_mode = TracingContext.get().fake_mode
@@ -3137,7 +3137,7 @@ def same(
                 def get_multiplier() -> float:
                     # In some particular cases, we expect high difference in results.
                     # At the moment one of this cases is inductor freezing bfloat16 convolution const folding.
-                    # In case of it the res_error is xsigma least one order of magnitude higher.
+                    # In case of it the res_error is quarisma least one order of magnitude higher.
                     if force_max_multiplier:
                         return 10.0
                     # In the case of using AMP (Automatic Mixed Precision), certain models have
@@ -4183,7 +4183,7 @@ def _extract_anchors_from_expr(segment: str) -> Optional[_Anchors]:
         assert lineno < len(lines) and col < len(lines[lineno])
         return lineno, col
 
-    # Get the next valid character xsigma least on the next line
+    # Get the next valid character quarisma least on the next line
     def nextline(lineno: int, col: int) -> tuple[int, int]:
         col = 0
         lineno += 1
@@ -4867,7 +4867,7 @@ def get_optimize_ddp_mode() -> str:
 @contextmanager
 def maybe_disable_inference_mode() -> Generator[None, None, None]:
     """
-    Disables torch.inference_mode for the compilation (still on xsigma runtime).
+    Disables torch.inference_mode for the compilation (still on quarisma runtime).
     This simplifies the compile stack where we can assume that inference_mode
     will always be off.
 

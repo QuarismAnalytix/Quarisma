@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
@@ -12,15 +12,15 @@
 #include <vector>
 
 #include "profiler/native/session/profiler.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // ============================================================================
 // Memory Tracking and Statistical Analysis Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, memory_tracking_enabled)
+QUARISMATEST(Profiler, memory_tracking_enabled)
 {
     profiler_options opts;
     opts.enable_memory_tracking_ = true;
@@ -41,7 +41,7 @@ XSIGMATEST(Profiler, memory_tracking_enabled)
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, memory_tracking_disabled)
+QUARISMATEST(Profiler, memory_tracking_disabled)
 {
     profiler_options opts;
     opts.enable_memory_tracking_ = false;
@@ -58,7 +58,7 @@ XSIGMATEST(Profiler, memory_tracking_disabled)
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, statistical_analysis_enabled)
+QUARISMATEST(Profiler, statistical_analysis_enabled)
 {
     profiler_options opts;
     opts.enable_statistical_analysis_ = true;
@@ -75,7 +75,7 @@ XSIGMATEST(Profiler, statistical_analysis_enabled)
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, statistical_analysis_disabled)
+QUARISMATEST(Profiler, statistical_analysis_disabled)
 {
     profiler_options opts;
     opts.enable_statistical_analysis_ = false;
@@ -92,7 +92,7 @@ XSIGMATEST(Profiler, statistical_analysis_disabled)
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, hierarchical_profiling_enabled)
+QUARISMATEST(Profiler, hierarchical_profiling_enabled)
 {
     profiler_options opts;
     opts.enable_hierarchical_profiling_ = true;
@@ -116,7 +116,7 @@ XSIGMATEST(Profiler, hierarchical_profiling_enabled)
     EXPECT_NE(json.find("inner"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, hierarchical_profiling_disabled)
+QUARISMATEST(Profiler, hierarchical_profiling_disabled)
 {
     profiler_options opts;
     opts.enable_hierarchical_profiling_ = false;
@@ -136,7 +136,7 @@ XSIGMATEST(Profiler, hierarchical_profiling_disabled)
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, timing_enabled)
+QUARISMATEST(Profiler, timing_enabled)
 {
     profiler_options opts;
     opts.enable_timing_ = true;
@@ -153,7 +153,7 @@ XSIGMATEST(Profiler, timing_enabled)
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, timing_disabled)
+QUARISMATEST(Profiler, timing_disabled)
 {
     profiler_options opts;
     opts.enable_timing_ = false;
@@ -170,7 +170,7 @@ XSIGMATEST(Profiler, timing_disabled)
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, multiple_scopes_same_name)
+QUARISMATEST(Profiler, multiple_scopes_same_name)
 {
     auto session = std::make_unique<profiler_session>(profiler_options());
     EXPECT_TRUE(session != nullptr);
@@ -196,7 +196,7 @@ XSIGMATEST(Profiler, multiple_scopes_same_name)
     EXPECT_GE(count, 5);
 }
 
-XSIGMATEST(Profiler, scope_duration_measurement)
+QUARISMATEST(Profiler, scope_duration_measurement)
 {
     auto session = std::make_unique<profiler_session>(profiler_options());
     EXPECT_TRUE(session != nullptr);
@@ -215,7 +215,7 @@ XSIGMATEST(Profiler, scope_duration_measurement)
     EXPECT_GE(duration_ms, 10);
 }
 
-XSIGMATEST(Profiler, all_features_enabled)
+QUARISMATEST(Profiler, all_features_enabled)
 {
     profiler_options opts;
     opts.enable_timing_                 = true;
@@ -246,7 +246,7 @@ XSIGMATEST(Profiler, all_features_enabled)
     EXPECT_NE(json.find("inner"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, all_features_disabled)
+QUARISMATEST(Profiler, all_features_disabled)
 {
     profiler_options opts;
     opts.enable_timing_                 = false;
@@ -265,4 +265,4 @@ XSIGMATEST(Profiler, all_features_disabled)
 
     EXPECT_TRUE(session->stop());
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

@@ -1,6 +1,6 @@
 #!/bin/bash
-# XSigma CI - Ubuntu/Linux Dependency Installation Script
-# This script installs all required dependencies for building XSigma on Ubuntu/Linux
+# Quarisma CI - Ubuntu/Linux Dependency Installation Script
+# This script installs all required dependencies for building Quarisma on Ubuntu/Linux
 # Usage: ./install-deps-ubuntu.sh [--with-cuda] [--with-tbb]
 
 set -e  # Exit on error
@@ -147,4 +147,4 @@ pip3 install colorama==0.4.6 psutil==6.1.1 || {
 }
 
 log_success "Ubuntu/Linux dependency installation completed successfully!"
-log_info "You can now build XSigma using: python Scripts/setup.py ninja clang config build test"
+log_info "You can now build Quarisma using: python Scripts/setup.py ninja clang config build test"

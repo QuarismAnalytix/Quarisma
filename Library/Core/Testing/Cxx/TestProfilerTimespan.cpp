@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -8,13 +8,13 @@
  * Tests time interval utilities for profiling
  */
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "profiler/native/core/timespan.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // Test default constructor
-XSIGMATEST(Profiler, timespan_default_constructor)
+QUARISMATEST(Profiler, timespan_default_constructor)
 {
     timespan ts;
     EXPECT_EQ(ts.begin_ps(), 0);
@@ -22,7 +22,7 @@ XSIGMATEST(Profiler, timespan_default_constructor)
 }
 
 // Test constructor with begin and duration
-XSIGMATEST(Profiler, timespan_constructor_with_values)
+QUARISMATEST(Profiler, timespan_constructor_with_values)
 {
     timespan ts(100, 50);
     EXPECT_EQ(ts.begin_ps(), 100);
@@ -30,35 +30,35 @@ XSIGMATEST(Profiler, timespan_constructor_with_values)
 }
 
 // Test begin_ps accessor
-XSIGMATEST(Profiler, timespan_begin_ps)
+QUARISMATEST(Profiler, timespan_begin_ps)
 {
     timespan ts(1000, 500);
     EXPECT_EQ(ts.begin_ps(), 1000);
 }
 
 // Test duration_ps accessor
-XSIGMATEST(Profiler, timespan_duration_ps)
+QUARISMATEST(Profiler, timespan_duration_ps)
 {
     timespan ts(1000, 500);
     EXPECT_EQ(ts.duration_ps(), 500);
 }
 
 // Test end_ps calculation
-XSIGMATEST(Profiler, timespan_end_ps)
+QUARISMATEST(Profiler, timespan_end_ps)
 {
     timespan ts(1000, 500);
     EXPECT_EQ(ts.end_ps(), 1500);
 }
 
 // Test middle_ps calculation
-XSIGMATEST(Profiler, timespan_middle_ps)
+QUARISMATEST(Profiler, timespan_middle_ps)
 {
     timespan ts(1000, 500);
     EXPECT_EQ(ts.middle_ps(), 1250);
 }
 
 // Test instant detection
-XSIGMATEST(Profiler, timespan_instant)
+QUARISMATEST(Profiler, timespan_instant)
 {
     timespan instant(1000, 0);
     timespan non_instant(1000, 100);
@@ -68,7 +68,7 @@ XSIGMATEST(Profiler, timespan_instant)
 }
 
 // Test empty detection
-XSIGMATEST(Profiler, timespan_empty)
+QUARISMATEST(Profiler, timespan_empty)
 {
     timespan empty;
     timespan non_empty(100, 50);
@@ -78,7 +78,7 @@ XSIGMATEST(Profiler, timespan_empty)
 }
 
 // Test overlaps - overlapping timespans
-XSIGMATEST(Profiler, timespan_overlaps_true)
+QUARISMATEST(Profiler, timespan_overlaps_true)
 {
     timespan ts1(100, 100);  // [100, 200]
     timespan ts2(150, 100);  // [150, 250]
@@ -88,7 +88,7 @@ XSIGMATEST(Profiler, timespan_overlaps_true)
 }
 
 // Test overlaps - non-overlapping timespans
-XSIGMATEST(Profiler, timespan_overlaps_false)
+QUARISMATEST(Profiler, timespan_overlaps_false)
 {
     timespan ts1(100, 50);  // [100, 150]
     timespan ts2(200, 50);  // [200, 250]
@@ -98,7 +98,7 @@ XSIGMATEST(Profiler, timespan_overlaps_false)
 }
 
 // Test overlaps - adjacent timespans
-XSIGMATEST(Profiler, timespan_overlaps_adjacent)
+QUARISMATEST(Profiler, timespan_overlaps_adjacent)
 {
     timespan ts1(100, 50);  // [100, 150]
     timespan ts2(150, 50);  // [150, 200]
@@ -107,7 +107,7 @@ XSIGMATEST(Profiler, timespan_overlaps_adjacent)
 }
 
 // Test includes - timespan includes another
-XSIGMATEST(Profiler, timespan_includes_timespan_true)
+QUARISMATEST(Profiler, timespan_includes_timespan_true)
 {
     timespan outer(100, 200);  // [100, 300]
     timespan inner(150, 50);   // [150, 200]
@@ -117,7 +117,7 @@ XSIGMATEST(Profiler, timespan_includes_timespan_true)
 }
 
 // Test includes - timespan does not include another
-XSIGMATEST(Profiler, timespan_includes_timespan_false)
+QUARISMATEST(Profiler, timespan_includes_timespan_false)
 {
     timespan ts1(100, 50);  // [100, 150]
     timespan ts2(200, 50);  // [200, 250]
@@ -126,7 +126,7 @@ XSIGMATEST(Profiler, timespan_includes_timespan_false)
 }
 
 // Test includes - point in timespan
-XSIGMATEST(Profiler, timespan_includes_point_true)
+QUARISMATEST(Profiler, timespan_includes_point_true)
 {
     timespan ts(100, 100);  // [100, 200]
 
@@ -136,7 +136,7 @@ XSIGMATEST(Profiler, timespan_includes_point_true)
 }
 
 // Test includes - point not in timespan
-XSIGMATEST(Profiler, timespan_includes_point_false)
+QUARISMATEST(Profiler, timespan_includes_point_false)
 {
     timespan ts(100, 100);  // [100, 200]
 
@@ -145,7 +145,7 @@ XSIGMATEST(Profiler, timespan_includes_point_false)
 }
 
 // Test overlapped_duration_ps - overlapping
-XSIGMATEST(Profiler, timespan_overlapped_duration_overlapping)
+QUARISMATEST(Profiler, timespan_overlapped_duration_overlapping)
 {
     timespan ts1(100, 100);  // [100, 200]
     timespan ts2(150, 100);  // [150, 250]
@@ -155,7 +155,7 @@ XSIGMATEST(Profiler, timespan_overlapped_duration_overlapping)
 }
 
 // Test overlapped_duration_ps - non-overlapping
-XSIGMATEST(Profiler, timespan_overlapped_duration_non_overlapping)
+QUARISMATEST(Profiler, timespan_overlapped_duration_non_overlapping)
 {
     timespan ts1(100, 50);  // [100, 150]
     timespan ts2(200, 50);  // [200, 250]
@@ -165,7 +165,7 @@ XSIGMATEST(Profiler, timespan_overlapped_duration_non_overlapping)
 }
 
 // Test expand_to_include
-XSIGMATEST(Profiler, timespan_expand_to_include)
+QUARISMATEST(Profiler, timespan_expand_to_include)
 {
     timespan ts1(100, 50);  // [100, 150]
     timespan ts2(200, 50);  // [200, 250]
@@ -177,7 +177,7 @@ XSIGMATEST(Profiler, timespan_expand_to_include)
 }
 
 // Test operator< - by begin time
-XSIGMATEST(Profiler, timespan_operator_less_begin)
+QUARISMATEST(Profiler, timespan_operator_less_begin)
 {
     timespan ts1(100, 50);
     timespan ts2(200, 50);
@@ -187,7 +187,7 @@ XSIGMATEST(Profiler, timespan_operator_less_begin)
 }
 
 // Test operator< - same begin, different duration
-XSIGMATEST(Profiler, timespan_operator_less_duration)
+QUARISMATEST(Profiler, timespan_operator_less_duration)
 {
     timespan ts1(100, 100);  // longer duration
     timespan ts2(100, 50);   // shorter duration
@@ -198,7 +198,7 @@ XSIGMATEST(Profiler, timespan_operator_less_duration)
 }
 
 // Test operator==
-XSIGMATEST(Profiler, timespan_operator_equal)
+QUARISMATEST(Profiler, timespan_operator_equal)
 {
     timespan ts1(100, 50);
     timespan ts2(100, 50);
@@ -209,7 +209,7 @@ XSIGMATEST(Profiler, timespan_operator_equal)
 }
 
 // Test debug_string
-XSIGMATEST(Profiler, timespan_debug_string)
+QUARISMATEST(Profiler, timespan_debug_string)
 {
     timespan    ts(100, 50);
     std::string debug = ts.debug_string();
@@ -219,7 +219,7 @@ XSIGMATEST(Profiler, timespan_debug_string)
 }
 
 // Test from_end_points - normal case
-XSIGMATEST(Profiler, timespan_from_end_points_normal)
+QUARISMATEST(Profiler, timespan_from_end_points_normal)
 {
     timespan ts = timespan::from_end_points(100, 200);
 
@@ -229,7 +229,7 @@ XSIGMATEST(Profiler, timespan_from_end_points_normal)
 }
 
 // Test from_end_points - begin > end
-XSIGMATEST(Profiler, timespan_from_end_points_invalid)
+QUARISMATEST(Profiler, timespan_from_end_points_invalid)
 {
     timespan ts = timespan::from_end_points(200, 100);
 
@@ -238,7 +238,7 @@ XSIGMATEST(Profiler, timespan_from_end_points_invalid)
 }
 
 // Test by_duration comparator
-XSIGMATEST(Profiler, timespan_by_duration)
+QUARISMATEST(Profiler, timespan_by_duration)
 {
     timespan ts1(100, 50);
     timespan ts2(100, 100);
@@ -248,14 +248,14 @@ XSIGMATEST(Profiler, timespan_by_duration)
 }
 
 // Test milli_to_pico conversion
-XSIGMATEST(Profiler, timespan_milli_to_pico)
+QUARISMATEST(Profiler, timespan_milli_to_pico)
 {
     int64_t picos = timespan::milli_to_pico(1);
     EXPECT_EQ(picos, 1000000000LL);
 }
 
 // Test pico_span helper
-XSIGMATEST(Profiler, timespan_pico_span)
+QUARISMATEST(Profiler, timespan_pico_span)
 {
     timespan ts = pico_span(100, 200);
 
@@ -264,7 +264,7 @@ XSIGMATEST(Profiler, timespan_pico_span)
 }
 
 // Test milli_span helper
-XSIGMATEST(Profiler, timespan_milli_span)
+QUARISMATEST(Profiler, timespan_milli_span)
 {
     timespan ts = milli_span(1.0, 2.0);
 
@@ -273,7 +273,7 @@ XSIGMATEST(Profiler, timespan_milli_span)
 }
 
 // Test large timespan values
-XSIGMATEST(Profiler, timespan_large_values)
+QUARISMATEST(Profiler, timespan_large_values)
 {
     uint64_t large_begin    = 1000000000000ULL;
     uint64_t large_duration = 500000000000ULL;
@@ -286,11 +286,11 @@ XSIGMATEST(Profiler, timespan_large_values)
 }
 
 // Test zero duration timespan
-XSIGMATEST(Profiler, timespan_zero_duration)
+QUARISMATEST(Profiler, timespan_zero_duration)
 {
     timespan ts(1000, 0);
 
     EXPECT_TRUE(ts.instant());
     EXPECT_EQ(ts.begin_ps(), ts.end_ps());
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

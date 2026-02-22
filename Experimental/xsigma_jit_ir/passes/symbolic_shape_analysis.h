@@ -47,7 +47,7 @@ TORCH_API std::optional<ShapeComputeGraphMapping> PropagateShapesAndBuildLargeSh
 TORCH_API bool setSymbolicShapeAnalysisTestMode(bool value);
 TORCH_API bool symbolicShapeAnalysisTestModeEnabled();
 
-using SSAInput = std::variant<IValue, xsigma::SymbolicShape>;
-TORCH_API std::optional<std::vector<xsigma::SymbolicShape>> calculateSymbolicShapesOnOp(
+using SSAInput = std::variant<IValue, quarisma::SymbolicShape>;
+TORCH_API std::optional<std::vector<quarisma::SymbolicShape>> calculateSymbolicShapesOnOp(
     const FunctionSchema* schema, const std::vector<SSAInput>& inputs);
 }  // namespace torch::jit

@@ -1,6 +1,6 @@
-#include <XSigma/cuda/CUDAContext.h>
-#include <XSigma/cuda/CUDAGeneratorImpl.h>
-#include <XSigma/native/cuda/jit_utils.h>
+#include <Quarisma/cuda/CUDAContext.h>
+#include <Quarisma/cuda/CUDAGeneratorImpl.h>
+#include <Quarisma/native/cuda/jit_utils.h>
 #include <torch/csrc/jit/codegen/fuser/cuda/fused_kernel.h>
 #include <torch/csrc/jit/codegen/fuser/cuda/resource_strings.h>
 #include <torch/csrc/jit/jit_log.h>
@@ -12,13 +12,13 @@
 #include <torch/csrc/jit/tensorexpr/half_support.h>
 #include <torch/csrc/jit/tensorexpr/ir_simplifier.h>
 #include <torch/csrc/jit/tensorexpr/registerizer.h>
-#include <xsigma/cuda/CUDAFunctions.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/cuda/CUDAFunctions.h>
+#include <quarisma/util/irange.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/NativeFunctions.h>
+#include <Quarisma/NativeFunctions.h>
 #else
-#include <XSigma/ops/empty_strided_native.h>
+#include <Quarisma/ops/empty_strided_native.h>
 #endif
 
 #include <unordered_map>
@@ -64,9 +64,9 @@ static bool is_zero(const ExprPtr& expr)
     return v && *v == 0;
 }
 
-static const xsigma::cuda::NVRTC& nvrtc()
+static const quarisma::cuda::NVRTC& nvrtc()
 {
-    return xsigma::globalContext().getNVRTC();
+    return quarisma::globalContext().getNVRTC();
 }
 
 std::string CudaPrinter::dtypeToCppString(const Dtype& dtype)
@@ -111,7 +111,7 @@ void CudaAnalysis::visit(const AllocatePtr& v)
         {
             if (for_v->loop_options().is_gpu_block_index())
             {
-                // TODO: This isn't right if there's a thread index xsigma a higher level
+                // TODO: This isn't right if there's a thread index quarisma a higher level
                 // than this.
                 cross_block_bufs_.insert(v->buffer_var());
                 return;
@@ -305,7 +305,7 @@ void CudaPrinter::visit(const IntrinsicsPtr& v)
     {
         func_name = func_name + "f";
     }
-    if (v->op_type() == IntrinsicsOp::kAbs && !xsigma::isIntegralType(returnType, true))
+    if (v->op_type() == IntrinsicsOp::kAbs && !quarisma::isIntegralType(returnType, true))
     {
         // since kAbs's func_name is `abs`, prefix `f` for floating point
         func_name = "f" + func_name;
@@ -316,7 +316,7 @@ void CudaPrinter::visit(const IntrinsicsPtr& v)
     }
 
     os() << func_name << "(";
-    for (const auto i : xsigma::irange(v->nparams()))
+    for (const auto i : quarisma::irange(v->nparams()))
     {
         if (i > 0)
         {
@@ -590,7 +590,7 @@ class PrioritizeLoad : public IRMutator
 public:
     ExprPtr mutate(const LoadPtr& v) override
     {
-        // Look xsigma the declaration of this variable for more details.
+        // Look quarisma the declaration of this variable for more details.
         if (nested_if_then_else_ > 0)
         {
             return IRMutator::mutate(v);
@@ -614,7 +614,7 @@ public:
             {
                 // also check indices
                 bool same = true;
-                for (const auto i : xsigma::irange(v->indices().size()))
+                for (const auto i : quarisma::irange(v->indices().size()))
                 {
                     if (!exprEquals(v->indices()[i], nested_store_->indices()[i]))
                     {
@@ -913,7 +913,7 @@ StmtPtr GPUMetaVarRewriter::mutate(const BlockPtr& v)
         innerSegments.push_back(current);
     }
 
-    // We are max extent in all dimensions, so need no masks xsigma this level.
+    // We are max extent in all dimensions, so need no masks quarisma this level.
     if (isFullExtent())
     {
         // flatten inner segments.
@@ -1067,7 +1067,7 @@ void CudaCodeGen::Initialize()
     // (maybe for perf),so I use 1024 as maximum flat work group size.
     // We put a minimum value of 1, this is also used by hip (ROCm 3.8) in
     // the __launch_bound__ implementation. The arguments for the attribute
-    // are (min, max), for details see the documentation xsigma
+    // are (min, max), for details see the documentation quarisma
     // https://clang.llvm.org/docs/AttributeReference.html#amdgpu-flat-work-group-size
     os() << "__attribute__((amdgpu_flat_work_group_size(1, 1024)))" << std::endl;
 #endif
@@ -1189,7 +1189,7 @@ void CudaCodeGen::Initialize()
         auto v = VarFinder::find(te);
         vars_in_extents.insert(v.begin(), v.end());
     }
-    for (const size_t i : xsigma::irange(buffer_args.size()))
+    for (const size_t i : quarisma::irange(buffer_args.size()))
     {
         if (vars_in_extents.count(buffer_args[i].var()))
         {
@@ -1237,11 +1237,11 @@ void CudaCodeGen::Initialize()
 
 void CudaCodeGen::call_with_numel(void** args, int64_t numel)
 {
-    if XSIGMA_UNLIKELY (numel == 0)
+    if QUARISMA_UNLIKELY (numel == 0)
     {
         return;
     }
-    if XSIGMA_UNLIKELY (thread_block_size_ <= 0)
+    if QUARISMA_UNLIKELY (thread_block_size_ <= 0)
     {
         TORCH_INTERNAL_ASSERT(
             thread_block_size_ >= 0, "call_with_numel() requires a precomputed thread block size");
@@ -1263,14 +1263,14 @@ void CudaCodeGen::call_with_numel(void** args, int64_t numel)
     }
 
     const auto device       = this->device().index();
-    const auto prior_device = xsigma::cuda::current_device();
+    const auto prior_device = quarisma::cuda::current_device();
     if (prior_device != device)
     {
-        xsigma::cuda::set_device(device);
+        quarisma::cuda::set_device(device);
     }
 
-    auto stream = xsigma::cuda::getCurrentCUDAStream();
-    xsigma::cuda::jit::initializeCudaContext();
+    auto stream = quarisma::cuda::getCurrentCUDAStream();
+    quarisma::cuda::jit::initializeCudaContext();
     AT_CUDA_DRIVER_CHECK(
         nvrtc().cuLaunchKernel(
             function_,
@@ -1287,7 +1287,7 @@ void CudaCodeGen::call_with_numel(void** args, int64_t numel)
 
     if (prior_device != device)
     {
-        xsigma::cuda::set_device(prior_device);
+        quarisma::cuda::set_device(prior_device);
     }
 }
 
@@ -1378,13 +1378,13 @@ void CudaCodeGen::call_raw(const std::vector<void*>& raw_args)
     {
         uint64_t rand_seed   = uint64_t(-1);
         uint64_t rand_offset = uint64_t(-1);
-        auto     gen         = xsigma::cuda::detail::getDefaultCUDAGenerator();
+        auto     gen         = quarisma::cuda::detail::getDefaultCUDAGenerator();
         // TODO: total hack. Switch to numel when it is available.
         int64_t total_elements_per_thread = (1LL << 28);
         {
             std::lock_guard<std::mutex> lock(gen.mutex());
             auto                        philox_engine_inputs =
-                xsigma::check_generator<xsigma::CUDAGeneratorImpl>(gen)->philox_engine_inputs(
+                quarisma::check_generator<quarisma::CUDAGeneratorImpl>(gen)->philox_engine_inputs(
                     total_elements_per_thread);
             rand_seed   = philox_engine_inputs.first;
             rand_offset = philox_engine_inputs.second;
@@ -1393,14 +1393,14 @@ void CudaCodeGen::call_raw(const std::vector<void*>& raw_args)
         ptr_to_args[buffer_args.size() + 1] = &rand_offset;
     }
 
-    auto prior_device = xsigma::cuda::current_device();
+    auto prior_device = quarisma::cuda::current_device();
     if (prior_device != this->device().index())
     {
-        xsigma::cuda::set_device(this->device().index());
+        quarisma::cuda::set_device(this->device().index());
     }
     // Launch the kernels
-    auto stream = xsigma::cuda::getCurrentCUDAStream();
-    xsigma::cuda::jit::initializeCudaContext();
+    auto stream = quarisma::cuda::getCurrentCUDAStream();
+    quarisma::cuda::jit::initializeCudaContext();
     AT_CUDA_DRIVER_CHECK(
         nvrtc().cuLaunchKernel(
             function_,
@@ -1417,7 +1417,7 @@ void CudaCodeGen::call_raw(const std::vector<void*>& raw_args)
 
     if (prior_device != this->device().index())
     {
-        xsigma::cuda::set_device(prior_device);
+        quarisma::cuda::set_device(prior_device);
     }
 }
 
@@ -1439,32 +1439,32 @@ void CudaCodeGen::call(const std::vector<CallArg>& args)
     call_raw(raw_args);
 }
 
-xsigma::Tensor CudaCodeGen::empty_strided(
-    xsigma::IntArrayRef               size,
-    xsigma::IntArrayRef               stride,
-    std::optional<xsigma::ScalarType> dtype_opt,
-    std::optional<xsigma::Layout>     layout_opt,
-    std::optional<xsigma::Device>     device_opt,
+quarisma::Tensor CudaCodeGen::empty_strided(
+    quarisma::IntArrayRef               size,
+    quarisma::IntArrayRef               stride,
+    std::optional<quarisma::ScalarType> dtype_opt,
+    std::optional<quarisma::Layout>     layout_opt,
+    std::optional<quarisma::Device>     device_opt,
     std::optional<bool>               pin_memory_opt)
 {
-    xsigma::DeviceGuard device_guard(device_opt.value());
-    return xsigma::native::empty_strided_cuda(
+    quarisma::DeviceGuard device_guard(device_opt.value());
+    return quarisma::native::empty_strided_cuda(
         size, stride, dtype_opt, layout_opt, device_opt, pin_memory_opt);
 }
 
 void CudaCodeGen::CompileToNVRTC(const std::string& code, const std::string& func_name)
 {
-    xsigma::cuda::jit::initializeCudaContext();
-    // Note: hacked xsigma::DeviceGuard since xsigma::DeviceGuard was failing to work
+    quarisma::cuda::jit::initializeCudaContext();
+    // Note: hacked quarisma::DeviceGuard since quarisma::DeviceGuard was failing to work
     // properly in some scenarios
-    auto prior_device = xsigma::cuda::current_device();
+    auto prior_device = quarisma::cuda::current_device();
     if (prior_device != this->device().index())
     {
-        xsigma::cuda::set_device(this->device().index());
+        quarisma::cuda::set_device(this->device().index());
     }
     // Acquires device and NVRTC properties (for compile arch and occupancy
     // calculations)
-    cudaDeviceProp* prop  = xsigma::cuda::getCurrentDeviceProperties();
+    cudaDeviceProp* prop  = quarisma::cuda::getCurrentDeviceProperties();
     int             major = 0, minor = 0;
     bool            compile_to_sass = false;
     fuser::cuda::codegenOutputQuery(prop, major, minor, compile_to_sass);
@@ -1516,13 +1516,13 @@ void CudaCodeGen::CompileToNVRTC(const std::string& code, const std::string& fun
 #if !defined(USE_ROCM)
     // compile_to_sass determines whether we are generating SASS or PTX, hence
     // the different API.
-    auto getSize = compile_to_sass ? xsigma::globalContext().getNVRTC().nvrtcGetCUBINSize
-                                   : xsigma::globalContext().getNVRTC().nvrtcGetPTXSize;
-    auto getFunc = compile_to_sass ? xsigma::globalContext().getNVRTC().nvrtcGetCUBIN
-                                   : xsigma::globalContext().getNVRTC().nvrtcGetPTX;
+    auto getSize = compile_to_sass ? quarisma::globalContext().getNVRTC().nvrtcGetCUBINSize
+                                   : quarisma::globalContext().getNVRTC().nvrtcGetPTXSize;
+    auto getFunc = compile_to_sass ? quarisma::globalContext().getNVRTC().nvrtcGetCUBIN
+                                   : quarisma::globalContext().getNVRTC().nvrtcGetPTX;
 #else
-    auto getSize = xsigma::globalContext().getNVRTC().nvrtcGetPTXSize;
-    auto getFunc = xsigma::globalContext().getNVRTC().nvrtcGetPTX;
+    auto getSize = quarisma::globalContext().getNVRTC().nvrtcGetPTXSize;
+    auto getFunc = quarisma::globalContext().getNVRTC().nvrtcGetPTX;
 #endif
     AT_CUDA_NVRTC_CHECK(getSize(program, &ptx_size));
     ptx.resize(ptx_size);
@@ -1534,7 +1534,7 @@ void CudaCodeGen::CompileToNVRTC(const std::string& code, const std::string& fun
 
     if (prior_device != this->device().index())
     {
-        xsigma::cuda::set_device(prior_device);
+        quarisma::cuda::set_device(prior_device);
     }
 }
 

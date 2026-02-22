@@ -1,3 +1,3 @@
 #pragma once
 
-#include <XSigma/core/Tensor.h>
+#include <Quarisma/core/Tensor.h>

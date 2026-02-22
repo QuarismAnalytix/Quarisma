@@ -1,5 +1,5 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -12,11 +12,11 @@
 #include <functional>
 #include <thread>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "common/pointer.h"
 #include "parallel/threaded_callback_queue.h"
 
-namespace xsigma
+namespace quarisma
 {
 struct IntArray
 {
@@ -67,14 +67,14 @@ void RunThreads(int nthreadsBegin, int nthreadsEnd)
 //=============================================================================
 struct A
 {
-    A() { XSIGMA_LOG_INFO("Constructor"); }
+    A() { QUARISMA_LOG_INFO("Constructor"); }
     A(A&& other) noexcept : array(std::move(other.array)), val(other.val)
     {
-        XSIGMA_LOG_INFO("Move constructor");
+        QUARISMA_LOG_INFO("Move constructor");
     }
     A(const A& other) : array(other.array), val(other.val)
     {
-        XSIGMA_LOG_INFO("Copy constructor called.");
+        QUARISMA_LOG_INFO("Copy constructor called.");
     }
     void f(A&, A&&) {}
     void const_f(A&, A&&) const {}
@@ -161,7 +161,7 @@ bool TestSharedFutures()
             std::unique_lock<std::mutex> lock(mutex);
             if (count++ < low)
             {
-                XSIGMA_LOG_ERROR(
+                QUARISMA_LOG_ERROR(
                     "Task {} started too early, in {}th position instead of {}th.",
                     s,
                     count.load(),
@@ -217,19 +217,19 @@ bool TestSharedFutures()
     return retVal;
 }
 
-XSIGMATEST(TestThreadedCallbackQueue, Test)
+QUARISMATEST(TestThreadedCallbackQueue, Test)
 {
-    XSIGMA_LOG_INFO("Testing futures");
-    bool retVal = xsigma::TestSharedFutures();
+    QUARISMA_LOG_INFO("Testing futures");
+    bool retVal = quarisma::TestSharedFutures();
 
-    retVal &= xsigma::TestFunctionTypeCompleteness();
+    retVal &= quarisma::TestFunctionTypeCompleteness();
 
-    XSIGMA_LOG_INFO("Testing expanding from 2 to 8 threads");
+    QUARISMA_LOG_INFO("Testing expanding from 2 to 8 threads");
     // Testing expanding the number of threads
-    xsigma::RunThreads(2, 8);
+    quarisma::RunThreads(2, 8);
 
-    XSIGMA_LOG_INFO("Testing shrinking from 8 to 2 threads");
+    QUARISMA_LOG_INFO("Testing shrinking from 8 to 2 threads");
     // Testing shrinking the number of threads
-    xsigma::RunThreads(8, 2);
+    quarisma::RunThreads(8, 2);
 }
-}  // namespace xsigma
+}  // namespace quarisma

@@ -1,9 +1,9 @@
 """
-This module provides functionality for resuming Python execution xsigma specific points in code,
+This module provides functionality for resuming Python execution quarisma specific points in code,
 primarily used by PyTorch Dynamo for control flow handling and optimization. It implements
 bytecode transformation and execution state management to enable:
 
-- Resuming execution xsigma arbitrary points in Python bytecode
+- Resuming execution quarisma arbitrary points in Python bytecode
 - Managing context managers and their state across execution boundaries
 - Transforming and generating new code objects with preserved execution state
 - Supporting Python 3.11+ exception handling and block management
@@ -403,7 +403,7 @@ class ContinueExecutionCache:
                 prefix.append(create_instruction("RESUME", arg=0))
 
             # Set is_tracing_resume_prologue to prevent graph breaks.
-            # This doesn't really do anything xsigma runtime, but dynamo will trace this
+            # This doesn't really do anything quarisma runtime, but dynamo will trace this
             # and will know that we're in a resume function prologue.
             prefix.extend(
                 [
@@ -612,7 +612,7 @@ class ContinueExecutionCache:
         ) -> None:
             nonlocal new_offset
             (target,) = (i for i in instructions if i.offset == offset)
-            # match the functions starting xsigma the last instruction as we have added a prefix
+            # match the functions starting quarisma the last instruction as we have added a prefix
             (new_target,) = (
                 i2
                 for i1, i2 in zip(reversed(instructions), reversed(meta.instructions))

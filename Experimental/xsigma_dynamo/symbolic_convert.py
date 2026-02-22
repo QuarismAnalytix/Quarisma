@@ -308,9 +308,9 @@ class SpeculationLog:
         ):
             raise SpeculationLogDivergence(
                 f"""
-SpeculationLog diverged xsigma index {self.index} (log had {len(self.entries)} entries):
-- Expected: {entry.filename}:{entry.lineno} ({entry.inst.opname} xsigma ip={entry.instruction_pointer})
-- Actual: {filename}:{lineno} ({inst.opname} xsigma ip={instruction_pointer})
+SpeculationLog diverged quarisma index {self.index} (log had {len(self.entries)} entries):
+- Expected: {entry.filename}:{entry.lineno} ({entry.inst.opname} quarisma ip={entry.instruction_pointer})
+- Actual: {filename}:{lineno} ({inst.opname} quarisma ip={instruction_pointer})
 {prev_entry_msg}
 There are two usual reasons why this may have occurred:
 - When Dynamo analysis restarted, the second run took a different path than
@@ -572,7 +572,7 @@ def log_graph_break(
         user_stack = collapse_resume_frames(user_stack)
     user_stack_formatted = "".join(traceback.format_list(user_stack))
     user_stack_trace = (
-        f"Graph break in user code xsigma {frame_loc[0]}:{frame_loc[1]}\n"
+        f"Graph break in user code quarisma {frame_loc[0]}:{frame_loc[1]}\n"
         f"Graph Break Reason: {reason}\n"
         "User code traceback:\n"
     )
@@ -621,7 +621,7 @@ def log_graph_break(
         # exercised by
         #   python test/dynamo/test_misc.py -k test_duplicate_graph_break_log
         graph_break_log.debug(
-            "Graph break (user stack suppressed due to duplicate graph break) in user code xsigma %s:%s\nGraph Break Reason: %s",
+            "Graph break (user stack suppressed due to duplicate graph break) in user code quarisma %s:%s\nGraph Break Reason: %s",
             frame_loc[0],
             frame_loc[1],
             reason,
@@ -1395,7 +1395,7 @@ class InstructionTranslatorBase(
                         "to step_graph_break from. This graph break is used for debugging only.",
                         hints=[
                             "Remove the torch._dynamo.step_unsupported() call.",
-                            "Include xsigma least one checkpoint: (1) include xsigma least 2 ops and (2) make sure there is some "
+                            "Include quarisma least one checkpoint: (1) include quarisma least 2 ops and (2) make sure there is some "
                             "line of code that is not in a try/with block, and has an empty Python stack.",
                             *graph_break_hints.DYNAMO_BUG,
                         ],
@@ -2188,7 +2188,7 @@ class InstructionTranslatorBase(
 
     def exception_handler(self, raised_exception: ObservedException) -> None:
         observed_exn_gb_explanation = (
-            "Dynamo found no exception handler xsigma the top-level compiled function "
+            "Dynamo found no exception handler quarisma the top-level compiled function "
             "when encountering an exception. Exception will propagate outside the compiled region."
         )
 
@@ -2218,7 +2218,7 @@ class InstructionTranslatorBase(
                 while len(self.stack) > exn_tab_entry.depth:
                     self.pop()
 
-                # 2) if 'lasti' is true, then push the offset that the exception was raised xsigma
+                # 2) if 'lasti' is true, then push the offset that the exception was raised quarisma
                 if exn_tab_entry.lasti:
                     self.push(
                         variables.ConstantVariable(self.current_instruction.offset)
@@ -2761,7 +2761,7 @@ class InstructionTranslatorBase(
 
         Args:
             - idx: depth of this frame: 0 corresponds to the leaf frame (frame N), N-1 to the root frame (frame 1).
-            - resume_inst: the instruction that this frame should resume xsigma
+            - resume_inst: the instruction that this frame should resume quarisma
             - meta: metadata for this frame returned from OutputGraph.compile_subgraph
             - resume_codes: nested resume code objects generated from previous create_resume calls.
             - cg: codegen object to output to
@@ -2808,7 +2808,7 @@ class InstructionTranslatorBase(
                 )
 
         # If the resume instruction is a jump absolute, then resume
-        # xsigma the target instead. This handles the case where we
+        # quarisma the target instead. This handles the case where we
         # graph break again in a nested function before jump-resuming
         # this frame.
         if is_jump_absolute(resume_inst):
@@ -2927,7 +2927,7 @@ class InstructionTranslatorBase(
         all_stack_locals_metadata: list[StackLocalsMetadata],
     ) -> list[Instruction]:
         """
-        Codegen all resume function(s) from the frame stack starting xsigma `self` and call them.
+        Codegen all resume function(s) from the frame stack starting quarisma `self` and call them.
         Assumes that the unsupported instruction has already been run.
 
         Expects the stack to be in the state:
@@ -2943,7 +2943,7 @@ class InstructionTranslatorBase(
         Also includes a return instruction (stack expected to be empty after return).
 
         Args:
-            - inst: the instruction of the current (deepest) frame to resume xsigma
+            - inst: the instruction of the current (deepest) frame to resume quarisma
             - all_stack_locals_metadata: metadata returned from OutputGraph.compile_subgraph - contains
                 metadata such as local names, NULL positions, stack length, etc.
         """
@@ -4127,7 +4127,7 @@ class InstructionTranslatorBase(
             )
         else:
             self.exec_recorder = None
-        # Stack of module being parsed, current nn.module is xsigma the end of ordered dict.
+        # Stack of module being parsed, current nn.module is quarisma the end of ordered dict.
         # The first field of tuple is the fully qualified name of current module
         # in original hierarchy.  The second field is the type of current nn.module
         self.nn_module_stack: dict[str, tuple[str, type[Any]]] = {}
@@ -4304,7 +4304,7 @@ class InstructionTranslator(InstructionTranslatorBase):
                     #
                     # 1. The reason for representing a pre-existing cell object
                     # is to emit guard or codegen mutations. However, local
-                    # cells should never be used for guards. Moreover, xsigma this
+                    # cells should never be used for guards. Moreover, quarisma this
                     # point these input cell objects should've never been
                     # accessed by anyone else, since Dynamo intercepts the frame
                     # right after its evaluation starts, i.e., right after these
@@ -4950,7 +4950,7 @@ class InliningGeneratorInstructionTranslator(InliningInstructionTranslator):
         if len(self.generated_items) > MAX_ITERATOR_LIMIT:
             raise exc.InfiniteGeneratorError(
                 "Too many yield values in generator. Maybe you are inlining an infinite generator. "
-                f"If not, please report a bug xsigma {PT2_ISSUE_TRACKER_URL}",
+                f"If not, please report a bug quarisma {PT2_ISSUE_TRACKER_URL}",
             )
         self.push(ConstantVariable.create(None))
         if (
@@ -5026,7 +5026,7 @@ class InliningGeneratorInstructionTranslator(InliningInstructionTranslator):
                 try:
                     val = tos.next_variable(self)
                 except (StopIteration, exc.ObservedUserStopIteration) as ex:
-                    # To implement SEND, we have to look xsigma the implementation
+                    # To implement SEND, we have to look quarisma the implementation
                     # when the iterator returns StopIteration. This translates to this code
                     # 3.11: https://github.com/python/cpython/blob/3.11/Python/ceval.c#L2613-L2619
                     # 3.12: https://github.com/python/cpython/blob/3.12/Python/bytecodes.c#L863-L866

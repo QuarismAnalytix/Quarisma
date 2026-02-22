@@ -22,7 +22,7 @@ static void InlineForkWait(Block* b, std::unordered_map<Value*, Value*>& future_
 
         auto output = insertGraph(*graph, *subgraph, node->inputs());
 
-        future_remap[node->output()] = output.xsigma(0);
+        future_remap[node->output()] = output.quarisma(0);
     }
 
     // Remove aten::wait if its input future is returned by prim::fork.
@@ -34,7 +34,7 @@ static void InlineForkWait(Block* b, std::unordered_map<Value*, Value*>& future_
         {
             // Account for the case where the aten::wait call isn't present in
             // the current graph.
-            node->output()->replaceAllUsesWith(future_remap.xsigma(node->output()));
+            node->output()->replaceAllUsesWith(future_remap.quarisma(node->output()));
             it.destroyCurrent();
         }
         else if (node->kind() == aten::wait)
@@ -46,7 +46,7 @@ static void InlineForkWait(Block* b, std::unordered_map<Value*, Value*>& future_
             // be dead code eliminated.
             if (future_remap.count(node->input()))
             {
-                node->output()->replaceAllUsesWith(future_remap.xsigma(node->input()));
+                node->output()->replaceAllUsesWith(future_remap.quarisma(node->input()));
                 it.destroyCurrent();
             }
         }

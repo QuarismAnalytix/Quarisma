@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The PARALLEL (Shared Memory Parallelism) module in XSigma has grown complex with multiple backend implementations, conditional compilation flags, and legacy code. This plan proposes a comprehensive simplification strategy to make the module more maintainable while preserving core functionality.
+The PARALLEL (Shared Memory Parallelism) module in Quarisma has grown complex with multiple backend implementations, conditional compilation flags, and legacy code. This plan proposes a comprehensive simplification strategy to make the module more maintainable while preserving core functionality.
 
 ## Current State Analysis
 

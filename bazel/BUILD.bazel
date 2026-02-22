@@ -1,5 +1,5 @@
 # =============================================================================
-# XSigma Bazel Configuration Settings
+# Quarisma Bazel Configuration Settings
 # =============================================================================
 # Config settings for conditional compilation
 # Equivalent to CMake option() and set() commands
@@ -8,7 +8,7 @@
 package(default_visibility = ["//visibility:public"])
 
 # Export the helper functions
-exports_files(["xsigma.bzl"])
+exports_files(["quarisma.bzl"])
 
 # =============================================================================
 # Library Type Configuration
@@ -16,7 +16,7 @@ exports_files(["xsigma.bzl"])
 
 config_setting(
     name = "shared_libs",
-    define_values = {"xsigma_build_shared_libs": "true"},
+    define_values = {"quarisma_build_shared_libs": "true"},
 )
 
 # =============================================================================
@@ -25,12 +25,12 @@ config_setting(
 
 config_setting(
     name = "enable_cuda",
-    define_values = {"xsigma_enable_cuda": "true"},
+    define_values = {"quarisma_enable_cuda": "true"},
 )
 
 config_setting(
     name = "enable_hip",
-    define_values = {"xsigma_enable_hip": "true"},
+    define_values = {"quarisma_enable_hip": "true"},
 )
 
 # =============================================================================
@@ -39,12 +39,12 @@ config_setting(
 
 config_setting(
     name = "enable_openmp",
-    define_values = {"xsigma_enable_openmp": "true"},
+    define_values = {"quarisma_enable_openmp": "true"},
 )
 
 config_setting(
     name = "enable_tbb",
-    define_values = {"xsigma_enable_tbb": "true"},
+    define_values = {"quarisma_enable_tbb": "true"},
 )
 
 # =============================================================================
@@ -53,7 +53,7 @@ config_setting(
 
 config_setting(
     name = "enable_mkl",
-    define_values = {"xsigma_enable_mkl": "true"},
+    define_values = {"quarisma_enable_mkl": "true"},
 )
 
 # =============================================================================
@@ -62,7 +62,7 @@ config_setting(
 
 config_setting(
     name = "enable_mimalloc",
-    define_values = {"xsigma_enable_mimalloc": "true"},
+    define_values = {"quarisma_enable_mimalloc": "true"},
 )
 
 # =============================================================================
@@ -71,7 +71,7 @@ config_setting(
 
 config_setting(
     name = "enable_magic_enum",
-    define_values = {"xsigma_enable_magic_enum": "true"},
+    define_values = {"quarisma_enable_magic_enum": "true"},
 )
 
 # =============================================================================
@@ -80,17 +80,17 @@ config_setting(
 
 config_setting(
     name = "enable_kineto",
-    define_values = {"xsigma_enable_kineto": "true"},
+    define_values = {"quarisma_enable_kineto": "true"},
 )
 
 config_setting(
     name = "enable_native_profiler",
-    define_values = {"xsigma_profiler_type": "native"},
+    define_values = {"quarisma_profiler_type": "native"},
 )
 
 config_setting(
     name = "enable_itt",
-    define_values = {"xsigma_enable_itt": "true"},
+    define_values = {"quarisma_enable_itt": "true"},
 )
 
 # =============================================================================
@@ -99,17 +99,17 @@ config_setting(
 
 config_setting(
     name = "logging_glog",
-    define_values = {"xsigma_logging_backend": "glog"},
+    define_values = {"quarisma_logging_backend": "glog"},
 )
 
 config_setting(
     name = "logging_loguru",
-    define_values = {"xsigma_logging_backend": "loguru"},
+    define_values = {"quarisma_logging_backend": "loguru"},
 )
 
 config_setting(
     name = "logging_native",
-    define_values = {"xsigma_logging_backend": "native"},
+    define_values = {"quarisma_logging_backend": "native"},
 )
 
 # =============================================================================
@@ -118,17 +118,17 @@ config_setting(
 
 config_setting(
     name = "gpu_alloc_sync",
-    define_values = {"xsigma_gpu_alloc": "sync"},
+    define_values = {"quarisma_gpu_alloc": "sync"},
 )
 
 config_setting(
     name = "gpu_alloc_async",
-    define_values = {"xsigma_gpu_alloc": "async"},
+    define_values = {"quarisma_gpu_alloc": "async"},
 )
 
 config_setting(
     name = "gpu_alloc_pool_async",
-    define_values = {"xsigma_gpu_alloc": "pool_async"},
+    define_values = {"quarisma_gpu_alloc": "pool_async"},
 )
 
 # =============================================================================
@@ -137,12 +137,12 @@ config_setting(
 
 config_setting(
     name = "lu_pivoting",
-    define_values = {"xsigma_lu_pivoting": "true"},
+    define_values = {"quarisma_lu_pivoting": "true"},
 )
 
 config_setting(
     name = "sobol_1111",
-    define_values = {"xsigma_sobol_1111": "true"},
+    define_values = {"quarisma_sobol_1111": "true"},
 )
 
 # =============================================================================
@@ -151,10 +151,10 @@ config_setting(
 
 config_setting(
     name = "enable_gtest",
-    define_values = {"xsigma_enable_gtest": "true"},
+    define_values = {"quarisma_enable_gtest": "true"},
 )
 
 config_setting(
     name = "enable_benchmark",
-    define_values = {"xsigma_enable_benchmark": "true"},
+    define_values = {"quarisma_enable_benchmark": "true"},
 )

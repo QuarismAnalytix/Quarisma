@@ -1,6 +1,6 @@
-name: XSigma CI - Streamlined Testing Pipeline
+name: Quarisma CI - Streamlined Testing Pipeline
 
-# This CI pipeline provides comprehensive testing for XSigma across multiple platforms and configurations.
+# This CI pipeline provides comprehensive testing for Quarisma across multiple platforms and configurations.
 # Key features:
 # - C++17 baseline testing across all platforms (Ubuntu, Windows, macOS)
 # - Selective C++20/C++23 testing with specific TBB/CUDA combinations
@@ -382,12 +382,12 @@ jobs:
           -DCMAKE_C_COMPILER=$CC_COMPILER \
           -DCMAKE_CXX_COMPILER=$CXX_COMPILER \
           -DCMAKE_CXX_STANDARD=${{ matrix.cxx_std }} \
-          -DXSIGMA_LOGGING_BACKEND=${{ matrix.logging_backend }} \
-          -DXSIGMA_BUILD_TESTING=ON \
-          -DXSIGMA_ENABLE_GTEST=ON \
-          -DXSIGMA_ENABLE_TBB=${{ matrix.tbb_enabled }} \
-          -DXSIGMA_ENABLE_CUDA=${{ matrix.cuda_enabled }} \
-          -DXSIGMA_ENABLE_LTO=OFF
+          -DQUARISMA_LOGGING_BACKEND=${{ matrix.logging_backend }} \
+          -DQUARISMA_BUILD_TESTING=ON \
+          -DQUARISMA_ENABLE_GTEST=ON \
+          -DQUARISMA_ENABLE_TBB=${{ matrix.tbb_enabled }} \
+          -DQUARISMA_ENABLE_CUDA=${{ matrix.cuda_enabled }} \
+          -DQUARISMA_ENABLE_LTO=OFF
 
         # Build
         cmake --build "$BUILD_DIR" -j 2
@@ -416,12 +416,12 @@ jobs:
           -DCMAKE_C_COMPILER=clang `
           -DCMAKE_CXX_COMPILER=clang++ `
           -DCMAKE_CXX_STANDARD=${{ matrix.cxx_std }} `
-          -DXSIGMA_LOGGING_BACKEND=${{ matrix.logging_backend }} `
-          -DXSIGMA_BUILD_TESTING=ON `
-          -DXSIGMA_ENABLE_GTEST=ON `
-          -DXSIGMA_ENABLE_TBB=${{ matrix.tbb_enabled }} `
-          -DXSIGMA_ENABLE_CUDA=${{ matrix.cuda_enabled }} `
-          -DXSIGMA_ENABLE_LTO=OFF
+          -DQUARISMA_LOGGING_BACKEND=${{ matrix.logging_backend }} `
+          -DQUARISMA_BUILD_TESTING=ON `
+          -DQUARISMA_ENABLE_GTEST=ON `
+          -DQUARISMA_ENABLE_TBB=${{ matrix.tbb_enabled }} `
+          -DQUARISMA_ENABLE_CUDA=${{ matrix.cuda_enabled }} `
+          -DQUARISMA_ENABLE_LTO=OFF
 
         # Build
         cmake --build "$buildDir" -j 2
@@ -594,13 +594,13 @@ jobs:
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
           -DCMAKE_CXX_STANDARD=17 \
-          -DXSIGMA_LOGGING_BACKEND=LOGURU \
-          -DXSIGMA_BUILD_TESTING=ON \
-          -DXSIGMA_ENABLE_GTEST=ON \
-          -DXSIGMA_ENABLE_BENCHMARK=OFF \
-          -DXSIGMA_ENABLE_TBB=ON \
-          -DXSIGMA_ENABLE_CUDA=OFF \
-          -DXSIGMA_ENABLE_LTO=OFF
+          -DQUARISMA_LOGGING_BACKEND=LOGURU \
+          -DQUARISMA_BUILD_TESTING=ON \
+          -DQUARISMA_ENABLE_GTEST=ON \
+          -DQUARISMA_ENABLE_BENCHMARK=OFF \
+          -DQUARISMA_ENABLE_TBB=ON \
+          -DQUARISMA_ENABLE_CUDA=OFF \
+          -DQUARISMA_ENABLE_LTO=OFF
 
     # ===== Build and Test TBB Functionality =====
     - name: Build
@@ -750,14 +750,14 @@ jobs:
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
           -DCMAKE_CXX_STANDARD=17 \
-          -DXSIGMA_LOGGING_BACKEND=NATIVE \
-          -DXSIGMA_ENABLE_SANITIZER=ON \
-          -DXSIGMA_SANITIZER_TYPE=${{ matrix.sanitizer }} \
-          -DXSIGMA_BUILD_TESTING=ON \
-          -DXSIGMA_ENABLE_GTEST=ON \
-          -DXSIGMA_ENABLE_LTO=OFF \
-          -DXSIGMA_ENABLE_TBB=ON \
-          -DXSIGMA_ENABLE_CUDA=OFF
+          -DQUARISMA_LOGGING_BACKEND=NATIVE \
+          -DQUARISMA_ENABLE_SANITIZER=ON \
+          -DQUARISMA_SANITIZER_TYPE=${{ matrix.sanitizer }} \
+          -DQUARISMA_BUILD_TESTING=ON \
+          -DQUARISMA_ENABLE_GTEST=ON \
+          -DQUARISMA_ENABLE_LTO=OFF \
+          -DQUARISMA_ENABLE_TBB=ON \
+          -DQUARISMA_ENABLE_CUDA=OFF
 
     - name: Build
       run: cmake --build build -j 2
@@ -861,11 +861,11 @@ jobs:
           -DCMAKE_CXX_COMPILER=clang++ \
           -DCMAKE_C_FLAGS="${{ matrix.opt_level }}" \
           -DCMAKE_CXX_FLAGS="${{ matrix.opt_level }}" \
-          -DXSIGMA_LOGGING_BACKEND=LOGURU \
-          -DXSIGMA_BUILD_TESTING=ON \
-          -DXSIGMA_ENABLE_GTEST=ON \
-          -DXSIGMA_ENABLE_LTO=OFF \
-          -DXSIGMA_ENABLE_TBB=OFF
+          -DQUARISMA_LOGGING_BACKEND=LOGURU \
+          -DQUARISMA_BUILD_TESTING=ON \
+          -DQUARISMA_ENABLE_GTEST=ON \
+          -DQUARISMA_ENABLE_LTO=OFF \
+          -DQUARISMA_ENABLE_TBB=OFF
 
     - name: Build
       run: cmake --build build -j 2
@@ -925,11 +925,11 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
-          -DXSIGMA_LOGGING_BACKEND=LOGURU \
-          -DXSIGMA_BUILD_TESTING=ON \
-          -DXSIGMA_ENABLE_GTEST=ON \
-          -DXSIGMA_ENABLE_LTO=${{ matrix.lto_enabled }} \
-          -DXSIGMA_ENABLE_TBB=ON
+          -DQUARISMA_LOGGING_BACKEND=LOGURU \
+          -DQUARISMA_BUILD_TESTING=ON \
+          -DQUARISMA_ENABLE_GTEST=ON \
+          -DQUARISMA_ENABLE_LTO=${{ matrix.lto_enabled }} \
+          -DQUARISMA_ENABLE_TBB=ON
 
     - name: Build
       run: cmake --build build -j 2
@@ -986,11 +986,11 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
-          -DXSIGMA_LOGGING_BACKEND=LOGURU \
-          -DXSIGMA_BUILD_TESTING=ON \
-          -DXSIGMA_ENABLE_BENCHMARK=OFF \
-          -DXSIGMA_ENABLE_LTO=ON \
-          -DXSIGMA_ENABLE_TBB=ON
+          -DQUARISMA_LOGGING_BACKEND=LOGURU \
+          -DQUARISMA_BUILD_TESTING=ON \
+          -DQUARISMA_ENABLE_BENCHMARK=OFF \
+          -DQUARISMA_ENABLE_LTO=ON \
+          -DQUARISMA_ENABLE_TBB=ON
 
     - name: Build
       run: cmake --build build -j 2
@@ -1091,13 +1091,13 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
-          -DXSIGMA_LOGGING_BACKEND=LOGURU \
-          -DXSIGMA_BUILD_TESTING=ON \
-          -DXSIGMA_ENABLE_BENCHMARK=OFF \
-          -DXSIGMA_ENABLE_LTO=OFF \
-          -DXSIGMA_BUILD_TESTING=ON \
-          -DXSIGMA_ENABLE_GTEST=ON \
-          -DXSIGMA_ENABLE_TBB=OFF
+          -DQUARISMA_LOGGING_BACKEND=LOGURU \
+          -DQUARISMA_BUILD_TESTING=ON \
+          -DQUARISMA_ENABLE_BENCHMARK=OFF \
+          -DQUARISMA_ENABLE_LTO=OFF \
+          -DQUARISMA_BUILD_TESTING=ON \
+          -DQUARISMA_ENABLE_GTEST=ON \
+          -DQUARISMA_ENABLE_TBB=OFF
 
     # ===== Build and Test (Baseline - No Sccache) =====
     - name: Record build start time (Baseline)
@@ -1252,11 +1252,11 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
-          -DXSIGMA_ENABLE_BENCHMARK=OFF \
-          -DXSIGMA_ENABLE_LTO=OFF \
-          -DXSIGMA_BUILD_TESTING=ON \
-          -DXSIGMA_ENABLE_GTEST=ON \
-          -DXSIGMA_ENABLE_TBB=OFF
+          -DQUARISMA_ENABLE_BENCHMARK=OFF \
+          -DQUARISMA_ENABLE_LTO=OFF \
+          -DQUARISMA_BUILD_TESTING=ON \
+          -DQUARISMA_ENABLE_GTEST=ON \
+          -DQUARISMA_ENABLE_TBB=OFF
 
     - name: Configure CMake (Windows - With Sccache)
       if: runner.os == 'Windows'
@@ -1271,13 +1271,13 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler_cxx }} `
           -DCMAKE_CXX_COMPILER_LAUNCHER=sccache `
           -DCMAKE_CXX_STANDARD=${{ matrix.cxx_std }} `
-          -DXSIGMA_LOGGING_BACKEND=${{ matrix.logging_backend }} `
-          -DXSIGMA_BUILD_TESTING=ON `
-          -DXSIGMA_ENABLE_GTEST=ON `
-          -DXSIGMA_ENABLE_BENCHMARK=OFF `
-          -DXSIGMA_ENABLE_LTO=OFF `
-          -DXSIGMA_ENABLE_TBB=OFF `
-          -DXSIGMA_ENABLE_CUDA=${{ matrix.cuda_enabled }}
+          -DQUARISMA_LOGGING_BACKEND=${{ matrix.logging_backend }} `
+          -DQUARISMA_BUILD_TESTING=ON `
+          -DQUARISMA_ENABLE_GTEST=ON `
+          -DQUARISMA_ENABLE_BENCHMARK=OFF `
+          -DQUARISMA_ENABLE_LTO=OFF `
+          -DQUARISMA_ENABLE_TBB=OFF `
+          -DQUARISMA_ENABLE_CUDA=${{ matrix.cuda_enabled }}
 
     # ===== Build and Test (With Sccache) =====
     - name: Record build start time (Sccache)
@@ -1373,13 +1373,13 @@ jobs:
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
           -DCMAKE_CXX_STANDARD=17 \
-          -DXSIGMA_LOGGING_BACKEND=NATIVE \
-          -DXSIGMA_BUILD_TESTING=ON \
-          -DXSIGMA_ENABLE_GTEST=ON \
-          -DXSIGMA_ENABLE_COVERAGE=ON \
-          -DXSIGMA_ENABLE_TBB=OFF \
-          -DXSIGMA_ENABLE_CUDA=OFF \
-          -DXSIGMA_ENABLE_LTO=OFF
+          -DQUARISMA_LOGGING_BACKEND=NATIVE \
+          -DQUARISMA_BUILD_TESTING=ON \
+          -DQUARISMA_ENABLE_GTEST=ON \
+          -DQUARISMA_ENABLE_COVERAGE=ON \
+          -DQUARISMA_ENABLE_TBB=OFF \
+          -DQUARISMA_ENABLE_CUDA=OFF \
+          -DQUARISMA_ENABLE_LTO=OFF
 
         # Build
         cmake --build build -j 2

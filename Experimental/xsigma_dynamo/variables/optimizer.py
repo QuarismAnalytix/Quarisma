@@ -308,7 +308,7 @@ class OptimizerVariable(UserDefinedObjectVariable):
                     install_guard(grad_source.make_guard(GuardBuilder.CONSTANT_MATCH))
 
             # Note: to avoid spam logs only warn if perf hint artifact is enabled
-            # (NB: artifacts are only enabled xsigma the debug or warning level)
+            # (NB: artifacts are only enabled quarisma the debug or warning level)
             if not all_static and perf_hint_log.isEnabledFor(logging.DEBUG):
                 non_static_grads = [src.name() for src in non_static_grads]
                 perf_hint_log.warning(

@@ -8,8 +8,8 @@
 #include <torch/csrc/jit/passes/quantization/helper.h>
 #include <torch/csrc/jit/passes/quantization/insert_quant_dequant.h>
 #include <torch/csrc/jit/passes/subgraph_rewrite.h>
-#include <xsigma/core/QScheme.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/core/QScheme.h>
+#include <quarisma/util/irange.h>
 
 #include <stack>
 #include <utility>
@@ -28,31 +28,31 @@ std::string kScalarType = "_scalar_type";
 
 struct QuantOpParams
 {
-    xsigma::QScheme     qscheme{xsigma::kPerTensorAffine};
+    quarisma::QScheme     qscheme{quarisma::kPerTensorAffine};
     std::vector<Value*> qparams;
     // This is only so that insertQuantizationOps can be templatized
     // and subsequently significant portion of that code can be reused.
     std::string back() const { return "AttributeDoesNotExist"; }
 };
 
-xsigma::QScheme toAffine(xsigma::QScheme qscheme)
+quarisma::QScheme toAffine(quarisma::QScheme qscheme)
 {
     switch (qscheme)
     {
-    case xsigma::kPerTensorAffine:
-    case xsigma::kPerTensorSymmetric:
-        return xsigma::kPerTensorAffine;
-    case xsigma::kPerChannelAffine:
-    case xsigma::kPerChannelSymmetric:
-        return xsigma::kPerChannelAffine;
+    case quarisma::kPerTensorAffine:
+    case quarisma::kPerTensorSymmetric:
+        return quarisma::kPerTensorAffine;
+    case quarisma::kPerChannelAffine:
+    case quarisma::kPerChannelSymmetric:
+        return quarisma::kPerChannelAffine;
     default:
         return qscheme;
     }
 }
 
-bool isPerChannel(xsigma::QScheme qscheme)
+bool isPerChannel(quarisma::QScheme qscheme)
 {
-    return qscheme == xsigma::kPerChannelAffine || qscheme == xsigma::kPerChannelSymmetric;
+    return qscheme == quarisma::kPerChannelAffine || qscheme == quarisma::kPerChannelSymmetric;
 }
 
 // Go through the CallMethod graph to check if the value is Weight.
@@ -81,7 +81,7 @@ bool isWeight(Module& module, Value* v)
             {
                 // Check to make sure all the CallMethods in the graph produce the same
                 // output.
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     call_method_result == result.value(),
                     "Expected all CallMethods to use either weight "
                     "or non-weight value.",
@@ -105,7 +105,7 @@ Node* insertChooseQParams(Graph* graph, Value* original_val)
     auto reduce_range       = graph->insertConstant(reduce_range_param);
     // choose_qparams_per_tensor has 2 outputs, (scale, zero_point).
     Node* choose_qparams = graph->create(
-        xsigma::Symbol::aten(choose_qparams_func),
+        quarisma::Symbol::aten(choose_qparams_func),
         {original_val, reduce_range},
         /* num_outputs = */ 2);
     choose_qparams->output(0)->setDebugName(original_val->debugName() + ".scale");
@@ -144,7 +144,7 @@ std::vector<Value*> insertDeQuantForAllUse(Graph* graph, Value* quantized_val, V
     // and changing the graph will also change the uses() list
     const std::vector<Use> uses = original_val->uses();
     std::vector<Value*>    outputs;
-    for (const auto i : xsigma::irange(uses.size()))
+    for (const auto i : quarisma::irange(uses.size()))
     {
         auto* user = uses[i].user;
         // Insert dequantize node right before use node, because
@@ -177,7 +177,7 @@ Node* insertScalarToTensor(Graph* graph, Value* scalar_value)
 {
     Node*           n = scalar_value->node();
     WithInsertPoint ins(n->next());
-    Value*          float_scalar_type = graph->insertConstant(IValue(xsigma::kFloat));
+    Value*          float_scalar_type = graph->insertConstant(IValue(quarisma::kFloat));
     Value*          none              = graph->insertConstant(IValue());
     Node*           tensor_node       = graph->create(
         Symbol::aten("scalar_tensor"), {scalar_value, float_scalar_type, none, none, none});
@@ -236,7 +236,7 @@ std::optional<std::string> findObserverName(Value* v)
     Node* n = v->node();
     if (n->kind() == prim::CallMethod && n->s(attr::name) == "forward")
     {
-        auto module_instance = n->inputs().xsigma(0);
+        auto module_instance = n->inputs().quarisma(0);
         if (module_instance->node()->kind() == prim::GetAttr &&
             module_instance->node()->s(attr::name).find("_observer_") != std::string::npos)
         {
@@ -260,16 +260,16 @@ bool isPlaceholderObserver(Value* observer)
     return false;
 }
 
-xsigma::ScalarType getObserverDtype(Module& module, Value* v)
+quarisma::ScalarType getObserverDtype(Module& module, Value* v)
 {
     auto observer_name = findObserverName(v);
     if (observer_name.has_value())
     {
         auto               observer_module = module.attr(observer_name.value()).toModule();
-        xsigma::ScalarType scalar_type     = observer_module.attr("dtype").toScalarType();
+        quarisma::ScalarType scalar_type     = observer_module.attr("dtype").toScalarType();
         return scalar_type;
     }
-    return xsigma::ScalarType::Undefined;
+    return quarisma::ScalarType::Undefined;
 }
 
 std::optional<std::string> getEmbeddingBagObsName(script::Module& module, Node* n)
@@ -314,7 +314,7 @@ Node* insertQuantDequantNodes<std::vector<std::string>>(
         inputs.push_back(g->insertGetAttr(self, qparam_name));
     }
     Node* quant = insertQuant(
-        g, inputs, xsigma::Symbol::aten(quantize_func), original_val->debugName() + ".quant");
+        g, inputs, quarisma::Symbol::aten(quantize_func), original_val->debugName() + ".quant");
     Node* dequant = insertDeQuant(g, quant->output(), original_val);
     return dequant;
 }
@@ -382,7 +382,7 @@ Node* insertEmbeddingBagOps(Node* observer, const std::string& op_name)
 
     if (is_aten_op)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             inputs_size == 9, "Expecting FP aten::embedding_bag operator to have 9 inputs");
         // input 0 is the output of prepack op.
         // Last input is added after we account for extra input in 4-bit case.
@@ -397,7 +397,7 @@ Node* insertEmbeddingBagOps(Node* observer, const std::string& op_name)
     }
     else
     {
-        XSIGMA_CHECK(inputs_size == 12, "Expecting F.embedding_bag operator to have 12 inputs");
+        QUARISMA_CHECK(inputs_size == 12, "Expecting F.embedding_bag operator to have 12 inputs");
         qembedding_bag_inputs.push_back(embedding_bag_inputs[1]);  // indices
         qembedding_bag_inputs.push_back(embedding_bag_inputs[3]);  // offsets
         qembedding_bag_inputs.push_back(embedding_bag_inputs[6]);  // scale_grad_by_freq
@@ -409,7 +409,7 @@ Node* insertEmbeddingBagOps(Node* observer, const std::string& op_name)
     qembedding_bag_inputs.push_back(none);  // compressed_indices_mapping
     qembedding_bag_inputs.push_back(embedding_bag_inputs[inputs_size - 2]);
 
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         embedding_bag_inputs[inputs_size - 1]->mustBeNone(),
         "Expected aten::embedding_bag padding_idx input to be None");
 
@@ -419,9 +419,9 @@ Node* insertEmbeddingBagOps(Node* observer, const std::string& op_name)
         WithInsertPoint ins(embedding_bag_float_op);
         g->insertNode(qembedding_bag);
         // Verify that the outputs (apart from index 0) have no uses in the graph.
-        for (const auto i : xsigma::irange(1, embedding_bag_float_op->outputs().size()))
+        for (const auto i : quarisma::irange(1, embedding_bag_float_op->outputs().size()))
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 !embedding_bag_float_op->output(i)->hasUses(),
                 "Expected aten::embedding_bag to only have use for its first output.");
         }
@@ -486,20 +486,20 @@ void insertQuantizationOps(
     Node* dequant = nullptr;
     if (quant_type == QuantType::DYNAMIC)
     {
-        if (getObserverDtype(module, observer_out) == xsigma::ScalarType::Half)
+        if (getObserverDtype(module, observer_out) == quarisma::ScalarType::Half)
         {
             dequant = insertFP16CastOps(g, observer_out);
         }
         else if (!isWeight(module, observer_out))
         {
             auto observer_dtype = getObserverDtype(module, observer_out);
-            if (observer_dtype == xsigma::ScalarType::QUInt8 ||
-                observer_dtype == xsigma::ScalarType::QInt8)
+            if (observer_dtype == quarisma::ScalarType::QUInt8 ||
+                observer_dtype == quarisma::ScalarType::QInt8)
             {
                 // For activation tensors we insert choose_qparams, quant, dequant ops.
                 Value* dtype = g->insertGetAttr(self, qparams.back());
                 dequant      = std::get<2>(insertChooseQParamQuantDequant(
-                    g, observer_out, dtype, xsigma::Symbol::aten(quantize_func)));
+                    g, observer_out, dtype, quarisma::Symbol::aten(quantize_func)));
             }
             else
             {
@@ -542,19 +542,19 @@ void ReplicateChooseQParamsQuantDequant(std::shared_ptr<Graph>& graph)
     }
 
     const auto& vmap                  = dynamic_quant_pattern.vmap;
-    Value*      dequant_val           = vmap.xsigma("a_dequant");
+    Value*      dequant_val           = vmap.quarisma("a_dequant");
     Node*       pattern_dequant       = dequant_val->node();
-    Value*      quant_val             = vmap.xsigma("a_quant");
+    Value*      quant_val             = vmap.quarisma("a_quant");
     Node*       pattern_quant         = quant_val->node();
-    Value*      choose_qparam_val     = vmap.xsigma("a_scale");
+    Value*      choose_qparam_val     = vmap.quarisma("a_scale");
     Node*       pattern_choose_qparam = choose_qparam_val->node();
 
     std::vector<DynamicQuantOps> nodes_to_rewrite;
     for (const Match& match : matches)
     {
-        Node* matched_dequantize    = match.nodes_map.xsigma(pattern_dequant);
-        Node* matched_quantize      = match.nodes_map.xsigma(pattern_quant);
-        Node* matched_choose_qparam = match.nodes_map.xsigma(pattern_choose_qparam);
+        Node* matched_dequantize    = match.nodes_map.quarisma(pattern_dequant);
+        Node* matched_quantize      = match.nodes_map.quarisma(pattern_quant);
+        Node* matched_choose_qparam = match.nodes_map.quarisma(pattern_choose_qparam);
         if (matched_dequantize->output()->uses().size() > 1)
         {
             nodes_to_rewrite.emplace_back(
@@ -607,7 +607,7 @@ void RemoveRedundantDequantize(std::shared_ptr<Graph>& graph)
     auto filter = [&](const Match& match, const std::unordered_map<std::string, Value*>& vmap)
     {
         const auto& match_vmap   = match.values_map;
-        auto        dequant_node = match_vmap.xsigma(vmap.xsigma("a_dequant"))->node();
+        auto        dequant_node = match_vmap.quarisma(vmap.quarisma("a_dequant"))->node();
         Value*      dequant_out  = dequant_node->output();
         // Values can be used multiple times in a single node
         if (dequant_out->uses().size() != 1)
@@ -636,7 +636,7 @@ void RemoveRedundantQuantizationOps(std::shared_ptr<Graph>& graph)
     auto filter = [&](const Match& match, const std::unordered_map<std::string, Value*>& vmap)
     {
         const auto& match_vmap   = match.values_map;
-        auto        dequant_node = match_vmap.xsigma(vmap.xsigma("a_dequant"))->node();
+        auto        dequant_node = match_vmap.quarisma(vmap.quarisma("a_dequant"))->node();
         Value*      dequant_out  = dequant_node->output();
         // Values can be used multiple times in a single node
         if (dequant_out->uses().size() != 1)
@@ -703,21 +703,21 @@ void ReplicateClampScalarArgs(std::shared_ptr<Graph>& graph)
 
 void checkCalculateQParamsResult(const IValue& qparams)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         qparams.isTuple(),
         "`calculate_qparams` function is expected to return a "
         "Tuple, but got:",
         qparams.tagKind());
     auto tp = qparams.toTuple();
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         tp->elements().size() == 2,
         "`calculate_qparams` function is expected to return a "
         "Tuple of size 2, got Tuple of size ",
         tp->elements().size());
     // Expect first two elements of the tuple to be Tensor
-    for (const auto i : xsigma::irange(2))
+    for (const auto i : quarisma::irange(2))
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             tp->elements()[i].isTensor(),
             "Element of Tuple is expected to be Tensor, but element ",
             i,
@@ -779,11 +779,11 @@ private:
     // Get quantization parameter map of the given Value in Graph
     // by searching for observer module of the value and extract the
     // quantization parameters from the observer module
-    std::tuple<xsigma::QScheme, QParamVector> getQSchemeAndQParamVector(
+    std::tuple<quarisma::QScheme, QParamVector> getQSchemeAndQParamVector(
         script::Module& module, Node* n);
     QuantOpParams insertCalculateQParams(script::Module& module, Graph* g, Node* n);
 
-    void checkQScheme(Graph* g, xsigma::QScheme qscheme)
+    void checkQScheme(Graph* g, quarisma::QScheme qscheme)
     {
         if (qscheme_for_graph_.count(g))
         {
@@ -791,14 +791,14 @@ private:
             // Once fixed, this check triggers and fails tests.
             // Fix the tests that enabling this check produce!
             /*
-      XSIGMA_CHECK(
-          qscheme_for_graph_.xsigma(g) == qscheme,
+      QUARISMA_CHECK(
+          qscheme_for_graph_.quarisma(g) == qscheme,
           "Quantizing same graph with different types of "
           "QSchemes is not supported.\n",
           " Expecting:",
-          xsigma::toString(qscheme_for_graph_.xsigma(g)),
+          quarisma::toString(qscheme_for_graph_.quarisma(g)),
           " Got:",
-          xsigma::toString(qscheme));
+          quarisma::toString(qscheme));
       */
         }
         else
@@ -834,7 +834,7 @@ private:
         Value*                                                          original_output,
         const std::vector<Value*>&                                      inputs,
         bool                                                            is_scalar   = false,
-        const std::optional<std::tuple<xsigma::QScheme, QParamVector>>& qparams_opt = std::nullopt);
+        const std::optional<std::tuple<quarisma::QScheme, QParamVector>>& qparams_opt = std::nullopt);
 
     bool isQuantized(Value* v) { return quantized_values_.count(v) != 0; }
 
@@ -855,7 +855,7 @@ private:
         qparam_name_map_for_node_;
     // Record qscheme for every graph, this is for checking
     // each graph is only quantized with one type of QScheme
-    std::unordered_map<Graph*, xsigma::QScheme> qscheme_for_graph_;
+    std::unordered_map<Graph*, quarisma::QScheme> qscheme_for_graph_;
 
     // Set of quantized values, so that we quantize each value only
     // once
@@ -908,15 +908,15 @@ void InsertQuantDeQuantHelper::removeObserverNodes(Graph* g)
 {
     if (nodes_to_destroy_.count(g))
     {
-        for (auto& n : nodes_to_destroy_.xsigma(g))
+        for (auto& n : nodes_to_destroy_.quarisma(g))
         {
             n->removeAllInputs();
         }
-        for (auto& n : nodes_to_destroy_.xsigma(g))
+        for (auto& n : nodes_to_destroy_.quarisma(g))
         {
             n->destroy();
         }
-        nodes_to_destroy_.xsigma(g).clear();
+        nodes_to_destroy_.quarisma(g).clear();
     }
 }
 
@@ -943,7 +943,7 @@ void InsertQuantDeQuantHelper::cleanup(Module& module, Graph* g)
     // slots removal using these slot indexes
     if (removed_observer_slots_.count(g))
     {
-        for (auto slot : removed_observer_slots_.xsigma(g))
+        for (auto slot : removed_observer_slots_.quarisma(g))
         {
             module._ivalue()->unsafeRemoveSlot(slot);
         }
@@ -955,7 +955,7 @@ void InsertQuantDeQuantHelper::cleanup(Module& module, Graph* g)
     // O(N) where N is number of observer modules with this optimization
     if (observer_modules_to_remove_.count(g))
     {
-        auto& observers = observer_modules_to_remove_.xsigma(g);
+        auto& observers = observer_modules_to_remove_.quarisma(g);
         for (int64_t i = observers.size() - 1; i >= 0; --i)
         {
             auto observer_name = observers[i];
@@ -1046,7 +1046,7 @@ void InsertQuantDeQuantHelper::findSubgraph(
         }
         else
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 v == self,
                 "Unexpected value found when handling weight value "
                 " in findSubgraph, traced back to:",
@@ -1089,7 +1089,7 @@ void InsertQuantDeQuantHelper::quantizeTensors(Module& module, Graph* g, Value* 
     {
         return;
     }
-    for (auto* n : observer_nodes_for_graph_.xsigma(g))
+    for (auto* n : observer_nodes_for_graph_.quarisma(g))
     {
         auto* original_value = n->input(1);
         auto  tp             = getQSchemeAndQParamVector(module, n);
@@ -1115,7 +1115,7 @@ void InsertQuantDeQuantHelper::quantizeTensors(Module& module, Graph* g, Value* 
     }
 }
 
-std::tuple<xsigma::QScheme, QParamVector> InsertQuantDeQuantHelper::getQSchemeAndQParamVector(
+std::tuple<quarisma::QScheme, QParamVector> InsertQuantDeQuantHelper::getQSchemeAndQParamVector(
     script::Module& module, Node* n)
 {
     // TODO: refactor findObserverName to take Node* as input
@@ -1130,7 +1130,7 @@ std::tuple<xsigma::QScheme, QParamVector> InsertQuantDeQuantHelper::getQSchemeAn
         v->debugName(),
         " exists.");
     QParamVector    qparams;
-    xsigma::QScheme qscheme = xsigma::kPerTensorAffine;
+    quarisma::QScheme qscheme = quarisma::kPerTensorAffine;
 
     auto observer_module = module.attr(observer_name.value()).toModule();
     auto scalar_type     = observer_module.attr("dtype");
@@ -1143,19 +1143,19 @@ std::tuple<xsigma::QScheme, QParamVector> InsertQuantDeQuantHelper::getQSchemeAn
         }
         return std::make_tuple(qscheme, std::move(qparams));
     }
-    else if (scalar_type == xsigma::ScalarType::Half)
+    else if (scalar_type == quarisma::ScalarType::Half)
     {
         return std::make_tuple(qscheme, std::move(qparams));
     }
     auto   calculate_qparams = observer_module.get_method("calculate_qparams");
     IValue result            = calculate_qparams(std::vector<IValue>());
     checkCalculateQParamsResult(result);
-    XSIGMA_CHECK(
-        scalar_type.toScalarType() != xsigma::ScalarType::Undefined,
+    QUARISMA_CHECK(
+        scalar_type.toScalarType() != quarisma::ScalarType::Undefined,
         "dtype of observer can't be undefined");
     auto           tp         = result.toTuple();
-    xsigma::Tensor scale      = tp->elements()[0].toTensor().to(xsigma::kFloat);
-    xsigma::Tensor zero_point = tp->elements()[1].toTensor().to(xsigma::kInt);
+    quarisma::Tensor scale      = tp->elements()[0].toTensor().to(quarisma::kFloat);
+    quarisma::Tensor zero_point = tp->elements()[1].toTensor().to(quarisma::kInt);
     // quantization parameters should appear in the same order as
     // the argument for quantize_per_tensor/quantize_per_channel function
 
@@ -1225,7 +1225,7 @@ void InsertQuantDeQuantHelper::propagateQParams(
     Value*                                                          original_output,
     const std::vector<Value*>&                                      inputs,
     bool                                                            is_scalar,
-    const std::optional<std::tuple<xsigma::QScheme, QParamVector>>& qparams_opt)
+    const std::optional<std::tuple<quarisma::QScheme, QParamVector>>& qparams_opt)
 {
     Node*  n     = original_output->node();
     Graph* graph = n->owningGraph();
@@ -1269,11 +1269,11 @@ void InsertQuantDeQuantHelper::propagateQParams(
         // Only per tensor affine quantized tensor is supported in this case
         // get quantization parameters from previous quantized op
         Node* scale = insertQParam(
-            graph, quantized_input, xsigma::Symbol::aten("q_scale"), FloatType::get(), "q_scale");
+            graph, quantized_input, quarisma::Symbol::aten("q_scale"), FloatType::get(), "q_scale");
         Node* zero_point = insertQParam(
             graph,
             quantized_input,
-            xsigma::Symbol::aten("q_zero_point"),
+            quarisma::Symbol::aten("q_zero_point"),
             IntType::get(),
             "q_zero_point");
         Node* dtype  = insertQParam(graph, quantized_input, prim::dtype, IntType::get(), "dtype");
@@ -1452,7 +1452,7 @@ void InsertQuantDeQuantHelper::propagateQuantizationOps(Block* block)
             // since the quantization parameter for these ops depends on
             // input and it's too complicated to encode the equations in
             // the IR:
-            // https://github.com/pytorch/pytorch/blob/master/aten/src/XSigma/native/quantized/cpu/BinaryOps.cpp#L64-L74
+            // https://github.com/pytorch/pytorch/blob/master/aten/src/Quarisma/native/quantized/cpu/BinaryOps.cpp#L64-L74
             if (debug_)
             {
                 TORCH_WARN_ONCE(
@@ -1533,7 +1533,7 @@ void InsertQuantDeQuantHelper::run(Module& module, const std::string& method_nam
     // TODO: dedup this part with code in quantizeTensors
     if (observer_nodes_for_graph_.count(graph.get()))
     {
-        for (auto* n : observer_nodes_for_graph_.xsigma(graph.get()))
+        for (auto* n : observer_nodes_for_graph_.quarisma(graph.get()))
         {
             auto tp = getQSchemeAndQParamVector(module, n);
             checkQScheme(graph.get(), std::get<0>(tp));
@@ -1546,12 +1546,12 @@ void InsertQuantDeQuantHelper::run(Module& module, const std::string& method_nam
                     qparam_name_map_for_node_.count(n),
                     "Expected to have a qparam_name_map for node:",
                     *n);
-                auto qparam_name_map = qparam_name_map_for_node_.xsigma(n);
+                auto qparam_name_map = qparam_name_map_for_node_.quarisma(n);
                 for (auto& pr : qparam_map)
                 {
                     const auto& name   = pr.first;
                     const auto& qparam = pr.second;
-                    module._ivalue()->setAttr(qparam_name_map.xsigma(name), qparam);
+                    module._ivalue()->setAttr(qparam_name_map.quarisma(name), qparam);
                 }
             }
         }
@@ -1562,7 +1562,7 @@ void InsertQuantDeQuantHelper::run(Module& module, const std::string& method_nam
     // point is the beginning of graph node. This also safe guards against
     // observing a potentially mutated value due to some in-place operation
     std::vector<Value*> input_values;
-    for (const auto idx : xsigma::irange(1, method.num_inputs()))
+    for (const auto idx : quarisma::irange(1, method.num_inputs()))
     {
         auto& v = graph->inputs()[idx];
         if (v->type()->isSubtypeOf(*TensorType::get()))
@@ -1641,7 +1641,7 @@ Node* insertQuantDequantNodes<QuantOpParams>(
         inputs.push_back(qparam_values);
     }
     Node* quant = insertQuant(
-        g, inputs, xsigma::Symbol::aten(quantize_func), original_val->debugName() + ".quant");
+        g, inputs, quarisma::Symbol::aten(quantize_func), original_val->debugName() + ".quant");
     // Have to make sure that quant node appears after the values it depends on.
     for (Value* v : inputs)
     {
@@ -1654,13 +1654,13 @@ Node* insertQuantDequantNodes<QuantOpParams>(
 
 void checkCalculateQParamsResultTypes(const Node* out)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         out->outputs().size() == 2,
         "calculate_qparams should produce output of size 2 (scale, zero_point).");
     Value* scale = out->output(0);
     Value* zp    = out->output(1);
-    XSIGMA_CHECK(scale->type()->expect<TensorType>(), "Scale value should be of Tensor type.");
-    XSIGMA_CHECK(zp->type()->expect<TensorType>(), "Scale value should be of float type.");
+    QUARISMA_CHECK(scale->type()->expect<TensorType>(), "Scale value should be of Tensor type.");
+    QUARISMA_CHECK(zp->type()->expect<TensorType>(), "Scale value should be of float type.");
 }
 
 QuantOpParams InsertQuantDeQuantHelper::insertCalculateQParams(
@@ -1680,17 +1680,17 @@ QuantOpParams InsertQuantDeQuantHelper::insertCalculateQParams(
         " exists.");
     QuantOpParams quant_op_params;
 
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         !isPlaceholderObserver(n->input(0)),
         "Placeholder observers are not supported in ondevice PTQ.");
     auto   observer_module       = module.attr(observer_name.value()).toModule();
     Value* observer_module_value = g->insertGetAttr(self, observer_name.value());
     auto   scalar_type           = observer_module.attr("dtype");
-    XSIGMA_CHECK(
-        scalar_type.toScalarType() != xsigma::ScalarType::Undefined,
+    QUARISMA_CHECK(
+        scalar_type.toScalarType() != quarisma::ScalarType::Undefined,
         "dtype of observer can't be undefined");
     // Not sure if we need to support this for on device PTQ.
-    if (scalar_type == xsigma::ScalarType::Half)
+    if (scalar_type == quarisma::ScalarType::Half)
     {
         return quant_op_params;
     }
@@ -1722,7 +1722,7 @@ void InsertQuantDeQuantHelper::insertCalculateQParamsAndQuantizationOps(
     {
         return;
     }
-    for (auto* n : observer_nodes_for_graph_.xsigma(graph))
+    for (auto* n : observer_nodes_for_graph_.quarisma(graph))
     {
         Graph* g = n->owningGraph();
         // Observer output
@@ -1765,7 +1765,7 @@ void InsertQuantDeQuantHelper::runForOnDevicePTQ(Module& module, const std::stri
     // point is the beginning of graph node. This also safe guards against
     // observing a potentially mutated value due to some in-place operation
     std::vector<Value*> input_values;
-    for (const auto idx : xsigma::irange(1, method.num_inputs()))
+    for (const auto idx : quarisma::irange(1, method.num_inputs()))
     {
         auto& v = graph->inputs()[idx];
         if (v->type()->isSubtypeOf(*TensorType::get()))
@@ -1841,7 +1841,7 @@ void ReplicateQuant(std::shared_ptr<Graph>& graph)
         Node* if_node = n->input(0)->node();
         // move the nodes that produces the quantization parameters before
         // prim::If
-        for (const auto i : xsigma::irange(1, n->inputs().size()))
+        for (const auto i : quarisma::irange(1, n->inputs().size()))
         {
             n->input(i)->node()->moveBefore(if_node);
         }
@@ -1850,7 +1850,7 @@ void ReplicateQuant(std::shared_ptr<Graph>& graph)
         // add quantize nodes to the end of all blocks
         for (Block* if_block : if_node->blocks())
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 if_block->outputs().size() == 1,
                 "replicate quantize only works for `if` node with one output right now");
             // the original return value of the block
@@ -1962,7 +1962,7 @@ Module InsertQuantDeQuantOnDevicePTQ(
     const auto        matched_pos      = method_name.find(kObserveString);
     const auto        end_pos          = matched_pos + kObserveString.length();
     const std::string orig_method_name = method_name.substr(end_pos);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         matched_pos == 0,
         "Quant dequant nodes can only be added to observe_",
         orig_method_name,

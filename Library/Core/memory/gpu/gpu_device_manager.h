@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -27,11 +27,11 @@
 #include "common/macros.h"
 #include "memory/device.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -43,7 +43,7 @@ namespace gpu
  * capabilities, memory specifications, and performance characteristics
  * relevant for Monte Carlo simulations and PDE solvers.
  */
-struct XSIGMA_VISIBILITY gpu_device_info
+struct QUARISMA_VISIBILITY gpu_device_info
 {
     /** @brief Device index */
     int device_index = -1;
@@ -124,7 +124,7 @@ struct XSIGMA_VISIBILITY gpu_device_info
  * Contains information about the available GPU runtime environments
  * and their capabilities for optimal backend selection.
  */
-struct XSIGMA_VISIBILITY gpu_runtime_info
+struct QUARISMA_VISIBILITY gpu_runtime_info
 {
     /** @brief Whether CUDA runtime is available */
     bool cuda_available = false;
@@ -180,37 +180,37 @@ struct XSIGMA_VISIBILITY gpu_runtime_info
  * }
  * ```
  */
-class XSIGMA_VISIBILITY gpu_device_manager
+class QUARISMA_VISIBILITY gpu_device_manager
 {
 public:
     /**
      * @brief Get the singleton instance of the device manager
      * @return Reference to the global device manager instance
      */
-    XSIGMA_API static gpu_device_manager& instance();
+    QUARISMA_API static gpu_device_manager& instance();
 
     /**
      * @brief Virtual destructor
      */
-    XSIGMA_API virtual ~gpu_device_manager() = default;
+    QUARISMA_API virtual ~gpu_device_manager() = default;
 
     /**
      * @brief Initialize the device manager and detect available GPUs
      * @throws std::runtime_error if initialization fails
      */
-    XSIGMA_API virtual void initialize() = 0;
+    QUARISMA_API virtual void initialize() = 0;
 
     /**
      * @brief Get information about available GPU runtimes
      * @return Runtime information structure
      */
-    XSIGMA_API virtual gpu_runtime_info get_runtime_info() const = 0;
+    QUARISMA_API virtual gpu_runtime_info get_runtime_info() const = 0;
 
     /**
      * @brief Get list of all available GPU devices
      * @return Vector of device information structures
      */
-    XSIGMA_API virtual std::vector<gpu_device_info> get_available_devices() const = 0;
+    QUARISMA_API virtual std::vector<gpu_device_info> get_available_devices() const = 0;
 
     /**
      * @brief Get information about a specific device
@@ -219,7 +219,7 @@ public:
      * @return Device information structure
      * @throws std::invalid_argument if device is not found
      */
-    XSIGMA_API virtual gpu_device_info get_device_info(
+    QUARISMA_API virtual gpu_device_info get_device_info(
         device_enum device_type, int device_index) const = 0;
 
     /**
@@ -228,7 +228,7 @@ public:
      * @param device_index Device index
      * @return True if device is available and healthy
      */
-    XSIGMA_API virtual bool is_device_available(
+    QUARISMA_API virtual bool is_device_available(
         device_enum device_type, int device_index) const = 0;
 
     /**
@@ -237,29 +237,29 @@ public:
      * @param device_index Device index
      * @throws std::runtime_error if device context cannot be set
      */
-    XSIGMA_API virtual void set_device_context(device_enum device_type, int device_index) = 0;
+    QUARISMA_API virtual void set_device_context(device_enum device_type, int device_index) = 0;
 
     /**
      * @brief Get the currently active device
      * @return Current device information
      */
-    XSIGMA_API virtual gpu_device_info get_current_device() const = 0;
+    QUARISMA_API virtual gpu_device_info get_current_device() const = 0;
 
     /**
      * @brief Refresh device information and update utilization statistics
      */
-    XSIGMA_API virtual void refresh_device_info() = 0;
+    QUARISMA_API virtual void refresh_device_info() = 0;
 
     /**
      * @brief Get detailed system report including all devices and capabilities
      * @return Formatted string with comprehensive system information
      */
-    XSIGMA_API virtual std::string get_system_report() const = 0;
+    QUARISMA_API virtual std::string get_system_report() const = 0;
 
 protected:
     gpu_device_manager() = default;
-    XSIGMA_DELETE_COPY_AND_MOVE(gpu_device_manager);
+    QUARISMA_DELETE_COPY_AND_MOVE(gpu_device_manager);
 };
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

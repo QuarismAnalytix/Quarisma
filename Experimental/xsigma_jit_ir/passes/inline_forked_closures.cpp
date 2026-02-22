@@ -20,14 +20,14 @@ static void inlineForkedClosure(Node* fork_closure, NodeKind genKind)
     Node* function_context_node = fork_closure->input()->node();
 
     if (function_context_node->inputs().size() != 2 ||
-        function_context_node->inputs().xsigma(0)->node()->kind() != prim::Closure ||
-        function_context_node->inputs().xsigma(1)->node()->kind() != prim::TupleConstruct)
+        function_context_node->inputs().quarisma(0)->node()->kind() != prim::Closure ||
+        function_context_node->inputs().quarisma(1)->node()->kind() != prim::TupleConstruct)
     {
         throw ErrorReport(fork_closure->sourceRange()) << "Cannot fork this value";
     }
 
-    Node* function   = function_context_node->inputs().xsigma(0)->node();
-    Node* context    = function_context_node->inputs().xsigma(1)->node();
+    Node* function   = function_context_node->inputs().quarisma(0)->node();
+    Node* context    = function_context_node->inputs().quarisma(1)->node();
     auto  fork_graph = function->g(attr::Subgraph)->copy();
     auto  g          = fork_closure->owningGraph();
     Node* fork_node  = g->create(genKind, 1)
@@ -35,20 +35,20 @@ static void inlineForkedClosure(Node* fork_closure, NodeKind genKind)
                           ->setSourceRange(fork_closure->sourceRange());
 
     if (fork_graph->inputs().size() != 1 ||
-        !fork_graph->inputs().xsigma(0)->type()->cast<TupleType>())
+        !fork_graph->inputs().quarisma(0)->type()->cast<TupleType>())
     {
         throw ErrorReport(fork_node->sourceRange()) << "Cannot fork lambda with parameters";
     }
-    auto fork_graph_context = fork_graph->inputs().xsigma(0);
+    auto fork_graph_context = fork_graph->inputs().quarisma(0);
     AT_ASSERT(fork_graph_context->uses().size() == 1);
-    auto fork_graph_unpack = fork_graph_context->uses().xsigma(0).user;
+    auto fork_graph_unpack = fork_graph_context->uses().quarisma(0).user;
 
     for (size_t i = 0; i < context->inputs().size(); ++i)
     {
-        auto cont_input = context->inputs().xsigma(i);
+        auto cont_input = context->inputs().quarisma(i);
         fork_node->addInput(cont_input);
         auto inp = fork_graph->insertInput(i)->copyMetadata(cont_input);
-        fork_graph_unpack->outputs().xsigma(i)->replaceAllUsesWith(inp);
+        fork_graph_unpack->outputs().quarisma(i)->replaceAllUsesWith(inp);
     }
     fork_graph_unpack->destroy();
     fork_graph->eraseInput(fork_graph->inputs().size() - 1);

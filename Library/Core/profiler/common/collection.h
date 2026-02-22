@@ -7,11 +7,11 @@
 #include <utility>
 #include <variant>
 
-// TODO: Missing XSigma dependencies - original includes were:
-// //#include <XSigma/Context.h>
-// #include <xsigma/csrc/utils/python_stub.h>
-// These are XSigma-specific headers not available in XSigma
-// #include <xsigma/core/TensorImpl.h>
+// TODO: Missing Quarisma dependencies - original includes were:
+// //#include <Quarisma/Context.h>
+// #include <quarisma/csrc/utils/python_stub.h>
+// These are Quarisma-specific headers not available in Quarisma
+// #include <quarisma/core/TensorImpl.h>
 #include "common/macros.h"
 #include "memory/device.h"
 #include "profiler/base/base.h"
@@ -27,12 +27,12 @@
 #include "util/strong_type.h"
 
 // Minimal layout constant expected by profiler code for Tensor::layout()
-namespace xsigma
+namespace quarisma
 {
 inline constexpr int kStrided = 0;
 }
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 enum class EventType : uint8_t
@@ -51,10 +51,10 @@ enum class EventType : uint8_t
 // ============================================================================
 // == Value (Tensor, Scalar) summary ==========================================
 // ============================================================================
-struct XSIGMA_VISIBILITY RawTensorMetadataBase
+struct QUARISMA_VISIBILITY RawTensorMetadataBase
 {
     RawTensorMetadataBase() = default;
-    explicit RawTensorMetadataBase(const xsigma::Tensor& t);
+    explicit RawTensorMetadataBase(const quarisma::Tensor& t);
 
     StorageImplData data_;
     int             dtype_{0};
@@ -63,7 +63,7 @@ struct XSIGMA_VISIBILITY RawTensorMetadataBase
 };
 
 // Collected during profiling.
-struct XSIGMA_VISIBILITY RawTensorMetadata : RawTensorMetadataBase
+struct QUARISMA_VISIBILITY RawTensorMetadata : RawTensorMetadataBase
 {
     RawTensorMetadata()                                        = default;
     RawTensorMetadata(const RawTensorMetadata&)                = default;
@@ -71,17 +71,17 @@ struct XSIGMA_VISIBILITY RawTensorMetadata : RawTensorMetadataBase
     RawTensorMetadata& operator=(const RawTensorMetadata&)     = default;
     RawTensorMetadata& operator=(RawTensorMetadata&&) noexcept = default;
     ~RawTensorMetadata()                                       = default;
-    explicit RawTensorMetadata(const xsigma::Tensor& t);
+    explicit RawTensorMetadata(const quarisma::Tensor& t);
 
     // Wrap `weak_self_` in `std::optional` and split device into components to
     // keep struct default constructable. (which the std::array initializer needs)
     std::optional<WeakTensor>    weak_self_;
-    xsigma::device_enum          device_type_{xsigma::device_enum::CPU};
-    xsigma::device_option::int_t device_index_{-1};
+    quarisma::device_enum          device_type_{quarisma::device_enum::CPU};
+    quarisma::device_option::int_t device_index_{-1};
 };
 
 // Used during post processing.
-struct XSIGMA_VISIBILITY TensorMetadata : public RawTensorMetadataBase
+struct QUARISMA_VISIBILITY TensorMetadata : public RawTensorMetadataBase
 {
     TensorMetadata(
         const RawTensorMetadata& r, std::vector<int64_t> sizes, std::vector<int64_t> strides);
@@ -89,7 +89,7 @@ struct XSIGMA_VISIBILITY TensorMetadata : public RawTensorMetadataBase
     TensorImplAddress impl() const { return {}; }
 
     WeakTensor            weak_self_;
-    xsigma::device_option device_;
+    quarisma::device_option device_;
     std::vector<int64_t>  sizes_;
     std::vector<int64_t>  strides_;
 
@@ -99,7 +99,7 @@ struct XSIGMA_VISIBILITY TensorMetadata : public RawTensorMetadataBase
 };
 
 // Used during post processing.
-struct XSIGMA_VISIBILITY ProfilerStepInfo
+struct QUARISMA_VISIBILITY ProfilerStepInfo
 {
     int64_t  start_time_ns;  // start time of the profiler step
     int64_t  end_time_ns;    // end time of the profiler step
@@ -113,7 +113,7 @@ struct XSIGMA_VISIBILITY ProfilerStepInfo
 };
 
 using op_input_t =
-    std::variant<TensorMetadata, std::vector<TensorMetadata>, xsigma::IValue, std::nullopt_t>;
+    std::variant<TensorMetadata, std::vector<TensorMetadata>, quarisma::IValue, std::nullopt_t>;
 
 // ============================================================================
 // == ExtraFields =============================================================
@@ -125,7 +125,7 @@ struct TorchOpBasicFields
 {
     int64_t             sequence_number_{0};
     uint64_t            forward_tid_{0};
-    xsigma::RecordScope scope_{};
+    quarisma::RecordScope scope_{};
     bool                is_async_{false};
     uint64_t            record_function_id_{0};
     int64_t             debug_handle_{0};
@@ -138,9 +138,9 @@ struct TorchOpBasicFields
 
 using jit_stack_t   = std::vector<std::string>;
 using jit_modules_t = std::vector<std::string>;
-using extra_args_t  = std::unordered_map<std::string, xsigma::IValue>;
+using extra_args_t  = std::unordered_map<std::string, quarisma::IValue>;
 using extra_meta_t  = std::unordered_map<std::string, std::string>;
-using kwinputs_t    = std::unordered_map<std::string, xsigma::IValue>;
+using kwinputs_t    = std::unordered_map<std::string, quarisma::IValue>;
 
 struct FallbackPair
 {
@@ -154,7 +154,7 @@ struct ExtraFields<EventType::TorchOp> : TorchOpBasicFields
     ExtraFields(
         TorchOpBasicFields&&               f,
         uint64_t                           correlation_id,
-        xsigma::time_t                     end_time_ns,
+        quarisma::time_t                     end_time_ns,
         std::vector<op_input_t>&&          inputs,
         std::vector<op_input_t>&&          concrete_inputs,
         jit_stack_t&&                      jit_stack,
@@ -181,7 +181,7 @@ struct ExtraFields<EventType::TorchOp> : TorchOpBasicFields
     {
     }
     uint64_t                         correlation_id_;
-    xsigma::time_t                   end_time_ns_;
+    quarisma::time_t                   end_time_ns_;
     std::vector<op_input_t>          inputs_;
     std::vector<op_input_t>          concrete_inputs_;
     jit_stack_t                      jit_stack_;
@@ -201,7 +201,7 @@ struct ExtraFields<EventType::Backend>
     int64_t             start_time_us_;
     int64_t             end_time_us_;
     int64_t             debug_handle_;
-    xsigma::RecordScope scope_;
+    quarisma::RecordScope scope_;
     std::string         name_;
     std::string         backend_;
     jit_stack_t         jit_stack_;
@@ -218,7 +218,7 @@ struct ExtraFields<EventType::PythonGC>
 template <>
 struct ExtraFields<EventType::Vulkan>
 {
-    using raw_event_t = std::pair<xsigma::approx_time_t, vulkan_id_t>;
+    using raw_event_t = std::pair<quarisma::approx_time_t, vulkan_id_t>;
     std::string name_;
     int64_t     duration_ns_{0};
     // While building the event tree, we want to report a vulkan event's duration
@@ -228,13 +228,13 @@ struct ExtraFields<EventType::Vulkan>
 
 struct RawAllocation
 {
-    xsigma::approx_time_t        start_time_;
+    quarisma::approx_time_t        start_time_;
     void*                        ptr_;
     int64_t                      alloc_size_;
     size_t                       total_allocated_;
     size_t                       total_reserved_;
-    xsigma::device_enum          device_type_;
-    xsigma::device_option::int_t device_index_;
+    quarisma::device_enum          device_type_;
+    quarisma::device_option::int_t device_index_;
 };
 
 // For performance.
@@ -245,7 +245,7 @@ struct ExtraFields<EventType::Allocation> : RawAllocation
 {
     ExtraFields(const RawAllocation& allocation) : RawAllocation(allocation) {}
 
-    xsigma::device_option device() const { return {device_type_, device_index_}; }
+    quarisma::device_option device() const { return {device_type_, device_index_}; }
 
     std::optional<TensorID>     id_;
     std::optional<AllocationID> allocation_id_;
@@ -254,12 +254,12 @@ struct ExtraFields<EventType::Allocation> : RawAllocation
 template <>
 struct ExtraFields<EventType::OutOfMemory>
 {
-    xsigma::approx_time_t        start_time_;
+    quarisma::approx_time_t        start_time_;
     int64_t                      alloc_size_;
     size_t                       total_allocated_;
     size_t                       total_reserved_;
-    xsigma::device_enum          device_type_;
-    xsigma::device_option::int_t device_index_;
+    quarisma::device_enum          device_type_;
+    quarisma::device_option::int_t device_index_;
 };
 
 // For performance.
@@ -270,8 +270,8 @@ static_assert(
 struct PyFrameState
 {
     int                line_no_;
-    xsigma::StringView filename_;
-    xsigma::StringView funcname_;
+    quarisma::StringView filename_;
+    quarisma::StringView funcname_;
 };
 
 template <typename T, typename Tag>
@@ -294,7 +294,7 @@ struct NNModuleInfo
 
     PyModuleSelf       self_;
     PyModuleCls        cls_;
-    xsigma::StringView cls_name_;
+    quarisma::StringView cls_name_;
 
     std::vector<ParameterInfo> parameters_;
     // Indicates that `self_` is the kth instance of `cls_` observed.
@@ -312,19 +312,19 @@ struct OptimizerInfo
 
     PyOptimizerSelf    self_;
     PyOptimizerCls     cls_;
-    xsigma::StringView cls_name_;
+    quarisma::StringView cls_name_;
 
     std::vector<ParameterInfo> parameters_;
 };
 
 struct PyExtraFieldsBase
 {
-    PyExtraFieldsBase(xsigma::time_t end_time_ns, size_t python_tid, PyFrameState caller)
+    PyExtraFieldsBase(quarisma::time_t end_time_ns, size_t python_tid, PyFrameState caller)
         : end_time_ns_{end_time_ns}, python_tid_{python_tid}, caller_{std::move(caller)}
     {
     }
 
-    xsigma::time_t end_time_ns_;
+    quarisma::time_t end_time_ns_;
     size_t         python_tid_;
     PyFrameState   caller_;
 
@@ -342,7 +342,7 @@ struct ExtraFields<EventType::PyCall> : public PyExtraFieldsBase
         std::optional<OptimizerInfo> optimizer_info_;
     };
 
-    ExtraFields(xsigma::time_t end_time_ns, size_t python_tid, PyFrameState caller, args_t args)
+    ExtraFields(quarisma::time_t end_time_ns, size_t python_tid, PyFrameState caller, args_t args)
         : PyExtraFieldsBase(end_time_ns, python_tid, std::move(caller)),
           callsite_{std::move(args.frame_state_)},
           module_{std::move(args.module_info_)},
@@ -358,15 +358,15 @@ struct ExtraFields<EventType::PyCall> : public PyExtraFieldsBase
 template <>
 struct ExtraFields<EventType::PyCCall> : public PyExtraFieldsBase
 {
-    using args_t = xsigma::StringView;
+    using args_t = quarisma::StringView;
 
-    ExtraFields(xsigma::time_t end_time_ns, size_t python_tid, PyFrameState caller, args_t args)
+    ExtraFields(quarisma::time_t end_time_ns, size_t python_tid, PyFrameState caller, args_t args)
         : PyExtraFieldsBase(end_time_ns, python_tid, std::move(caller)),
           function_name_{std::move(args)}
     {
     }
 
-    xsigma::StringView function_name_;
+    quarisma::StringView function_name_;
 };
 #endif
 
@@ -393,7 +393,7 @@ struct ExtraFields<EventType::Kineto>
     std::string             metadata_json_;
 };
 
-struct XSIGMA_VISIBILITY Result : public std::enable_shared_from_this<Result>
+struct QUARISMA_VISIBILITY Result : public std::enable_shared_from_this<Result>
 {
     template <typename... Args>
     [[nodiscard]] static std::shared_ptr<Result> create(Args... args)
@@ -440,7 +440,7 @@ struct XSIGMA_VISIBILITY Result : public std::enable_shared_from_this<Result>
     uint64_t                correlationID() const;
     int64_t                 endTimeNS() const;
     uint64_t                endTID() const;
-    xsigma::device_enum     deviceType() const;
+    quarisma::device_enum     deviceType() const;
 
     int64_t                   start_time_ns_;
     uint64_t                  start_tid_;
@@ -461,7 +461,7 @@ struct XSIGMA_VISIBILITY Result : public std::enable_shared_from_this<Result>
     std::vector<std::shared_ptr<Result>>              children_;
     bool                                              finished_{false};
     bool                                              hidden_{false};
-    const xsigma::profiler::impl::kineto::activity_t* kineto_activity_{nullptr};
+    const quarisma::profiler::impl::kineto::activity_t* kineto_activity_{nullptr};
 
 private:
     template <EventType E>
@@ -484,15 +484,15 @@ private:
     }
 };
 
-struct KinetoObserverContext : public xsigma::ObserverContext
+struct KinetoObserverContext : public quarisma::ObserverContext
 {
     struct Event
     {
         TorchOpBasicFields    basic_fields_;
-        xsigma::approx_time_t start_time_;
+        quarisma::approx_time_t start_time_;
 
         // Set in the exit callback.
-        xsigma::approx_time_t end_time_{std::numeric_limits<xsigma::approx_time_t>::min()};
+        quarisma::approx_time_t end_time_{std::numeric_limits<quarisma::approx_time_t>::min()};
 
         bool                             allow_tf32_cublas_;
         std::unique_ptr<perf_counters_t> counters_;
@@ -518,7 +518,7 @@ constexpr int SCALAR_LIST_LENGTH_LIMIT = 30;
 class InputOutputEncoder final
 {
 public:
-    void push(xsigma::array_ref<const xsigma::IValue> values);
+    void push(quarisma::array_ref<const quarisma::IValue> values);
 
     // Used during post-processing to unpack the encoded data.
     // Each method returns a "supplier" lambda which takes no arguments;
@@ -530,7 +530,7 @@ public:
     auto getInputShapeGenerator();
     auto getConcreteInputGenerator();
 
-    static bool isSupportedScalarList(const xsigma::IValue& list_candidate);
+    static bool isSupportedScalarList(const quarisma::IValue& list_candidate);
 
     void clear();
 
@@ -553,7 +553,7 @@ public:
     };
 
 private:
-    void push(const xsigma::Tensor& t);
+    void push(const quarisma::Tensor& t);
 
     // Implementation detail for getInputShapeGenerator and
     // getConcreteInputGenerator
@@ -562,17 +562,17 @@ private:
     AppendOnlyList<Tag, IO_ENCODER_DEFAULT_BLOCK_SIZE>               tags_;
     AppendOnlyList<RawTensorMetadata, IO_ENCODER_DEFAULT_BLOCK_SIZE> tensor_metadata_;
     AppendOnlyList<int64_t, IO_ENCODER_DEFAULT_BLOCK_SIZE>           tensor_sizes_strides_;
-    AppendOnlyList<xsigma::IValue, IO_ENCODER_DEFAULT_BLOCK_SIZE>    ivalues_;
+    AppendOnlyList<quarisma::IValue, IO_ENCODER_DEFAULT_BLOCK_SIZE>    ivalues_;
 };
 
-using perf_profiler_t = xsigma::profiler::impl::linux_perf::PerfProfiler;
+using perf_profiler_t = quarisma::profiler::impl::linux_perf::PerfProfiler;
 
-class XSIGMA_VISIBILITY ThreadLocalSubqueue
+class QUARISMA_VISIBILITY ThreadLocalSubqueue
 {
 public:
     ThreadLocalSubqueue(const uint64_t tid, ProfilerConfig config);
 
-    std::unique_ptr<KinetoObserverContext> begin_op(const xsigma::RecordFunction& fn);
+    std::unique_ptr<KinetoObserverContext> begin_op(const quarisma::RecordFunction& fn);
 
     template <class... Args>
     void emplace_backend_event(Args&&... args)
@@ -635,7 +635,7 @@ private:
         void materialize(
             std::vector<std::shared_ptr<Result>>&                       out,
             std::vector<ProfilerStepInfo>&                              step_info,
-            const std::function<xsigma::time_t(xsigma::approx_time_t)>& time_converter,
+            const std::function<quarisma::time_t(quarisma::approx_time_t)>& time_converter,
             const uint64_t                                              tid,
             const kineto::DeviceAndResource&                            kineto_info);
 
@@ -695,12 +695,12 @@ private:
     AppendOnlyList<ExtraFields<EventType::OutOfMemory>, BlockSize> ooms_;
 
     // with_stack (Python)
-    AppendOnlyList<std::pair<python_tracer::TraceKey, xsigma::approx_time_t>, BlockSize> py_calls_;
+    AppendOnlyList<std::pair<python_tracer::TraceKey, quarisma::approx_time_t>, BlockSize> py_calls_;
     // gc with_stack (Python)
-    AppendOnlyList<std::pair<std::string, xsigma::approx_time_t>, BlockSize> pythongc_;
+    AppendOnlyList<std::pair<std::string, quarisma::approx_time_t>, BlockSize> pythongc_;
 };
 
-class XSIGMA_VISIBILITY RecordQueue
+class QUARISMA_VISIBILITY RecordQueue
 {
 public:
     RecordQueue(ProfilerConfig config, std::set<ActivityType> activities);
@@ -714,9 +714,9 @@ public:
     // NB: This is a destructive operation.
     std::pair<
         std::vector<std::shared_ptr<Result>>,
-        std::unique_ptr<xsigma::profiler::impl::kineto::ActivityTraceWrapper>>
+        std::unique_ptr<quarisma::profiler::impl::kineto::ActivityTraceWrapper>>
     getRecords(
-        std::function<xsigma::time_t(xsigma::approx_time_t)> time_converter,
+        std::function<quarisma::time_t(quarisma::approx_time_t)> time_converter,
         uint64_t                                             start_time_ns,
         uint64_t                                             end_time_ns);
 
@@ -724,27 +724,27 @@ private:
     uint32_t                                                              id_;
     ProfilerConfig                                                        config_;
     std::set<ActivityType>                                                activities_;
-    xsigma::flat_hash_map<uint64_t, std::unique_ptr<ThreadLocalSubqueue>> sub_queues_;
+    quarisma::flat_hash_map<uint64_t, std::unique_ptr<ThreadLocalSubqueue>> sub_queues_;
     std::mutex                                                            sub_queue_mutex_;
     std::unique_ptr<python_tracer::PythonTracerBase>                      python_tracer_;
 };
 
-XSIGMA_API bool get_record_concrete_inputs_enabled();
-XSIGMA_API void set_record_concrete_inputs_enabled_fn(std::function<bool()> /*fn*/);
-XSIGMA_API void set_record_concrete_inputs_enabled_val(bool /*val*/);
+QUARISMA_API bool get_record_concrete_inputs_enabled();
+QUARISMA_API void set_record_concrete_inputs_enabled_fn(std::function<bool()> /*fn*/);
+QUARISMA_API void set_record_concrete_inputs_enabled_val(bool /*val*/);
 
-XSIGMA_API bool get_fwd_bwd_enabled();
-XSIGMA_API void set_fwd_bwd_enabled_fn(std::function<bool()> /*fn*/);
-XSIGMA_API void set_fwd_bwd_enabled_val(bool /*val*/);
+QUARISMA_API bool get_fwd_bwd_enabled();
+QUARISMA_API void set_fwd_bwd_enabled_fn(std::function<bool()> /*fn*/);
+QUARISMA_API void set_fwd_bwd_enabled_val(bool /*val*/);
 
-XSIGMA_API bool get_cuda_sync_enabled();
-XSIGMA_API void set_cuda_sync_enabled_fn(std::function<bool()> /*fn*/);
-XSIGMA_API void set_cuda_sync_enabled_val(bool /*val*/);
+QUARISMA_API bool get_cuda_sync_enabled();
+QUARISMA_API void set_cuda_sync_enabled_fn(std::function<bool()> /*fn*/);
+QUARISMA_API void set_cuda_sync_enabled_val(bool /*val*/);
 
 // Comms related RecordFunctions will record information about tensor storage
 // locations.
-XSIGMA_API bool get_record_tensor_addrs_enabled();
-XSIGMA_API void set_record_tensor_addrs_enabled_fn(std::function<bool()> /*fn*/);
-XSIGMA_API void set_record_tensor_addrs_enabled_val(bool /*val*/);
+QUARISMA_API bool get_record_tensor_addrs_enabled();
+QUARISMA_API void set_record_tensor_addrs_enabled_fn(std::function<bool()> /*fn*/);
+QUARISMA_API void set_record_tensor_addrs_enabled_val(bool /*val*/);
 
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl

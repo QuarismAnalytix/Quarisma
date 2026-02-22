@@ -704,31 +704,31 @@ def lazy_register_extern_choice(fn):
     return ExternKernelChoice(fn)
 
 
-aten_mm = ExternKernelChoice(torch.mm, "xsigma::mm_out", op_overload=aten.mm.out)
+aten_mm = ExternKernelChoice(torch.mm, "quarisma::mm_out", op_overload=aten.mm.out)
 aten_mm_dtype = ExternKernelChoice(
     torch.mm,
-    "xsigma::_mm_dtype_out_cuda",
+    "quarisma::_mm_dtype_out_cuda",
     name="mm_dtype",
     op_overload=aten.mm.dtype_out,
 )
 
 aten_addmm = ExternKernelChoice(
-    torch.addmm, "xsigma::addmm_out", op_overload=aten.addmm.out
+    torch.addmm, "quarisma::addmm_out", op_overload=aten.addmm.out
 )
 
 aten__int_mm = ExternKernelChoice(
-    torch._int_mm, "xsigma::_int_mm_out", op_overload=aten._int_mm.out
+    torch._int_mm, "quarisma::_int_mm_out", op_overload=aten._int_mm.out
 )
 
 aten__sparse_semi_structured_mm = ExternKernelChoice(
     torch._sparse_semi_structured_mm,
-    "xsigma::_sparse_semi_structured_mm",
+    "quarisma::_sparse_semi_structured_mm",
     has_out_variant=False,
     op_overload=aten._sparse_semi_structured_mm.default,
 )
 
 aten__fp8_mm = ExternKernelChoice(
-    torch._scaled_mm, "xsigma::_scaled_mm_out", op_overload=aten._scaled_mm.out
+    torch._scaled_mm, "quarisma::_scaled_mm_out", op_overload=aten._scaled_mm.out
 )
 
 
@@ -949,7 +949,7 @@ def tuned_mm(mat1, mat2, out_dtype=None, *, layout=None):
     static_shape, is_nonzero = _is_static_problem(layout)
     name = "mm"
 
-    # Create MMKernelInputs for standard MM xsigma the top
+    # Create MMKernelInputs for standard MM quarisma the top
     kernel_inputs = MMKernelInputs([mat1, mat2], out_dtype=out_dtype)
 
     # below is for getting an overview logging info of inductor mms
@@ -1092,8 +1092,8 @@ def tuned_mm(mat1, mat2, out_dtype=None, *, layout=None):
 
     best_config_future = None
     if out_dtype is None and torch._inductor.config.remote_gemm_autotune_cache:
-        # Purposely not awaiting the future here - this kicks off the best config lookup xsigma lowering time
-        # The future will be awaited xsigma scheduling time in select_algorithm.py
+        # Purposely not awaiting the future here - this kicks off the best config lookup quarisma lowering time
+        # The future will be awaited quarisma scheduling time in select_algorithm.py
         best_config_future = gen_best_config(mat1, mat2)
 
     return autotune_select_algorithm(
@@ -1177,7 +1177,7 @@ def tuned_addmm(inp, mat1, mat2, *, alpha=1, beta=1, layout=None):
     static_shape, is_nonzero = _is_static_problem(layout)
     name = "addmm"
 
-    # Create MMKernelInputs for AddMM xsigma the top
+    # Create MMKernelInputs for AddMM quarisma the top
     kernel_inputs = MMKernelInputs(
         [inp_expanded, mat1, mat2], scalars=dict(alpha=alpha, beta=beta)
     )
@@ -1409,7 +1409,7 @@ def tuned_scaled_mm(
         bias_real = realize_inputs(bias)
         input_nodes = [mat_a, mat_b, scale_a_real, scale_b_real, bias_real]
 
-    # Create MMKernelInputs for Scaled MM (matrices are xsigma indices 0, 1)
+    # Create MMKernelInputs for Scaled MM (matrices are quarisma indices 0, 1)
     kernel_inputs = MMKernelInputs(
         input_nodes, mat1_idx=0, mat2_idx=1, out_dtype=out_dtype
     )
@@ -1453,7 +1453,7 @@ def tuned_scaled_mm(
 
             if (
                 "SCALE_RECIPE_A" not in overriders
-            ):  # verify that shapes are supported by xsigma least one existing pairing
+            ):  # verify that shapes are supported by quarisma least one existing pairing
                 raise AssertionError(
                     f"Inductor Triton does not support scale_a.shape = {scale_a_size}, scale_b.shape = {scale_b_size}"
                 )

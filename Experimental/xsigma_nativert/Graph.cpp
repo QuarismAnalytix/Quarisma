@@ -3,9 +3,9 @@
 #include <torch/nativert/executor/Placement.h>
 #include <torch/nativert/graph/Graph.h>
 #include <torch/nativert/graph/TensorMeta.h>
-#include <xsigma/util/Enumerate.h>
-#include <xsigma/util/FbcodeMaps.h>
-#include <xsigma/util/StringUtil.h>
+#include <quarisma/util/Enumerate.h>
+#include <quarisma/util/FbcodeMaps.h>
+#include <quarisma/util/StringUtil.h>
 
 #include <limits>
 #include <queue>
@@ -27,7 +27,7 @@ bool isBlank(char n)
 
 size_t consumeWhitespaceImpl(std::string_view source, size_t curPos)
 {
-    while (isBlank(source.xsigma(curPos)))
+    while (isBlank(source.quarisma(curPos)))
     {
         curPos++;
     }
@@ -38,10 +38,10 @@ size_t expectImpl(std::string_view source, std::string_view expected, size_t cur
 {
     curPos            = consumeWhitespaceImpl(source, curPos);
     const auto actual = source.substr(curPos, expected.size());
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         expected == actual,
         fmt::format(
-            "Parser error: expected '{}' xsigma position {}, but found '{}'.",
+            "Parser error: expected '{}' quarisma position {}, but found '{}'.",
             expected,
             curPos,
             actual));
@@ -52,13 +52,13 @@ size_t expectImpl(std::string_view source, std::string_view expected, size_t cur
 size_t expectImpl(std::string_view source, char expected, size_t curPos)
 {
     curPos = consumeWhitespaceImpl(source, curPos);
-    while (isBlank(source.xsigma(curPos)))
+    while (isBlank(source.quarisma(curPos)))
     {
         curPos++;
     }
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         expected == source[curPos],
-        "Parser error: expected '{}' xsigma position {}, but found '{}'.",
+        "Parser error: expected '{}' quarisma position {}, but found '{}'.",
         expected,
         curPos,
         source[curPos]);
@@ -108,7 +108,7 @@ Value* Graph::addValue(const std::optional<std::string>& name, const Type& type,
     ValueId    valueId   = getNextValueId();
     const auto [it, success] =
         values_.insert({valueName, std::make_unique<Value>(valueId, valueName, type, node)});
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         success,
         fmt::format("Tried to create Value with name: '{}', but it already existed", valueName));
     return it->second.get();
@@ -148,25 +148,25 @@ Node* Graph::createNode(
 
 Node* Graph::insertBefore(Node* toInsert, Node* insertionPoint)
 {
-    XSIGMA_CHECK(insertionPoint != inputNode_, "can't insert before prim.Input");
-    XSIGMA_CHECK(!toInsert->is_linked(), "expected node to be unlinked: ", *toInsert);
-    XSIGMA_CHECK(insertionPoint->is_linked(), "expected node to be linked: ", *insertionPoint);
+    QUARISMA_CHECK(insertionPoint != inputNode_, "can't insert before prim.Input");
+    QUARISMA_CHECK(!toInsert->is_linked(), "expected node to be unlinked: ", *toInsert);
+    QUARISMA_CHECK(insertionPoint->is_linked(), "expected node to be linked: ", *insertionPoint);
     auto it = nodes_.insert(nodes_.iterator_to(*insertionPoint), *toInsert);
     return &*it;
 }
 
 Node* Graph::insert(Node* toInsert)
 {
-    XSIGMA_CHECK(!toInsert->is_linked(), "expected node to be unlinked: ", *toInsert);
+    QUARISMA_CHECK(!toInsert->is_linked(), "expected node to be unlinked: ", *toInsert);
     nodes_.insert(insertBefore_, *toInsert);
     return toInsert;
 }
 
 Node* Graph::insertAfter(Node* toInsert, Node* insertionPoint)
 {
-    XSIGMA_CHECK(insertionPoint != outputNode_, "can't insert after prim.Output");
-    XSIGMA_CHECK(!toInsert->is_linked(), "expected node to be unlinked: ", *toInsert);
-    XSIGMA_CHECK(insertionPoint->is_linked(), "expected node to be linked: ", *insertionPoint);
+    QUARISMA_CHECK(insertionPoint != outputNode_, "can't insert after prim.Output");
+    QUARISMA_CHECK(!toInsert->is_linked(), "expected node to be unlinked: ", *toInsert);
+    QUARISMA_CHECK(insertionPoint->is_linked(), "expected node to be linked: ", *insertionPoint);
 
     auto insertIt = nodes_.iterator_to(*insertionPoint);
     // Increment once because we want to insert after the insertion point
@@ -220,7 +220,7 @@ std::ostream& operator<<(std::ostream& out, const Type& ty)
                     out << "CustomObj";
                     break;
                 default:
-                    XSIGMA_CHECK(false, "Unhandled type");
+                    QUARISMA_CHECK(false, "Unhandled type");
                 }
             }
             else if constexpr (is_same_v<T, Type::CustomObjData>)
@@ -238,7 +238,7 @@ const NamedArgument* Node::tryGetInput(std::string_view name) const
     // number of elements, so it shouldn't be slow. This allows us to avoid a
     // second datastructure for lookups.
     // Drop a debug check here, just to make sure :)
-    XSIGMA_CHECK_DEBUG(inputs_.size() < 1000);
+    QUARISMA_CHECK_DEBUG(inputs_.size() < 1000);
     for (const auto& input : inputs_)
     {
         if (input.name == name)
@@ -254,7 +254,7 @@ const NamedArgument& Node::getInput(std::string_view name) const
     const auto ret = tryGetInput(name);
     if (ret == nullptr)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false,
             fmt::format(
                 "Expected input '{}' on node: '{}' to exist, but it does not.",
@@ -270,7 +270,7 @@ const Attribute* Node::tryGetAttribute(std::string_view name) const
     // number of elements, so it shouldn't be slow. This allows us to avoid a
     // second datastructure for lookups.
     // Drop a debug check here, just to make sure :)
-    XSIGMA_CHECK_DEBUG(attributes_.size() < 1000);
+    QUARISMA_CHECK_DEBUG(attributes_.size() < 1000);
     for (const auto& attribute : attributes_)
     {
         if (attribute.name == name)
@@ -286,7 +286,7 @@ const Attribute& Node::getAttribute(std::string_view name) const
     const auto ret = tryGetAttribute(name);
     if (ret == nullptr)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false,
             fmt::format(
                 "Expected attribute '{}' on node: '{}' to exist, but it does not.",
@@ -300,11 +300,11 @@ void Node::applyDevicePlacement(const Placement& placement)
 {
     for (auto& attribute : attributes_)
     {
-        if (std::holds_alternative<xsigma::Device>(attribute.value))
+        if (std::holds_alternative<quarisma::Device>(attribute.value))
         {
-            auto device = std::get<xsigma::Device>(attribute.value);
+            auto device = std::get<quarisma::Device>(attribute.value);
             auto targetDevice =
-                placement.getMappedDevice(std::get<xsigma::Device>(attribute.value));
+                placement.getMappedDevice(std::get<quarisma::Device>(attribute.value));
             if (!isSameDevice(targetDevice, device))
             {
                 LOG(INFO) << "Overriding " << device.str() << " to " << targetDevice.str()
@@ -459,7 +459,7 @@ Node* Graph::createListPack(std::vector<Value*> inputs, const Type& inputType)
 {
     std::vector<NamedArgument> nodeInputs;
     nodeInputs.reserve(inputs.size());
-    for (auto [i, input] : xsigma::enumerate(inputs))
+    for (auto [i, input] : quarisma::enumerate(inputs))
     {
         nodeInputs.push_back({fmt::format("l{}", i), input});
     }
@@ -470,7 +470,7 @@ Node* Graph::createListPack(std::vector<Value*> inputs, const Type& inputType)
     // Make sure all inputs are the same type
     for (auto& input : inputs)
     {
-        XSIGMA_CHECK(input->type() == inputType);
+        QUARISMA_CHECK(input->type() == inputType);
     }
 
     if (inputType == Type::Kind::Tensor)
@@ -489,7 +489,7 @@ Node* Graph::createOptionalListPack(std::vector<Value*> inputs)
 {
     std::vector<NamedArgument> nodeInputs;
     nodeInputs.reserve(inputs.size());
-    for (auto [i, input] : xsigma::enumerate(inputs))
+    for (auto [i, input] : quarisma::enumerate(inputs))
     {
         nodeInputs.push_back({fmt::format("l{}", i), input});
     }
@@ -499,7 +499,7 @@ Node* Graph::createOptionalListPack(std::vector<Value*> inputs)
     // Make sure all inputs are either None or Tensor
     for (auto& input : inputs)
     {
-        XSIGMA_CHECK(input->type() == Type::Kind::None || input->type() == Type::Kind::Tensor);
+        QUARISMA_CHECK(input->type() == Type::Kind::None || input->type() == Type::Kind::Tensor);
     }
     node->addOutput(name, Type::Kind::OptionalTensorList);
 
@@ -512,7 +512,7 @@ Value* Graph::createConstantSymIntValue(int value)
     ValueId valueId          = getNextValueId();
     const auto [it, success] = values_.insert(
         {valueName, std::make_unique<Value>(valueId, valueName, Type::Kind::SymInt, nullptr)});
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         success,
         fmt::format(
             "Tried to create constant SymInt Value with name: '{}', but it already existed",
@@ -525,7 +525,7 @@ Value* Graph::getValue(std::string_view name) const
 {
     // TODO: can eliminate this string copy by enabling heterogeneous lookup for
     // the container
-    return values_.xsigma(std::string(name)).get();
+    return values_.quarisma(std::string(name)).get();
 }
 
 Value* Graph::tryGetValue(std::string_view name) const
@@ -535,7 +535,7 @@ Value* Graph::tryGetValue(std::string_view name) const
     const auto key = std::string(name);
     if (values_.find(key) != values_.end())
     {
-        return values_.xsigma(key).get();
+        return values_.quarisma(key).get();
     }
     return nullptr;
 }
@@ -644,12 +644,12 @@ void Graph::lint() const
         // Some constant symint and None don't have producer nodes
         if (value->type().kind() != Type::Kind::SymInt && value->type().kind() != Type::Kind::None)
         {
-            XSIGMA_CHECK(value->isFolded() || value->producer() != nullptr);
+            QUARISMA_CHECK(value->isFolded() || value->producer() != nullptr);
         }
     }
     for (const auto& node : nodes())
     {
-        XSIGMA_CHECK(node.owningGraph() == this);
+        QUARISMA_CHECK(node.owningGraph() == this);
     }
     // Check that every list type is either produced by a prim.ListPack or
     // immediately consumed by a prim.ListUnpack. We make use of this invariant
@@ -664,12 +664,12 @@ void Graph::lint() const
             value->producer(/* resolve_folded = */ true)->target() == "prim.ListPack";
         const bool consumedByListUnpack =
             value->users().size() == 1 && value->users()[0]->target() == "prim.ListUnpack";
-        XSIGMA_CHECK(producedByListPack || consumedByListUnpack);
+        QUARISMA_CHECK(producedByListPack || consumedByListUnpack);
     }
 
     auto getNames = [](const auto& values)
     {
-        xsigma::FastSet<std::string> names;
+        quarisma::FastSet<std::string> names;
         for (const auto* value : values)
         {
             if (value)
@@ -702,7 +702,7 @@ void Graph::finalize()
             }
             else
             {
-                XSIGMA_CHECK(false, "No more constant outputs available");
+                QUARISMA_CHECK(false, "No more constant outputs available");
             }
         }
     }
@@ -733,7 +733,7 @@ void Graph::replaceAllUses(Value* old, Value* replacement)
     {
         // Find this use in the input list and replace it
         auto replaced = replace(user, old, replacement);
-        XSIGMA_CHECK(replaced);
+        QUARISMA_CHECK(replaced);
         replacement->addUser(user);
     }
     old->eraseAllUsers();
@@ -761,7 +761,7 @@ void Graph::replaceAllUsesAfterNode(Value* old, Value* replacement, Node* afterT
 
 void Graph::applyDevicePlacement(const Placement& placement)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         !placementApplied_,
         "placement has been applied to the graph! placement must be applied once and once only.");
 
@@ -787,14 +787,14 @@ void Graph::applyDevicePlacement(const Placement& placement)
 }
 
 void Graph::overrideWeightsDevice(
-    const std::unordered_map<std::string, std::optional<xsigma::Device>>& submodNameToDevice)
+    const std::unordered_map<std::string, std::optional<quarisma::Device>>& submodNameToDevice)
 {
     for (auto& [weightName, weightMeta] : weightsMeta_)
     {
         for (auto& [name, device] : submodNameToDevice)
         {
             if (device.has_value() && weightMeta.device() != device &&
-                xsigma::starts_with(weightName, name) &&
+                quarisma::starts_with(weightName, name) &&
                 (weightName == name || weightName[name.length()] == '.'))
             {
                 LOG(INFO) << "Overriding " << weightName << " from " << weightMeta.device()
@@ -810,7 +810,7 @@ void Graph::overrideWeightsDevice(
         for (auto& [name, device] : submodNameToDevice)
         {
             if (device.has_value() && tensorMeta.device() != device &&
-                xsigma::starts_with(tensorName, name) &&
+                quarisma::starts_with(tensorName, name) &&
                 (tensorName == name || tensorName[name.length()] == '.'))
             {
                 LOG(INFO) << "Overriding " << tensorName << " from " << tensorMeta.device()
@@ -824,7 +824,7 @@ void Graph::overrideWeightsDevice(
 
 Node* Graph::nodeAfter(Node* n)
 {
-    XSIGMA_CHECK(n->owningGraph() == this);
+    QUARISMA_CHECK(n->owningGraph() == this);
     if (n == outputNode_)
     {
         return nullptr;
@@ -835,7 +835,7 @@ Node* Graph::nodeAfter(Node* n)
 
 const Node* Graph::nodeAfter(const Node* n) const
 {
-    XSIGMA_CHECK(n->owningGraph() == this);
+    QUARISMA_CHECK(n->owningGraph() == this);
     if (n == outputNode_)
     {
         return nullptr;
@@ -846,7 +846,7 @@ const Node* Graph::nodeAfter(const Node* n) const
 
 Node* Graph::nodeBefore(Node* n)
 {
-    XSIGMA_CHECK(n->owningGraph() == this);
+    QUARISMA_CHECK(n->owningGraph() == this);
     if (n == inputNode_)
     {
         return nullptr;
@@ -857,7 +857,7 @@ Node* Graph::nodeBefore(Node* n)
 
 const Node* Graph::nodeBefore(const Node* n) const
 {
-    XSIGMA_CHECK(n->owningGraph() == this);
+    QUARISMA_CHECK(n->owningGraph() == this);
     if (n == inputNode_)
     {
         return nullptr;
@@ -868,11 +868,11 @@ const Node* Graph::nodeBefore(const Node* n) const
 
 void Graph::removeNode(Node* n)
 {
-    XSIGMA_CHECK(n->owningGraph() == this, "Node does not belong to this graph!");
+    QUARISMA_CHECK(n->owningGraph() == this, "Node does not belong to this graph!");
 
     for (auto* outputVal : n->outputs())
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             outputVal->users().empty(),
             "Trying to erase a node that still has users: ",
             outputVal->name());
@@ -885,7 +885,7 @@ void Graph::removeNode(Node* n)
         input.value->eraseUser(n);
     }
 
-    XSIGMA_CHECK(n->is_linked(), "Node is not linked to the graph!");
+    QUARISMA_CHECK(n->is_linked(), "Node is not linked to the graph!");
     n->unlink();
 
     auto it = std::find_if(
@@ -893,16 +893,16 @@ void Graph::removeNode(Node* n)
         nodesOwner_.end(),
         [n](const std::unique_ptr<Node>& ptr) { return ptr.get() == n; });
 
-    XSIGMA_CHECK(it != nodesOwner_.end(), "Node not found in nodesOwner_!");
+    QUARISMA_CHECK(it != nodesOwner_.end(), "Node not found in nodesOwner_!");
     nodesOwner_.erase(it);
 }
 
 void Graph::removeValue(Value* value)
 {
     // TODO: assuming not removing from constantSymIntValues_
-    XSIGMA_CHECK(value->users().empty(), "Cannot erase a value with users.");
+    QUARISMA_CHECK(value->users().empty(), "Cannot erase a value with users.");
     auto it = values_.find(std::string(value->name()));
-    XSIGMA_CHECK(it != values_.end(), "Attempted to erase a value not in graph ", value->name());
+    QUARISMA_CHECK(it != values_.end(), "Attempted to erase a value not in graph ", value->name());
     values_.erase(it);
 }
 
@@ -911,8 +911,8 @@ std::vector<Value*> Graph::insertGraph(
     std::vector<Value*>                       inputs,
     std::unordered_map<const Value*, Value*>& valueMap)
 {
-    XSIGMA_CHECK(subgraph.inputs().size() == inputs.size(), "Input size mismatch");
-    for (auto i : xsigma::irange(subgraph.inputs().size()))
+    QUARISMA_CHECK(subgraph.inputs().size() == inputs.size(), "Input size mismatch");
+    for (auto i : quarisma::irange(subgraph.inputs().size()))
     {
         valueMap[subgraph.inputs()[i]] = inputs[i];
     }
@@ -931,7 +931,7 @@ std::vector<Value*> Graph::insertGraph(
         for (auto& inp : inputs)
         {
             auto it = valueMap.find(inp.value);
-            XSIGMA_CHECK(it != valueMap.end(), "Missing input value in subgraph");
+            QUARISMA_CHECK(it != valueMap.end(), "Missing input value in subgraph");
             clonedInputs.push_back({inp.name, it->second});
         }
 
@@ -1034,7 +1034,7 @@ void Node::addOutput()
 
 Value* Node::addOutput(const Type& type)
 {
-    XSIGMA_CHECK(type == Type::Kind::None);
+    QUARISMA_CHECK(type == Type::Kind::None);
     Value* v = owningGraph_->addValue(std::nullopt, type, this);
     outputs_.push_back(v);
     return v;
@@ -1083,9 +1083,9 @@ std::vector<const Value*> Value::getListElements() const
     }
     else
     {
-        XSIGMA_CHECK(users().size() == 1);
+        QUARISMA_CHECK(users().size() == 1);
         const auto listUnpack = users()[0];
-        XSIGMA_CHECK(listUnpack->target() == "prim.ListUnpack");
+        QUARISMA_CHECK(listUnpack->target() == "prim.ListUnpack");
         for (const auto v : listUnpack->outputs())
         {
             ret.push_back(v);
@@ -1097,27 +1097,27 @@ std::vector<const Value*> Value::getListElements() const
 template <class>
 [[maybe_unused]] inline constexpr bool AlwaysFalse = false;
 
-xsigma::IValue constantToIValue(const Constant& constant)
+quarisma::IValue constantToIValue(const Constant& constant)
 {
     // Workaround for MSVC bug: "std" ambiguous symbol.
     using std::string;
     using std::unique_ptr;
     using std::vector;
     return std::visit(
-        [](auto&& arg) -> xsigma::IValue
+        [](auto&& arg) -> quarisma::IValue
         {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (is_same_v<T, None>)
             {
-                return xsigma::IValue();
+                return quarisma::IValue();
             }
-            else if constexpr (std::is_convertible_v<T, xsigma::IValue>)
+            else if constexpr (std::is_convertible_v<T, quarisma::IValue>)
             {
                 return arg;
             }
             else if constexpr (is_same_v<T, unique_ptr<Graph>>)
             {
-                XSIGMA_CHECK(false, "subgraph arguments cannot be turned into ivalues!");
+                QUARISMA_CHECK(false, "subgraph arguments cannot be turned into ivalues!");
             }
             else
             {
@@ -1145,7 +1145,7 @@ std::ostream& printList(std::ostream& out, bool encloseInSquareBrackets, const T
     {
         out << '[';
     }
-    for (const auto& [idx, el] : xsigma::enumerate(list))
+    for (const auto& [idx, el] : quarisma::enumerate(list))
     {
         if (idx > 0)
         {
@@ -1195,19 +1195,19 @@ std::ostream& operator<<(std::ostream& out, const Constant& constant)
             {
                 out << quoted(arg);
             }
-            else if constexpr (is_same_v<T, xsigma::ScalarType>)
+            else if constexpr (is_same_v<T, quarisma::ScalarType>)
             {
                 out << kScalarTypePrefix << arg;
             }
-            else if constexpr (is_same_v<T, xsigma::MemoryFormat>)
+            else if constexpr (is_same_v<T, quarisma::MemoryFormat>)
             {
                 out << kMemoryFormatPrefix << arg;
             }
-            else if constexpr (is_same_v<T, xsigma::Layout>)
+            else if constexpr (is_same_v<T, quarisma::Layout>)
             {
                 out << kLayoutPrefix << arg;
             }
-            else if constexpr (is_same_v<T, xsigma::Device>)
+            else if constexpr (is_same_v<T, quarisma::Device>)
             {
                 out << kDevicePrefix << "{" << arg << "}";
             }
@@ -1306,42 +1306,42 @@ std::ostream& operator<<(std::ostream& out, const Graph& graph)
     return out;
 }
 
-xsigma::Device convertDevice(std::string_view symbol)
+quarisma::Device convertDevice(std::string_view symbol)
 {
     // Symbol looks like `Device{cuda:1}`
     const auto typeStart = symbol.find('{') + 1;
-    XSIGMA_CHECK(typeStart < symbol.size());
+    QUARISMA_CHECK(typeStart < symbol.size());
 
     const auto typeEnd = symbol.find(':');
-    XSIGMA_CHECK(typeEnd != std::string_view::npos);
+    QUARISMA_CHECK(typeEnd != std::string_view::npos);
 
     const auto type       = symbol.substr(typeStart, typeEnd - typeStart);
     const auto indexStart = typeEnd + 1;
-    XSIGMA_CHECK(indexStart < symbol.size());
+    QUARISMA_CHECK(indexStart < symbol.size());
 
     const auto indexEnd = symbol.find('}');
-    XSIGMA_CHECK(indexEnd != std::string_view::npos);
+    QUARISMA_CHECK(indexEnd != std::string_view::npos);
 
     const auto index = symbol.substr(indexStart, indexEnd - indexStart);
 
-    xsigma::Device device((std::string(type)));
-    auto           indexValue = xsigma::tryToNumber<int64_t>(std::string{index});
-    XSIGMA_CHECK(indexValue.has_value(), "Invalid device index format");
+    quarisma::Device device((std::string(type)));
+    auto           indexValue = quarisma::tryToNumber<int64_t>(std::string{index});
+    QUARISMA_CHECK(indexValue.has_value(), "Invalid device index format");
     int64_t deviceIndex = indexValue.value();
-    XSIGMA_CHECK(
-        deviceIndex >= std::numeric_limits<xsigma::DeviceIndex>::min() &&
-            deviceIndex <= std::numeric_limits<xsigma::DeviceIndex>::max(),
+    QUARISMA_CHECK(
+        deviceIndex >= std::numeric_limits<quarisma::DeviceIndex>::min() &&
+            deviceIndex <= std::numeric_limits<quarisma::DeviceIndex>::max(),
         "Device index out of range for int8_t");
-    device.set_index(static_cast<xsigma::DeviceIndex>(deviceIndex));
+    device.set_index(static_cast<quarisma::DeviceIndex>(deviceIndex));
     return device;
 }
 
 Constant convertAtomicConstant(std::string_view symbol)
 {
-    if (xsigma::starts_with(symbol, "\""))
+    if (quarisma::starts_with(symbol, "\""))
     {
         // chop off the outer quotes and return the string
-        XSIGMA_CHECK(symbol.size() >= 2);
+        QUARISMA_CHECK(symbol.size() >= 2);
         symbol.remove_prefix(1);
         symbol.remove_suffix(1);
         return std::string(symbol);
@@ -1358,25 +1358,25 @@ Constant convertAtomicConstant(std::string_view symbol)
     {
         return false;
     }
-    else if (xsigma::starts_with(symbol, kMemoryFormatPrefix))
+    else if (quarisma::starts_with(symbol, kMemoryFormatPrefix))
     {
         torch::_export::MemoryFormat value = torch::_export::MemoryFormat::Unknown;
         symbol.remove_prefix(kMemoryFormatPrefix.length());
         torch::_export::parseEnum(symbol, value);
         return convertJsonMemoryFormat(value);
     }
-    else if (xsigma::starts_with(symbol, kLayoutPrefix))
+    else if (quarisma::starts_with(symbol, kLayoutPrefix))
     {
         torch::_export::Layout value = torch::_export::Layout::Unknown;
         symbol.remove_prefix(kLayoutPrefix.length());
         torch::_export::parseEnum(symbol, value);
         return convertJsonLayout(value);
     }
-    else if (xsigma::starts_with(symbol, kDevicePrefix))
+    else if (quarisma::starts_with(symbol, kDevicePrefix))
     {
         return convertDevice(symbol);
     }
-    else if (xsigma::starts_with(symbol, kScalarTypePrefix))
+    else if (quarisma::starts_with(symbol, kScalarTypePrefix))
     {
         torch::_export::ScalarType value = torch::_export::ScalarType::UNKNOWN;
         symbol.remove_prefix(kScalarTypePrefix.length());
@@ -1386,7 +1386,7 @@ Constant convertAtomicConstant(std::string_view symbol)
 
     // match number
     // We need to disambiguate between int and float constants
-    const auto maybeInt = xsigma::tryToNumber<int64_t>(std::string{symbol});
+    const auto maybeInt = quarisma::tryToNumber<int64_t>(std::string{symbol});
 
     // Libraries may happily convert "5.0" to an int 5, but we want that to
     // become a float. So add an extra check for whether a '.' is in the string
@@ -1397,13 +1397,13 @@ Constant convertAtomicConstant(std::string_view symbol)
         return maybeInt.value();
     }
 
-    const auto maybeDouble = xsigma::tryToNumber<double>(std::string{symbol});
+    const auto maybeDouble = quarisma::tryToNumber<double>(std::string{symbol});
     if (maybeDouble.has_value())
     {
         return maybeDouble.value();
     }
 
-    XSIGMA_CHECK(false, "unhandled symbol: ", symbol);
+    QUARISMA_CHECK(false, "unhandled symbol: ", symbol);
 }
 
 Constant convertListConstant(std::string_view source)
@@ -1419,7 +1419,7 @@ Constant convertListConstant(std::string_view source)
         curPos = consumeWhitespaceImpl(source, curPos);
 
         size_t start = curPos;
-        while (source.xsigma(curPos) != ',' && source.xsigma(curPos) != ']')
+        while (source.quarisma(curPos) != ',' && source.quarisma(curPos) != ']')
         {
             curPos++;
         }
@@ -1444,15 +1444,15 @@ Constant convertListConstant(std::string_view source)
             }
             else
             {
-                XSIGMA_CHECK(false, "constant lists only support int, float, bool");
+                QUARISMA_CHECK(false, "constant lists only support int, float, bool");
             }
         }
         else
         {
-            XSIGMA_CHECK(type.index() == val.index(), "lists must have all the same type");
+            QUARISMA_CHECK(type.index() == val.index(), "lists must have all the same type");
         }
         values.push_back(std::move(val));
-        if (source.xsigma(curPos) == ']')
+        if (source.quarisma(curPos) == ']')
         {
             break;
         }
@@ -1494,7 +1494,7 @@ Constant convertListConstant(std::string_view source)
         }
         return inner;
     }
-    XSIGMA_CHECK(false, "constant lists only support int, float, bool");
+    QUARISMA_CHECK(false, "constant lists only support int, float, bool");
 }
 
 namespace
@@ -1536,7 +1536,7 @@ private:
     std::variant<NamedArgument, Attribute> parseNamedArgument();
     Value*                                 parseSymbolicArgument();
     // Symbols look like %v109, with the same valid ident rules as Python
-    // This returns the symbol *without* the % xsigma the front.
+    // This returns the symbol *without* the % quarisma the front.
     std::string_view parseAtomicSymbol();
 
     size_t                         curPos_ = 0;
@@ -1589,7 +1589,7 @@ bool Parser::nextIf(char expected)
 
 void Parser::parseGraphInputs()
 {
-    XSIGMA_CHECK(curPos_ == 0);
+    QUARISMA_CHECK(curPos_ == 0);
     expect("graph");
     const auto inputs =
         parseList<std::string_view>('(', ')', [&]() { return parseAtomicSymbol(); });
@@ -1683,7 +1683,7 @@ bool Parser::validIdent(char n)
 }
 
 // Symbols look like %v109, with the same valid ident rules as Python
-// This returns the symbol *without* the % xsigma the front.
+// This returns the symbol *without* the % quarisma the front.
 std::string_view Parser::parseAtomicSymbol()
 {
     expect("%");
@@ -1692,7 +1692,7 @@ std::string_view Parser::parseAtomicSymbol()
 
 char Parser::cur()
 {
-    return source_.xsigma(curPos_);
+    return source_.quarisma(curPos_);
 }
 
 void Parser::consumeWhitespace()
@@ -1803,7 +1803,7 @@ std::variant<NamedArgument, Attribute> Parser::parseNamedArgument()
 std::pair<std::string_view, Type> Parser::parseOutput()
 {
     consumeWhitespace();
-    XSIGMA_CHECK(cur() == '%', fmt::format("expected % but got {}", cur()));
+    QUARISMA_CHECK(cur() == '%', fmt::format("expected % but got {}", cur()));
 
     auto symbol = parseAtomicSymbol();
     if (nextIf('['))
@@ -1820,7 +1820,7 @@ std::pair<std::string_view, Type> Parser::parseOutput()
 Value* Parser::parseSymbolicArgument()
 {
     consumeWhitespace();
-    XSIGMA_CHECK(cur() == '%', fmt::format("expected % but got {}", cur()));
+    QUARISMA_CHECK(cur() == '%', fmt::format("expected % but got {}", cur()));
 
     auto                symbol = parseAtomicSymbol();
     std::vector<Value*> listElements;

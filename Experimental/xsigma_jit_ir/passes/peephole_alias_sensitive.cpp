@@ -1,4 +1,4 @@
-#include <XSigma/core/jit_type.h>
+#include <Quarisma/core/jit_type.h>
 #include <torch/csrc/jit/ir/alias_analysis.h>
 #include <torch/csrc/jit/ir/ir_views.h>
 #include <torch/csrc/jit/jit_log.h>
@@ -36,7 +36,7 @@ private:
     bool isFloatingPoint(TensorType& t)
     {
         auto input_dtype = t.scalarType();
-        return (shape_peepholes_ && input_dtype && xsigma::isFloatingType(*input_dtype));
+        return (shape_peepholes_ && input_dtype && quarisma::isFloatingType(*input_dtype));
     }
 
     bool runBlock(Block* block)
@@ -53,7 +53,7 @@ private:
             if (node->kind() == aten::conv1d || node->kind() == aten::conv2d ||
                 node->kind() == aten::conv3d)
             {
-                auto dim_uses = xsigma::filter(
+                auto dim_uses = quarisma::filter(
                     node->output()->uses(),
                     [](const Use& use) { return use.user->kind() == aten::dim; });
                 if (dim_uses.empty())
@@ -100,15 +100,15 @@ private:
                 if (!isFloatingPoint(node->input(0)->type()->expectRef<TensorType>()))
                 {
                     auto inps = node->inputs();
-                    if (!inps.xsigma(1)->type()->isSubtypeOf(IntType::get()) ||
-                        !inps.xsigma(2)->type()->isSubtypeOf(IntType::get()))
+                    if (!inps.quarisma(1)->type()->isSubtypeOf(IntType::get()) ||
+                        !inps.quarisma(2)->type()->isSubtypeOf(IntType::get()))
                     {
                         continue;
                     }
                 }
 
-                if (node->get<xsigma::Scalar>(attr::alpha)->toDouble() == 1 &&
-                    node->get<xsigma::Scalar>(attr::other)->toDouble() == 0)
+                if (node->get<quarisma::Scalar>(attr::alpha)->toDouble() == 1 &&
+                    node->get<quarisma::Scalar>(attr::other)->toDouble() == 0)
                 {
                     if (tryToReplaceOutputWithInput(node->input(0), node->output()))
                     {
@@ -141,7 +141,7 @@ private:
                     }
                 }
 
-                if (node->get<xsigma::Scalar>(attr::other)->toDouble() == 1)
+                if (node->get<quarisma::Scalar>(attr::other)->toDouble() == 1)
                 {
                     if (tryToReplaceOutputWithInput(node->input(0), node->output()))
                     {

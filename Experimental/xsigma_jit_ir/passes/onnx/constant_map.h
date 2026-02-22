@@ -27,17 +27,17 @@ public:
     static void SetAllGraphInputsReliableComputed(bool computed);
     static bool GetAllGraphInputsReliableComputed();
 
-    static void SetShape(const std::string& tensorName, const xsigma::SymbolicShape& shapeValue);
+    static void SetShape(const std::string& tensorName, const quarisma::SymbolicShape& shapeValue);
     static bool HasShape(const std::string& tensorName);
-    static std::optional<xsigma::SymbolicShape> GetShape(const std::string& tensorName);
+    static std::optional<quarisma::SymbolicShape> GetShape(const std::string& tensorName);
 
-    static void SetValue(const std::string& tensorName, const xsigma::Tensor& value);
+    static void SetValue(const std::string& tensorName, const quarisma::Tensor& value);
     static bool HasValue(const std::string& tensorName);
-    static std::optional<xsigma::Tensor> GetValue(const std::string& tensorName);
+    static std::optional<quarisma::Tensor> GetValue(const std::string& tensorName);
     static void                          EraseValue(const std::string& tensorName);
 
     static std::vector<int64_t> GetCompleteShapeInto1DInt64Vector(
-        const xsigma::SymbolicShape& shape);
+        const quarisma::SymbolicShape& shape);
     static std::optional<std::vector<int64_t>> GetShapeInto1DInt64Vector(
         const std::string& value_name);
     static std::optional<std::vector<int64_t>> GetShapeInto1DInt64VectorWithOneUnknown(
@@ -53,9 +53,9 @@ public:
     static std::optional<bool> GetUseInferredType(const std::string& tensorName);
 
     static void SetShapeValue(
-        const std::string& tensorName, const xsigma::SymbolicShape& shapeValue);
+        const std::string& tensorName, const quarisma::SymbolicShape& shapeValue);
     static bool                                 HasShapeValue(const std::string& tensorName);
-    static std::optional<xsigma::SymbolicShape> GetShapeValue(const std::string& tensorName);
+    static std::optional<quarisma::SymbolicShape> GetShapeValue(const std::string& tensorName);
 
     static ShapeDataMap& GetInferredShapeData();
 
@@ -74,8 +74,8 @@ private:
     ConstantValueMap() = default;
 
     std::unordered_map<std::string, size_t>                rankMap;
-    std::unordered_map<std::string, xsigma::SymbolicShape> shapeMap;
-    std::unordered_map<std::string, xsigma::Tensor>        tensorValueMap;
+    std::unordered_map<std::string, quarisma::SymbolicShape> shapeMap;
+    std::unordered_map<std::string, quarisma::Tensor>        tensorValueMap;
     // This map indicates whether the current type is reliably estimated or not.
     std::unordered_map<std::string, bool> typeReliableMap;
     // This map indicates whether the current type is estimated through inference
@@ -88,7 +88,7 @@ private:
     // between shapeMap and shapeValueMap: shapeMap stores the shape of the tensor
     // from a node. shapeValueMap stores the value of the tensor from a node when
     // this tensor represents a shape.
-    std::unordered_map<std::string, xsigma::SymbolicShape> shapeValueMap;
+    std::unordered_map<std::string, quarisma::SymbolicShape> shapeValueMap;
     // Stores earlier data propagation results so that they are accessible
     // during future node-level shape inference.
     ShapeDataMap inferredShapeData;

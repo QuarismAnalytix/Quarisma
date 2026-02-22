@@ -55,14 +55,14 @@ class VecISA:
     # making the runtime check unnecessary.
     _avx_code = """
 #if defined(CPU_CAPABILITY_AVX512) || defined(CPU_CAPABILITY_AVX2) || defined(CPU_CAPABILITY_ZVECTOR) || defined(CPU_CAPABILITY_NEON) || defined(CPU_CAPABILITY_VSX) || defined(CPU_CAPABILITY_SVE)
-#include <XSigma/cpu/vec/functional.h>
-#include <XSigma/cpu/vec/vec.h>
+#include <Quarisma/cpu/vec/functional.h>
+#include <Quarisma/cpu/vec/vec.h>
 #endif
 
 alignas(64) float in_out_ptr0[16] = {0.0};
 
 extern "C" void __avx_chk_kernel() {
-    auto tmp0 = xsigma::vec::Vectorized<float>(1);
+    auto tmp0 = quarisma::vec::Vectorized<float>(1);
     auto tmp1 = tmp0.exp();
     tmp1.store(in_out_ptr0);
 }
@@ -155,7 +155,7 @@ cdll.LoadLibrary("__lib_path__")
 
 @dataclasses.dataclass
 class VecNEON(VecISA):
-    _bit_width = 128  # This is required to leverage the compute implemented in aten/src/XSigma/cpu/vec/vec128/vec128_float_neon.h
+    _bit_width = 128  # This is required to leverage the compute implemented in aten/src/Quarisma/cpu/vec/vec128/vec128_float_neon.h
     _macro = ["CPU_CAPABILITY_NEON", "AT_BUILD_ARM_VEC256_WITH_SLEEF"]
     _arch_flags = ""  # Unused
     _dtype_nelements = {torch.float: 4, torch.bfloat16: 8, torch.float16: 8}

@@ -1,18 +1,18 @@
 #pragma once
 #if 0
-// TODO: Missing XSigma dependency - original include was:
-// #include <xsigma/csrc/jit/runtime/interpreter.h>
-// This is a XSigma-specific header not available in XSigma
+// TODO: Missing Quarisma dependency - original include was:
+// #include <quarisma/csrc/jit/runtime/interpreter.h>
+// This is a Quarisma-specific header not available in Quarisma
 
 #include "profiler/common/unwind/unwind.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 // struct that holds the result of symbolizing multiple tracebacks
 // each traceback is a list of indices into all_frames
 // (lots of Frames get duplicated across traces)
-struct XSIGMA_VISIBILITY SymbolizedTracebacks
+struct QUARISMA_VISIBILITY SymbolizedTracebacks
 {
     std::vector<unwind::Frame> all_frames;
     // index into all_frames, so that
@@ -21,7 +21,7 @@ struct XSIGMA_VISIBILITY SymbolizedTracebacks
     std::vector<std::vector<uint64_t>> tracebacks;
 };
 
-struct XSIGMA_VISIBILITY CapturedTraceback : public xsigma::GatheredContext
+struct QUARISMA_VISIBILITY CapturedTraceback : public quarisma::GatheredContext
 {
     struct PyFrame
     {
@@ -63,7 +63,7 @@ private:
     std::vector<PyFrame>         frames_;
     std::vector<void*>           cpp_frames_;
     std::vector<jit::StackEntry> script_frames_;
-    friend XSIGMA_API SymbolizedTracebacks
+    friend QUARISMA_API SymbolizedTracebacks
     symbolize(const std::vector<CapturedTraceback*>& to_symbolize);
 
     // non-owning reference to one of the immortal Python* objects
@@ -71,7 +71,7 @@ private:
     Python* python_ = nullptr;
 };
 
-XSIGMA_API SymbolizedTracebacks symbolize(const std::vector<CapturedTraceback*>& to_symbolize);
+QUARISMA_API SymbolizedTracebacks symbolize(const std::vector<CapturedTraceback*>& to_symbolize);
 
-}  // namespace xsigma
+}  // namespace quarisma
 #endif

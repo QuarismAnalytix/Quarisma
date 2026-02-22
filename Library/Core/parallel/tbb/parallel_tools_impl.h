@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * Portions of this code are based on VTK (Visualization Toolkit):
 
@@ -40,14 +40,14 @@
 #pragma pop_macro("__TBB_NO_IMPLICIT_LINKAGE")
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace detail
 {
 namespace parallel
 {
 
-void XSIGMA_API parallel_tools_impl_for_tbb(
+void QUARISMA_API parallel_tools_impl_for_tbb(
     size_t                   first,
     size_t                   last,
     size_t                   grain,
@@ -57,11 +57,11 @@ void XSIGMA_API parallel_tools_impl_for_tbb(
 //------------------------------------------------------------------------------
 // Address the static initialization order 'fiasco' by implementing
 // the schwarz counter idiom.
-class XSIGMA_VISIBILITY parallel_tools_impl_tbb_initialize
+class QUARISMA_VISIBILITY parallel_tools_impl_tbb_initialize
 {
 public:
-    XSIGMA_API parallel_tools_impl_tbb_initialize();
-    XSIGMA_API ~parallel_tools_impl_tbb_initialize();
+    QUARISMA_API parallel_tools_impl_tbb_initialize();
+    QUARISMA_API ~parallel_tools_impl_tbb_initialize();
 };
 
 //--------------------------------------------------------------------------------
@@ -163,26 +163,26 @@ void parallel_tools_impl<backend_type::TBB>::parallel_for(
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API void parallel_tools_impl<backend_type::TBB>::initialize(int);
+QUARISMA_API void parallel_tools_impl<backend_type::TBB>::initialize(int);
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API parallel_tools_impl<backend_type::TBB>::parallel_tools_impl();
+QUARISMA_API parallel_tools_impl<backend_type::TBB>::parallel_tools_impl();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int parallel_tools_impl<backend_type::TBB>::estimated_default_number_of_threads();
+QUARISMA_API int parallel_tools_impl<backend_type::TBB>::estimated_default_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int parallel_tools_impl<backend_type::TBB>::estimated_number_of_threads();
+QUARISMA_API int parallel_tools_impl<backend_type::TBB>::estimated_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API bool parallel_tools_impl<backend_type::TBB>::single_thread();
+QUARISMA_API bool parallel_tools_impl<backend_type::TBB>::single_thread();
 
 }  // namespace parallel
 }  // namespace detail
-}  // namespace xsigma
+}  // namespace quarisma
 
 #endif

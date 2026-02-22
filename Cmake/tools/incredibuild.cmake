@@ -1,5 +1,5 @@
 # =============================================================================
-# XSigma IncrediBuild Distributed Compilation Configuration Module
+# Quarisma IncrediBuild Distributed Compilation Configuration Module
 # =============================================================================
 # Enables IncrediBuild distributed compilation for Windows builds.
 # IncrediBuild is a commercial distributed build acceleration tool that
@@ -20,10 +20,10 @@ include_guard(GLOBAL)
 # Controls whether IncrediBuild distributed compilation is enabled.
 # Only supported on Windows. On Linux/macOS, this option will be ignored
 # with a warning message.
-option(XSIGMA_ENABLE_INCREDIBUILD "Enable IncrediBuild distributed compilation (Windows only)" OFF)
-mark_as_advanced(XSIGMA_ENABLE_INCREDIBUILD)
+option(QUARISMA_ENABLE_INCREDIBUILD "Enable IncrediBuild distributed compilation (Windows only)" OFF)
+mark_as_advanced(QUARISMA_ENABLE_INCREDIBUILD)
 
-if(NOT XSIGMA_ENABLE_INCREDIBUILD)
+if(NOT QUARISMA_ENABLE_INCREDIBUILD)
   return()
 endif()
 
@@ -31,7 +31,7 @@ endif()
 if(NOT WIN32)
   message(FATAL_ERROR "IncrediBuild is only supported on Windows. "
     "Current platform: ${CMAKE_SYSTEM_NAME}. "
-    "Please disable XSIGMA_ENABLE_INCREDIBUILD on non-Windows platforms.")
+    "Please disable QUARISMA_ENABLE_INCREDIBUILD on non-Windows platforms.")
 endif()
 
 # Find XGE executable (IncrediBuild's command-line tool)
@@ -46,9 +46,9 @@ endif()
 message(STATUS "IncrediBuild XGE found: ${INCREDIBUILD_XGE}")
 
 # Disable Icecream if it was enabled (conflict detection)
-if(XSIGMA_ENABLE_ICECC)
+if(QUARISMA_ENABLE_ICECC)
   message(STATUS "Disabling Icecream (conflicts with IncrediBuild)")
-  set(XSIGMA_ENABLE_ICECC OFF CACHE BOOL "Use Icecream distributed compilation" FORCE)
+  set(QUARISMA_ENABLE_ICECC OFF CACHE BOOL "Use Icecream distributed compilation" FORCE)
   # Clear any Icecream compiler launcher that may have been set
   unset(CMAKE_C_COMPILER_LAUNCHER)
   unset(CMAKE_CXX_COMPILER_LAUNCHER)
@@ -60,7 +60,7 @@ set(CMAKE_C_COMPILER_LAUNCHER "${INCREDIBUILD_XGE}" CACHE STRING "C compiler lau
 set(CMAKE_CXX_COMPILER_LAUNCHER "${INCREDIBUILD_XGE}" CACHE STRING "CXX compiler launcher")
 
 # Also set CUDA compiler launcher if CUDA is enabled
-if(XSIGMA_ENABLE_CUDA)
+if(QUARISMA_ENABLE_CUDA)
   set(CMAKE_CUDA_COMPILER_LAUNCHER "${INCREDIBUILD_XGE}" CACHE STRING "CUDA compiler launcher")
   message(STATUS "IncrediBuild enabled for CUDA compilation (experimental)")
 endif()

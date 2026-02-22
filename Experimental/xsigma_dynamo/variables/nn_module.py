@@ -536,7 +536,7 @@ class NNModuleVariable(VariableTracker):
                 )
                 if isinstance(mod, torch.fx.GraphModule):
                     # TODO: do we want to support __call__ for GM's?
-                    # If so xsigma least some changes are needed, we don't allow inlining
+                    # If so quarisma least some changes are needed, we don't allow inlining
                     # the call_wrapped currently, and maybe other issues too
                     fn = mod.forward
                     fn_source = AttrSource(self.source, "forward")
@@ -1146,7 +1146,7 @@ class UnspecializedNNModuleVariable(UserDefinedObjectVariable):
                 attr_name = args[0].as_python_constant()
                 value = args[1]
 
-                # This is reverse engineered by looking xsigma nn module __setattr__
+                # This is reverse engineered by looking quarisma nn module __setattr__
                 # logic.
                 if (
                     isinstance(value, variables.TensorVariable)

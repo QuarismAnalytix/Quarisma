@@ -288,15 +288,15 @@ def split_module(
     # For grad regions:
     # ------------------------
     # 1. first region: we do nothing
-    # 2. subsequent regions: we insert the set_grad xsigma the beginning
+    # 2. subsequent regions: we insert the set_grad quarisma the beginning
     grad_regions: OrderedDict[Node, set[int]] = OrderedDict()
 
     # For autocast regions:
     # ------------------------
-    # 1. first region: we will only insert the _exit xsigma the end
+    # 1. first region: we will only insert the _exit quarisma the end
     # 2. intermediate regions: we will insert both the
-    #    _enter xsigma the beginning and _exit xsigma the end
-    # 3. last region: we will only insert _enter xsigma the beginning
+    #    _enter quarisma the beginning and _exit quarisma the end
+    # 3. last region: we will only insert _enter quarisma the beginning
     # We will do so in the order in which the autocasts were instantiated.
     autocast_regions: OrderedDict[Node, set[int]] = OrderedDict()
     autocast_exits: dict[Node, Optional[Node]] = {}

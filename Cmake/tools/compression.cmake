@@ -9,27 +9,27 @@ include_guard(GLOBAL)
 
 # Compression Support Flag Controls whether compression support is enabled for data serialization.
 # When enabled, allows selection of compression library (snappy or none).
-option(XSIGMA_ENABLE_COMPRESSION "Enable compression support" OFF)
+option(QUARISMA_ENABLE_COMPRESSION "Enable compression support" OFF)
 
 # Compression Library Selection Specifies which compression library to use: none or snappy.
-set(XSIGMA_COMPRESSION_TYPE "none" CACHE STRING
+set(QUARISMA_COMPRESSION_TYPE "none" CACHE STRING
                                          "Compression library to use. Options are  none, snappy"
 )
-set_property(CACHE XSIGMA_COMPRESSION_TYPE PROPERTY STRINGS none snappy)
-mark_as_advanced(XSIGMA_ENABLE_COMPRESSION XSIGMA_COMPRESSION_TYPE)
+set_property(CACHE QUARISMA_COMPRESSION_TYPE PROPERTY STRINGS none snappy)
+mark_as_advanced(QUARISMA_ENABLE_COMPRESSION QUARISMA_COMPRESSION_TYPE)
 
 # Compression configuration validation and setup
-if(XSIGMA_ENABLE_COMPRESSION)
-  if(XSIGMA_COMPRESSION_TYPE STREQUAL "SNAPPY")
-    set(XSIGMA_COMPRESSION_TYPE_SNAPPY ON)
+if(QUARISMA_ENABLE_COMPRESSION)
+  if(QUARISMA_COMPRESSION_TYPE STREQUAL "SNAPPY")
+    set(QUARISMA_COMPRESSION_TYPE_SNAPPY ON)
     message(STATUS "Compression enabled: Snappy")
-  elseif(XSIGMA_COMPRESSION_TYPE STREQUAL "NONE")
-    set(XSIGMA_ENABLE_COMPRESSION OFF)
+  elseif(QUARISMA_COMPRESSION_TYPE STREQUAL "NONE")
+    set(QUARISMA_ENABLE_COMPRESSION OFF)
     message(STATUS "Compression type set to NONE - disabling compression")
   else()
     message(
       FATAL_ERROR
-        "Invalid XSIGMA_COMPRESSION_TYPE: ${XSIGMA_COMPRESSION_TYPE}. Valid options are: NONE, SNAPPY"
+        "Invalid QUARISMA_COMPRESSION_TYPE: ${QUARISMA_COMPRESSION_TYPE}. Valid options are: NONE, SNAPPY"
     )
   endif()
 else()

@@ -1,4 +1,4 @@
-# XSigma Profiler: Before & After Comparison
+# Quarisma Profiler: Before & After Comparison
 
 ## Current Output (Before)
 

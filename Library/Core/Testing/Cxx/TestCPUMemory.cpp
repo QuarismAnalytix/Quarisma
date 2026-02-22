@@ -1,9 +1,9 @@
 ﻿/*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include <cstdint>      // for uint8_t, uint64_t, uintptr_t, SIZE_MAX, UINT64_MAX, int64_t
@@ -35,22 +35,22 @@
 #include "memory/backend/allocator_tracking.h"  // for allocator_tracking, enhanced_alloc_record, tracking_log_level
 #include "memory/cpu/allocator.h"  // for sub_allocator, allocation_attributes, Allocator, allocator_m...
 
-#if XSIGMA_HAS_CUDA || XSIGMA_HAS_HIP
+#if QUARISMA_HAS_CUDA || QUARISMA_HAS_HIP
 #include "memory/cpu/allocator_device.h"  // for allocator_device
 #endif
 
 #include "memory/helper/memory_allocator.h"  // for free, allocate
 #include "memory/helper/process_state.h"     // for process_state
 #include "memory/unified_memory_stats.h"  // for atomic_timing_stats, unified_resource_stats, memory_fragment...
-#include "xsigmaTest.h"                   // for XSIGMATEST_CALL, XSIGMATEST, END_TEST, XSIGMATEST
+#include "baseTest.h"                   // for QUARISMATEST_CALL, QUARISMATEST, END_TEST, QUARISMATEST
 
-using namespace xsigma;
+using namespace quarisma;
 
 // ============================================================================
 // ALLOCATOR_DEVICE TESTS
 // ============================================================================
-#if XSIGMA_HAS_CUDA || XSIGMA_HAS_HIP
-XSIGMATEST(AllocatorDevice, basic_allocation)
+#if QUARISMA_HAS_CUDA || QUARISMA_HAS_HIP
+QUARISMATEST(AllocatorDevice, basic_allocation)
 {
     auto allocator = std::make_unique<allocator_device>();
 
@@ -86,7 +86,7 @@ XSIGMATEST(AllocatorDevice, basic_allocation)
     END_TEST();
 }
 
-XSIGMATEST(AllocatorDevice, interface)
+QUARISMATEST(AllocatorDevice, interface)
 {
     auto allocator = std::make_unique<allocator_device>();
 
@@ -114,7 +114,7 @@ XSIGMATEST(AllocatorDevice, interface)
     END_TEST();
 }
 
-XSIGMATEST(AllocatorDevice, memory_type)
+QUARISMATEST(AllocatorDevice, memory_type)
 {
     auto allocator = std::make_unique<allocator_device>();
 
@@ -124,7 +124,7 @@ XSIGMATEST(AllocatorDevice, memory_type)
     END_TEST();
 }
 
-XSIGMATEST(AllocatorDevice, error_handling)
+QUARISMATEST(AllocatorDevice, error_handling)
 {
     auto allocator = std::make_unique<allocator_device>();
 
@@ -143,7 +143,7 @@ XSIGMATEST(AllocatorDevice, error_handling)
 #endif
 
 // Test allocator stress scenarios
-XSIGMATEST(AllocatorTest, StressTest)
+QUARISMATEST(AllocatorTest, StressTest)
 {
 #if 0
     auto base_allocator = util::make_ptr_unique_mutable<basic_cpu_allocator>(
@@ -210,7 +210,7 @@ XSIGMATEST(AllocatorTest, StressTest)
 }
 
 // Test error handling and edge cases
-XSIGMATEST(AllocatorTest, ErrorHandling)
+QUARISMATEST(AllocatorTest, ErrorHandling)
 {
     auto base_allocator = util::make_ptr_unique_mutable<basic_cpu_allocator>(
         0, std::vector<sub_allocator::Visitor>{}, std::vector<sub_allocator::Visitor>{});
@@ -243,7 +243,7 @@ XSIGMATEST(AllocatorTest, ErrorHandling)
 }
 
 // Test memory leak detection
-XSIGMATEST(AllocatorTest, MemoryLeakDetection)
+QUARISMATEST(AllocatorTest, MemoryLeakDetection)
 {
     auto base_allocator = util::make_ptr_unique_mutable<basic_cpu_allocator>(
         0, std::vector<sub_allocator::Visitor>{}, std::vector<sub_allocator::Visitor>{});
@@ -253,7 +253,7 @@ XSIGMATEST(AllocatorTest, MemoryLeakDetection)
         std::move(base_allocator),
         util::make_ptr_unique_mutable<NoopRounder>(),
         "leak_pool");
-    auto allocator_tracking = new xsigma::allocator_tracking(pool.get(), true);
+    auto allocator_tracking = new quarisma::allocator_tracking(pool.get(), true);
 
     // Get initial statistics
     auto initial_stats = allocator_tracking->GetStats();
@@ -293,7 +293,7 @@ XSIGMATEST(AllocatorTest, MemoryLeakDetection)
 }
 
 // Test allocator statistics and monitoring
-XSIGMATEST(AllocatorTest, StatisticsAndMonitoring)
+QUARISMATEST(AllocatorTest, StatisticsAndMonitoring)
 {
     auto base_allocator = util::make_ptr_unique_mutable<basic_cpu_allocator>(
         0, std::vector<sub_allocator::Visitor>{}, std::vector<sub_allocator::Visitor>{});
@@ -303,7 +303,7 @@ XSIGMATEST(AllocatorTest, StatisticsAndMonitoring)
         std::move(base_allocator),
         util::make_ptr_unique_mutable<NoopRounder>(),
         "stats_pool");
-    auto allocator_tracking = new xsigma::allocator_tracking(pool.get(), true);
+    auto allocator_tracking = new quarisma::allocator_tracking(pool.get(), true);
 
     // Test statistics collection
     auto stats = allocator_tracking->GetStats();
@@ -342,9 +342,9 @@ XSIGMATEST(AllocatorTest, StatisticsAndMonitoring)
 // ============================================================================
 
 // Test memory port basic functionality
-XSIGMATEST(MemoryPortTest, BasicMemoryOperations)
+QUARISMATEST(MemoryPortTest, BasicMemoryOperations)
 {
-    XSIGMA_LOG_INFO("Testing memory port basic operations...");
+    QUARISMA_LOG_INFO("Testing memory port basic operations...");
 
     // Test aligned malloc/free (these are available)
     void* ptr2 = cpu::memory_allocator::allocate(2048, 64);
@@ -352,13 +352,13 @@ XSIGMATEST(MemoryPortTest, BasicMemoryOperations)
     EXPECT_TRUE(IsAligned(ptr2, 64));
     cpu::memory_allocator::free(ptr2);
 
-    XSIGMA_LOG_INFO("Memory port basic operations tests completed successfully");
+    QUARISMA_LOG_INFO("Memory port basic operations tests completed successfully");
 }
 
 // Test memory port alignment requirements
-XSIGMATEST(MemoryPortTest, AlignmentRequirements)
+QUARISMATEST(MemoryPortTest, AlignmentRequirements)
 {
-    XSIGMA_LOG_INFO("Testing memory port alignment requirements...");
+    QUARISMA_LOG_INFO("Testing memory port alignment requirements...");
 
     // Test various alignment values
     std::vector<int> alignments = {8, 16, 32, 64, 128, 256, 512, 1024};
@@ -372,32 +372,32 @@ XSIGMATEST(MemoryPortTest, AlignmentRequirements)
         cpu::memory_allocator::free(ptr);
     }
 
-    XSIGMA_LOG_INFO("Memory port alignment requirements tests completed successfully");
+    QUARISMA_LOG_INFO("Memory port alignment requirements tests completed successfully");
 }
 
 // Test memory port edge cases
-XSIGMATEST(MemoryPortTest, EdgeCases)
+QUARISMATEST(MemoryPortTest, EdgeCases)
 {
-    XSIGMA_LOG_INFO("Testing memory port edge cases...");
+    QUARISMA_LOG_INFO("Testing memory port edge cases...");
 
     // Test null pointer free (should not crash)
     cpu::memory_allocator::free(nullptr);
 
     // Test zero-size allocation
-    // fixme: ASSERT_ANY_THROW({ xsigma::cpu::memory_allocator::allocate(0, 64); });
+    // fixme: ASSERT_ANY_THROW({ quarisma::cpu::memory_allocator::allocate(0, 64); });
 
-    XSIGMA_LOG_INFO("Memory port edge cases tests completed successfully");
+    QUARISMA_LOG_INFO("Memory port edge cases tests completed successfully");
 }
 
 // Test memory port system information
-XSIGMATEST(MemoryPortTest, SystemInformation)
+QUARISMATEST(MemoryPortTest, SystemInformation)
 {
-    XSIGMA_LOG_INFO("Testing memory port system information...");
+    QUARISMA_LOG_INFO("Testing memory port system information...");
 
     // Test NUMA affinity constant
-    EXPECT_EQ(xsigma::NUMANOAFFINITY, -1);
+    EXPECT_EQ(quarisma::NUMANOAFFINITY, -1);
 
-    XSIGMA_LOG_INFO("Memory port system information tests completed successfully");
+    QUARISMA_LOG_INFO("Memory port system information tests completed successfully");
 }
 
 // ============================================================================
@@ -405,48 +405,48 @@ XSIGMATEST(MemoryPortTest, SystemInformation)
 // ============================================================================
 
 // Test allocation attributes construction and behavior
-XSIGMATEST(AllocationAttributesTest, ConstructionAndBehavior)
+QUARISMATEST(AllocationAttributesTest, ConstructionAndBehavior)
 {
-    XSIGMA_LOG_INFO("Testing allocation attributes construction and behavior...");
+    QUARISMA_LOG_INFO("Testing allocation attributes construction and behavior...");
 
     // Test default construction
-    xsigma::allocation_attributes default_attrs;
+    quarisma::allocation_attributes default_attrs;
     EXPECT_TRUE(default_attrs.retry_on_failure);
     EXPECT_FALSE(default_attrs.allocation_will_be_logged);
     EXPECT_EQ(nullptr, default_attrs.freed_by_func);
 
     // Test parameterized construction
     std::function<uint64_t()>     timing_func = []() { return 12345; };
-    xsigma::allocation_attributes custom_attrs(true, true, &timing_func);
+    quarisma::allocation_attributes custom_attrs(true, true, &timing_func);
     EXPECT_TRUE(custom_attrs.retry_on_failure);
     EXPECT_TRUE(custom_attrs.allocation_will_be_logged);
     EXPECT_EQ(&timing_func, custom_attrs.freed_by_func);
 
     // Test move construction
-    xsigma::allocation_attributes moved_attrs = std::move(custom_attrs);
+    quarisma::allocation_attributes moved_attrs = std::move(custom_attrs);
     EXPECT_TRUE(moved_attrs.retry_on_failure);
     EXPECT_TRUE(moved_attrs.allocation_will_be_logged);
     EXPECT_EQ(&timing_func, moved_attrs.freed_by_func);
 
     // Test move assignment
-    xsigma::allocation_attributes assigned_attrs;
+    quarisma::allocation_attributes assigned_attrs;
     assigned_attrs = std::move(moved_attrs);
     EXPECT_TRUE(assigned_attrs.retry_on_failure);
     EXPECT_TRUE(assigned_attrs.allocation_will_be_logged);
     EXPECT_EQ(&timing_func, assigned_attrs.freed_by_func);
 
-    XSIGMA_LOG_INFO("Allocation attributes construction and behavior tests completed successfully");
+    QUARISMA_LOG_INFO("Allocation attributes construction and behavior tests completed successfully");
 }
 
 // Test allocation attributes with timing constraints
-XSIGMATEST(AllocationAttributesTest, TimingConstraints)
+QUARISMATEST(AllocationAttributesTest, TimingConstraints)
 {
-    XSIGMA_LOG_INFO("Testing allocation attributes timing constraints...");
+    QUARISMA_LOG_INFO("Testing allocation attributes timing constraints...");
 
     uint64_t                  counter     = 0;
     std::function<uint64_t()> timing_func = [&counter]() { return ++counter; };
 
-    xsigma::allocation_attributes attrs(true, true, &timing_func);
+    quarisma::allocation_attributes attrs(true, true, &timing_func);
 
     // Test timing function calls
     EXPECT_EQ(&timing_func, attrs.freed_by_func);
@@ -461,7 +461,7 @@ XSIGMATEST(AllocationAttributesTest, TimingConstraints)
         EXPECT_GT(time2, time1);
     }
 
-    XSIGMA_LOG_INFO("Allocation attributes timing constraints tests completed successfully");
+    QUARISMA_LOG_INFO("Allocation attributes timing constraints tests completed successfully");
 }
 
 // ============================================================================
@@ -471,32 +471,32 @@ XSIGMATEST(AllocationAttributesTest, TimingConstraints)
 // and other dependencies that are not available in the current build configuration
 
 // Test process state singleton functionality and thread safety
-XSIGMATEST(ProcessStateTest, SingletonFunctionality)
+QUARISMATEST(ProcessStateTest, SingletonFunctionality)
 {
-    XSIGMA_LOG_INFO("Testing process state singleton functionality...");
+    QUARISMA_LOG_INFO("Testing process state singleton functionality...");
 
     // Test singleton access
-    xsigma::process_state* state1 = xsigma::process_state::singleton();
-    xsigma::process_state* state2 = xsigma::process_state::singleton();
+    quarisma::process_state* state1 = quarisma::process_state::singleton();
+    quarisma::process_state* state2 = quarisma::process_state::singleton();
 
     EXPECT_NE(nullptr, state1);
     EXPECT_EQ(state1, state2);  // Should be the same instance
 
     state1->TestOnlyReset();
 
-    XSIGMA_LOG_INFO("Process state singleton functionality tests completed successfully");
+    QUARISMA_LOG_INFO("Process state singleton functionality tests completed successfully");
 }
 
 // Test CPU allocator retrieval and management
-XSIGMATEST(ProcessStateTest, CPUAllocatorManagement)
+QUARISMATEST(ProcessStateTest, CPUAllocatorManagement)
 {
-    XSIGMA_LOG_INFO("Testing CPU allocator retrieval and management...");
+    QUARISMA_LOG_INFO("Testing CPU allocator retrieval and management...");
 
-    xsigma::process_state* state = xsigma::process_state::singleton();
+    quarisma::process_state* state = quarisma::process_state::singleton();
 
     // Test CPU allocator access for different NUMA nodes
-    xsigma::Allocator* cpu_alloc1 = state->GetCPUAllocator(0);
-    xsigma::Allocator* cpu_alloc2 = state->GetCPUAllocator(xsigma::NUMANOAFFINITY);
+    quarisma::Allocator* cpu_alloc1 = state->GetCPUAllocator(0);
+    quarisma::Allocator* cpu_alloc2 = state->GetCPUAllocator(quarisma::NUMANOAFFINITY);
 
     auto ptr = cpu_alloc1->allocate_raw(64, 1000);
     cpu_alloc1->deallocate_raw(ptr);
@@ -505,45 +505,45 @@ XSIGMATEST(ProcessStateTest, CPUAllocatorManagement)
     EXPECT_NE(nullptr, cpu_alloc2);
 
     // Test allocator consistency
-    xsigma::Allocator* cpu_alloc3 = state->GetCPUAllocator(0);
+    quarisma::Allocator* cpu_alloc3 = state->GetCPUAllocator(0);
     EXPECT_EQ(cpu_alloc1, cpu_alloc3);  // Should return same allocator for same node
 
-    XSIGMA_LOG_INFO("CPU allocator retrieval and management tests completed successfully");
+    QUARISMA_LOG_INFO("CPU allocator retrieval and management tests completed successfully");
 }
 // Test NUMA enablement and affinity handling
-XSIGMATEST(ProcessStateTest, NUMAHandling)
+QUARISMATEST(ProcessStateTest, NUMAHandling)
 {
-    XSIGMA_LOG_INFO("Testing NUMA enablement and affinity handling...");
+    QUARISMA_LOG_INFO("Testing NUMA enablement and affinity handling...");
 
-    xsigma::process_state* state = xsigma::process_state::singleton();
+    quarisma::process_state* state = quarisma::process_state::singleton();
 
     // Test NUMA enablement (should not crash)
     state->EnableNUMA();
 
     // Test allocator access after NUMA enablement
-    xsigma::Allocator* numa_alloc = state->GetCPUAllocator(0);
+    quarisma::Allocator* numa_alloc = state->GetCPUAllocator(0);
     EXPECT_NE(nullptr, numa_alloc);
 
     // Test NUMANOAFFINITY handling
-    xsigma::Allocator* no_affinity_alloc = state->GetCPUAllocator(xsigma::NUMANOAFFINITY);
+    quarisma::Allocator* no_affinity_alloc = state->GetCPUAllocator(quarisma::NUMANOAFFINITY);
     EXPECT_NE(nullptr, no_affinity_alloc);
 
-    XSIGMA_LOG_INFO("NUMA enablement and affinity handling tests completed successfully");
+    QUARISMA_LOG_INFO("NUMA enablement and affinity handling tests completed successfully");
 }
 
 // Test memory description and pointer type detection
-XSIGMATEST(ProcessStateTest, MemoryDescription)
+QUARISMATEST(ProcessStateTest, MemoryDescription)
 {
-    XSIGMA_LOG_INFO("Testing memory description and pointer type detection...");
+    QUARISMA_LOG_INFO("Testing memory description and pointer type detection...");
 
-    xsigma::process_state* state = xsigma::process_state::singleton();
+    quarisma::process_state* state = quarisma::process_state::singleton();
 
     // Test memory description for CPU pointer
     void* cpu_ptr = std::malloc(1024);
     EXPECT_NE(nullptr, cpu_ptr);
 
     auto mem_desc = state->PtrType(cpu_ptr);
-    EXPECT_EQ(mem_desc.loc, xsigma::process_state::MemDesc::CPU);
+    EXPECT_EQ(mem_desc.loc, quarisma::process_state::MemDesc::CPU);
     EXPECT_EQ(mem_desc.dev_index, 0);
     EXPECT_FALSE(mem_desc.gpu_registered);
     EXPECT_FALSE(mem_desc.nic_registered);
@@ -553,8 +553,8 @@ XSIGMATEST(ProcessStateTest, MemoryDescription)
     EXPECT_FALSE(debug_str.empty());
 
     // Test default MemDesc construction
-    xsigma::process_state::MemDesc default_desc;
-    EXPECT_EQ(default_desc.loc, xsigma::process_state::MemDesc::CPU);
+    quarisma::process_state::MemDesc default_desc;
+    EXPECT_EQ(default_desc.loc, quarisma::process_state::MemDesc::CPU);
     EXPECT_EQ(default_desc.dev_index, 0);
     EXPECT_FALSE(default_desc.gpu_registered);
     EXPECT_FALSE(default_desc.nic_registered);
@@ -562,15 +562,15 @@ XSIGMATEST(ProcessStateTest, MemoryDescription)
     std::free(cpu_ptr);
 
     state->TestOnlyReset();
-    XSIGMA_LOG_INFO("Memory description and pointer type detection tests completed successfully");
+    QUARISMA_LOG_INFO("Memory description and pointer type detection tests completed successfully");
 }
 
 // Test visitor registration for allocation/deallocation callbacks
-XSIGMATEST(ProcessStateTest, VisitorRegistration)
+QUARISMATEST(ProcessStateTest, VisitorRegistration)
 {
-    XSIGMA_LOG_INFO("Testing visitor registration for allocation/deallocation callbacks...");
+    QUARISMA_LOG_INFO("Testing visitor registration for allocation/deallocation callbacks...");
 
-    xsigma::process_state* state = xsigma::process_state::singleton();
+    quarisma::process_state* state = quarisma::process_state::singleton();
 
     // Test CPU allocator visitor registration
     bool alloc_visitor_called = false;
@@ -578,12 +578,12 @@ XSIGMATEST(ProcessStateTest, VisitorRegistration)
 
     auto alloc_visitor =
         [&alloc_visitor_called](
-            XSIGMA_UNUSED void* ptr, XSIGMA_UNUSED int index, XSIGMA_UNUSED size_t num_bytes)
+            QUARISMA_UNUSED void* ptr, QUARISMA_UNUSED int index, QUARISMA_UNUSED size_t num_bytes)
     { alloc_visitor_called = true; };
 
     auto free_visitor =
         [&free_visitor_called](
-            XSIGMA_UNUSED void* ptr, XSIGMA_UNUSED int index, XSIGMA_UNUSED size_t num_bytes)
+            QUARISMA_UNUSED void* ptr, QUARISMA_UNUSED int index, QUARISMA_UNUSED size_t num_bytes)
     { free_visitor_called = true; };
 
     // Note: These must be called before GetCPUAllocator according to the API
@@ -591,12 +591,12 @@ XSIGMATEST(ProcessStateTest, VisitorRegistration)
     state->AddCPUAllocVisitor(alloc_visitor);
     state->AddCPUFreeVisitor(free_visitor);
 
-    xsigma::Allocator* cpu_alloc = state->GetCPUAllocator(0);
+    quarisma::Allocator* cpu_alloc = state->GetCPUAllocator(0);
 
     auto ptr = cpu_alloc->allocate_raw(64, 1000);
     cpu_alloc->deallocate_raw(ptr);
 
-    XSIGMA_LOG_INFO("Visitor registration tests completed successfully");
+    QUARISMA_LOG_INFO("Visitor registration tests completed successfully");
 }
 
 // ============================================================================
@@ -604,9 +604,9 @@ XSIGMATEST(ProcessStateTest, VisitorRegistration)
 // ============================================================================
 
 // Test memory allocation tracking and leak detection
-XSIGMATEST(AllocatorTracking, AllocationTracking)
+QUARISMATEST(AllocatorTracking, AllocationTracking)
 {
-    XSIGMA_LOG_INFO("Testing memory allocation tracking and leak detection...");
+    QUARISMA_LOG_INFO("Testing memory allocation tracking and leak detection...");
 
     // Create underlying BFC allocator for testing
     auto sub_allocator = std::make_unique<basic_cpu_allocator>(
@@ -614,11 +614,11 @@ XSIGMATEST(AllocatorTracking, AllocationTracking)
 
     allocator_bfc::Options opts;
     opts.allow_growth = false;
-    xsigma::allocator_bfc underlying_alloc(
+    quarisma::allocator_bfc underlying_alloc(
         std::move(sub_allocator), 1024ULL * 1024ULL, "test_tracking_bfc", opts);
 
     // Create tracking allocator with size tracking enabled (use pointer due to protected destructor)
-    auto tracker = new xsigma::allocator_tracking(&underlying_alloc, true);
+    auto tracker = new quarisma::allocator_tracking(&underlying_alloc, true);
 
     // Test basic allocation tracking
     void* ptr1 = tracker->allocate_raw(64, 1024);
@@ -650,13 +650,13 @@ XSIGMATEST(AllocatorTracking, AllocationTracking)
     // Properly cleanup tracking allocator by releasing reference
     tracker->GetRecordsAndUnRef();
 
-    XSIGMA_LOG_INFO("Memory allocation tracking and leak detection tests completed successfully");
+    QUARISMA_LOG_INFO("Memory allocation tracking and leak detection tests completed successfully");
 }
 
 // Test allocation statistics collection and reporting
-XSIGMATEST(AllocatorTracking, StatisticsCollection)
+QUARISMATEST(AllocatorTracking, StatisticsCollection)
 {
-    XSIGMA_LOG_INFO("Testing allocation statistics collection and reporting...");
+    QUARISMA_LOG_INFO("Testing allocation statistics collection and reporting...");
 
     // Create underlying allocator
     auto sub_allocator = std::make_unique<basic_cpu_allocator>(
@@ -664,11 +664,11 @@ XSIGMATEST(AllocatorTracking, StatisticsCollection)
 
     allocator_bfc::Options opts;
     opts.allow_growth = false;
-    xsigma::allocator_bfc underlying_alloc(
+    quarisma::allocator_bfc underlying_alloc(
         std::move(sub_allocator), 1024ULL * 1024ULL, "test_stats_bfc", opts);
 
     // Create tracking allocator (use pointer due to protected destructor)
-    auto tracker = new xsigma::allocator_tracking(&underlying_alloc, true);
+    auto tracker = new quarisma::allocator_tracking(&underlying_alloc, true);
 
     // Get initial statistics
     auto initial_stats = tracker->GetStats();
@@ -708,13 +708,13 @@ XSIGMATEST(AllocatorTracking, StatisticsCollection)
     // Properly cleanup tracking allocator by releasing reference
     tracker->GetRecordsAndUnRef();
 
-    XSIGMA_LOG_INFO("Allocation statistics collection and reporting tests completed successfully");
+    QUARISMA_LOG_INFO("Allocation statistics collection and reporting tests completed successfully");
 }
 
 // Test memory usage monitoring and bounds checking
-XSIGMATEST(AllocatorTracking, MemoryUsageMonitoring)
+QUARISMATEST(AllocatorTracking, MemoryUsageMonitoring)
 {
-    XSIGMA_LOG_INFO("Testing memory usage monitoring and bounds checking...");
+    QUARISMA_LOG_INFO("Testing memory usage monitoring and bounds checking...");
 
     // Create underlying allocator
     auto sub_allocator = std::make_unique<basic_cpu_allocator>(
@@ -722,11 +722,11 @@ XSIGMATEST(AllocatorTracking, MemoryUsageMonitoring)
 
     allocator_bfc::Options opts;
     opts.allow_growth = false;
-    xsigma::allocator_bfc underlying_alloc(
+    quarisma::allocator_bfc underlying_alloc(
         std::move(sub_allocator), 1024ULL * 1024ULL, "test_monitoring_bfc", opts);
 
     // Create tracking allocator (use pointer due to protected destructor)
-    auto tracker = new xsigma::allocator_tracking(&underlying_alloc, true);
+    auto tracker = new quarisma::allocator_tracking(&underlying_alloc, true);
 
     // Test allocation records collection
     std::vector<void*> ptrs;
@@ -771,13 +771,13 @@ XSIGMATEST(AllocatorTracking, MemoryUsageMonitoring)
     // Properly cleanup tracking allocator by releasing reference
     tracker->GetRecordsAndUnRef();
 
-    XSIGMA_LOG_INFO("Memory usage monitoring and bounds checking tests completed successfully");
+    QUARISMA_LOG_INFO("Memory usage monitoring and bounds checking tests completed successfully");
 }
 
 // Test integration with underlying allocator implementations
-XSIGMATEST(AllocatorTracking, UnderlyingAllocatorIntegration)
+QUARISMATEST(AllocatorTracking, UnderlyingAllocatorIntegration)
 {
-    XSIGMA_LOG_INFO("Testing integration with underlying allocator implementations...");
+    QUARISMA_LOG_INFO("Testing integration with underlying allocator implementations...");
 
     // Test with BFC allocator
     auto sub_allocator = std::make_unique<basic_cpu_allocator>(
@@ -785,9 +785,9 @@ XSIGMATEST(AllocatorTracking, UnderlyingAllocatorIntegration)
 
     allocator_bfc::Options opts;
     opts.allow_growth = false;
-    xsigma::allocator_bfc bfc_alloc(
+    quarisma::allocator_bfc bfc_alloc(
         std::move(sub_allocator), 1024ULL, "test_integration_bfc", opts);
-    auto bfc_tracker = new xsigma::allocator_tracking(&bfc_alloc, true);
+    auto bfc_tracker = new quarisma::allocator_tracking(&bfc_alloc, true);
 
     // Test name delegation
     std::string tracker_name = bfc_tracker->Name();
@@ -813,9 +813,9 @@ XSIGMATEST(AllocatorTracking, UnderlyingAllocatorIntegration)
         0, std::vector<sub_allocator::Visitor>{}, std::vector<sub_allocator::Visitor>{});
     auto size_rounder = util::make_ptr_unique_mutable<NoopRounder>();
 
-    xsigma::allocator_pool pool_alloc(
+    quarisma::allocator_pool pool_alloc(
         10, false, std::move(pool_sub_allocator), std::move(size_rounder), "test_integration_pool");
-    auto pool_tracker = new xsigma::allocator_tracking(&pool_alloc, false);  // No local tracking
+    auto pool_tracker = new quarisma::allocator_tracking(&pool_alloc, false);  // No local tracking
 
     void* pool_ptr = pool_tracker->allocate_raw(64, 1024);
     EXPECT_NE(nullptr, pool_ptr);
@@ -826,14 +826,14 @@ XSIGMATEST(AllocatorTracking, UnderlyingAllocatorIntegration)
     bfc_tracker->GetRecordsAndUnRef();
     pool_tracker->GetRecordsAndUnRef();
 
-    XSIGMA_LOG_INFO(
+    QUARISMA_LOG_INFO(
         "Integration with underlying allocator implementations tests completed successfully");
 }
 
 // Test enhanced tracking functionality with comprehensive analytics
-XSIGMATEST(AllocatorTracking, EnhancedTrackingAnalytics)
+QUARISMATEST(AllocatorTracking, EnhancedTrackingAnalytics)
 {
-    XSIGMA_LOG_INFO("Testing enhanced tracking analytics and performance profiling...");
+    QUARISMA_LOG_INFO("Testing enhanced tracking analytics and performance profiling...");
 
     // Create underlying allocator
     auto sub_allocator = std::make_unique<basic_cpu_allocator>(
@@ -841,12 +841,12 @@ XSIGMATEST(AllocatorTracking, EnhancedTrackingAnalytics)
 
     allocator_bfc::Options opts;
     opts.allow_growth = false;
-    xsigma::allocator_bfc underlying_alloc(
+    quarisma::allocator_bfc underlying_alloc(
         std::move(sub_allocator), 2 * 1024ULL * 1024ULL, "test_enhanced_bfc", opts);
 
     // Create tracking allocator with enhanced tracking enabled
     auto tracker =
-        new xsigma::allocator_tracking(&underlying_alloc, true, true);  // Enhanced tracking enabled
+        new quarisma::allocator_tracking(&underlying_alloc, true, true);  // Enhanced tracking enabled
 
     // Test enhanced timing statistics
     auto initial_timing = tracker->GetTimingStats();
@@ -933,14 +933,14 @@ XSIGMATEST(AllocatorTracking, EnhancedTrackingAnalytics)
     // Properly cleanup tracking allocator by releasing reference
     tracker->GetRecordsAndUnRef();
 
-    XSIGMA_LOG_INFO(
+    QUARISMA_LOG_INFO(
         "Enhanced tracking analytics and performance profiling tests completed successfully");
 }
 
 // Test logging levels and comprehensive reporting
-XSIGMATEST(AllocatorTracking, LoggingAndReporting)
+QUARISMATEST(AllocatorTracking, LoggingAndReporting)
 {
-    XSIGMA_LOG_INFO("Testing logging levels and comprehensive reporting...");
+    QUARISMA_LOG_INFO("Testing logging levels and comprehensive reporting...");
 
     // Create underlying allocator
     auto sub_allocator = std::make_unique<basic_cpu_allocator>(
@@ -948,11 +948,11 @@ XSIGMATEST(AllocatorTracking, LoggingAndReporting)
 
     allocator_bfc::Options opts;
     opts.allow_growth = false;
-    xsigma::allocator_bfc underlying_alloc(
+    quarisma::allocator_bfc underlying_alloc(
         std::move(sub_allocator), 1024ULL * 1024ULL, "test_logging_bfc", opts);
 
     // Create tracking allocator with enhanced tracking
-    auto tracker = new xsigma::allocator_tracking(&underlying_alloc, true, true);
+    auto tracker = new quarisma::allocator_tracking(&underlying_alloc, true, true);
 
     // Test logging level configuration
     tracker->SetLoggingLevel(tracking_log_level::DEBUG_LEVEL);
@@ -1000,7 +1000,7 @@ XSIGMATEST(AllocatorTracking, LoggingAndReporting)
     // Properly cleanup tracking allocator by releasing reference
     tracker->GetRecordsAndUnRef();
 
-    XSIGMA_LOG_INFO("Logging levels and comprehensive reporting tests completed successfully");
+    QUARISMA_LOG_INFO("Logging levels and comprehensive reporting tests completed successfully");
 }
 
 // ============================================================================
@@ -1021,9 +1021,9 @@ struct BenchmarkResult
     double      relative_performance;  // Relative to malloc baseline
 };
 
-XSIGMATEST(AllocatorBenchmark, PerformanceBenchmark)
+QUARISMATEST(AllocatorBenchmark, PerformanceBenchmark)
 {
-    XSIGMA_LOG_INFO("Running Comprehensive Memory Allocator Performance Benchmark...");
+    QUARISMA_LOG_INFO("Running Comprehensive Memory Allocator Performance Benchmark...");
 
     // Test parameters - multiple allocation sizes for comprehensive testing
     const std::vector<size_t> test_sizes = {
@@ -1034,7 +1034,7 @@ XSIGMATEST(AllocatorBenchmark, PerformanceBenchmark)
 
     for (size_t alloc_size : test_sizes)
     {
-        XSIGMA_LOG_INFO("Testing allocation size: {}  bytes", std::to_string(alloc_size));
+        QUARISMA_LOG_INFO("Testing allocation size: {}  bytes", std::to_string(alloc_size));
 
         std::vector<BenchmarkResult> size_results;
 
@@ -1048,7 +1048,7 @@ XSIGMATEST(AllocatorBenchmark, PerformanceBenchmark)
             // Allocation phase
             for (size_t i = 0; i < num_iterations; ++i)
             {
-                void* ptr = xsigma::cpu::memory_allocator::allocate(alloc_size);
+                void* ptr = quarisma::cpu::memory_allocator::allocate(alloc_size);
                 if (ptr)
                 {
                     ptrs.push_back(ptr);
@@ -1059,7 +1059,7 @@ XSIGMATEST(AllocatorBenchmark, PerformanceBenchmark)
             // Deallocation phase
             for (void* ptr : ptrs)
             {
-                xsigma::cpu::memory_allocator::free(ptr);
+                quarisma::cpu::memory_allocator::free(ptr);
             }
 
             auto end      = std::chrono::high_resolution_clock::now();
@@ -1091,8 +1091,8 @@ XSIGMATEST(AllocatorBenchmark, PerformanceBenchmark)
             size_t total_memory = std::max(
                 static_cast<size_t>(64ULL << 20),
                 alloc_size * num_iterations * 2);  // Adjust based on test size
-            auto bfc_alloc = std::make_unique<xsigma::allocator_bfc>(
-                std::unique_ptr<xsigma::sub_allocator>(sub_allocator.release()),
+            auto bfc_alloc = std::make_unique<quarisma::allocator_bfc>(
+                std::unique_ptr<quarisma::sub_allocator>(sub_allocator.release()),
                 total_memory,
                 "benchmark_bfc_" + std::to_string(alloc_size),
                 opts);
@@ -1203,14 +1203,14 @@ XSIGMATEST(AllocatorBenchmark, PerformanceBenchmark)
             size_t total_memory = std::max(
                 static_cast<size_t>(64ULL << 20),
                 alloc_size * num_iterations * 2);  // Adjust based on test size
-            auto underlying_bfc = std::make_unique<xsigma::allocator_bfc>(
-                std::unique_ptr<xsigma::sub_allocator>(sub_allocator.release()),
+            auto underlying_bfc = std::make_unique<quarisma::allocator_bfc>(
+                std::unique_ptr<quarisma::sub_allocator>(sub_allocator.release()),
                 total_memory,
                 "tracking_bfc_" + std::to_string(alloc_size),
                 opts);
 
             // Create tracking allocator wrapping the BFC allocator
-            auto tracker = new xsigma::allocator_tracking(underlying_bfc.get(), true);
+            auto tracker = new quarisma::allocator_tracking(underlying_bfc.get(), true);
 
             std::vector<void*> ptrs;
             ptrs.reserve(num_iterations);
@@ -1256,7 +1256,7 @@ XSIGMATEST(AllocatorBenchmark, PerformanceBenchmark)
         }
 
 // ========== ALLOCATOR_DEVICE ==========
-#if XSIGMA_HAS_CUDA || XSIGMA_HAS_HIP
+#if QUARISMA_HAS_CUDA || QUARISMA_HAS_HIP
         {
             auto               device_allocator = std::make_unique<allocator_device>();
             std::vector<void*> ptrs;
@@ -1304,7 +1304,7 @@ XSIGMATEST(AllocatorBenchmark, PerformanceBenchmark)
     }
 
     // ========== COMPREHENSIVE RESULTS PRESENTATION ==========
-    XSIGMA_LOG_INFO("Generating comprehensive performance comparison report...");
+    QUARISMA_LOG_INFO("Generating comprehensive performance comparison report...");
 
     std::cout << "\n" << std::string(120, '=') << "\n";
     std::cout << "                    COMPREHENSIVE MEMORY ALLOCATOR PERFORMANCE BENCHMARK\n";
@@ -1352,7 +1352,7 @@ XSIGMATEST(AllocatorBenchmark, PerformanceBenchmark)
                         << std::setw(18) << peak_memory_mb << std::setw(15) << perf_vs_malloc << "x"
                         << std::setw(10) << perf_indicator;
 
-            XSIGMA_LOG_INFO("{}", result_line.str());
+            QUARISMA_LOG_INFO("{}", result_line.str());
 
             std::cout << std::left << std::fixed << std::setprecision(3) << std::setw(20)
                       << result.allocator_name << std::setw(15) << result.total_time_us
@@ -1400,7 +1400,7 @@ XSIGMATEST(AllocatorBenchmark, PerformanceBenchmark)
                          << "Slowest = " << slowest->allocator_name << " (" << std::scientific
                          << slowest->throughput_ops_sec << " ops/s)";
 
-            XSIGMA_LOG_INFO("{}", summary_line.str());
+            QUARISMA_LOG_INFO("{}", summary_line.str());
 
             std::cout << "Size " << test_size << "B: Fastest = " << fastest->allocator_name << " ("
                       << std::scientific << fastest->throughput_ops_sec << " ops/s), "
@@ -1421,6 +1421,6 @@ XSIGMATEST(AllocatorBenchmark, PerformanceBenchmark)
     std::cout << "                              BENCHMARK COMPLETED SUCCESSFULLY\n";
     std::cout << std::string(120, '=') << "\n\n";
 
-    XSIGMA_LOG_INFO("Comprehensive Memory Allocator Performance Benchmark completed successfully!");
+    QUARISMA_LOG_INFO("Comprehensive Memory Allocator Performance Benchmark completed successfully!");
 }
 #endif

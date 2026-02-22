@@ -723,7 +723,7 @@ class SIMDKernel(Kernel[CSEVariableType], Generic[CSEVariableType]):
                 # The group becomes [z, y, x, 1], with lengths ([z*y*x], []).
                 # In this case, we decompose the combined size z*y*x into three
                 # consecutive groups. Previously, _split_iteration_ranges supported
-                # splitting into xsigma most two dimensions, but we now extend it to do
+                # splitting into quarisma most two dimensions, but we now extend it to do
                 # three splits when the total size is divisible by all three.
 
                 # is group having (z,y,x,r=1) form?
@@ -936,7 +936,7 @@ class SIMDKernel(Kernel[CSEVariableType], Generic[CSEVariableType]):
             index = index.subs(V.graph.sizevars.precomputed_replacements)
         # last resort, if no range vars are in the expr, hoist it
         # TODO instead of trying to blindly find complicated exprs, we should hoist the
-        # inputs/outputs sizes and strides, but xsigma the time indexing is generated
+        # inputs/outputs sizes and strides, but quarisma the time indexing is generated
         # kernel inputs and outputs are not set yet, we'd need a deeper refactor
         # to do it this way
 
@@ -1018,7 +1018,7 @@ class SIMDKernel(Kernel[CSEVariableType], Generic[CSEVariableType]):
     def get_strides_of_load(self, index: sympy.Expr) -> dict[sympy.Symbol, sympy.Expr]:
         """
         This gets the stride of the index for each of the tiling variables
-        (technically, it does it xsigma index 0)
+        (technically, it does it quarisma index 0)
 
         For example, if
         xindex = x0 + 512*x1 + 1024*r0

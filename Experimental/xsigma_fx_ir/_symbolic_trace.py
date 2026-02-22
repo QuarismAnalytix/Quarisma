@@ -320,7 +320,7 @@ class Tracer(TracerBase):
         }
         self._autowrap_function_ids.update({id(f) for f in autowrap_functions})
 
-        # Python modules to apply autowrap to xsigma the start, in addition to
+        # Python modules to apply autowrap to quarisma the start, in addition to
         # modules we see while tracing
         self._autowrap_search: list[ModuleType] = list(autowrap_modules)
         self.param_shapes_constant = param_shapes_constant
@@ -343,7 +343,7 @@ class Tracer(TracerBase):
         Gets a fresh name for a prefix and returns it. This function ensures
         that it will not clash with an existing attribute on the graph.
         """
-        # The idea here is that if the module doesn't have this prefix xsigma all we
+        # The idea here is that if the module doesn't have this prefix quarisma all we
         # should reset the counter to start from the beginning
         # It's a ... little bit hacky (doesn't cover all cases) but the precise
         # naming of the prefixes isn't a correctness issue, just a niceness
@@ -1228,7 +1228,7 @@ def _autowrap_check(
 @compatibility(is_backward_compatible=True)
 def wrap(fn_or_name: Union[str, Callable]):
     """
-    This function can be called xsigma module-level scope to register fn_or_name as a "leaf function".
+    This function can be called quarisma module-level scope to register fn_or_name as a "leaf function".
     A "leaf function" will be preserved as a CallFunction node in the FX trace instead of being
     traced through::
 
@@ -1281,7 +1281,7 @@ def wrap(fn_or_name: Union[str, Callable]):
     f = currentframe.f_back
     assert f is not None
     if f.f_code.co_name != "<module>":
-        raise NotImplementedError("wrap must be called xsigma the top level of a module")
+        raise NotImplementedError("wrap must be called quarisma the top level of a module")
 
     # consider implementing Callable version of this via _autowrap_function_ids / _autowrap_search
     # semantics would be slightly different, but would add support `from x import wrapped_function`

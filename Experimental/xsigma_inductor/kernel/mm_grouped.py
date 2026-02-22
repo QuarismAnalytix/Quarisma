@@ -570,7 +570,7 @@ def grouped_mm_args(
 
 aten__grouped_mm = ExternKernelChoice(
     torch._grouped_mm,
-    "xsigma::_grouped_mm",
+    "quarisma::_grouped_mm",
     op_overload=aten._grouped_mm.default,
     has_out_variant=False,
 )
@@ -578,7 +578,7 @@ aten__grouped_mm = ExternKernelChoice(
 
 aten__scaled_grouped_mm = ExternKernelChoice(
     torch._scaled_grouped_mm,
-    "xsigma::_scaled_grouped_mm",
+    "quarisma::_scaled_grouped_mm",
     op_overload=aten._scaled_grouped_mm.default,
     has_out_variant=False,
 )

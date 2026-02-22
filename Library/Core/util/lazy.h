@@ -3,7 +3,7 @@
 #include <atomic>
 #include <utility>
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -131,4 +131,4 @@ private:
     T value_;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

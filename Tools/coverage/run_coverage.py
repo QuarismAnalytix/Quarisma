@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Code coverage generation tool for XSigma project.
+"""Code coverage generation tool for Quarisma project.
 
 Supports multiple compilers (Clang, GCC, MSVC) with automatic detection.
 Generates HTML reports and JSON summaries for code coverage analysis.
@@ -45,10 +45,10 @@ def get_coverage(
     exclude_patterns: Optional[List[str]] = None,
     verbose: bool = False,
     summary: bool = True,
-    xsigma_root: Optional[str | Path] = None,
+    quarisma_root: Optional[str | Path] = None,
     output_format: str = "html-and-json",
 ) -> int:
-    """Generate code coverage report for the XSigma project.
+    """Generate code coverage report for the Quarisma project.
 
     Provides a programmatic interface for coverage generation with automatic
     compiler detection. Supports Clang, GCC, and MSVC compilers.
@@ -57,9 +57,9 @@ def get_coverage(
         compiler: Compiler to use ('clang', 'gcc', 'msvc', or 'auto' for
             automatic detection). Default: 'auto'.
         build_folder: Path to build directory (absolute or relative to
-            xsigma_root). Default: '.'.
+            quarisma_root). Default: '.'.
         source_folder: Path to source directory (absolute or relative to
-            xsigma_root). Default: 'Library'.
+            quarisma_root). Default: 'Library'.
         output_folder: Path to output directory. If None, uses
             build_folder/coverage_report. Default: None.
         exclude: List of folders to exclude from coverage analysis (deprecated,
@@ -69,7 +69,7 @@ def get_coverage(
         verbose: Enable verbose output for debugging. Default: False.
         summary: Whether to generate and display summary report.
             Default: True.
-        xsigma_root: XSigma root directory for resolving relative paths.
+        quarisma_root: Quarisma root directory for resolving relative paths.
             If None, uses current directory. Default: None.
         output_format: Output format for all compilers - 'json', 'html', or
             'html-and-json'. Default: 'html-and-json'.
@@ -83,19 +83,19 @@ def get_coverage(
     """
     try:
         # Resolve paths
-        if xsigma_root is None:
-            xsigma_root = Path.cwd()
+        if quarisma_root is None:
+            quarisma_root = Path.cwd()
         else:
-            xsigma_root = Path(xsigma_root)
+            quarisma_root = Path(quarisma_root)
 
         build_path = Path(build_folder)
         if not build_path.is_absolute():
-            build_path = xsigma_root / build_path
+            build_path = quarisma_root / build_path
         build_path = build_path.resolve()
 
         source_path = Path(source_folder)
         if not source_path.is_absolute():
-            source_path = xsigma_root / source_path
+            source_path = quarisma_root / source_path
         source_path = source_path.resolve()
 
         if output_folder is None:
@@ -103,7 +103,7 @@ def get_coverage(
         else:
             output_path = Path(output_folder)
             if not output_path.is_absolute():
-                output_path = xsigma_root / output_path
+                output_path = quarisma_root / output_path
             output_path = output_path.resolve()
 
         # Validate paths

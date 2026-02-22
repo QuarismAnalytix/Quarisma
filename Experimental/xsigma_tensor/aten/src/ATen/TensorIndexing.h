@@ -1,25 +1,25 @@
 #pragma once
 
-#include <XSigma/ExpandUtils.h>
-#include <XSigma/ScalarOps.h>
-#include <XSigma/core/Tensor.h>
-#include <XSigma/core/TensorBody.h>
+#include <Quarisma/ExpandUtils.h>
+#include <Quarisma/ScalarOps.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/core/TensorBody.h>
 #include <c10/core/SymInt.h>
 #include <c10/util/irange.h>
 
 #include <optional>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
-#include <XSigma/NativeFunctions.h>
+#include <Quarisma/Functions.h>
+#include <Quarisma/NativeFunctions.h>
 #else
-#include <XSigma/ops/alias.h>
-#include <XSigma/ops/empty.h>
-#include <XSigma/ops/scalar_tensor.h>
-#include <XSigma/ops/zeros.h>
+#include <Quarisma/ops/alias.h>
+#include <Quarisma/ops/empty.h>
+#include <Quarisma/ops/scalar_tensor.h>
+#include <Quarisma/ops/zeros.h>
 #endif
 
-#include <XSigma/core/List.h>
+#include <Quarisma/core/List.h>
 
 #include <utility>
 

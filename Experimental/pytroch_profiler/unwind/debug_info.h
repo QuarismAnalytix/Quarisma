@@ -8,7 +8,7 @@
 #include "unwind/sections.h"
 #include "unwind/unwind_error.h"
 
-namespace xsigma::unwind
+namespace quarisma::unwind
 {
 
 struct debug_info
@@ -319,4 +319,4 @@ private:
     std::optional<uint64_t>                     rnglists_base_;
 };
 
-}  // namespace xsigma::unwind
+}  // namespace quarisma::unwind

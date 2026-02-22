@@ -325,7 +325,7 @@ class CUTLASSTemplate(CUDATemplate):
                   cutlass::Status error = status;                                                  \\
                   if (error != cutlass::Status::kSuccess) {                                        \\
                     auto msg = std::string("[") + __FILE__ + "] Got cutlass error: " +             \\
-                        cutlassGetStatusString(error) + " xsigma: " + std::to_string(__LINE__);        \\
+                        cutlassGetStatusString(error) + " quarisma: " + std::to_string(__LINE__);        \\
                     throw std::runtime_error(msg);                                                 \\
                   }                                                                                \\
                 }

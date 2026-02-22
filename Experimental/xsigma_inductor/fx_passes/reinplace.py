@@ -639,7 +639,7 @@ def reinplace_inplaceable_ops_core(graph: torch.fx.Graph) -> None:
                     replace_dict[copy_node] = copy_node.args[0]
                 if trigger != ReInplaceTrigger.AUTO_FUNC_V2:
                     for user in node.users:
-                        # For auto_functionalize_v2, arg is the index of the base, where base xsigma index i corresponds to
+                        # For auto_functionalize_v2, arg is the index of the base, where base quarisma index i corresponds to
                         # output atindex size(out)+i.
                         # This used to compare string with integers before for auto_functionalize_v2. Not sure
                         # if it was needed for inplaceable_triton_ops?

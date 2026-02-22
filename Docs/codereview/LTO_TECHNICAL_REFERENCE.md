@@ -1,4 +1,4 @@
-# LTO Technical Reference for XSigma
+# LTO Technical Reference for Quarisma
 
 **Purpose**: Detailed technical information about LTO implementation, compiler flags, and troubleshooting
 
@@ -49,7 +49,7 @@ llvm-nm            # Optional: LLVM symbol listing
 **Thin LTO vs Full LTO**
 - **Thin LTO**: Faster linking, less optimization (default)
 - **Full LTO**: Slower linking, more optimization
-- **XSigma**: Uses default (Thin LTO)
+- **Quarisma**: Uses default (Thin LTO)
 
 ### Apple Clang LTO
 
@@ -87,16 +87,16 @@ llvm-nm            # Optional: LLVM symbol listing
 
 ---
 
-## 2. XSigma CMake Configuration
+## 2. Quarisma CMake Configuration
 
 ### Root CMakeLists.txt
 
 ```cmake
 # Line 32: LTO option
-option(XSIGMA_ENABLE_LTO "Enable Link Time Optimization" ON)
+option(QUARISMA_ENABLE_LTO "Enable Link Time Optimization" ON)
 
 # Lines 35-42: LTO configuration
-if(XSIGMA_ENABLE_LTO)
+if(QUARISMA_ENABLE_LTO)
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
   message(STATUS "Link Time Optimization (LTO) enabled via CMAKE_INTERPROCEDURAL_OPTIMIZATION")
@@ -111,7 +111,7 @@ endif()
 
 ```cmake
 # Lines 134-141: Per-target LTO configuration
-if(XSIGMA_ENABLE_LTO)
+if(QUARISMA_ENABLE_LTO)
   set_target_properties(Core PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
   message(STATUS "Core library: Link Time Optimization (LTO) enabled")
 else()
@@ -135,8 +135,8 @@ endif()
 
 ```cmake
 # Line 19: LTO disabled for coverage
-if(XSIGMA_ENABLE_COVERAGE)
-  set(XSIGMA_ENABLE_LTO OFF)
+if(QUARISMA_ENABLE_COVERAGE)
+  set(QUARISMA_ENABLE_LTO OFF)
 endif()
 ```
 
@@ -164,10 +164,10 @@ endif()
 **CMake Flags Generated**
 ```bash
 # LTO enabled
--DXSIGMA_ENABLE_LTO=ON
+-DQUARISMA_ENABLE_LTO=ON
 
 # LTO disabled
--DXSIGMA_ENABLE_LTO=OFF
+-DQUARISMA_ENABLE_LTO=OFF
 ```
 
 ---
@@ -190,7 +190,7 @@ LTO:     110-130 seconds
 ```
 Non-LTO: 10 seconds
 LTO:     12-15 seconds (small project)
-LTO:     30-50 seconds (large project like XSigma)
+LTO:     30-50 seconds (large project like Quarisma)
 ```
 
 **Memory Usage**: 2-4x higher
@@ -235,7 +235,7 @@ error: lld-link: error: out of memory
 **Solutions**
 1. **Disable LTO**
    ```bash
-   cmake -B build -S . -DXSIGMA_ENABLE_LTO=OFF
+   cmake -B build -S . -DQUARISMA_ENABLE_LTO=OFF
    ```
 
 2. **Increase Available Memory**
@@ -248,7 +248,7 @@ error: lld-link: error: out of memory
    ```
 
 3. **Use Default Linker**
-   - XSigma automatically disables faster linkers with LTO
+   - Quarisma automatically disables faster linkers with LTO
    - Verify: Check CMake output for linker selection
 
 ### Issue: Slow Incremental Builds
@@ -264,7 +264,7 @@ error: lld-link: error: out of memory
    ```
 
 2. **Use Thin LTO** (Clang only)
-   - Already default in XSigma
+   - Already default in Quarisma
    - Faster than full LTO
 
 ### Issue: Debugging Difficulties
@@ -277,7 +277,7 @@ error: lld-link: error: out of memory
 **Solutions**
 1. **Use RelWithDebInfo Build**
    ```bash
-   cmake -B build -S . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DXSIGMA_ENABLE_LTO=OFF
+   cmake -B build -S . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DQUARISMA_ENABLE_LTO=OFF
    ```
 
 2. **Disable LTO for Specific File**
@@ -301,7 +301,7 @@ compiler crashed
 
 2. **Disable LTO**
    ```bash
-   cmake -B build -S . -DXSIGMA_ENABLE_LTO=OFF
+   cmake -B build -S . -DQUARISMA_ENABLE_LTO=OFF
    ```
 
 3. **Report Issue**
@@ -363,8 +363,8 @@ ls -lh build_lto/lib/libCore.so
 ```bash
 cmake -B build -S . \
   -DCMAKE_BUILD_TYPE=Release \
-  -DXSIGMA_ENABLE_LTO=ON \
-  -DXSIGMA_LINKER_CHOICE=default
+  -DQUARISMA_ENABLE_LTO=ON \
+  -DQUARISMA_LINKER_CHOICE=default
 ```
 
 **Known Issues**
@@ -377,7 +377,7 @@ cmake -B build -S . \
 ```bash
 cmake -B build -S . \
   -DCMAKE_BUILD_TYPE=Release \
-  -DXSIGMA_ENABLE_LTO=ON
+  -DQUARISMA_ENABLE_LTO=ON
 ```
 
 **Advantages**
@@ -391,15 +391,15 @@ cmake -B build -S . \
 ```bash
 cmake -B build -S . \
   -DCMAKE_BUILD_TYPE=Release \
-  -DXSIGMA_ENABLE_LTO=ON
+  -DQUARISMA_ENABLE_LTO=ON
 ```
 
 **Clang Settings**
 ```bash
 cmake -B build -S . \
   -DCMAKE_BUILD_TYPE=Release \
-  -DXSIGMA_ENABLE_LTO=ON \
-  -DXSIGMA_LINKER_CHOICE=lld-link
+  -DQUARISMA_ENABLE_LTO=ON \
+  -DQUARISMA_LINKER_CHOICE=lld-link
 ```
 
 **Known Issues**

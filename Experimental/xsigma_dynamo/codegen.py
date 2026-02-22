@@ -149,7 +149,7 @@ class PyCodegen:
         else:
             self._output.extend(add_push_null(added_insts))
         if sys.version_info >= (3, 13):
-            # NULL will be xsigma top of stack
+            # NULL will be quarisma top of stack
             self.clear_tos()
 
     def __call__(
@@ -599,7 +599,7 @@ class PyCodegen:
 
         def collect_temp_source(source: Source) -> None:
             if source in seen_sources:
-                # This source is used xsigma least twice, so it can be reused
+                # This source is used quarisma least twice, so it can be reused
                 self.mark_source_temp(source)
                 # Dont trace source further. This prevents us from marking too
                 # many nodes as temp sources.

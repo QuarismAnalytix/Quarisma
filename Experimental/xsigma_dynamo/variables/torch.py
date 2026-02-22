@@ -129,7 +129,7 @@ supported_ctx_manager_classes = dict.fromkeys(
         torch.fx.traceback.annotate.__wrapped__,  # type: ignore[attr-defined]
         # We'll let Dynamo inline into the contextlib part of these context
         # manager instances, all the way till it invokes the wrapped function
-        # itself (xsigma which point we wrap it back to special context manager
+        # itself (quarisma which point we wrap it back to special context manager
         # VTs).
         #
         # This allows us to support calling functions decorated with these
@@ -888,7 +888,7 @@ class TorchInGraphFunctionVariable(BaseTorchVariable):
                 # because the input is a "ProcessGroupVariable", we'll be guarding on its
                 # ID_MATCH based on how it was constructed.
 
-                # We desugar it xsigma trace-time into ranks by directly calling util
+                # We desugar it quarisma trace-time into ranks by directly calling util
                 # bake the result into the trace
                 if len(args) == 1:
                     # group or group name
@@ -1257,10 +1257,10 @@ class TorchInGraphFunctionVariable(BaseTorchVariable):
             # Today this is inserted in the graph, once TF mode
             # handling is complete, we can trace the device context
             # like any other TF mode and remove this special handling
-            # Insert the TF mode representing the device context xsigma
+            # Insert the TF mode representing the device context quarisma
             # the bottom of the stack to match the eager semantics
             # Running the graph will ensure that the DeviceContext mode is
-            # xsigma the correct position in the stack
+            # quarisma the correct position in the stack
             TorchFunctionModeStackVariable.register_mutation(tx)
             if args[0].is_python_constant() and args[0].as_python_constant() is None:
                 TorchFunctionModeStackVariable.clear_default_device(tx)
@@ -1525,7 +1525,7 @@ For now, dynamo will explicitly graph break when it encounters user code with th
             )
 
         # TODO(voz): Replace w/ dynamic shape rewrite table.
-        # Ideally, we would be able to do this xsigma ctor time, but alas we need a combination
+        # Ideally, we would be able to do this quarisma ctor time, but alas we need a combination
         # of value + args to determine this.
         fn_ = self.value
         if any_symints_or_symfloats:

@@ -1,7 +1,7 @@
-# XSigma Computational Graph Architecture: Progressive Learning Guide
+# Quarisma Computational Graph Architecture: Progressive Learning Guide
 
 **Last Updated**: November 2025
-**Scope**: XSigma 2.x - Core autograd graph infrastructure, JIT/TorchScript, AOT Autograd
+**Scope**: Quarisma 2.x - Core autograd graph infrastructure, JIT/TorchScript, AOT Autograd
 **Document Type**: Progressive Learning Guide + Technical Reference
 
 ---
@@ -39,13 +39,13 @@
 
 ## Introduction
 
-XSigma implements a **dynamic computational graph** system that:
+Quarisma implements a **dynamic computational graph** system that:
 - **Builds graphs lazily** during forward pass (only when needed)
 - **Executes graphs eagerly** during backward pass (immediate execution)
 - **Supports flexible control flow** through eager evaluation (loops, conditionals)
 - **Scales efficiently** via multi-threaded execution (parallel gradient computation)
 
-This document teaches you how XSigma's graph system works, starting from first principles (edges and nodes) and progressing to advanced features (JIT compilation, AOT autograd, graph optimization).
+This document teaches you how Quarisma's graph system works, starting from first principles (edges and nodes) and progressing to advanced features (JIT compilation, AOT autograd, graph optimization).
 
 ---
 
@@ -55,14 +55,14 @@ This document teaches you how XSigma's graph system works, starting from first p
 
 ### What is an Edge?
 
-An **edge** is the most fundamental building block of XSigma's computational graph. It represents a **data dependency** between two operations.
+An **edge** is the most fundamental building block of Quarisma's computational graph. It represents a **data dependency** between two operations.
 
-**File**: `xsigma/csrc/autograd/edge.h` (lines 1-57)
+**File**: `quarisma/csrc/autograd/edge.h` (lines 1-57)
 
 ### Edge Structure
 
 ```cpp
-// From xsigma/csrc/autograd/edge.h
+// From quarisma/csrc/autograd/edge.h
 struct Edge {
   std::shared_ptr<Node> function;  // Target node (operation)
   uint32_t input_nr;               // Which input of target node
@@ -115,12 +115,12 @@ Edges are the **glue** that connects operations together. Without edges:
 
 A **node** represents a single **operation** in the computational graph. Every operation (add, multiply, convolution, etc.) is represented as a node.
 
-**File**: `xsigma/csrc/autograd/function.h` (lines 113-792)
+**File**: `quarisma/csrc/autograd/function.h` (lines 113-792)
 
 ### Node Structure
 
 ```cpp
-// Simplified from xsigma/csrc/autograd/function.h
+// Simplified from quarisma/csrc/autograd/function.h
 class Node {
   // Execution metadata
   uint64_t sequence_nr_;        // Execution priority (higher = earlier)
@@ -167,7 +167,7 @@ public:
 
 ### Example: AddBackward0 Node
 
-When you compute `c = a + b`, XSigma creates an `AddBackward0` node:
+When you compute `c = a + b`, Quarisma creates an `AddBackward0` node:
 
 ```cpp
 // Conceptual representation
@@ -201,15 +201,15 @@ class AddBackward0 : public Node {
 
 ### Node Types
 
-XSigma has many node types for different operations:
+Quarisma has many node types for different operations:
 
 | Node Type | Operation | File |
 |-----------|-----------|------|
-| `AddBackward0` | Addition | `xsigma/csrc/autograd/functions/tensor.cpp` |
-| `MulBackward0` | Multiplication | `xsigma/csrc/autograd/functions/tensor.cpp` |
-| `ConvolutionBackward0` | Convolution | `xsigma/csrc/autograd/functions/tensor.cpp` |
-| `AccumulateGrad` | Leaf gradient accumulation | `xsigma/csrc/autograd/functions/accumulate_grad.h` |
-| `GraphRoot` | Backward entry point | `xsigma/csrc/autograd/functions/basic_ops.h` |
+| `AddBackward0` | Addition | `quarisma/csrc/autograd/functions/tensor.cpp` |
+| `MulBackward0` | Multiplication | `quarisma/csrc/autograd/functions/tensor.cpp` |
+| `ConvolutionBackward0` | Convolution | `quarisma/csrc/autograd/functions/tensor.cpp` |
+| `AccumulateGrad` | Leaf gradient accumulation | `quarisma/csrc/autograd/functions/accumulate_grad.h` |
+| `GraphRoot` | Backward entry point | `quarisma/csrc/autograd/functions/basic_ops.h` |
 
 ---
 
@@ -220,8 +220,8 @@ XSigma has many node types for different operations:
 A **graph** is a collection of nodes connected by edges. It represents the entire computation from inputs to outputs.
 
 **Files**:
-- `xsigma/csrc/autograd/graph_task.h` - Execution metadata
-- `xsigma/csrc/autograd/variable.h` - Tensor-to-node connection
+- `quarisma/csrc/autograd/graph_task.h` - Execution metadata
+- `quarisma/csrc/autograd/variable.h` - Tensor-to-node connection
 
 ### Graph Components
 
@@ -256,7 +256,7 @@ A **graph** is a collection of nodes connected by edges. It represents the entir
 Each tensor stores a reference to its **gradient function** (grad_fn):
 
 ```cpp
-// From xsigma/csrc/autograd/variable.h
+// From quarisma/csrc/autograd/variable.h
 class Variable {
   // ... other fields ...
 
@@ -278,8 +278,8 @@ class Variable {
 
 ```python
 # Python code
-a = xsigma.tensor([1.0, 2.0], requires_grad=True)
-b = xsigma.tensor([3.0, 4.0], requires_grad=True)
+a = quarisma.tensor([1.0, 2.0], requires_grad=True)
+b = quarisma.tensor([3.0, 4.0], requires_grad=True)
 c = a + b
 d = c * 2
 loss = d.sum()
@@ -319,7 +319,7 @@ loss = d.sum()
 
 When a node has multiple incoming edges, gradients must be accumulated:
 
-**File**: `xsigma/csrc/autograd/input_buffer.h`
+**File**: `quarisma/csrc/autograd/input_buffer.h`
 
 ```cpp
 // Simplified InputBuffer
@@ -349,7 +349,7 @@ public:
 
 ### GraphTask: Execution Metadata
 
-**File**: `xsigma/csrc/autograd/graph_task.h` (lines 17-230)
+**File**: `quarisma/csrc/autograd/graph_task.h` (lines 17-230)
 
 ```cpp
 // Simplified GraphTask
@@ -381,21 +381,21 @@ struct GraphTask {
 
 ### Step-by-Step: Forward Pass
 
-Let's trace through how XSigma builds a graph for `c = a + b`:
+Let's trace through how Quarisma builds a graph for `c = a + b`:
 
 #### Step 1: Operation Dispatch
 
 ```python
 # User code
-a = xsigma.tensor([1.0, 2.0], requires_grad=True)
-b = xsigma.tensor([3.0, 4.0], requires_grad=True)
+a = quarisma.tensor([1.0, 2.0], requires_grad=True)
+b = quarisma.tensor([3.0, 4.0], requires_grad=True)
 c = a + b  # ← This triggers the autograd system
 ```
 
 **What happens internally**:
 
 1. The `+` operator is dispatched to the autograd system
-2. XSigma checks: "Do any inputs require gradients?"
+2. Quarisma checks: "Do any inputs require gradients?"
 3. Since both `a` and `b` have `requires_grad=True`, a backward node is created
 
 #### Step 2: Node Creation
@@ -435,7 +435,7 @@ Tensor add_impl(const Tensor& a, const Tensor& b) {
 #### Step 3: Metadata Storage
 
 ```cpp
-// From xsigma/csrc/autograd/functions/utils.h (lines 66-91)
+// From quarisma/csrc/autograd/functions/utils.h (lines 66-91)
 void set_history(Tensor& output, std::shared_ptr<Node> grad_fn) {
   // 1. Add input metadata to grad_fn
   // (already done in add_input_metadata calls)
@@ -478,8 +478,8 @@ c (output of AddBackward0)
 
 ```python
 # Python code
-a = xsigma.tensor([1.0, 2.0], requires_grad=True)
-b = xsigma.tensor([3.0, 4.0], requires_grad=True)
+a = quarisma.tensor([1.0, 2.0], requires_grad=True)
+b = quarisma.tensor([3.0, 4.0], requires_grad=True)
 
 c = a + b      # Creates AddBackward0
 d = c * 2      # Creates MulBackward0
@@ -538,7 +538,7 @@ e.backward()
 **What happens internally**:
 
 ```cpp
-// From xsigma/csrc/autograd/engine.cpp
+// From quarisma/csrc/autograd/engine.cpp
 void backward(Tensor& self, ...) {
   // 1. Get the grad_fn from the tensor
   auto grad_fn = self.grad_fn_;  // SumBackward0
@@ -559,7 +559,7 @@ void backward(Tensor& self, ...) {
 #### Step 2: GraphTask Creation
 
 ```cpp
-// From xsigma/csrc/autograd/engine.cpp
+// From quarisma/csrc/autograd/engine.cpp
 std::unique_ptr<GraphTask> task = std::make_unique<GraphTask>(
   graph_roots,
   keep_graph,
@@ -577,7 +577,7 @@ std::unique_ptr<GraphTask> task = std::make_unique<GraphTask>(
 #### Step 3: Dependency Computation
 
 ```cpp
-// From xsigma/csrc/autograd/engine.cpp (lines 1250-1278)
+// From quarisma/csrc/autograd/engine.cpp (lines 1250-1278)
 void compute_dependencies(Node* root, GraphTask& task) {
   std::vector<Node*> queue{root};
 
@@ -625,7 +625,7 @@ for (const auto& edge : graph_roots) {
 #### Step 5: Topological Execution
 
 ```cpp
-// From xsigma/csrc/autograd/engine.cpp (lines 524-600, simplified)
+// From quarisma/csrc/autograd/engine.cpp (lines 524-600, simplified)
 while (!ready_queue.empty()) {
   // 1. Pop highest priority node
   NodeTask task = ready_queue.top();
@@ -701,7 +701,7 @@ When multiple paths lead to the same node, gradients are accumulated:
 
 ```python
 # Example: Multiple paths to same tensor
-a = xsigma.tensor([1.0, 2.0], requires_grad=True)
+a = quarisma.tensor([1.0, 2.0], requires_grad=True)
 b = a * 2
 c = a * 3
 d = b + c  # Two paths to a
@@ -755,10 +755,10 @@ Final: a.grad = [5.0, 5.0]  ✓ Correct!
 ### Complete Autograd Infrastructure
 
 **Files**:
-- `xsigma/csrc/autograd/engine.h/cpp` - Core backward execution
-- `xsigma/csrc/autograd/autograd.cpp` - Dispatch system
-- `xsigma/csrc/autograd/grad_mode.h/cpp` - Gradient computation control
-- `xsigma/csrc/autograd/anomaly_mode.h/cpp` - Anomaly detection
+- `quarisma/csrc/autograd/engine.h/cpp` - Core backward execution
+- `quarisma/csrc/autograd/autograd.cpp` - Dispatch system
+- `quarisma/csrc/autograd/grad_mode.h/cpp` - Gradient computation control
+- `quarisma/csrc/autograd/anomaly_mode.h/cpp` - Anomaly detection
 
 ### Engine Architecture
 
@@ -797,7 +797,7 @@ This ensures **reverse topological order** execution.
 ### Multi-threaded Execution
 
 ```cpp
-// From xsigma/csrc/autograd/engine.cpp
+// From quarisma/csrc/autograd/engine.cpp
 class Engine {
   std::vector<std::thread> worker_threads_;
   std::vector<std::queue<NodeTask>> thread_local_ready_queues_;
@@ -821,30 +821,30 @@ class Engine {
 
 ### Gradient Mode Control
 
-**File**: `xsigma/csrc/autograd/grad_mode.h`
+**File**: `quarisma/csrc/autograd/grad_mode.h`
 
 ```cpp
 // Disable gradient computation
 {
-  xsigma::NoGradGuard no_grad;
+  quarisma::NoGradGuard no_grad;
   // Operations here don't build graph
   c = a + b;  // No grad_fn created
 }
 
 // Enable gradient computation
 {
-  xsigma::GradMode::set_enabled(true);
+  quarisma::GradMode::set_enabled(true);
   c = a + b;  // grad_fn created
 }
 ```
 
 ### Anomaly Detection
 
-**File**: `xsigma/csrc/autograd/anomaly_mode.h`
+**File**: `quarisma/csrc/autograd/anomaly_mode.h`
 
 ```cpp
 // Enable anomaly detection
-xsigma::autograd::AnomalyMode::set_enabled(true);
+quarisma::autograd::AnomalyMode::set_enabled(true);
 
 // Now backward pass will:
 // 1. Record stack traces
@@ -858,13 +858,13 @@ xsigma::autograd::AnomalyMode::set_enabled(true);
 
 ### autograd.Function
 
-**File**: `xsigma/csrc/autograd/custom_function.h/cpp`
+**File**: `quarisma/csrc/autograd/custom_function.h/cpp`
 
 Custom functions allow you to define custom forward and backward operations:
 
 ```python
-import xsigma
-from xsigma.autograd import Function
+import quarisma
+from quarisma.autograd import Function
 
 class CustomAdd(Function):
     @staticmethod
@@ -882,8 +882,8 @@ class CustomAdd(Function):
         return grad_a, grad_b
 
 # Use it
-a = xsigma.tensor([1.0, 2.0], requires_grad=True)
-b = xsigma.tensor([3.0, 4.0], requires_grad=True)
+a = quarisma.tensor([1.0, 2.0], requires_grad=True)
+b = quarisma.tensor([3.0, 4.0], requires_grad=True)
 c = CustomAdd.apply(a, b)
 ```
 
@@ -909,8 +909,8 @@ class CppNode : public Node {
 ### Function Hooks
 
 **Files**:
-- `xsigma/csrc/autograd/function_hook.h` - Hook interface
-- `xsigma/csrc/autograd/python_hook.h/cpp` - Python hooks
+- `quarisma/csrc/autograd/function_hook.h` - Hook interface
+- `quarisma/csrc/autograd/python_hook.h/cpp` - Python hooks
 
 #### Pre-Hooks
 
@@ -938,7 +938,7 @@ node.register_post_hook(my_post_hook)
 
 ### Tensor Hooks
 
-**File**: `xsigma/nn/modules/module.py`
+**File**: `quarisma/nn/modules/module.py`
 
 ```python
 # Register backward hook on tensor
@@ -956,13 +956,13 @@ tensor.register_hook(my_hook)
 ### Static Graph Compilation
 
 **Files**:
-- `xsigma/csrc/jit/ir/ir.h/cpp` - JIT IR definition
-- `xsigma/csrc/jit/runtime/autodiff.cpp` - JIT autodiff
+- `quarisma/csrc/jit/ir/ir.h/cpp` - JIT IR definition
+- `quarisma/csrc/jit/runtime/autodiff.cpp` - JIT autodiff
 
 JIT compiles Python code to a static graph:
 
 ```python
-@xsigma.jit.script
+@quarisma.jit.script
 def add_mul(a: Tensor, b: Tensor) -> Tensor:
     c = a + b
     d = c * 2
@@ -990,7 +990,7 @@ def add_mul(a: Tensor, b: Tensor) -> Tensor:
 ### JIT Autodiff
 
 ```cpp
-// From xsigma/csrc/jit/runtime/autodiff.cpp
+// From quarisma/csrc/jit/runtime/autodiff.cpp
 Graph* differentiate(Graph* graph) {
   // 1. Traverse forward graph
   // 2. Create backward graph
@@ -1006,14 +1006,14 @@ Graph* differentiate(Graph* graph) {
 ### Ahead-of-Time Autograd Compilation
 
 **Files**:
-- `xsigma/_functorch/aot_autograd.py` - AOT interface
-- `xsigma/_functorch/_aot_autograd/graph_compile.py` - Compilation
-- `xsigma/_functorch/_aot_autograd/graph_capture.py` - Graph capture
+- `quarisma/_functorch/aot_autograd.py` - AOT interface
+- `quarisma/_functorch/_aot_autograd/graph_compile.py` - Compilation
+- `quarisma/_functorch/_aot_autograd/graph_capture.py` - Graph capture
 
 AOT autograd compiles the backward pass ahead of time:
 
 ```python
-from xsigma._functorch.aot_autograd import aot_function
+from quarisma._functorch.aot_autograd import aot_function
 
 def forward(a, b):
     return a + b
@@ -1037,9 +1037,9 @@ compiled_fn = aot_function(forward, backward)
 ### Optimization Passes
 
 **Files**:
-- `xsigma/csrc/jit/passes/dead_code_elimination.cpp` - Remove unused nodes
-- `xsigma/csrc/jit/passes/common_subexpression_elimination.cpp` - Remove duplicates
-- `xsigma/csrc/jit/passes/graph_fuser.cpp` - Fuse operations
+- `quarisma/csrc/jit/passes/dead_code_elimination.cpp` - Remove unused nodes
+- `quarisma/csrc/jit/passes/common_subexpression_elimination.cpp` - Remove duplicates
+- `quarisma/csrc/jit/passes/graph_fuser.cpp` - Fuse operations
 
 #### Dead Code Elimination (DCE)
 
@@ -1098,7 +1098,7 @@ After:
 
 ### Sequence Numbers
 
-**File**: `aten/src/XSigma/SequenceNumber.h/cpp`
+**File**: `aten/src/Quarisma/SequenceNumber.h/cpp`
 
 Thread-local monotonically increasing counter for execution priority:
 
@@ -1112,13 +1112,13 @@ uint64_t current = at::sequence_number::peek();
 
 ### Record Function
 
-**File**: `aten/src/XSigma/record_function.cpp`
+**File**: `aten/src/Quarisma/record_function.cpp`
 
 Record function execution for profiling:
 
 ```python
-import xsigma
-from xsigma.profiler import profile, record_function
+import quarisma
+from quarisma.profiler import profile, record_function
 
 with profile(activities=[...]) as prof:
     with record_function("my_operation"):
@@ -1127,7 +1127,7 @@ with profile(activities=[...]) as prof:
 
 ### Profiling Record
 
-**File**: `xsigma/csrc/jit/runtime/profiling_record.h/cpp`
+**File**: `quarisma/csrc/jit/runtime/profiling_record.h/cpp`
 
 Instrument graph with profiling information:
 
@@ -1145,17 +1145,17 @@ class ProfilingRecord {
 ### Debugging Utilities
 
 **Files**:
-- `xsigma/_lazy/debug.py` - Lazy tensor debugging
-- `xsigma/_inductor/debug.py` - Inductor debugging
-- `xsigma/_dynamo/debug_utils.py` - TorchDynamo debugging
+- `quarisma/_lazy/debug.py` - Lazy tensor debugging
+- `quarisma/_inductor/debug.py` - Inductor debugging
+- `quarisma/_dynamo/debug_utils.py` - TorchDynamo debugging
 
 ```python
 # Visualize graph
-from xsigma._lazy.debug import render_ir_graph
+from quarisma._lazy.debug import render_ir_graph
 render_ir_graph(graph, "graph.png")
 
 # Dump IR
-from xsigma._lazy.debug import dump_ir
+from quarisma._lazy.debug import dump_ir
 dump_ir(graph)
 ```
 
@@ -1167,7 +1167,7 @@ dump_ir(graph)
 
 #### Core Node and Edge Definitions
 
-**xsigma/csrc/autograd/function.h**
+**quarisma/csrc/autograd/function.h**
 - **Purpose**: Node class definition for autograd graph
 - **Key Components**: 
   - `Node` struct (lines 113-792)
@@ -1177,12 +1177,12 @@ dump_ir(graph)
   - `input_metadata_`: Tensor shape, dtype, device info
 - **Dependencies**: edge.h, input_metadata.h
 
-**xsigma/csrc/autograd/function.cpp**
+**quarisma/csrc/autograd/function.cpp**
 - **Purpose**: Node implementation and lifecycle management
 - **Key Functions**: `deleteNode()`, `gatherFunctions()`, node memory management
 - **Dependencies**: function.h, variable.h
 
-**xsigma/csrc/autograd/edge.h**
+**quarisma/csrc/autograd/edge.h**
 - **Purpose**: Edge structure connecting nodes
 - **Key Components**: 
   - `Edge` struct (lines 1-57)
@@ -1190,14 +1190,14 @@ dump_ir(graph)
   - `input_nr`: Which input of target node
 - **Dependencies**: None (minimal)
 
-**xsigma/csrc/autograd/function_hook.h**
+**quarisma/csrc/autograd/function_hook.h**
 - **Purpose**: Hook interface for intercepting node execution
 - **Key Components**: `FunctionPreHook`, `FunctionPostHook` base classes
 - **Dependencies**: None
 
 #### Graph Execution Metadata
 
-**xsigma/csrc/autograd/graph_task.h**
+**quarisma/csrc/autograd/graph_task.h**
 - **Purpose**: Metadata for single backward execution
 - **Key Components** (lines 17-230):
   - `outstanding_tasks_`: Atomic counter
@@ -1207,7 +1207,7 @@ dump_ir(graph)
   - `graph_roots_`: Entry points for backward
 - **Dependencies**: edge.h, input_buffer.h
 
-**xsigma/csrc/autograd/input_buffer.h**
+**quarisma/csrc/autograd/input_buffer.h**
 - **Purpose**: Gradient accumulation for node inputs
 - **Key Components**: `InputBuffer` class
 - **Algorithm**: 
@@ -1217,23 +1217,23 @@ dump_ir(graph)
   4. Return accumulated gradient
 - **Dependencies**: variable.h
 
-**xsigma/csrc/autograd/input_buffer.cpp**
+**quarisma/csrc/autograd/input_buffer.cpp**
 - **Purpose**: InputBuffer implementation
 - **Key Functions**: Gradient summation, buffer management
 - **Dependencies**: input_buffer.h
 
-**xsigma/csrc/autograd/input_metadata.h**
+**quarisma/csrc/autograd/input_metadata.h**
 - **Purpose**: Store tensor metadata (shape, dtype, device, stream)
 - **Key Components**: `InputMetadata` struct
 - **Dependencies**: None
 
-**xsigma/csrc/autograd/input_metadata.cpp**
+**quarisma/csrc/autograd/input_metadata.cpp**
 - **Purpose**: InputMetadata implementation
 - **Dependencies**: input_metadata.h
 
 #### Tensor Autograd Metadata
 
-**xsigma/csrc/autograd/variable.h**
+**quarisma/csrc/autograd/variable.h**
 - **Purpose**: Tensor autograd metadata and grad_fn management
 - **Key Components**:
   - `grad_fn_`: Backward node for tensor
@@ -1244,7 +1244,7 @@ dump_ir(graph)
 - **Key Functions**: `grad_fn()`, `set_grad_fn()`, `rebase_history()`
 - **Dependencies**: edge.h
 
-**xsigma/csrc/autograd/variable.cpp**
+**quarisma/csrc/autograd/variable.cpp**
 - **Purpose**: Variable implementation
 - **Key Functions** (lines 213-344):
   - `rebase_history()`: Update grad_fn after in-place op
@@ -1253,33 +1253,33 @@ dump_ir(graph)
   - `bump_version()`: Increment version counter
 - **Dependencies**: variable.h, function.h
 
-**xsigma/csrc/autograd/variable_info.h**
+**quarisma/csrc/autograd/variable_info.h**
 - **Purpose**: Variable information storage
 - **Key Components**: `VariableInfo` struct
 - **Dependencies**: None
 
-**xsigma/csrc/autograd/variable_info.cpp**
+**quarisma/csrc/autograd/variable_info.cpp**
 - **Purpose**: VariableInfo implementation
 - **Dependencies**: variable_info.h
 
-**xsigma/csrc/autograd/saved_variable.h**
+**quarisma/csrc/autograd/saved_variable.h**
 - **Purpose**: Wrapper for tensors saved during forward pass
 - **Key Components**: `SavedVariable` class
 - **Dependencies**: variable.h
 
-**xsigma/csrc/autograd/saved_variable.cpp**
+**quarisma/csrc/autograd/saved_variable.cpp**
 - **Purpose**: SavedVariable implementation
 - **Dependencies**: saved_variable.h
 
-**xsigma/core/TensorImpl.cpp**
+**quarisma/core/TensorImpl.cpp**
 - **Purpose**: Core tensor implementation with autograd metadata
 - **Key Functions**: `mutable_grad()`, `_fw_grad()`, `_set_fw_grad()`
 - **Dependencies**: AutogradMeta interface
 
-**xsigma/autograd/graph.py**
+**quarisma/autograd/graph.py**
 - **Purpose**: Python graph interface
 - **Key Components**: `Node` abstract class, hook registration
-- **Dependencies**: xsigma._C._functions
+- **Dependencies**: quarisma._C._functions
 
 ---
 
@@ -1287,7 +1287,7 @@ dump_ir(graph)
 
 #### Graph Building Core
 
-**xsigma/csrc/autograd/functions/utils.h**
+**quarisma/csrc/autograd/functions/utils.h**
 - **Purpose**: Critical graph building utilities
 - **Key Functions** (lines 66-91):
   - `set_history()`: Connects tensors to grad_fn
@@ -1301,83 +1301,83 @@ dump_ir(graph)
   ```
 - **Dependencies**: function.h, edge.h
 
-**xsigma/csrc/autograd/functions/utils.cpp**
+**quarisma/csrc/autograd/functions/utils.cpp**
 - **Purpose**: Utils implementation
 - **Dependencies**: utils.h
 
-**xsigma/csrc/autograd/VariableTypeUtils.h**
+**quarisma/csrc/autograd/VariableTypeUtils.h**
 - **Purpose**: Variable type utilities for graph building
 - **Key Functions**: `rebase_history()` for in-place operations
 - **Dependencies**: variable.h, function.h
 
 #### Operation Node Types
 
-**xsigma/csrc/autograd/functions/basic_ops.h**
+**quarisma/csrc/autograd/functions/basic_ops.h**
 - **Purpose**: Basic operation nodes
 - **Key Components**: `GraphRoot`, `Error` nodes
 - **Dependencies**: function.h
 
-**xsigma/csrc/autograd/functions/basic_ops.cpp**
+**quarisma/csrc/autograd/functions/basic_ops.cpp**
 - **Purpose**: Basic ops implementation
 - **Dependencies**: basic_ops.h
 
-**xsigma/csrc/autograd/functions/accumulate_grad.h**
+**quarisma/csrc/autograd/functions/accumulate_grad.h**
 - **Purpose**: Leaf gradient accumulation node
 - **Key Components**: `AccumulateGrad` (accumulates into parameter.grad)
 - **Dependencies**: function.h
 
-**xsigma/csrc/autograd/functions/accumulate_grad.cpp**
+**quarisma/csrc/autograd/functions/accumulate_grad.cpp**
 - **Purpose**: AccumulateGrad implementation
 - **Dependencies**: accumulate_grad.h
 
-**xsigma/csrc/autograd/functions/tensor.h**
+**quarisma/csrc/autograd/functions/tensor.h**
 - **Purpose**: Tensor operation backward nodes
 - **Key Components**: Operation-specific backward implementations
 - **Dependencies**: function.h
 
-**xsigma/csrc/autograd/functions/tensor.cpp**
+**quarisma/csrc/autograd/functions/tensor.cpp**
 - **Purpose**: Tensor ops implementation
 - **Dependencies**: tensor.h
 
-**xsigma/csrc/autograd/functions/comm.h**
+**quarisma/csrc/autograd/functions/comm.h**
 - **Purpose**: Communication operation nodes
 - **Key Components**: Distributed operation backward nodes
 - **Dependencies**: function.h
 
-**xsigma/csrc/autograd/functions/comm.cpp**
+**quarisma/csrc/autograd/functions/comm.cpp**
 - **Purpose**: Comm ops implementation
 - **Dependencies**: comm.h
 
 #### Custom Function Support
 
-**xsigma/csrc/autograd/custom_function.h**
+**quarisma/csrc/autograd/custom_function.h**
 - **Purpose**: Custom autograd.Function support
 - **Key Components**: `CppNode`, `apply()` wrapper
 - **Dependencies**: function.h
 
-**xsigma/csrc/autograd/custom_function.cpp**
+**quarisma/csrc/autograd/custom_function.cpp**
 - **Purpose**: Custom function implementation
 - **Key Functions**: User-defined backward logic
 - **Dependencies**: custom_function.h
 
-**xsigma/csrc/autograd/python_function.cpp**
+**quarisma/csrc/autograd/python_function.cpp**
 - **Purpose**: Python Function support
 - **Key Functions** (lines 1292-1350): Python `autograd.Function` integration
 - **Dependencies**: custom_function.h
 
 #### Dispatch and Autograd Integration
 
-**xsigma/csrc/autograd/autograd.cpp**
+**quarisma/csrc/autograd/autograd.cpp**
 - **Purpose**: Autograd system core
 - **Key Functions** (lines 90-203): Dispatch interception, node creation
 - **Dependencies**: function.h, variable.h
 
-**xsigma/csrc/autograd/VariableTypeManual.cpp**
+**quarisma/csrc/autograd/VariableTypeManual.cpp**
 - **Purpose**: Manual variable type operations
 - **Key Functions**: Forward AD, view operations
 - **Dependencies**: variable.h, function.h
 
-**xsigma/csrc/autograd/autograd_not_implemented_fallback.cpp**
+**quarisma/csrc/autograd/autograd_not_implemented_fallback.cpp**
 - **Purpose**: Fallback for unimplemented operations
 - **Key Components**: `WarnNotImplemented` node creation
 - **Dependencies**: function.h
@@ -1396,12 +1396,12 @@ dump_ir(graph)
 
 #### Backward Engine
 
-**xsigma/csrc/autograd/engine.h**
+**quarisma/csrc/autograd/engine.h**
 - **Purpose**: Engine interface definition
 - **Key Components**: `Engine` class, `execute()` method
 - **Dependencies**: graph_task.h, edge.h
 
-**xsigma/csrc/autograd/engine.cpp**
+**quarisma/csrc/autograd/engine.cpp**
 - **Purpose**: Core backward execution engine
 - **Key Functions** (lines 1288-1380):
   - `Engine::execute()`: Main backward execution
@@ -1425,38 +1425,38 @@ dump_ir(graph)
   ```
 - **Dependencies**: graph_task.h, input_buffer.h, function.h
 
-**xsigma/csrc/autograd/python_engine.h**
+**quarisma/csrc/autograd/python_engine.h**
 - **Purpose**: Python engine wrapper
 - **Dependencies**: engine.h
 
-**xsigma/csrc/autograd/python_engine.cpp**
+**quarisma/csrc/autograd/python_engine.cpp**
 - **Purpose**: Python-C++ bridge for backward
 - **Dependencies**: python_engine.h, engine.h
 
 #### Gradient Mode Control
 
-**xsigma/csrc/autograd/grad_mode.h**
+**quarisma/csrc/autograd/grad_mode.h**
 - **Purpose**: Gradient computation control
 - **Key Components**: `GradMode`, `no_grad()` context
 - **Dependencies**: None
 
-**xsigma/csrc/autograd/grad_mode.cpp**
+**quarisma/csrc/autograd/grad_mode.cpp**
 - **Purpose**: GradMode implementation
 - **Dependencies**: grad_mode.h
 
-**xsigma/csrc/autograd/InferenceMode.h**
+**quarisma/csrc/autograd/InferenceMode.h**
 - **Purpose**: Inference mode (disables autograd)
 - **Key Components**: `InferenceMode` context manager
 - **Dependencies**: None
 
 #### Anomaly Detection
 
-**xsigma/csrc/autograd/anomaly_mode.h**
+**quarisma/csrc/autograd/anomaly_mode.h**
 - **Purpose**: Anomaly detection interface
 - **Key Components**: `AnomalyMode` class
 - **Dependencies**: None
 
-**xsigma/csrc/autograd/anomaly_mode.cpp**
+**quarisma/csrc/autograd/anomaly_mode.cpp**
 - **Purpose**: Anomaly detection implementation
 - **Key Functions**: Stack trace recording, error detection
 - **Dependencies**: anomaly_mode.h
@@ -1467,43 +1467,43 @@ dump_ir(graph)
 
 #### Function Hooks
 
-**xsigma/csrc/autograd/function_hook.h**
+**quarisma/csrc/autograd/function_hook.h**
 - **Purpose**: Hook base classes
 - **Key Components**: `FunctionPreHook`, `FunctionPostHook`
 - **Dependencies**: None
 
-**xsigma/csrc/autograd/cpp_hook.h**
+**quarisma/csrc/autograd/cpp_hook.h**
 - **Purpose**: C++ hook implementations
 - **Key Components**: `CppFunctionTensorPreHook`, `CppFunctionPostHook`
 - **Dependencies**: function_hook.h
 
-**xsigma/csrc/autograd/python_hook.h**
+**quarisma/csrc/autograd/python_hook.h**
 - **Purpose**: Python hook implementations
 - **Key Components**: `PyFunctionPreHook`, `PyFunctionPostHook`
 - **Dependencies**: function_hook.h
 
-**xsigma/csrc/autograd/python_hook.cpp**
+**quarisma/csrc/autograd/python_hook.cpp**
 - **Purpose**: Python hook execution
 - **Dependencies**: python_hook.h
 
 #### Tensor Hooks
 
-**xsigma/_tensor.py**
+**quarisma/_tensor.py**
 - **Purpose**: Tensor hook registration interface
 - **Key Functions**: `register_hook()`, `register_post_accumulate_grad_hook()`
-- **Dependencies**: xsigma.utils.hooks
+- **Dependencies**: quarisma.utils.hooks
 
-**xsigma/utils/hooks.py**
+**quarisma/utils/hooks.py**
 - **Purpose**: Hook utilities
 - **Key Components**: `BackwardHook`, `RemovableHandle`
 - **Dependencies**: None
 
 #### Module Hooks
 
-**xsigma/nn/modules/module.py**
+**quarisma/nn/modules/module.py**
 - **Purpose**: Module hook registration
 - **Key Functions**: `register_forward_hook()`, `register_backward_hook()`
-- **Dependencies**: xsigma.utils.hooks
+- **Dependencies**: quarisma.utils.hooks
 
 ---
 
@@ -1511,81 +1511,81 @@ dump_ir(graph)
 
 #### JIT IR (Intermediate Representation)
 
-**xsigma/csrc/jit/ir/ir.h**
+**quarisma/csrc/jit/ir/ir.h**
 - **Purpose**: JIT graph structure definition
 - **Key Components**: `Graph`, `Node`, `Value`, `Block`
 - **Dependencies**: None
 
-**xsigma/csrc/jit/ir/ir.cpp**
+**quarisma/csrc/jit/ir/ir.cpp**
 - **Purpose**: JIT IR implementation
 - **Key Functions**: Graph construction, node management
 - **Dependencies**: ir.h
 
-**xsigma/csrc/jit/ir/irparser.h**
+**quarisma/csrc/jit/ir/irparser.h**
 - **Purpose**: IR parser interface
 - **Key Functions**: `parseIR()`
 - **Dependencies**: ir.h
 
-**xsigma/csrc/jit/ir/irparser.cpp**
+**quarisma/csrc/jit/ir/irparser.cpp**
 - **Purpose**: IR parser implementation
 - **Key Functions**: Parse IR strings to graphs
 - **Dependencies**: irparser.h
 
 #### JIT Autodiff
 
-**xsigma/csrc/jit/runtime/autodiff.cpp**
+**quarisma/csrc/jit/runtime/autodiff.cpp**
 - **Purpose**: JIT autodiff implementation
 - **Key Functions** (lines 835-852): `differentiate()`, gradient graph generation
 - **Dependencies**: ir.h
 
 #### JIT Graph Passes
 
-**xsigma/csrc/jit/passes/dead_code_elimination.h**
+**quarisma/csrc/jit/passes/dead_code_elimination.h**
 - **Purpose**: Dead code elimination interface
 - **Key Functions**: `EliminateDeadCode()`
 - **Dependencies**: ir.h
 
-**xsigma/csrc/jit/passes/dead_code_elimination.cpp**
+**quarisma/csrc/jit/passes/dead_code_elimination.cpp**
 - **Purpose**: DCE implementation
 - **Key Functions**: Remove unused nodes
 - **Dependencies**: dead_code_elimination.h
 
-**xsigma/csrc/jit/passes/common_subexpression_elimination.h**
+**quarisma/csrc/jit/passes/common_subexpression_elimination.h**
 - **Purpose**: CSE interface
 - **Key Functions**: `EliminateCommonSubexpression()`
 - **Dependencies**: ir.h
 
-**xsigma/csrc/jit/passes/common_subexpression_elimination.cpp**
+**quarisma/csrc/jit/passes/common_subexpression_elimination.cpp**
 - **Purpose**: CSE implementation
 - **Key Functions**: Remove duplicate computations
 - **Dependencies**: common_subexpression_elimination.h
 
-**xsigma/csrc/jit/passes/graph_fuser.h**
+**quarisma/csrc/jit/passes/graph_fuser.h**
 - **Purpose**: Graph fusion interface
 - **Key Functions**: `FuseGraph()`
 - **Dependencies**: ir.h
 
-**xsigma/csrc/jit/passes/graph_fuser.cpp**
+**quarisma/csrc/jit/passes/graph_fuser.cpp**
 - **Purpose**: Graph fusion implementation
 - **Key Functions** (lines 1255-1266): Fuse operations into groups
 - **Dependencies**: graph_fuser.h
 
-**xsigma/csrc/jit/passes/tensorexpr_fuser.cpp**
+**quarisma/csrc/jit/passes/tensorexpr_fuser.cpp**
 - **Purpose**: TensorExpr fusion
 - **Key Functions**: `FuseTensorExprs()`
 - **Dependencies**: ir.h
 
-**xsigma/csrc/jit/passes/eliminate_no_ops.cpp**
+**quarisma/csrc/jit/passes/eliminate_no_ops.cpp**
 - **Purpose**: No-op elimination
 - **Key Functions**: Remove identity operations
 - **Dependencies**: ir.h
 
-**xsigma/csrc/jit/passes/frozen_graph_optimizations.cpp**
+**quarisma/csrc/jit/passes/frozen_graph_optimizations.cpp**
 - **Purpose**: Frozen graph optimization
 - **Key Functions**: `OptimizeFrozenGraph()`
 - **Dependencies**: ir.h
 
-**xsigma/csrc/jit/OVERVIEW.md**
+**quarisma/csrc/jit/OVERVIEW.md**
 - **Purpose**: JIT architecture documentation
 - **Dependencies**: None
 
@@ -1593,17 +1593,17 @@ dump_ir(graph)
 
 ### 6. FUNCTIONAL TRANSFORMATION (AOT AUTOGRAD) - 3 files
 
-**xsigma/_functorch/aot_autograd.py**
+**quarisma/_functorch/aot_autograd.py**
 - **Purpose**: AOT autograd interface
 - **Key Functions**: `aot_function()`, `aot_module_simplified()`
 - **Dependencies**: graph_compile.py, graph_capture.py
 
-**xsigma/_functorch/_aot_autograd/graph_compile.py**
+**quarisma/_functorch/_aot_autograd/graph_compile.py**
 - **Purpose**: Graph compilation
 - **Key Functions** (lines 1866-1883): `aot_stage2_autograd()`, joint graph generation
 - **Dependencies**: graph_capture.py
 
-**xsigma/_functorch/_aot_autograd/graph_capture.py**
+**quarisma/_functorch/_aot_autograd/graph_capture.py**
 - **Purpose**: Graph capture
 - **Key Functions** (lines 362-374): `aot_dispatch_autograd_graph()`
 - **Dependencies**: aot_autograd.py
@@ -1612,22 +1612,22 @@ dump_ir(graph)
 
 ### 7. FX GRAPH TRANSFORMATION - 4 files
 
-**xsigma/fx/__init__.py**
+**quarisma/fx/__init__.py**
 - **Purpose**: FX framework
 - **Key Components**: Symbolic tracing, graph IR
 - **Dependencies**: None
 
-**xsigma/_inductor/fx_passes/joint_graph.py**
+**quarisma/_inductor/fx_passes/joint_graph.py**
 - **Purpose**: Joint graph passes
 - **Key Functions**: `joint_graph_passes()`
 - **Dependencies**: None
 
-**xsigma/_inductor/fx_passes/post_grad.py**
+**quarisma/_inductor/fx_passes/post_grad.py**
 - **Purpose**: Post-grad passes
 - **Key Functions**: `post_grad_passes()`
 - **Dependencies**: None
 
-**xsigma/_inductor/fx_passes/pre_grad.py**
+**quarisma/_inductor/fx_passes/pre_grad.py**
 - **Purpose**: Pre-grad passes
 - **Key Functions**: `fuse_fx()`
 - **Dependencies**: None
@@ -1636,27 +1636,27 @@ dump_ir(graph)
 
 ### 8. GRAPH SERIALIZATION - 5 files
 
-**xsigma/nativert/graph/Serialization.h**
+**quarisma/nativert/graph/Serialization.h**
 - **Purpose**: Serialization interface
 - **Key Functions**: `jsonToGraph()`
 - **Dependencies**: Graph.h
 
-**xsigma/nativert/graph/Serialization.cpp**
+**quarisma/nativert/graph/Serialization.cpp**
 - **Purpose**: Serialization implementation
 - **Key Functions**: JSON to graph conversion
 - **Dependencies**: Serialization.h
 
-**xsigma/csrc/jit/serialization/import_read.h**
+**quarisma/csrc/jit/serialization/import_read.h**
 - **Purpose**: JIT import interface
 - **Key Functions**: `readArchiveAndTensors()`
 - **Dependencies**: None
 
-**xsigma/_export/serde/serialize.py**
+**quarisma/_export/serde/serialize.py**
 - **Purpose**: Export serialization
 - **Key Components**: `ExportedProgramSerializer`, `GraphModuleDeserializer`
 - **Dependencies**: None
 
-**xsigma/distributed/checkpoint/state_dict_saver.py**
+**quarisma/distributed/checkpoint/state_dict_saver.py**
 - **Purpose**: Checkpoint saving
 - **Key Functions**: `save()`, `async_save()`
 - **Dependencies**: None
@@ -1665,17 +1665,17 @@ dump_ir(graph)
 
 ### 9. GRAPH VISUALIZATION - 4 files
 
-**xsigma/fx/passes/graph_drawer.py**
+**quarisma/fx/passes/graph_drawer.py**
 - **Purpose**: FX graph visualization
 - **Key Components**: `FxGraphDrawer` (graphviz rendering)
 - **Dependencies**: pydot
 
-**xsigma/_functorch/partitioners.py**
+**quarisma/_functorch/partitioners.py**
 - **Purpose**: Graph drawing utilities
 - **Key Functions**: `draw_graph()`
 - **Dependencies**: graph_drawer.py
 
-**xsigma/_inductor/debug.py**
+**quarisma/_inductor/debug.py**
 - **Purpose**: Inductor debugging
 - **Key Functions**: `draw_buffers()`, graph visualization
 - **Dependencies**: None
@@ -1689,22 +1689,22 @@ dump_ir(graph)
 
 ### 10. GRAPH DEBUGGING - 4 files
 
-**xsigma/_lazy/debug.py**
+**quarisma/_lazy/debug.py**
 - **Purpose**: Lazy tensor debugging
 - **Key Functions**: `render_ir_graph()`, `dump_ir()`
-- **Dependencies**: xsigma._C._lazy
+- **Dependencies**: quarisma._C._lazy
 
-**xsigma/_dynamo/debug_utils.py**
+**quarisma/_dynamo/debug_utils.py**
 - **Purpose**: TorchDynamo debugging
 - **Key Functions**: Graph inspection utilities
 - **Dependencies**: None
 
-**xsigma/_inductor/runtime/debug_utils.py**
+**quarisma/_inductor/runtime/debug_utils.py**
 - **Purpose**: Inductor runtime debugging
 - **Key Functions**: Memory tracking, tensor inspection
 - **Dependencies**: None
 
-**xsigma/csrc/lazy/core/debug_util.h**
+**quarisma/csrc/lazy/core/debug_util.h**
 - **Purpose**: Lazy graph debugging
 - **Key Components**: `DebugUtil` class
 - **Dependencies**: None
@@ -1715,59 +1715,59 @@ dump_ir(graph)
 
 #### Sequence Numbers
 
-**aten/src/XSigma/SequenceNumber.h**
+**aten/src/Quarisma/SequenceNumber.h**
 - **Purpose**: Sequence number interface
 - **Key Functions**: `get_and_increment()`, `peek()`
 - **Algorithm**: Thread-local monotonically increasing counter
 - **Dependencies**: None
 
-**aten/src/XSigma/SequenceNumber.cpp**
+**aten/src/Quarisma/SequenceNumber.cpp**
 - **Purpose**: Sequence number implementation
 - **Key Variables**: `thread_local uint64_t sequence_nr_`
 - **Dependencies**: SequenceNumber.h
 
 #### Record Function
 
-**aten/src/XSigma/record_function.cpp**
+**aten/src/Quarisma/record_function.cpp**
 - **Purpose**: Record function implementation
 - **Key Functions**: Function recording for profiling
 - **Dependencies**: None
 
 #### JIT Profiling
 
-**xsigma/csrc/jit/runtime/profiling_record.h**
+**quarisma/csrc/jit/runtime/profiling_record.h**
 - **Purpose**: Profiling record interface
 - **Key Components**: `ProfilingRecord`
 - **Dependencies**: ir.h
 
-**xsigma/csrc/jit/runtime/profiling_record.cpp**
+**quarisma/csrc/jit/runtime/profiling_record.cpp**
 - **Purpose**: Profiling implementation
 - **Key Functions**: Graph instrumentation
 - **Dependencies**: profiling_record.h
 
-**xsigma/csrc/jit/runtime/profiling_graph_executor_impl.cpp**
+**quarisma/csrc/jit/runtime/profiling_graph_executor_impl.cpp**
 - **Purpose**: Profiling executor
 - **Key Functions**: Profiling-guided optimization
 - **Dependencies**: profiling_record.h
 
 #### Execution Tracing
 
-**xsigma/csrc/profiler/standalone/execution_trace_observer.cpp**
+**quarisma/csrc/profiler/standalone/execution_trace_observer.cpp**
 - **Purpose**: Execution tracing
 - **Key Functions**: Operation recording
 - **Dependencies**: None
 
-**xsigma/csrc/autograd/profiler_kineto.cpp**
+**quarisma/csrc/autograd/profiler_kineto.cpp**
 - **Purpose**: Kineto profiler integration
 - **Key Functions**: Performance profiling
 - **Dependencies**: None
 
-**xsigma/autograd/profiler.py**
+**quarisma/autograd/profiler.py**
 - **Purpose**: Python profiler interface
 - **Key Functions**: Profiling utilities
 - **Dependencies**: None
 
-**xsigma/csrc/profiler/README.md**
+**quarisma/csrc/profiler/README.md**
 - **Purpose**: Profiler documentation
 - **Dependencies**: None
 
@@ -1775,12 +1775,12 @@ dump_ir(graph)
 
 ### 12. LAZY TENSOR GRAPH EXECUTION - 2 files
 
-**xsigma/csrc/lazy/core/lazy_graph_executor.cpp**
+**quarisma/csrc/lazy/core/lazy_graph_executor.cpp**
 - **Purpose**: Lazy graph executor
 - **Key Functions**: `SyncTensorsGraph()`, graph execution
 - **Dependencies**: None
 
-**xsigma/csrc/lazy/core/debug_util.h**
+**quarisma/csrc/lazy/core/debug_util.h**
 - **Purpose**: Lazy debugging
 - **Key Functions**: Graph inspection
 - **Dependencies**: None
@@ -1789,17 +1789,17 @@ dump_ir(graph)
 
 ### 13. INDUCTOR GRAPH SCHEDULING - 3 files
 
-**xsigma/_inductor/scheduler.py**
+**quarisma/_inductor/scheduler.py**
 - **Purpose**: Graph scheduling
 - **Key Functions**: `_topological_sort_nodes()`
 - **Dependencies**: None
 
-**xsigma/_inductor/memory.py**
+**quarisma/_inductor/memory.py**
 - **Purpose**: Memory optimization
 - **Key Functions**: `topological_sort_bfs()`
 - **Dependencies**: None
 
-**xsigma/_inductor/ir.py**
+**quarisma/_inductor/ir.py**
 - **Purpose**: Inductor IR
 - **Key Components**: TensorBox, Buffer, View representations
 - **Dependencies**: None
@@ -2189,15 +2189,15 @@ AOT AUTOGRAD
 
 | Rank | File | Impact | Reason |
 |------|------|--------|--------|
-| 1 | `xsigma/csrc/autograd/engine.cpp` | **CRITICAL** | Core backward execution |
-| 2 | `xsigma/csrc/autograd/function.h` | **CRITICAL** | Node definition |
-| 3 | `xsigma/csrc/autograd/functions/utils.h` | **CRITICAL** | Graph building |
-| 4 | `xsigma/csrc/autograd/variable.cpp` | **CRITICAL** | Tensor-Node connection |
-| 5 | `xsigma/csrc/autograd/graph_task.h` | **HIGH** | Execution metadata |
-| 6 | `xsigma/csrc/autograd/edge.h` | **HIGH** | Node connectivity |
-| 7 | `xsigma/csrc/autograd/input_buffer.h` | **HIGH** | Gradient accumulation |
-| 8 | `xsigma/csrc/jit/ir/ir.h` | **HIGH** | JIT graph structure |
-| 9 | `xsigma/csrc/jit/runtime/autodiff.cpp` | **HIGH** | JIT autodiff |
+| 1 | `quarisma/csrc/autograd/engine.cpp` | **CRITICAL** | Core backward execution |
+| 2 | `quarisma/csrc/autograd/function.h` | **CRITICAL** | Node definition |
+| 3 | `quarisma/csrc/autograd/functions/utils.h` | **CRITICAL** | Graph building |
+| 4 | `quarisma/csrc/autograd/variable.cpp` | **CRITICAL** | Tensor-Node connection |
+| 5 | `quarisma/csrc/autograd/graph_task.h` | **HIGH** | Execution metadata |
+| 6 | `quarisma/csrc/autograd/edge.h` | **HIGH** | Node connectivity |
+| 7 | `quarisma/csrc/autograd/input_buffer.h` | **HIGH** | Gradient accumulation |
+| 8 | `quarisma/csrc/jit/ir/ir.h` | **HIGH** | JIT graph structure |
+| 9 | `quarisma/csrc/jit/runtime/autodiff.cpp` | **HIGH** | JIT autodiff |
 | 10 | `tools/autograd/gen_variable_type.py` | **HIGH** | Code generation |
 
 ### Lines of Code (Approximate)
@@ -2364,15 +2364,15 @@ loss.backward();
 
 ## References and Further Reading
 
-- **Autograd System**: `xsigma/csrc/autograd/` directory
-- **Engine Implementation**: `xsigma/csrc/autograd/engine.cpp` (lines 1288-1380)
-- **JIT System**: `xsigma/csrc/jit/` directory
-- **AOT Autograd**: `xsigma/_functorch/` directory
-- **Profiler**: `xsigma/csrc/profiler/` directory
+- **Autograd System**: `quarisma/csrc/autograd/` directory
+- **Engine Implementation**: `quarisma/csrc/autograd/engine.cpp` (lines 1288-1380)
+- **JIT System**: `quarisma/csrc/jit/` directory
+- **AOT Autograd**: `quarisma/_functorch/` directory
+- **Profiler**: `quarisma/csrc/profiler/` directory
 
 ---
 
 **Document Version**: 1.0  
 **Last Updated**: November 2025  
-**Scope**: XSigma 2.x (current development)
+**Scope**: Quarisma 2.x (current development)
 

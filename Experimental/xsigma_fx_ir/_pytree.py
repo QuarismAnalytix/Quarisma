@@ -57,7 +57,7 @@ def tree_flatten_spec(
     if spec != real_spec:
         raise RuntimeError(
             f"Real spec {real_spec} of object {pytree} is different from expected spec {spec}. "
-            f"Please file an issue xsigma https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml"
+            f"Please file an issue quarisma https://github.com/pytorch/pytorch/issues/new?template=bug-report.yml"
         )
     return flat_result
 

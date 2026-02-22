@@ -34,7 +34,7 @@
 
 #ifndef _WIN32
 // Unix/Linux/macOS-specific helper functions
-namespace xsigma
+namespace quarisma
 {
 namespace
 {
@@ -129,19 +129,19 @@ std::optional<FrameInformation> parse_frame_information(const std::string& frame
     return frame;
 }
 }  // anonymous namespace
-}  // namespace xsigma
+}  // namespace quarisma
 #endif  // !defined(_WIN32)
 
-namespace xsigma
+namespace quarisma
 {
 // ============================================================================
 // Public API Implementation
 // ============================================================================
 
 std::string back_trace::print(
-    XSIGMA_UNUSED size_t frames_to_skip,
-    XSIGMA_UNUSED size_t maximum_number_of_frames,
-    XSIGMA_UNUSED bool   skip_python_frames)
+    QUARISMA_UNUSED size_t frames_to_skip,
+    QUARISMA_UNUSED size_t maximum_number_of_frames,
+    QUARISMA_UNUSED bool   skip_python_frames)
 {
     backtrace_options options;
     options.frames_to_skip           = frames_to_skip;
@@ -408,7 +408,7 @@ void back_trace::set_stack_trace_on_error(int enable)
     (void)enable;
 }
 
-}  // namespace xsigma
+}  // namespace quarisma
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif

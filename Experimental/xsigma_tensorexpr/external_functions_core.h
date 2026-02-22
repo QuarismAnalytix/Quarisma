@@ -1,7 +1,7 @@
 #pragma once
 
-#include <XSigma/Parallel.h>
-#include <XSigma/XSigma.h>
+#include <Quarisma/Parallel.h>
+#include <Quarisma/Quarisma.h>
 #include <torch/csrc/Export.h>
 
 #include <cstdint>
@@ -9,7 +9,7 @@
 namespace torch::jit::tensorexpr
 {
 
-#ifdef XSIGMA_MOBILE
+#ifdef QUARISMA_MOBILE
 extern "C"
 {
 #endif
@@ -17,7 +17,7 @@ extern "C"
 
     TORCH_API void nnc_aten_free(size_t bufs_num, void** ptrs) noexcept;
 
-#ifdef XSIGMA_MOBILE
+#ifdef QUARISMA_MOBILE
 }  // extern "C"
 #endif
 

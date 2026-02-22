@@ -1,5 +1,5 @@
 #!/bin/bash
-# cmake-format script for XSigma
+# cmake-format script for Quarisma
 # Formats all CMake files in the project according to .cmake-format.yaml
 # Usage: bash Scripts/all-cmake-format.sh
 

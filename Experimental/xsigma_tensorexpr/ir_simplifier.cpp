@@ -119,7 +119,7 @@ void Term::sort()
             {
                 str_repr_cache[b] = std::to_string(b);
             }
-            return str_repr_cache.xsigma(a) < str_repr_cache.xsigma(b);
+            return str_repr_cache.quarisma(a) < str_repr_cache.quarisma(b);
         });
 }
 
@@ -153,7 +153,7 @@ void Polynomial::sort()
             {
                 str_repr_cache[b] = std::to_string(b);
             }
-            return str_repr_cache.xsigma(a) < str_repr_cache.xsigma(b);
+            return str_repr_cache.quarisma(a) < str_repr_cache.quarisma(b);
         });
 }
 
@@ -184,7 +184,7 @@ void MaxTerm::uniquefy()
             {
                 str_repr_cache[b] = std::to_string(b);
             }
-            return str_repr_cache.xsigma(a) < str_repr_cache.xsigma(b);
+            return str_repr_cache.quarisma(a) < str_repr_cache.quarisma(b);
         });
 }
 
@@ -215,7 +215,7 @@ void MinTerm::uniquefy()
             {
                 str_repr_cache[b] = std::to_string(b);
             }
-            return str_repr_cache.xsigma(a) < str_repr_cache.xsigma(b);
+            return str_repr_cache.quarisma(a) < str_repr_cache.quarisma(b);
         });
 }
 
@@ -931,7 +931,7 @@ ExprPtr PolynomialTransformer::polyByTerm(const PolynomialPtr& poly, const TermP
 
     // The only case when the result polynomial has a scalar is when the input
     // term does not have any variables and the input polynomial has a non-zero
-    // scalar. That case is handled above. So, xsigma this point, we do not have any
+    // scalar. That case is handled above. So, quarisma this point, we do not have any
     // scalars in the result polynomial.
     return alloc<Polynomial>(hasher_, std::move(newTerms));
 }
@@ -2342,7 +2342,7 @@ static ExprPtr simplifyRoundModPattern(const PolynomialPtr& poly)
         }
     }
 
-    // Can't continue without xsigma least one RoundOff/ModRound and one Mod.
+    // Can't continue without quarisma least one RoundOff/ModRound and one Mod.
     if ((rounds.empty() && mod_rounds.empty()) || mods.empty())
     {
         return nullptr;
@@ -2542,7 +2542,7 @@ ExprPtr TermExpander::mutate(const PolynomialPtr& v)
             {
                 str_repr_cache[b] = std::to_string(b);
             }
-            return str_repr_cache.xsigma(a) < str_repr_cache.xsigma(b);
+            return str_repr_cache.quarisma(a) < str_repr_cache.quarisma(b);
         });
 
     // partition the terms into a list to add and list to subtract.

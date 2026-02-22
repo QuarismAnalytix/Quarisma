@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -29,11 +29,11 @@
 #include "common/macros.h"
 #include "memory/device.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -67,7 +67,7 @@ enum class transfer_status
  * Contains information about a memory transfer operation including
  * timing, bandwidth, and status for performance monitoring and debugging.
  */
-struct XSIGMA_VISIBILITY gpu_transfer_info
+struct QUARISMA_VISIBILITY gpu_transfer_info
 {
     /** @brief Unique transfer ID */
     size_t transfer_id = 0;
@@ -130,7 +130,7 @@ using transfer_callback = std::function<void(const gpu_transfer_info& info)>;
  * Provides a unified interface for GPU streams across different backends
  * (CUDA streams, etc.).
  */
-class XSIGMA_VISIBILITY gpu_stream
+class QUARISMA_VISIBILITY gpu_stream
 {
 public:
     /**
@@ -140,40 +140,40 @@ public:
      * @param priority Stream priority (0 = default, higher values = higher priority)
      * @return Unique pointer to created stream
      */
-    XSIGMA_API static std::unique_ptr<gpu_stream> create(
+    QUARISMA_API static std::unique_ptr<gpu_stream> create(
         device_enum device_type, int device_index, int priority = 0);
 
     /**
      * @brief Virtual destructor
      */
-    XSIGMA_API virtual ~gpu_stream() = default;
+    QUARISMA_API virtual ~gpu_stream() = default;
 
     /**
      * @brief Get the device associated with this stream
      * @return Device option
      */
-    XSIGMA_API virtual device_option get_device() const = 0;
+    QUARISMA_API virtual device_option get_device() const = 0;
 
     /**
      * @brief Synchronize the stream (wait for all operations to complete)
      */
-    XSIGMA_API virtual void synchronize() = 0;
+    QUARISMA_API virtual void synchronize() = 0;
 
     /**
      * @brief Check if all operations in the stream have completed
      * @return True if stream is idle
      */
-    XSIGMA_API virtual bool is_idle() const = 0;
+    QUARISMA_API virtual bool is_idle() const = 0;
 
     /**
      * @brief Get native stream handle (CUDA stream)
      * @return Native handle as void pointer
      */
-    XSIGMA_API virtual void* get_native_handle() const = 0;
+    QUARISMA_API virtual void* get_native_handle() const = 0;
 
 protected:
     gpu_stream() = default;
-    XSIGMA_DELETE_COPY_AND_MOVE(gpu_stream);
+    QUARISMA_DELETE_COPY_AND_MOVE(gpu_stream);
 };
 
 /**
@@ -218,19 +218,19 @@ protected:
  * future.wait(); // Wait for completion if needed
  * ```
  */
-class XSIGMA_VISIBILITY gpu_memory_transfer
+class QUARISMA_VISIBILITY gpu_memory_transfer
 {
 public:
     /**
      * @brief Get the singleton instance of the memory transfer manager
      * @return Reference to the global transfer manager instance
      */
-    XSIGMA_API static gpu_memory_transfer& instance();
+    QUARISMA_API static gpu_memory_transfer& instance();
 
     /**
      * @brief Virtual destructor
      */
-    XSIGMA_API virtual ~gpu_memory_transfer() = default;
+    QUARISMA_API virtual ~gpu_memory_transfer() = default;
 
     /**
      * @brief Perform synchronous memory transfer
@@ -243,7 +243,7 @@ public:
      * @throws std::invalid_argument if parameters are invalid
      * @throws std::runtime_error if transfer fails
      */
-    XSIGMA_API virtual gpu_transfer_info transfer_sync(
+    QUARISMA_API virtual gpu_transfer_info transfer_sync(
         const void*        src,
         void*              dst,
         size_t             size,
@@ -261,7 +261,7 @@ public:
      * @return Future that can be used to wait for completion and get transfer info
      * @throws std::invalid_argument if parameters are invalid
      */
-    XSIGMA_API virtual std::future<gpu_transfer_info> transfer_async(
+    QUARISMA_API virtual std::future<gpu_transfer_info> transfer_async(
         const void*        src,
         void*              dst,
         size_t             size,
@@ -275,7 +275,7 @@ public:
      * @param stream GPU stream to use (optional, uses default if null)
      * @return Vector of futures for each transfer
      */
-    XSIGMA_API virtual std::vector<std::future<gpu_transfer_info>> transfer_batch_async(
+    QUARISMA_API virtual std::vector<std::future<gpu_transfer_info>> transfer_batch_async(
         const std::vector<std::tuple<const void*, void*, size_t, transfer_direction>>& transfers,
         gpu_stream* stream = nullptr) = 0;
 
@@ -286,34 +286,34 @@ public:
      * @param device_type Device type
      * @return Optimal chunk size in bytes
      */
-    XSIGMA_API virtual size_t get_optimal_chunk_size(
+    QUARISMA_API virtual size_t get_optimal_chunk_size(
         size_t total_size, transfer_direction direction, device_enum device_type) const = 0;
 
     /**
      * @brief Get transfer statistics and performance metrics
      * @return String containing detailed transfer statistics
      */
-    XSIGMA_API virtual std::string get_transfer_statistics() const = 0;
+    QUARISMA_API virtual std::string get_transfer_statistics() const = 0;
 
     /**
      * @brief Clear transfer statistics
      */
-    XSIGMA_API virtual void clear_statistics() = 0;
+    QUARISMA_API virtual void clear_statistics() = 0;
 
     /**
      * @brief Wait for all pending transfers to complete
      */
-    XSIGMA_API virtual void wait_for_all_transfers() = 0;
+    QUARISMA_API virtual void wait_for_all_transfers() = 0;
 
     /**
      * @brief Cancel all pending transfers
      */
-    XSIGMA_API virtual void cancel_all_transfers() = 0;
+    QUARISMA_API virtual void cancel_all_transfers() = 0;
 
 protected:
     gpu_memory_transfer() = default;
-    XSIGMA_DELETE_COPY_AND_MOVE(gpu_memory_transfer);
+    QUARISMA_DELETE_COPY_AND_MOVE(gpu_memory_transfer);
 };
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

@@ -34,7 +34,7 @@ CONFIG = {
         ".*Testing[/\\\\].*",
         ".*Serialization[/\\\\].*",
         ".*ThirdParty[/\\\\].*",
-        ".*xsigmasys[/\\\\].*",
+        ".*quarismasys[/\\\\].*",
     ],
 
     # Markers to detect project root
@@ -393,7 +393,7 @@ def validate_build_structure(build_dir: Path, config: dict,
 def detect_compiler(build_dir: Path | str) -> str:
     """Detect the compiler used in the build directory.
 
-    Looks for XSIGMA_COMPILER_ID in CMakeCache.txt to determine the compiler.
+    Looks for QUARISMA_COMPILER_ID in CMakeCache.txt to determine the compiler.
 
     Args:
         build_dir: Path to build directory.
@@ -415,9 +415,9 @@ def detect_compiler(build_dir: Path | str) -> str:
         with open(cmake_cache, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
 
-            # Look for XSIGMA_COMPILER_ID
+            # Look for QUARISMA_COMPILER_ID
             for line in content.split('\n'):
-                if 'XSIGMA_COMPILER_ID' in line:
+                if 'QUARISMA_COMPILER_ID' in line:
                     # Extract the value after the '='
                     if '=' in line:
                         compiler_id = line.split('=', 1)[-1].strip()
@@ -425,8 +425,8 @@ def detect_compiler(build_dir: Path | str) -> str:
                         # Normalize to lowercase for comparison
                         compiler_id_lower = compiler_id.lower()
                         
-                        # Map XSIGMA compiler IDs to supported compilers
-                        print(f"XSIGMA_COMPILER_ID found: {compiler_id}")
+                        # Map QUARISMA compiler IDs to supported compilers
+                        print(f"QUARISMA_COMPILER_ID found: {compiler_id}")
                         if compiler_id_lower == "gcc":
                             logger.info("GCC detected")
                             return "gcc"
@@ -450,10 +450,10 @@ def detect_compiler(build_dir: Path | str) -> str:
 
     logger.error(
         f"Could not determine compiler from CMakeCache.txt in {build_dir}. "
-        "XSIGMA_COMPILER_ID not found."
+        "QUARISMA_COMPILER_ID not found."
     )
     raise RuntimeError(
         "Could not determine compiler from CMakeCache.txt. "
-        "XSIGMA_COMPILER_ID not found. "
+        "QUARISMA_COMPILER_ID not found. "
         "Please ensure the build was configured with GCC, Clang, MSVC, or Intel."
     )

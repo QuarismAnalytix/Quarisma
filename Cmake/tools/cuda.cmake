@@ -1,4 +1,4 @@
-# ============================================================================= XSigma CUDA
+# ============================================================================= Quarisma CUDA
 # Configuration Module
 # =============================================================================
 # This module handles CUDA compilation support for GPU acceleration. It manages CUDA toolkit
@@ -11,10 +11,10 @@ include_guard(GLOBAL)
 
 # CUDA Support Flag Controls whether CUDA GPU acceleration is enabled for the build. When enabled,
 # requires CUDA 12.0+ and configures GPU compilation.
-option(XSIGMA_ENABLE_CUDA "Enable CUDA compilation" OFF)
-mark_as_advanced(XSIGMA_ENABLE_CUDA)
+option(QUARISMA_ENABLE_CUDA "Enable CUDA compilation" OFF)
+mark_as_advanced(QUARISMA_ENABLE_CUDA)
 
-if(NOT XSIGMA_ENABLE_CUDA)
+if(NOT QUARISMA_ENABLE_CUDA)
   return()
 endif()
 
@@ -30,11 +30,11 @@ enable_language(CUDA)
 
 # Version checks using consistent CUDAToolkit variables
 if(CUDAToolkit_VERSION VERSION_LESS "12.0")
-  message(FATAL_ERROR "XSigma requires CUDA 12.0 or above. Found: ${CUDAToolkit_VERSION}")
+  message(FATAL_ERROR "Quarisma requires CUDA 12.0 or above. Found: ${CUDAToolkit_VERSION}")
 endif()
 
 if(CMAKE_CUDA_COMPILER_ID STREQUAL "NVIDIA" AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS "9.2")
-  message(FATAL_ERROR "XSIGMA CUDA support requires compiler version 9.2+")
+  message(FATAL_ERROR "QUARISMA CUDA support requires compiler version 9.2+")
 endif()
 
 # Check for version conflicts
@@ -45,9 +45,9 @@ if(NOT CMAKE_CUDA_COMPILER_VERSION VERSION_EQUAL CUDAToolkit_VERSION)
   )
 endif()
 
-message(STATUS "XSigma: CUDA detected: ${CUDAToolkit_VERSION}")
-message(STATUS "XSigma: CUDA nvcc is: ${CMAKE_CUDA_COMPILER}")
-message(STATUS "XSigma: CUDA toolkit directory: ${CUDAToolkit_ROOT}")
+message(STATUS "Quarisma: CUDA detected: ${CUDAToolkit_VERSION}")
+message(STATUS "Quarisma: CUDA nvcc is: ${CMAKE_CUDA_COMPILER}")
+message(STATUS "Quarisma: CUDA toolkit directory: ${CUDAToolkit_ROOT}")
 
 # Set C++ standard based on CUDA version
 if(CMAKE_CUDA_COMPILER_ID STREQUAL "NVIDIA" AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL
@@ -67,9 +67,9 @@ if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 endif()
 
 # GPU Architecture options
-set(XSIGMA_CUDA_ARCH_OPTIONS "native" CACHE STRING "Which GPU Architecture(s) to compile for")
+set(QUARISMA_CUDA_ARCH_OPTIONS "native" CACHE STRING "Which GPU Architecture(s) to compile for")
 set_property(
-  CACHE XSIGMA_CUDA_ARCH_OPTIONS
+  CACHE QUARISMA_CUDA_ARCH_OPTIONS
   PROPERTY STRINGS
            native
            fermi
@@ -86,58 +86,58 @@ set_property(
 )
 
 # Set architectures based on user selection
-if(XSIGMA_CUDA_ARCH_OPTIONS STREQUAL "native")
+if(QUARISMA_CUDA_ARCH_OPTIONS STREQUAL "native")
   # Let CMake handle native detection
   set(CMAKE_CUDA_ARCHITECTURES "native")
-elseif(XSIGMA_CUDA_ARCH_OPTIONS STREQUAL "fermi")
+elseif(QUARISMA_CUDA_ARCH_OPTIONS STREQUAL "fermi")
   set(CMAKE_CUDA_ARCHITECTURES "20")
-elseif(XSIGMA_CUDA_ARCH_OPTIONS STREQUAL "kepler")
+elseif(QUARISMA_CUDA_ARCH_OPTIONS STREQUAL "kepler")
   set(CMAKE_CUDA_ARCHITECTURES "30;35")
-elseif(XSIGMA_CUDA_ARCH_OPTIONS STREQUAL "maxwell")
+elseif(QUARISMA_CUDA_ARCH_OPTIONS STREQUAL "maxwell")
   set(CMAKE_CUDA_ARCHITECTURES "50")
-elseif(XSIGMA_CUDA_ARCH_OPTIONS STREQUAL "pascal")
+elseif(QUARISMA_CUDA_ARCH_OPTIONS STREQUAL "pascal")
   set(CMAKE_CUDA_ARCHITECTURES "60;61")
-elseif(XSIGMA_CUDA_ARCH_OPTIONS STREQUAL "volta")
+elseif(QUARISMA_CUDA_ARCH_OPTIONS STREQUAL "volta")
   set(CMAKE_CUDA_ARCHITECTURES "70")
-elseif(XSIGMA_CUDA_ARCH_OPTIONS STREQUAL "turing")
+elseif(QUARISMA_CUDA_ARCH_OPTIONS STREQUAL "turing")
   set(CMAKE_CUDA_ARCHITECTURES "75")
-elseif(XSIGMA_CUDA_ARCH_OPTIONS STREQUAL "ampere")
+elseif(QUARISMA_CUDA_ARCH_OPTIONS STREQUAL "ampere")
   set(CMAKE_CUDA_ARCHITECTURES "80;86")
-elseif(XSIGMA_CUDA_ARCH_OPTIONS STREQUAL "ada")
+elseif(QUARISMA_CUDA_ARCH_OPTIONS STREQUAL "ada")
   set(CMAKE_CUDA_ARCHITECTURES "89;90")
-elseif(XSIGMA_CUDA_ARCH_OPTIONS STREQUAL "hopper")
+elseif(QUARISMA_CUDA_ARCH_OPTIONS STREQUAL "hopper")
   set(CMAKE_CUDA_ARCHITECTURES "90")
-elseif(XSIGMA_CUDA_ARCH_OPTIONS STREQUAL "all")
+elseif(QUARISMA_CUDA_ARCH_OPTIONS STREQUAL "all")
   set(CMAKE_CUDA_ARCHITECTURES "50;60;70;75;80;86;89;90")
-elseif(XSIGMA_CUDA_ARCH_OPTIONS STREQUAL "none")
+elseif(QUARISMA_CUDA_ARCH_OPTIONS STREQUAL "none")
   # Don't set any architectures, let parent project handle it
 endif()
 
 # CUDA Allocation Strategy Configuration (defined in main CMakeLists.txt)
-message(STATUS "CUDA allocation strategy: ${XSIGMA_GPU_ALLOC}")
+message(STATUS "CUDA allocation strategy: ${QUARISMA_GPU_ALLOC}")
 
 # Set preprocessor definitions based on allocation strategy
-if(XSIGMA_GPU_ALLOC STREQUAL "SYNC")
-  add_compile_definitions(XSIGMA_CUDA_ALLOC_SYNC)
+if(QUARISMA_GPU_ALLOC STREQUAL "SYNC")
+  add_compile_definitions(QUARISMA_CUDA_ALLOC_SYNC)
   message(STATUS "Using synchronous CUDA allocation (cuMemAlloc/cuMemFree)")
-elseif(XSIGMA_GPU_ALLOC STREQUAL "ASYNC")
-  add_compile_definitions(XSIGMA_CUDA_ALLOC_ASYNC)
+elseif(QUARISMA_GPU_ALLOC STREQUAL "ASYNC")
+  add_compile_definitions(QUARISMA_CUDA_ALLOC_ASYNC)
   message(STATUS "Using asynchronous CUDA allocation (cuMemAllocAsync/cuMemFreeAsync)")
-elseif(XSIGMA_GPU_ALLOC STREQUAL "POOL_ASYNC")
-  add_compile_definitions(XSIGMA_CUDA_ALLOC_POOL_ASYNC)
+elseif(QUARISMA_GPU_ALLOC STREQUAL "POOL_ASYNC")
+  add_compile_definitions(QUARISMA_CUDA_ALLOC_POOL_ASYNC)
   message(STATUS "Using pool-based asynchronous CUDA allocation (cuMemAllocFromPoolAsync)")
 endif()
 
 # Set up CUDA libraries using modern imported targets
-set(XSIGMA_CUDA_LIBRARIES CUDA::cudart CUDA::cuda_driver CUDA::cusparse CUDA::curand CUDA::cublas)
+set(QUARISMA_CUDA_LIBRARIES CUDA::cudart CUDA::cuda_driver CUDA::cusparse CUDA::curand CUDA::cublas)
 
 # Add nvperf_host if available (required by Kineto for CUPTI range profiler)
 if(TARGET CUDA::nvperf_host)
-  list(APPEND XSIGMA_CUDA_LIBRARIES CUDA::nvperf_host)
+  list(APPEND QUARISMA_CUDA_LIBRARIES CUDA::nvperf_host)
 endif()
 
 # Add CUDA libraries to the dependency list
-list(APPEND XSIGMA_DEPENDENCY_LIBS ${XSIGMA_CUDA_LIBRARIES})
+list(APPEND QUARISMA_DEPENDENCY_LIBS ${QUARISMA_CUDA_LIBRARIES})
 
 # Add include directories (using modern CUDAToolkit variables)
 include_directories(SYSTEM "${CUDAToolkit_INCLUDE_DIRS}")
@@ -156,5 +156,5 @@ if(NOT MSVC)
 endif()
 
 # For backward compatibility, set legacy variables (if needed elsewhere)
-set(XSIGMA_CUDA_FOUND TRUE)
-set(XSIGMA_ENABLE_CUDA ON)
+set(QUARISMA_CUDA_FOUND TRUE)
+set(QUARISMA_ENABLE_CUDA ON)

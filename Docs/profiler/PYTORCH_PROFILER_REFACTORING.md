@@ -1,30 +1,30 @@
-# XSigma Profiler Refactoring Summary
+# Quarisma Profiler Refactoring Summary
 
 ## Overview
-Successfully refactored the `Library/Core/profiler/pytroch_profiler` directory to align with XSigma coding standards and conventions.
+Successfully refactored the `Library/Core/profiler/pytroch_profiler` directory to align with Quarisma coding standards and conventions.
 
 ## Changes Made
 
 ### 1. Directory Structure Flattening
 - **Before**: Nested directory structure with 68 files across multiple levels:
-  - `aten/src/XSigma/`
-  - `xsigma/csrc/autograd/`
-  - `xsigma/csrc/profiler/`
-  - `xsigma/csrc/profiler/orchestration/`
-  - `xsigma/csrc/profiler/python/`
-  - `xsigma/csrc/profiler/standalone/`
-  - `xsigma/csrc/profiler/stubs/`
-  - `xsigma/csrc/profiler/unwind/`
+  - `aten/src/Quarisma/`
+  - `quarisma/csrc/autograd/`
+  - `quarisma/csrc/profiler/`
+  - `quarisma/csrc/profiler/orchestration/`
+  - `quarisma/csrc/profiler/python/`
+  - `quarisma/csrc/profiler/standalone/`
+  - `quarisma/csrc/profiler/stubs/`
+  - `quarisma/csrc/profiler/unwind/`
 
 - **After**: All 66 C++ files (.h and .cpp) moved to base `pytroch_profiler` directory
 - Removed all empty nested directories
 - Preserved Python files and documentation in original locations
 
 ### 2. Include Path Updates
-- **Old Format**: `#include <xsigma/csrc/profiler/file.h>`
+- **Old Format**: `#include <quarisma/csrc/profiler/file.h>`
 - **New Format**: `#include "file.h"` (relative to pytorch_profiler directory)
 - Updated all internal includes to use relative paths
-- Updated downstream references in `Library/Core/experimental/xsigma_autograd/`:
+- Updated downstream references in `Library/Core/experimental/quarisma_autograd/`:
   - `profiler_kineto.h`
   - `profiler_kineto.cpp`
   - `profiler_legacy.h`
@@ -33,35 +33,35 @@ Successfully refactored the `Library/Core/profiler/pytroch_profiler` directory t
   - `python_function.cpp`
 
 ### 3. Macro Replacements
-Replaced XSigma-specific macros with XSigma equivalents:
+Replaced Quarisma-specific macros with Quarisma equivalents:
 
-| XSigma Macro | XSigma Macro | Purpose |
+| Quarisma Macro | Quarisma Macro | Purpose |
 |---|---|---|
-| `XSIGMA_API` | `XSIGMA_API` | Function export/import |
-| `XSIGMA_PYTHON_API` | `XSIGMA_API` | Python-facing function export |
-| `XSIGMA_CHECK` | `XSIGMA_CHECK` | Internal assertions |
-| `XSIGMA_INTERNAL_ASSERT_DEBUG_ONLY` | `XSIGMA_CHECK_DEBUG` | Debug-only assertions |
-| `XSIGMA_CHECK` | `XSIGMA_CHECK` | Runtime checks |
-| `XSIGMA_API_ENUM` | (removed) | Enum visibility (not needed) |
-| `XSIGMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED` | `XSIGMA_DIAGNOSTIC_PUSH` | Diagnostic control |
-| `XSIGMA_DIAGNOSTIC_POP` | `XSIGMA_DIAGNOSTIC_POP` | Diagnostic control |
+| `QUARISMA_API` | `QUARISMA_API` | Function export/import |
+| `QUARISMA_PYTHON_API` | `QUARISMA_API` | Python-facing function export |
+| `QUARISMA_CHECK` | `QUARISMA_CHECK` | Internal assertions |
+| `QUARISMA_INTERNAL_ASSERT_DEBUG_ONLY` | `QUARISMA_CHECK_DEBUG` | Debug-only assertions |
+| `QUARISMA_CHECK` | `QUARISMA_CHECK` | Runtime checks |
+| `QUARISMA_API_ENUM` | (removed) | Enum visibility (not needed) |
+| `QUARISMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED` | `QUARISMA_DIAGNOSTIC_PUSH` | Diagnostic control |
+| `QUARISMA_DIAGNOSTIC_POP` | `QUARISMA_DIAGNOSTIC_POP` | Diagnostic control |
 
 ### 4. Visibility and API Macros
-- Added `XSIGMA_VISIBILITY` before public class declarations
-- Added `XSIGMA_API` before public function declarations
+- Added `QUARISMA_VISIBILITY` before public class declarations
+- Added `QUARISMA_API` before public function declarations
 - Ensured proper DLL export/import semantics for Windows
 
 ### 5. Namespace Corrections
-- Preserved `c10::` namespace references (not replaced with `xsigma::`)
-- Preserved `xsigma::` namespace references where appropriate
-- Maintained compatibility with XSigma's type system
+- Preserved `c10::` namespace references (not replaced with `quarisma::`)
+- Preserved `quarisma::` namespace references where appropriate
+- Maintained compatibility with Quarisma's type system
 
 ## Files Modified
 
 ### Refactored Files (66 total)
 All files moved from nested directories to base `pytroch_profiler` directory:
-- `record_function.h/cxx` (from `aten/src/XSigma/`)
-- `profiler_kineto.h/cxx`, `profiler_python.h/cxx`, `profiler.h` (from `xsigma/csrc/autograd/`)
+- `record_function.h/cxx` (from `aten/src/Quarisma/`)
+- `profiler_kineto.h/cxx`, `profiler_python.h/cxx`, `profiler.h` (from `quarisma/csrc/autograd/`)
 - `collection.h/cxx`, `combined_traceback.h/cxx`, `containers.h`, `data_flow.h/cxx`, `events.h`
 - `kineto_shim.h/cxx`, `kineto_client_interface.h/cxx`, `api.h`
 - `observer.h/cxx`, `python_tracer.h/cxx`, `vulkan.h/cxx` (from orchestration/)
@@ -71,19 +71,19 @@ All files moved from nested directories to base `pytroch_profiler` directory:
 - `util.h/cxx`, `perf.h/cxx`, `perf-inl.h`, `init.h/cxx`, `pybind.h`
 
 ### Downstream Files Updated (6 total)
-- `Library/Core/experimental/xsigma_autograd/profiler_kineto.h`
-- `Library/Core/experimental/xsigma_autograd/profiler_kineto.cpp`
-- `Library/Core/experimental/xsigma_autograd/profiler_legacy.h`
-- `Library/Core/experimental/xsigma_autograd/init.cpp`
-- `Library/Core/experimental/xsigma_autograd/profiler_python.cpp`
-- `Library/Core/experimental/xsigma_autograd/python_function.cpp`
+- `Library/Core/experimental/quarisma_autograd/profiler_kineto.h`
+- `Library/Core/experimental/quarisma_autograd/profiler_kineto.cpp`
+- `Library/Core/experimental/quarisma_autograd/profiler_legacy.h`
+- `Library/Core/experimental/quarisma_autograd/init.cpp`
+- `Library/Core/experimental/quarisma_autograd/profiler_python.cpp`
+- `Library/Core/experimental/quarisma_autograd/python_function.cpp`
 
-## XSigma Infrastructure Used
-- **Export Macros**: `Library/Core/common/export.h` (XSIGMA_API, XSIGMA_VISIBILITY)
-- **Common Macros**: `Library/Core/common/macros.h` (XSIGMA_CHECK, XSIGMA_NODISCARD, etc.)
+## Quarisma Infrastructure Used
+- **Export Macros**: `Library/Core/common/export.h` (QUARISMA_API, QUARISMA_VISIBILITY)
+- **Common Macros**: `Library/Core/common/macros.h` (QUARISMA_CHECK, QUARISMA_NODISCARD, etc.)
 
 ## Compliance
-✅ Follows XSigma coding standards
+✅ Follows Quarisma coding standards
 ✅ Uses snake_case naming conventions
 ✅ Proper include path structure
 ✅ DLL export/import macros applied
@@ -91,8 +91,8 @@ All files moved from nested directories to base `pytroch_profiler` directory:
 ✅ Maintains cross-platform compatibility
 
 ## Notes
-- Python files in `xsigma/profiler/` and `xsigma/autograd/` directories preserved as-is
-- Duplicate `combined_traceback` files in `xsigma/csrc/profiler/python/` preserved (not moved)
+- Python files in `quarisma/profiler/` and `quarisma/autograd/` directories preserved as-is
+- Duplicate `combined_traceback` files in `quarisma/csrc/profiler/python/` preserved (not moved)
 - README.md documentation preserved in original location
-- All changes maintain backward compatibility with existing XSigma integration
+- All changes maintain backward compatibility with existing Quarisma integration
 

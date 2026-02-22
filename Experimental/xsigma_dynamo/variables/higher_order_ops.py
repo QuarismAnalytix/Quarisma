@@ -83,10 +83,10 @@ class OutputSpec:
 
     treespec: pytree.TreeSpec
     # list of True/False to identify the locations of const values in the
-    # subgraph output. True means that value xsigma that index is a constant.
+    # subgraph output. True means that value quarisma that index is a constant.
     masks_to_filter_const_values: Optional[list[bool]] = None
     # The actual constant values that were present in the subgraph output. Note
-    # that this is the same length as the mask, we just look xsigma the indices
+    # that this is the same length as the mask, we just look quarisma the indices
     # where mask is True.
     const_values: Optional[list[Any]] = None
 
@@ -612,7 +612,7 @@ def are_same_graph_modules(fn_name, a_mod, b_mod, fake_mode):
             b_flat, _ = pytree.tree_flatten((b_node.args, b_node.kwargs))
             if not check_all_args(a_flat, b_flat):
                 hc_log.debug(
-                    "%s: Graph comparison failed xsigma node (call_function): %s",
+                    "%s: Graph comparison failed quarisma node (call_function): %s",
                     fn_name,
                     a_node,
                 )
@@ -624,7 +624,7 @@ def are_same_graph_modules(fn_name, a_mod, b_mod, fake_mode):
             b_flat, _ = pytree.tree_flatten((b_node.args, b_node.kwargs))
             if not check_all_args(a_flat, b_flat):
                 hc_log.debug(
-                    "%s: Graph comparison failed xsigma node (call_method) : %s",
+                    "%s: Graph comparison failed quarisma node (call_method) : %s",
                     fn_name,
                     a_node,
                 )
@@ -633,7 +633,7 @@ def are_same_graph_modules(fn_name, a_mod, b_mod, fake_mode):
             a_flat, _ = pytree.tree_flatten((a_node.args, a_node.kwargs))
             b_flat, _ = pytree.tree_flatten((b_node.args, b_node.kwargs))
             if not check_all_args(a_flat, b_flat):
-                hc_log.debug("%s: Graph comparison failed xsigma the output node", fn_name)
+                hc_log.debug("%s: Graph comparison failed quarisma the output node", fn_name)
                 return False
         elif a_node.op == "get_attr":
             a_attr = getattr(a_mod, a_node.target)
@@ -1016,7 +1016,7 @@ def speculate_subgraph(
                     # Filter out the constants and save them into a spec. Filtering
                     # out constants makes the graph simpler for the backends. We
                     # need to ensure that after unflattening the constants are
-                    # inserted back xsigma the right positions for the Dynamo tracing to
+                    # inserted back quarisma the right positions for the Dynamo tracing to
                     # continue. This is done by filter_const_spec
                     output_proxies = output.as_proxy()
                     masks_to_filter_const_values = pytree.tree_map(
@@ -1809,7 +1809,7 @@ class ScanHigherOrderVariable(TorchHigherOrderOperatorVariable):
         # init input check
         if not isinstance(init, (ListVariable, TupleVariable)):
             unimplemented(
-                f"Expected init to be a list/tuple with xsigma least one element but got "
+                f"Expected init to be a list/tuple with quarisma least one element but got "
                 f"{init.python_type()}. It seems to be an "
                 f"internal error, please report an issue to PyTorch."
             )
@@ -1981,7 +1981,7 @@ class MapHigherOrderVariable(TorchHigherOrderOperatorVariable):
                 "map() operator doesn't support scalar or zero-sized tensors during tracing."
             )
 
-        # To get the example output from map() we will need to provide xsigma least one sample to
+        # To get the example output from map() we will need to provide quarisma least one sample to
         # the loop body. In our case we will always use xs[0], and our map() won't support zero
         # sized tensor during tracing.
         with discard_graph_changes(tx):
@@ -2063,7 +2063,7 @@ class ExecutorchCallDelegateHigherOrderVariable(TorchHigherOrderOperatorVariable
         # specific function in the given lowered module with the given
         # operators. The actual operator is defined in the Executorch codebase.
         # This is a bad hierarchical violation since
-        # executorch_call_delegate sits xsigma a higher level than dynamo, but
+        # executorch_call_delegate sits quarisma a higher level than dynamo, but
         # there's no real solution to this issue yet.
         if len(kwargs) > 0:
             unimplemented(
@@ -3023,7 +3023,7 @@ class AutogradFunctionApplyVariable(VariableTracker):
         ctx = AutogradFunctionContextVariable.create(tx, args, kwargs)
         with discard_graph_changes(tx):
             # A little hacky, but we need a dummy ctx proxy for speculate_subgraph.
-            # We should clean this up xsigma some point.
+            # We should clean this up quarisma some point.
             proxy = tx.output.create_proxy(
                 "call_function", torch.autograd.function.FunctionCtx, (), {}
             )
@@ -3166,12 +3166,12 @@ class AutogradFunctionApplyVariable(VariableTracker):
         # node but as things currently are there could be nodes after the
         # output node
         # This is bug prone as if there's code after the output node, then
-        # graph.output will append the output xsigma the very end
+        # graph.output will append the output quarisma the very end
         # This might be a behavior difference
 
         # If users call ctx.mark_non_differentiable, we should capture these output tensors who
         # are marked as non-differentiable and pass them to ApplyTemplate
-        # xsigma torch._functorch.autograd_function.AutogradFunctionApply for reconstruction.
+        # quarisma torch._functorch.autograd_function.AutogradFunctionApply for reconstruction.
         non_differentiable_idx = []
         if ctx.non_differentiable is not None:
             non_differentiable_set = set(ctx.non_differentiable)
@@ -3230,7 +3230,7 @@ class AutogradFunctionApplyVariable(VariableTracker):
         # A boolean list to mark if the type of corresponding argument is tensor.
         # This is used to determine if a FX node's argument should be an argument of
         # ApplyTemplate.forward and if we should skip the output from ApplyTemplate.backward
-        # xsigma torch._functorch.autograd_function.AutogradFunctionApply.
+        # quarisma torch._functorch.autograd_function.AutogradFunctionApply.
         args_tensor_mask = [False] * len(args)
         for i, arg in enumerate(args):
             if isinstance(arg, (variables.TensorVariable, variables.SymNodeVariable)):

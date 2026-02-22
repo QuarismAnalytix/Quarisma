@@ -1,5 +1,5 @@
-#if XSIGMA_HAS_KINETO
-//#include <XSigma/Context.h>
+#if QUARISMA_HAS_KINETO
+//#include <Quarisma/Context.h>
 #include "profiler/kineto/kineto_client_interface.h"
 
 #include <libkineto.h>
@@ -17,7 +17,7 @@
 #define ENABLE_GLOBAL_OBSERVER (1)
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 
 namespace profiler::impl
@@ -26,14 +26,14 @@ namespace profiler::impl
 namespace
 {
 
-using namespace xsigma::autograd::profiler;
+using namespace quarisma::autograd::profiler;
 
 class LibKinetoClient : public libkineto::ClientInterface
 {
 public:
 #if 0
-    // Disabled: ::xsigma::mtia::initMemoryProfiler() not available in profiler-only build
-    void init() override { ::xsigma::mtia::initMemoryProfiler(); }
+    // Disabled: ::quarisma::mtia::initMemoryProfiler() not available in profiler-only build
+    void init() override { ::quarisma::mtia::initMemoryProfiler(); }
 #else
     void init() override { /* Stub: mtia not available */ }
 #endif
@@ -62,10 +62,10 @@ public:
             /*with_flops=*/withFlops_,
             /*with_modules=*/withModules_};
         std::set<ActivityType> const            activities{ActivityType::CPU};
-        std::unordered_set<xsigma::RecordScope> scopes;
-        scopes.insert(xsigma::RecordScope::FUNCTION);
-        scopes.insert(xsigma::RecordScope::USER_SCOPE);
-        scopes.insert(xsigma::RecordScope::BACKWARD_FUNCTION);
+        std::unordered_set<quarisma::RecordScope> scopes;
+        scopes.insert(quarisma::RecordScope::FUNCTION);
+        scopes.insert(quarisma::RecordScope::USER_SCOPE);
+        scopes.insert(quarisma::RecordScope::BACKWARD_FUNCTION);
         enableProfiler(cfg, activities, scopes);
     }
 
@@ -108,10 +108,10 @@ private:
 void global_kineto_init()
 {
 #if ENABLE_GLOBAL_OBSERVER
-    if (xsigma::utils::get_env("KINETO_USE_DAEMON").has_value())
+    if (quarisma::utils::get_env("KINETO_USE_DAEMON").has_value())
     {
         libkineto_init(
-            /*cpuOnly=*/!(xsigma::hasCUDA() /*|| xsigma::hasXPU() || xsigma::hasMTIA()*/),
+            /*cpuOnly=*/!(quarisma::hasCUDA() /*|| quarisma::hasXPU() || quarisma::hasMTIA()*/),
             /*logOnError=*/true);
         libkineto::api().suppressLogMessages();
     }
@@ -134,5 +134,5 @@ struct RegisterLibKinetoClient
 }  // namespace
 #endif
 
-}  // namespace xsigma
-#endif  // XSIGMA_HAS_KINETO
+}  // namespace quarisma
+#endif  // QUARISMA_HAS_KINETO

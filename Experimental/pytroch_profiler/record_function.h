@@ -1,8 +1,8 @@
 #pragma once
 #if 0
 #pragma warning(push, 0)
-//#include <XSigma/core/ivalue.h>
-//#include <XSigma/core/operator_name.h>
+//#include <Quarisma/core/ivalue.h>
+//#include <Quarisma/core/operator_name.h>
 #include <array>
 #include <functional>
 #include <memory>
@@ -16,21 +16,21 @@
 #include "util/exception.h"
 #include "util/small_vector.h"
 
-namespace xsigma
+namespace quarisma
 {
-class XSIGMA_API OperatorHandle;
+class QUARISMA_API OperatorHandle;
 }
 
-namespace xsigma
+namespace quarisma
 {
 
 // Function name to record NCCL metadata
-extern XSIGMA_API const std::string kParamCommsCallName;
+extern QUARISMA_API const std::string kParamCommsCallName;
 
 // Kind of record function scope;
 enum class RecordScope : uint8_t
 {
-    // xsigma/XSigma ops, autograd nodes
+    // quarisma/Quarisma ops, autograd nodes
     FUNCTION = 0,
     // Functions/nodes called from the autograd
     BACKWARD_FUNCTION,
@@ -52,21 +52,21 @@ enum class RecordScope : uint8_t
     NUM_SCOPES,  // must be the last in the list
 };
 
-}  // namespace xsigma
+}  // namespace quarisma
 
 namespace std
 {
 template <>
-struct hash<xsigma::RecordScope>
+struct hash<quarisma::RecordScope>
 {
-    size_t operator()(const xsigma::RecordScope& sc) const { return static_cast<std::size_t>(sc); }
+    size_t operator()(const quarisma::RecordScope& sc) const { return static_cast<std::size_t>(sc); }
 };
 }  // namespace std
 
-namespace xsigma
+namespace quarisma
 {
 
-struct XSIGMA_API StringView
+struct QUARISMA_API StringView
 {
     StringView() : StringView(nullptr) {}
     explicit StringView(const char* str_ptr) : owned_str_ptr_(nullptr), str_ptr_(str_ptr) {}
@@ -109,8 +109,8 @@ protected:
     ObserverContext() = default;
 };
 
-typedef xsigma::small_vector<uint64_t, kSoftLimitCallbacks> CallbackHandles;
-typedef xsigma::small_vector<std::unique_ptr<ObserverContext>, kSoftLimitCallbacks>
+typedef quarisma::small_vector<uint64_t, kSoftLimitCallbacks> CallbackHandles;
+typedef quarisma::small_vector<std::unique_ptr<ObserverContext>, kSoftLimitCallbacks>
                  ObserverContextList;
 typedef uint64_t RecordFunctionHandle;
 struct RecordFunction;
@@ -135,7 +135,7 @@ struct RecordFunction;
  * returns whether this callback should run; overwrites the effect of setting
  * sampling_probability
  */
-class XSIGMA_API RecordFunctionCallback
+class QUARISMA_API RecordFunctionCallback
 {
 public:
     using StartCallback = std::unique_ptr<ObserverContext> (*)(const RecordFunction&);
@@ -169,7 +169,7 @@ public:
 
     RecordFunctionCallback& samplingProb(double sampling_prob)
     {
-        XSIGMA_CHECK(sampling_prob >= 0.0 && sampling_prob <= 1.0, "Invalid sampling probability");
+        QUARISMA_CHECK(sampling_prob >= 0.0 && sampling_prob <= 1.0, "Invalid sampling probability");
         sampling_prob_ = sampling_prob;
         return *this;
     }
@@ -235,7 +235,7 @@ private:
 //  - a typical use case for thread local callbacks is profiler and code
 //    execution tracer
 //  - note, thread local callbacks are automatically propagated with
-//    ThreadLocalState across JIT continuations and async tasks (xsigma::launch)
+//    ThreadLocalState across JIT continuations and async tasks (quarisma::launch)
 
 typedef uint64_t CallbackHandle;
 
@@ -273,7 +273,7 @@ struct StepCallbacks
         RecordFunctionCallback::EndCallback   end_;
     };
 
-    using StartEndPairs = xsigma::small_vector<StartEndPair, kSoftLimitCallbacks>;
+    using StartEndPairs = quarisma::small_vector<StartEndPair, kSoftLimitCallbacks>;
 
     StartEndPairs callbacks_;
     uint64_t      thread_id_{0};
@@ -283,7 +283,7 @@ struct StepCallbacks
     bool          needs_ids_{false};
 };
 
-struct XSIGMA_API RecordFunction
+struct QUARISMA_API RecordFunction
 {
     // Default constructor is used with before function called afterwards:
     //  scope - record scope that this function tracks
@@ -292,12 +292,12 @@ struct XSIGMA_API RecordFunction
     explicit RecordFunction(RecordScope scope = RecordScope::FUNCTION);
     explicit RecordFunction(StepCallbacks&& step_callbacks);
 
-    using schema_ref_t       = std::reference_wrapper<const xsigma::FunctionSchema>;
+    using schema_ref_t       = std::reference_wrapper<const quarisma::FunctionSchema>;
     using FunctionDescriptor = std::variant<std::string_view, schema_ref_t>;
 
     void before(
         FunctionDescriptor                      fn,
-        xsigma::array_ref<const xsigma::IValue> args,
+        quarisma::array_ref<const quarisma::IValue> args,
         int64_t                                 current_sequence_nr = -1)
     {
         if (!isActive())
@@ -310,7 +310,7 @@ struct XSIGMA_API RecordFunction
 
     void before(
         FunctionDescriptor                             fn,
-        xsigma::array_ref<const xsigma::IValue>        args,
+        quarisma::array_ref<const quarisma::IValue>        args,
         const std::unordered_map<std::string, IValue>* kwargs,
         int64_t                                        current_sequence_nr = -1)
     {
@@ -340,7 +340,7 @@ struct XSIGMA_API RecordFunction
     {
         before(
             fn,
-            xsigma::array_ref<const xsigma::IValue>(args->data(), args->size()),
+            quarisma::array_ref<const quarisma::IValue>(args->data(), args->size()),
             current_sequence_nr);
     }
 
@@ -371,10 +371,10 @@ struct XSIGMA_API RecordFunction
 
     int64_t seqNr() const { return sequence_nr_; }
 
-    xsigma::array_ref<const IValue> inputs() const
+    quarisma::array_ref<const IValue> inputs() const
     {
 #ifndef NDEBUG
-        XSIGMA_CHECK_DEBUG(inputs_valid_, "Called inputs() outside RecordFunction start callback");
+        QUARISMA_CHECK_DEBUG(inputs_valid_, "Called inputs() outside RecordFunction start callback");
 #endif
         return inputs_;
     }
@@ -382,17 +382,17 @@ struct XSIGMA_API RecordFunction
     std::unordered_map<std::string, IValue> kwinputs() const
     {
 #ifndef NDEBUG
-        XSIGMA_CHECK_DEBUG(
+        QUARISMA_CHECK_DEBUG(
             inputs_valid_, "Called kwinputs() outside RecordFunction start callback");
 #endif
         return kwinputs_;
     }
 
-    const std::vector<xsigma::IValue>& outputs() const { return outputs_; }
+    const std::vector<quarisma::IValue>& outputs() const { return outputs_; }
 
-    void setOutputs(std::vector<xsigma::IValue>&& outputs) { outputs_ = std::move(outputs); }
+    void setOutputs(std::vector<quarisma::IValue>&& outputs) { outputs_ = std::move(outputs); }
 
-    void setOutputs(xsigma::array_ref<xsigma::IValue> outputs) { outputs_ = outputs.vec(); }
+    void setOutputs(quarisma::array_ref<quarisma::IValue> outputs) { outputs_ = outputs.vec(); }
 
     size_t num_inputs() const;
     size_t num_outputs() const;
@@ -493,9 +493,9 @@ private:
     std::variant<std::string, schema_ref_t> fn_;
 
     int64_t                                 sequence_nr_ = -1;
-    xsigma::array_ref<const IValue>         inputs_;
+    quarisma::array_ref<const IValue>         inputs_;
     std::unordered_map<std::string, IValue> kwinputs_;
-    std::vector<xsigma::IValue>             outputs_;
+    std::vector<quarisma::IValue>             outputs_;
 
     // For backward functions - thread id of the forward function
     uint64_t fwd_thread_id_ = 0;
@@ -523,9 +523,9 @@ private:
     bool is_nccl_meta_{false};
 };
 
-XSIGMA_API StepCallbacks getStepCallbacks(RecordScope scope);
+QUARISMA_API StepCallbacks getStepCallbacks(RecordScope scope);
 
-XSIGMA_API std::optional<StepCallbacks> getStepCallbacksUnlessEmpty(RecordScope scope);
+QUARISMA_API std::optional<StepCallbacks> getStepCallbacksUnlessEmpty(RecordScope scope);
 
 namespace detail
 {
@@ -540,7 +540,7 @@ void record_function_with_scope(
     {
         guard.before(
             fn,
-            xsigma::array_ref<const xsigma::IValue>(inputs.data(), inputs.size()),
+            quarisma::array_ref<const quarisma::IValue>(inputs.data(), inputs.size()),
             std::forward<Args>(args)...);
     }
     else
@@ -562,7 +562,7 @@ void record_function_with_scope_and_debug_handle(
     {
         guard.before(
             fn,
-            xsigma::array_ref<const xsigma::IValue>(inputs.data(), inputs.size()),
+            quarisma::array_ref<const quarisma::IValue>(inputs.data(), inputs.size()),
             std::forward<Args>(args)...);
     }
     else
@@ -575,10 +575,10 @@ template <typename... Args>
 void record_function_with_scope(
     RecordFunction&                         guard,
     RecordFunction::FunctionDescriptor      fn,
-    xsigma::array_ref<const xsigma::IValue> inputs,
+    quarisma::array_ref<const quarisma::IValue> inputs,
     Args&&... args)
 {
-    return record_function_with_scope<xsigma::array_ref<const xsigma::IValue>, Args...>(
+    return record_function_with_scope<quarisma::array_ref<const quarisma::IValue>, Args...>(
         guard, fn, inputs, std::forward<Args>(args)...);
 }
 
@@ -587,11 +587,11 @@ void record_function_with_scope_and_debug_handle(
     RecordFunction&                         guard,
     RecordFunction::FunctionDescriptor      fn,
     int64_t                                 debug_handle,
-    xsigma::array_ref<const xsigma::IValue> inputs,
+    quarisma::array_ref<const quarisma::IValue> inputs,
     Args&&... args)
 {
     return record_function_with_scope_and_debug_handle<
-        xsigma::array_ref<const xsigma::IValue>,
+        quarisma::array_ref<const quarisma::IValue>,
         Args...>(guard, fn, debug_handle, inputs, std::forward<Args>(args)...);
 }
 
@@ -599,14 +599,14 @@ void record_function_with_scope_and_debug_handle(
 
 // optional argument - function's seq_no
 #define RECORD_FUNCTION_WITH_SCOPE(scope, fn, inputs, ...)                              \
-    xsigma::RecordFunction guard(scope);                                                \
+    quarisma::RecordFunction guard(scope);                                                \
     if (guard.isActive())                                                               \
     {                                                                                   \
-        ::xsigma::detail::record_function_with_scope(guard, fn, inputs, ##__VA_ARGS__); \
+        ::quarisma::detail::record_function_with_scope(guard, fn, inputs, ##__VA_ARGS__); \
     }
 
 #define RECORD_FUNCTION_WITH_SCOPE_INPUTS_OUTPUTS(scope, fn, inputs, outputs, ...) \
-    xsigma::RecordFunction guard(scope);                                           \
+    quarisma::RecordFunction guard(scope);                                           \
     if (guard.isActive())                                                          \
     {                                                                              \
         if (guard.needsInputs())                                                   \
@@ -624,42 +624,42 @@ void record_function_with_scope_and_debug_handle(
     }
 
 #define RECORD_FUNCTION(fn, inputs, ...) \
-    RECORD_FUNCTION_WITH_SCOPE(xsigma::RecordScope::FUNCTION, fn, inputs, ##__VA_ARGS__)
+    RECORD_FUNCTION_WITH_SCOPE(quarisma::RecordScope::FUNCTION, fn, inputs, ##__VA_ARGS__)
 
 #define RECORD_TORCHSCRIPT_FUNCTION(mn, inputs) \
-    RECORD_FUNCTION_WITH_SCOPE(xsigma::RecordScope::TORCHSCRIPT_FUNCTION, mn, inputs)
+    RECORD_FUNCTION_WITH_SCOPE(quarisma::RecordScope::TORCHSCRIPT_FUNCTION, mn, inputs)
 
 #define RECORD_FUNCTION_WITH_INPUTS_OUTPUTS(fn, inputs, outputs, ...) \
     RECORD_FUNCTION_WITH_SCOPE_INPUTS_OUTPUTS(                        \
-        xsigma::RecordScope::FUNCTION, fn, inputs, outputs, ##__VA_ARGS__)
+        quarisma::RecordScope::FUNCTION, fn, inputs, outputs, ##__VA_ARGS__)
 
 // Custom user scopes in C++; similar to Python's 'with record_function("..."):'
 #define RECORD_USER_SCOPE(fn)   \
     RECORD_FUNCTION_WITH_SCOPE( \
-        xsigma::RecordScope::USER_SCOPE, fn, xsigma::array_ref<const xsigma::IValue>{})
+        quarisma::RecordScope::USER_SCOPE, fn, quarisma::array_ref<const quarisma::IValue>{})
 
 // RECORD_USER_SCOPE with inputs
 #define RECORD_USER_SCOPE_WITH_INPUTS(fn, inputs) \
-    RECORD_FUNCTION_WITH_SCOPE(xsigma::RecordScope::USER_SCOPE, fn, inputs)
+    RECORD_FUNCTION_WITH_SCOPE(quarisma::RecordScope::USER_SCOPE, fn, inputs)
 
 #define RECORD_USER_SCOPE_WITH_KWARGS_ONLY(fn, kwargs) \
     RECORD_FUNCTION_WITH_SCOPE(                        \
-        xsigma::RecordScope::USER_SCOPE, fn, xsigma::array_ref<const xsigma::IValue>{}, kwargs)
+        quarisma::RecordScope::USER_SCOPE, fn, quarisma::array_ref<const quarisma::IValue>{}, kwargs)
 
 // Helper macro to pass in debug handle that is used to
 // post process events
 #define RECORD_WITH_SCOPE_DEBUG_HANDLE_AND_INPUTS(scope, fn, debug_handle, inputs, ...) \
-    xsigma::RecordFunction guard(scope);                                                \
+    quarisma::RecordFunction guard(scope);                                                \
     if (guard.isActive())                                                               \
     {                                                                                   \
-        ::xsigma::detail::record_function_with_scope_and_debug_handle(                  \
+        ::quarisma::detail::record_function_with_scope_and_debug_handle(                  \
             guard, fn, debug_handle, inputs, ##__VA_ARGS__);                            \
     }
 
 // Helper macros to record LITE INTERPRETER scope events with debug handles
 #define RECORD_EDGE_SCOPE_WITH_DEBUG_HANDLE_AND_INPUTS(fn, debug_handle, inputs) \
     RECORD_WITH_SCOPE_DEBUG_HANDLE_AND_INPUTS(                                   \
-        xsigma::RecordScope::LITE_INTERPRETER, fn, debug_handle, inputs)
+        quarisma::RecordScope::LITE_INTERPRETER, fn, debug_handle, inputs)
 
 // Bookend to the RECORD_FUNCTION macros.  Use this after the kernel
 // launch to let the profiler bind the outputs to the op that produced
@@ -668,32 +668,32 @@ void record_function_with_scope_and_debug_handle(
 #define RECORD_OUTPUTS(outputs)                                                        \
     if (guard.needsOutputs())                                                          \
     {                                                                                  \
-        guard.setOutputs(std::vector<xsigma::IValue>(outputs.begin(), outputs.end())); \
+        guard.setOutputs(std::vector<quarisma::IValue>(outputs.begin(), outputs.end())); \
     }
 
 /**
  * addThreadLocalCallback adds a thread local callback to run with
  * RecordFunction, returns handle to use with removeThreadLocalCallback
  */
-XSIGMA_API CallbackHandle addThreadLocalCallback(RecordFunctionCallback cb);
+QUARISMA_API CallbackHandle addThreadLocalCallback(RecordFunctionCallback cb);
 
 /**
  * hasThreadLocalCallbacks returns whether there're callbacks registered
  * with addThreadLocalCallback
  */
-XSIGMA_API bool hasThreadLocalCallbacks();
+QUARISMA_API bool hasThreadLocalCallbacks();
 
 /**
  * clearThreadLocalCallbacks removes all thread local callbacks
  */
-XSIGMA_API void clearThreadLocalCallbacks();
+QUARISMA_API void clearThreadLocalCallbacks();
 
 /**
  * addGlobalCallback adds a global callback to run with RecordFunction:
  *
  * only during the program initialization
  */
-XSIGMA_API CallbackHandle addGlobalCallback(RecordFunctionCallback cb);
+QUARISMA_API CallbackHandle addGlobalCallback(RecordFunctionCallback cb);
 
 /**
  * removeCallback removes a callback given the handle returned by
@@ -701,47 +701,47 @@ XSIGMA_API CallbackHandle addGlobalCallback(RecordFunctionCallback cb);
  *
  * no other code can run simultaneously
  */
-XSIGMA_API void removeCallback(CallbackHandle handle);
+QUARISMA_API void removeCallback(CallbackHandle handle);
 
 /**
  * Prevent the given callback from executing. If handle is invalid,
  * does nothing.
  */
-XSIGMA_API void disableCallback(CallbackHandle handle);
+QUARISMA_API void disableCallback(CallbackHandle handle);
 
 /**
  * Allow the given callback, previously disabled with disableCallback, to
  * execute again. If handle is invalid, does nothing.
  */
-XSIGMA_API void reenableCallback(CallbackHandle handle);
+QUARISMA_API void reenableCallback(CallbackHandle handle);
 
 /**
  * hasGlobalCallbacks returns whether there're global callbacks
  * registered with pushGlobalCallback
  */
-XSIGMA_API bool hasGlobalCallbacks();
+QUARISMA_API bool hasGlobalCallbacks();
 
 /**
  * clearGlobalCallbacks removes all global callbacks
  */
-XSIGMA_API void clearGlobalCallbacks();
+QUARISMA_API void clearGlobalCallbacks();
 
 // for both thread local and global callbacks
-XSIGMA_API bool hasCallbacks();
-XSIGMA_API void clearCallbacks();
+QUARISMA_API bool hasCallbacks();
+QUARISMA_API void clearCallbacks();
 
 /**
  * enableRecordFunction enables RecordFunction thread locally
  */
-XSIGMA_API void enableRecordFunction(bool enable = true);
+QUARISMA_API void enableRecordFunction(bool enable = true);
 
 /**
  * isRecordFunctionEnabled returns whether RecordFunction
  * is enabled thread locally
  */
-XSIGMA_API bool isRecordFunctionEnabled();
+QUARISMA_API bool isRecordFunctionEnabled();
 
-class XSIGMA_API RecordFunctionGuard
+class QUARISMA_API RecordFunctionGuard
 {
 public:
     explicit RecordFunctionGuard(bool is_enabled = true) : prev_value_(isRecordFunctionEnabled())
@@ -759,14 +759,14 @@ private:
     bool prev_value_ = false;
 };
 
-class XSIGMA_API DisableRecordFunctionGuard : public RecordFunctionGuard
+class QUARISMA_API DisableRecordFunctionGuard : public RecordFunctionGuard
 {
 public:
     DisableRecordFunctionGuard() : RecordFunctionGuard(false) {}
     ~DisableRecordFunctionGuard() override = default;
 };
 
-struct XSIGMA_API RecordFunctionTLS
+struct QUARISMA_API RecordFunctionTLS
 {
     // Thread local vector of callbacks, holds pairs (callbacks, unique_id);
     // must be sorted in increasing handles order
@@ -775,12 +775,12 @@ struct XSIGMA_API RecordFunctionTLS
     bool tls_record_function_enabled_ = true;
 };
 
-XSIGMA_API const RecordFunctionTLS& get_record_function_tls_();
+QUARISMA_API const RecordFunctionTLS& get_record_function_tls_();
 
-XSIGMA_API void set_record_function_tls_(const RecordFunctionTLS& tls);
+QUARISMA_API void set_record_function_tls_(const RecordFunctionTLS& tls);
 
-XSIGMA_API void set_record_function_seed_for_testing(uint32_t seed);
+QUARISMA_API void set_record_function_seed_for_testing(uint32_t seed);
 
-}  // namespace xsigma
+}  // namespace quarisma
 #pragma warning(pop)
 #endif

@@ -16,7 +16,7 @@ from sysconfig import get_paths as gp
 from typing import NamedTuple
 
 
-# XSigma directory root
+# Quarisma directory root
 def scm_root() -> str:
     path = os.path.abspath(os.getcwd())
     # pyrefly: ignore  # bad-assignment
@@ -32,7 +32,7 @@ def scm_root() -> str:
             raise RuntimeError("Unable to find SCM root")
 
 
-XSIGMA_ROOT = scm_root()
+QUARISMA_ROOT = scm_root()
 
 
 # Returns '/usr/local/include/python<version number>'
@@ -59,7 +59,7 @@ class LintMessage(NamedTuple):
     description: str | None
 
 
-# xsigma/core/DispatchKey.cpp:281:26: error: 'k' used after it was moved [bugprone-use-after-move]
+# quarisma/core/DispatchKey.cpp:281:26: error: 'k' used after it was moved [bugprone-use-after-move]
 RESULTS_RE: re.Pattern[str] = re.compile(
     r"""(?mx)
     ^
@@ -137,7 +137,7 @@ include_args = []
 include_dir = [
     "/usr/lib/llvm-11/include/openmp",
     get_python_include_dir(),
-    os.path.join(XSIGMA_ROOT, "ThirdParty/pybind11/include"),
+    os.path.join(QUARISMA_ROOT, "ThirdParty/pybind11/include"),
 ] + clang_search_dirs()
 for dir in include_dir:
     include_args += ["--extra-arg", f"-I{dir}"]
@@ -176,7 +176,7 @@ def check_file(
         for match in RESULTS_RE.finditer(proc.stdout.decode()):
             # Convert the reported path to an absolute path.
             abs_path = str(Path(match["file"]).resolve())
-            if not abs_path.startswith(XSIGMA_ROOT):
+            if not abs_path.startswith(QUARISMA_ROOT):
                 continue
             message = LintMessage(
                 path=abs_path,

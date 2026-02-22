@@ -1,7 +1,7 @@
 #include <Python.h>
-#include <XSigma/FunctionalTensorWrapper.h>
-#include <XSigma/XSigma.h>
-#include <XSigma/native/Resize.h>
+#include <Quarisma/FunctionalTensorWrapper.h>
+#include <Quarisma/Quarisma.h>
+#include <Quarisma/native/Resize.h>
 #include <fmt/format.h>
 #include <pybind11/pybind11.h>
 #include <torch/csrc/Dtype.h>
@@ -28,14 +28,14 @@
 #include <utility>
 #include <vector>
 
-using xsigma::DeviceGuard;
-using xsigma::DimnameList;
-using xsigma::IntArrayRef;
-using xsigma::OptionalDeviceGuard;
-using xsigma::Scalar;
-using xsigma::Tensor;
-using xsigma::TensorList;
-using xsigma::TensorOptions;
+using quarisma::DeviceGuard;
+using quarisma::DimnameList;
+using quarisma::IntArrayRef;
+using quarisma::OptionalDeviceGuard;
+using quarisma::Scalar;
+using quarisma::Tensor;
+using quarisma::TensorList;
+using quarisma::TensorOptions;
 
 using torch::utils::check_out_type_matches;
 using namespace torch::autograd::utils;
@@ -51,7 +51,7 @@ inline static Tensor dispatch_range(
 {
     pybind11::gil_scoped_release no_gil;
     OptionalDeviceGuard          device_guard(device_of(result));
-    return xsigma::range_out(result, start, end, step);
+    return quarisma::range_out(result, start, end, step);
 }
 
 inline static Tensor dispatch_range(
@@ -130,7 +130,7 @@ static PyObject* THPVariable_as_tensor(PyObject* self, PyObject* args, PyObject*
 }
 
 // implemented on python object here because PyObject currently not natively
-// declarable See: XSigma/native/README.md for more context
+// declarable See: Quarisma/native/README.md for more context
 static PyObject* THPVariable_from_numpy(PyObject* module, PyObject* arg)
 {
     HANDLE_TH_ERRORS
@@ -150,7 +150,7 @@ static Tensor dispatch_nonzero(const Tensor& self, Tensor out)
 {
     pybind11::gil_scoped_release no_gil;
     OptionalDeviceGuard          device_guard(device_of(self));
-    return xsigma::nonzero_out(out, self);
+    return quarisma::nonzero_out(out, self);
 }
 
 static std::vector<Tensor> dispatch_nonzero_numpy(const Tensor& self)
@@ -455,7 +455,7 @@ static PyObject* THPVariable_nonzero(PyObject* self, PyObject* args, PyObject* k
 
     if (as_tuple)
     {
-        XSIGMA_CHECK(!has_out, "nonzero does not support the out kwarg when as_tuple is True");
+        QUARISMA_CHECK(!has_out, "nonzero does not support the out kwarg when as_tuple is True");
         return wrap(dispatch_nonzero_numpy(r.tensor(0)));
     }
 
@@ -616,156 +616,156 @@ void initTorchFunctions(PyObject* module)
 
     py_module.def(
         "_functionalize_are_all_mutations_under_no_grad_or_inference_mode",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            return xsigma::functionalization::impl::
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            return quarisma::functionalization::impl::
                 are_all_mutations_under_no_grad_or_inference_mode(t);
         });
     py_module.def(
         "_functionalize_was_inductor_storage_resized",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            auto impl = xsigma::functionalization::impl::unsafeGetFunctionalWrapper(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            auto impl = quarisma::functionalization::impl::unsafeGetFunctionalWrapper(t);
             return impl->was_inductor_storage_resized();
         });
     py_module.def(
         "_functionalize_inductor_storage_resized_counter",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            auto impl = xsigma::functionalization::impl::unsafeGetFunctionalWrapper(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            auto impl = quarisma::functionalization::impl::unsafeGetFunctionalWrapper(t);
             return impl->inductor_storage_resized_counter();
         });
     py_module.def(
         "_functionalize_are_all_mutations_hidden_from_autograd",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            return xsigma::functionalization::impl::are_all_mutations_hidden_from_autograd(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            return quarisma::functionalization::impl::are_all_mutations_hidden_from_autograd(t);
         });
     py_module.def(
         "_functionalize_mark_mutation_hidden_from_autograd",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            xsigma::functionalization::impl::mark_mutation_hidden_from_autograd(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            quarisma::functionalization::impl::mark_mutation_hidden_from_autograd(t);
         });
     py_module.def(
         "_functionalize_is_symbolic",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            auto impl = xsigma::functionalization::impl::unsafeGetFunctionalWrapper(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            auto impl = quarisma::functionalization::impl::unsafeGetFunctionalWrapper(t);
             return impl->is_symbolic();
         });
     py_module.def(
         "_functionalize_sync",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            xsigma::functionalization::impl::sync(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            quarisma::functionalization::impl::sync(t);
         });
     py_module.def(
         "_functionalize_commit_update",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            xsigma::functionalization::impl::commit_update(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            quarisma::functionalization::impl::commit_update(t);
         });
     py_module.def(
         "_functionalize_replace",
-        [](const xsigma::Tensor& t, const xsigma::Tensor& o)
+        [](const quarisma::Tensor& t, const quarisma::Tensor& o)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            TORCH_INTERNAL_ASSERT(!xsigma::functionalization::impl::isFunctionalTensor(o));
-            xsigma::functionalization::impl::replace_(t, o);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            TORCH_INTERNAL_ASSERT(!quarisma::functionalization::impl::isFunctionalTensor(o));
+            quarisma::functionalization::impl::replace_(t, o);
         });
     py_module.def(
         "_is_functional_tensor_base",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            return xsigma::functionalization::impl::isBaseTensor(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            return quarisma::functionalization::impl::isBaseTensor(t);
         });
     py_module.def(
         "_functionalize_is_multi_output_view",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            auto t_impl = xsigma::functionalization::impl::unsafeGetFunctionalWrapper(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            auto t_impl = quarisma::functionalization::impl::unsafeGetFunctionalWrapper(t);
             return t_impl->is_multi_output_view();
         });
     py_module.def(
         "_functionalize_enable_reapply_views",
         [](bool reapply_views = false)
         {
-            auto old = xsigma::functionalization::impl::getFunctionalizationReapplyViewsTLS();
-            xsigma::functionalization::impl::setFunctionalizationReapplyViewsTLS(reapply_views);
+            auto old = quarisma::functionalization::impl::getFunctionalizationReapplyViewsTLS();
+            quarisma::functionalization::impl::setFunctionalizationReapplyViewsTLS(reapply_views);
             return old;
         },
         py::arg("reapply_views") = false);
     py_module.def(
         "_functionalize_has_metadata_mutation",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            auto t_impl = xsigma::functionalization::impl::unsafeGetFunctionalWrapper(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            auto t_impl = quarisma::functionalization::impl::unsafeGetFunctionalWrapper(t);
             return t_impl->has_metadata_mutation();
         });
     py_module.def(
         "_functionalize_has_data_mutation",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            auto t_impl = xsigma::functionalization::impl::unsafeGetFunctionalWrapper(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            auto t_impl = quarisma::functionalization::impl::unsafeGetFunctionalWrapper(t);
             return t_impl->has_data_mutation();
         });
     py_module.def(
         "_functionalize_mutation_counter",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            auto t_impl = xsigma::functionalization::impl::unsafeGetFunctionalWrapper(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            auto t_impl = quarisma::functionalization::impl::unsafeGetFunctionalWrapper(t);
             return t_impl->mutation_counter();
         });
     py_module.def(
         "_functionalize_get_storage_size",
-        [](const xsigma::Tensor& t, bool before)
+        [](const quarisma::Tensor& t, bool before)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            auto wrapper = xsigma::functionalization::impl::unsafeGetFunctionalWrapper(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            auto wrapper = quarisma::functionalization::impl::unsafeGetFunctionalWrapper(t);
             auto size    = wrapper->get_storage_size(/*before=*/before);
             return size;
         });
     py_module.def(
         "_functionalize_mark_storage_changed",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            auto wrapper = xsigma::functionalization::impl::unsafeGetFunctionalWrapper(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            auto wrapper = quarisma::functionalization::impl::unsafeGetFunctionalWrapper(t);
             wrapper->mark_storage_changed();
         });
     py_module.def(
         "_functionalize_was_storage_changed",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            auto wrapper = xsigma::functionalization::impl::unsafeGetFunctionalWrapper(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            auto wrapper = quarisma::functionalization::impl::unsafeGetFunctionalWrapper(t);
             return wrapper->was_storage_changed();
         });
     py_module.def(
         "_functionalize_storage_changed_counter",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
-            TORCH_INTERNAL_ASSERT(xsigma::functionalization::impl::isFunctionalTensor(t));
-            auto t_impl = xsigma::functionalization::impl::unsafeGetFunctionalWrapper(t);
+            TORCH_INTERNAL_ASSERT(quarisma::functionalization::impl::isFunctionalTensor(t));
+            auto t_impl = quarisma::functionalization::impl::unsafeGetFunctionalWrapper(t);
             return t_impl->storage_changed_counter();
         });
     py_module.def(
         "_functionalize_unsafe_set",
-        [](xsigma::Tensor& dst, const xsigma::Tensor& src)
+        [](quarisma::Tensor& dst, const quarisma::Tensor& src)
         {
             // Forcefully/unsafely dumps src.storage into dst.
             // This API is technically and not specific to functionalization
@@ -780,7 +780,7 @@ void initTorchFunctions(PyObject* module)
             // - non-differentiable aliasing: aliasing of subclass_x and subclass_y
             //   is defined recursively based on the aliasing of their inner
             //   tensors.
-            xsigma::native::checkSetStorage(
+            quarisma::native::checkSetStorage(
                 dst,
                 src.storage(),
                 dst.sym_storage_offset(),
@@ -790,35 +790,35 @@ void initTorchFunctions(PyObject* module)
         });
     py_module.def(
         "_is_functional_tensor",
-        [](const xsigma::Tensor& t)
-        { return xsigma::functionalization::impl::isFunctionalTensor(t); });
+        [](const quarisma::Tensor& t)
+        { return quarisma::functionalization::impl::isFunctionalTensor(t); });
     py_module.def(
         "_to_functional_tensor",
-        [](const xsigma::Tensor& t)
-        { return xsigma::functionalization::impl::to_functional_tensor(t); });
+        [](const quarisma::Tensor& t)
+        { return quarisma::functionalization::impl::to_functional_tensor(t); });
     py_module.def(
         "_from_functional_tensor",
-        [](const xsigma::Tensor& t)
-        { return xsigma::functionalization::impl::from_functional_tensor(t); });
+        [](const quarisma::Tensor& t)
+        { return quarisma::functionalization::impl::from_functional_tensor(t); });
     py_module.def(
         "_freeze_functional_tensor",
-        [](const xsigma::Tensor& t)
-        { xsigma::functionalization::impl::freeze_functional_tensor(t); });
+        [](const quarisma::Tensor& t)
+        { quarisma::functionalization::impl::freeze_functional_tensor(t); });
     py_module.def(
         "_enable_functionalization",
         [](bool reapply_views = false)
         {
-            if (xsigma::impl::tls_is_dispatch_key_included(xsigma::DispatchKey::Functionalize))
+            if (quarisma::impl::tls_is_dispatch_key_included(quarisma::DispatchKey::Functionalize))
             {
                 TORCH_INTERNAL_ASSERT(
                     false,
                     "multiple layers of mode-style functionalization nesting is not"
                     " currently supported, outside of the functionalize() transform");
             }
-            xsigma::impl::tls_set_dispatch_key_included(xsigma::DispatchKey::Functionalize, true);
+            quarisma::impl::tls_set_dispatch_key_included(quarisma::DispatchKey::Functionalize, true);
             if (reapply_views)
             {
-                xsigma::functionalization::impl::setFunctionalizationReapplyViewsTLS(true);
+                quarisma::functionalization::impl::setFunctionalizationReapplyViewsTLS(true);
             }
         },
         py::arg("reapply_views") = false);
@@ -826,12 +826,12 @@ void initTorchFunctions(PyObject* module)
         "_disable_functionalization",
         []()
         {
-            xsigma::impl::tls_set_dispatch_key_included(xsigma::DispatchKey::Functionalize, false);
-            xsigma::functionalization::impl::setFunctionalizationReapplyViewsTLS(false);
+            quarisma::impl::tls_set_dispatch_key_included(quarisma::DispatchKey::Functionalize, false);
+            quarisma::functionalization::impl::setFunctionalizationReapplyViewsTLS(false);
         });
     py_module.def(
         "_mirror_autograd_meta_to",
-        [](const xsigma::Tensor& src_, const xsigma::Tensor& dst_)
+        [](const quarisma::Tensor& src_, const quarisma::Tensor& dst_)
         {
             // Here, we unsafely set the grad function on the wrapper to be the same
             // as the inner. We expect this grad_fn to NEVER be used. It's needed so

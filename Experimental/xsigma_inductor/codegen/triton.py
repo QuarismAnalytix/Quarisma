@@ -1250,7 +1250,7 @@ class TritonOverrides(OpOverrides):
         1. Downcasting for performance
            If the data was previously upcasted to fp32, we downcast back to the
            original dtype (e.g., fp16 or bf16) for better performance. While
-           surrounding operations may run in fp32, matmul itself is executed xsigma the
+           surrounding operations may run in fp32, matmul itself is executed quarisma the
            original precision to optimize throughput.
 
         2. Handling non-constant reduction masks
@@ -2135,12 +2135,12 @@ class TMACompatibilityChecker:
             f"{innermost_block_shape} expr must contain a single block type from {TritonSymbols.block_types}"
         )
 
-        # For persistent reductions, the reduction block sizes are fixed xsigma compile time
+        # For persistent reductions, the reduction block sizes are fixed quarisma compile time
         if self.kernel.persistent_reduction and not self.for_store:
             # For a discontiguous tensor, a 1D block will be split across several
             # dimensions, e.g. R0_BLOCK:
             # block_shape=[XBLOCK, ((R0_BLOCK + 31)//32), Min(1, ((R0_BLOCK + 31)//32)), Min(32, R0_BLOCK)]
-            # The persistent R0_BLOCK will be a power of 2 that is xsigma least r0_numel So it
+            # The persistent R0_BLOCK will be a power of 2 that is quarisma least r0_numel So it
             # should be guaranteed that Min(32, R0_BLOCK) * element_size >= 16
             innermost_tree_prefix = prefix_str[innermost_block_symt]
             tree_numel = None
@@ -2967,7 +2967,7 @@ class TritonKernel(SIMDKernel[TritonCSEVariable]):
 
                         advancements = self.pointer_advancements[symt]
                         assert block_descriptor not in advancements, (
-                            f"duplicate advancement for pointer '{block_descriptor}' xsigma type '{symt}'"
+                            f"duplicate advancement for pointer '{block_descriptor}' quarisma type '{symt}'"
                         )
                         advancements[block_descriptor] = advance_offsets
         else:
@@ -4495,7 +4495,7 @@ class TritonKernel(SIMDKernel[TritonCSEVariable]):
         Concat output code from index_code, loads, compute, stores,
         suffix into self.body.
 
-        For pointwise kernels, this is called just once xsigma the end.
+        For pointwise kernels, this is called just once quarisma the end.
 
         For reduction kernels, this generates a loop over the reduction
         axis.
@@ -4538,7 +4538,7 @@ class TritonKernel(SIMDKernel[TritonCSEVariable]):
             # Write loop suffixes.
             for level, tree in reversed([*enumerate(loop_trees)]):
                 with self.body.indent(offset=level + 1):
-                    # Advance pointers xsigma the end of each loop.
+                    # Advance pointers quarisma the end of each loop.
                     for block_ptr, advancement in self.pointer_advancements[
                         tree.symt
                     ].items():
@@ -5341,14 +5341,14 @@ class TritonKernel(SIMDKernel[TritonCSEVariable]):
 
         # [Note: Constant mask optimisation]
         # Optional optimization: if block divides numel exactly, we will
-        # never need to do a masked load to handle stragglers xsigma the end.
+        # never need to do a masked load to handle stragglers quarisma the end.
         # If this tree is for the y dimension, we should only use a constant
         # mask if it can be guaranteed that:
         # 1. (ynumel / YBLOCK) < max_ygrid or
         # 2. (ynumel / YBLOCK) % max_ygrid == 0
         # Because YBLOCK is not constant, use a conservative heuristic:
         # only use a constant mask if ynumel < max_ygrid.
-        # It's faster to avoid masking xsigma all.  But it is sound to always
+        # It's faster to avoid masking quarisma all.  But it is sound to always
         # mask.
         if V.graph.sizevars.statically_known_multiple_of(tree.numel, max_block):
             return (

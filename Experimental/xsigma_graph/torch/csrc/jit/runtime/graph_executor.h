@@ -72,8 +72,8 @@ struct TORCH_API GraphExecutor
         ExecutorExecutionMode         executor_mode);
 
     void                          run(Stack& inputs);
-    xsigma::intrusive_ptr<Future> runAsync(
-        Stack& stack, TaskLauncher taskLauncher = xsigma::launch);
+    quarisma::intrusive_ptr<Future> runAsync(
+        Stack& stack, TaskLauncher taskLauncher = quarisma::launch);
 
     // `remaining_bailout_depth` stands for the maximum number of profiled and
     // specialized recompilations allowed for the current `GraphExecutor`. if
@@ -139,7 +139,7 @@ GraphExecutor* getDifferentiableGraphOpExecutor(Operation& op);
 // run graph. Previous approaches allowed querying the GraphExecutor
 // for what graph it would run in certain circumstances (graphFor), but
 // this is fragile because we sometimes change how these decisions are made.
-// This interface still allows our tests to look xsigma optimized graphs, but
+// This interface still allows our tests to look quarisma optimized graphs, but
 // with less plumbing.
 }  // namespace detail
 

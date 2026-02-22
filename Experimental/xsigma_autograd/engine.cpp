@@ -1,10 +1,10 @@
-#include <XSigma/DeviceAccelerator.h>
-#include <XSigma/DeviceGuard.h>
-#include <XSigma/ExpandUtils.h>
-#include <XSigma/Parallel.h>
-#include <XSigma/SparseCsrTensorUtils.h>
-#include <XSigma/detail/CUDAHooksInterface.h>
-#include <XSigma/detail/PrivateUse1HooksInterface.h>
+#include <Quarisma/DeviceAccelerator.h>
+#include <Quarisma/DeviceGuard.h>
+#include <Quarisma/ExpandUtils.h>
+#include <Quarisma/Parallel.h>
+#include <Quarisma/SparseCsrTensorUtils.h>
+#include <Quarisma/detail/CUDAHooksInterface.h>
+#include <Quarisma/detail/PrivateUse1HooksInterface.h>
 #include <torch/csrc/autograd/anomaly_mode.h>
 #include <torch/csrc/autograd/autograd.h>
 #include <torch/csrc/autograd/engine.h>
@@ -15,19 +15,19 @@
 #include <torch/csrc/dynamo/compiled_autograd.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/isnan.h>
+#include <Quarisma/ops/isnan.h>
 #endif
 
-#include <xsigma/core/DeviceGuard.h>
-#include <xsigma/core/Event.h>
-#include <xsigma/core/Stream.h>
-#include <xsigma/core/StreamGuard.h>
-#include <xsigma/util/AbortHandler.h>
-#include <xsigma/util/ThreadLocal.h>
-#include <xsigma/util/irange.h>
-#include <xsigma/util/thread_name.h>
+#include <quarisma/core/DeviceGuard.h>
+#include <quarisma/core/Event.h>
+#include <quarisma/core/Stream.h>
+#include <quarisma/core/StreamGuard.h>
+#include <quarisma/util/AbortHandler.h>
+#include <quarisma/util/ThreadLocal.h>
+#include <quarisma/util/irange.h>
+#include <quarisma/util/thread_name.h>
 
 #include <atomic>
 #include <chrono>
@@ -66,9 +66,9 @@ static void track_bad_autograd_forks()
 #endif
 }
 
-inline bool should_run_in_cpu_ready_queue(xsigma::DeviceType device)
+inline bool should_run_in_cpu_ready_queue(quarisma::DeviceType device)
 {
-    if (device == xsigma::kCPU || device == xsigma::kMeta || device == xsigma::kLazy)
+    if (device == quarisma::kCPU || device == quarisma::kMeta || device == quarisma::kLazy)
     {
         return true;
     }
@@ -100,7 +100,7 @@ private:
 }  // namespace
 
 // Threads spawned by the engine are assigned a 'worker_device' specifying
-// what device they process work for. This variable is initialized xsigma:
+// what device they process work for. This variable is initialized quarisma:
 // 1. thread creation time for CUDA, XLA device threads, as they are
 //    spinning threads waiting for works on their device.
 // 2. before the graph task execution for CPU threads, as for each
@@ -126,7 +126,7 @@ static thread_local int total_depth = 0;
 
 // The current GraphTask being executed by this thread. This helps
 // queue_callback() to find the target GraphTask to append final callbacks.
-XSIGMA_DEFINE_TLS_static(std::shared_ptr<GraphTask>, tls_current_graph_task);
+QUARISMA_DEFINE_TLS_static(std::shared_ptr<GraphTask>, tls_current_graph_task);
 #define current_graph_task (tls_current_graph_task.get())
 
 // Every autograd worker thread is associated with a ready queue, which
@@ -145,7 +145,7 @@ XSIGMA_DEFINE_TLS_static(std::shared_ptr<GraphTask>, tls_current_graph_task);
 // because we reached the maximum depth, the new thread will just reuse the same
 // ReadyQueue with the parent thread for performance improvement.
 // see Note [Reentrant backwards] for more details.
-XSIGMA_DEFINE_TLS_static(std::shared_ptr<ReadyQueue>, tls_local_ready_queue);
+QUARISMA_DEFINE_TLS_static(std::shared_ptr<ReadyQueue>, tls_local_ready_queue);
 #define local_ready_queue (tls_local_ready_queue.get())
 
 // Note [Reentrant backwards]
@@ -305,7 +305,7 @@ void Engine::stop()
     stopped_ = true;
     // Under some conditions, autograd threads can hang on shutdown
     // Do not wait for them to shutdown indefinitely but rely on timeout
-    auto wait_duration_str = xsigma::utils::get_env("TORCH_AUTOGRAD_SHUTDOWN_WAIT_LIMIT");
+    auto wait_duration_str = quarisma::utils::get_env("TORCH_AUTOGRAD_SHUTDOWN_WAIT_LIMIT");
     auto wait_duration     = wait_duration_str ? std::atof(wait_duration_str->c_str()) : 10.0;
     bool noBackward        = true;
     for (auto& queue : device_ready_queues_)
@@ -321,7 +321,7 @@ void Engine::stop()
         // Do not wait for termination of global threads on Windows
         // Because CRT terminates DLL threads before calling
         // global object destructors
-#if !defined(_WIN32) || defined(XSIGMA_HAS_MSVC_STATIC_RUNTIME)
+#if !defined(_WIN32) || defined(QUARISMA_HAS_MSVC_STATIC_RUNTIME)
 
         using namespace std::chrono_literals;
         // Set a deadline for how long it is OK to wait device threads to shutdown
@@ -367,15 +367,15 @@ void Engine::thread_init(
     // pthread_setname_np restricts the name to 16 characters including
     // the null byte.
     std::string thread_name = "pt_autograd_" + std::to_string(device);
-    xsigma::setThreadName(thread_name);
+    quarisma::setThreadName(thread_name);
 
-    xsigma::set_terminate_handler();
+    quarisma::set_terminate_handler();
     if (should_increment)
     {
         increment_non_reentrant_thread_count();
     }
 
-    xsigma::init_num_threads();
+    quarisma::init_num_threads();
 
     // Note [Allocating GPUs to autograd threads]
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -462,8 +462,8 @@ std::vector<Node*> get_current_graph_task_execution_order()
 
     // We could potentially check if there is only a single device here
     // but explicitly require this context doesn't seem bad either
-    XSIGMA_CHECK(
-        !xsigma::AutogradState::get_tls_state().get_multithreading_enabled(),
+    QUARISMA_CHECK(
+        !quarisma::AutogradState::get_tls_state().get_multithreading_enabled(),
         "get_current_graph_task_execution_order expects the current backward to be "
         "executed with multithreading disabled, e.g. by running:\n\n"
         ">>> with torch.autograd.set_multithreading_enabled(False):\n"
@@ -529,7 +529,7 @@ std::vector<Node*> get_current_graph_task_execution_order()
 //
 // Once Root is executed, both Eval1 and Eval2 are added to the ready queue.
 // Next, Eval1 is run and this causes the worker to enter thread_main again.
-// Then, it pops the next task from the queue, but xsigma this point it is Eval2.
+// Then, it pops the next task from the queue, but quarisma this point it is Eval2.
 // It enters thread_main once again, but now with graph_task of Eval2, which is
 // completely unrelated to that of Eval1 (it's not a recursive call).
 // It's all ok and is handled right now, but it should be accounted for
@@ -576,7 +576,7 @@ auto Engine::thread_main(const std::shared_ptr<GraphTask>& graph_task) -> void
             // TODO Needs to be fixed this to work in all cases
             if (task.isShutdownTask_)
             {
-                XSIGMA_LOG_API_USAGE_ONCE("torch.autograd.thread_shutdown");
+                QUARISMA_LOG_API_USAGE_ONCE("torch.autograd.thread_shutdown");
                 break;
             }
 
@@ -595,8 +595,8 @@ auto Engine::thread_main(const std::shared_ptr<GraphTask>& graph_task) -> void
                 // Set the ThreadLocalState before calling the function.
                 // NB: The ThreadLocalStateGuard doesn't set the grad_mode because
                 // GraphTask always saves ThreadLocalState without grad_mode.
-                xsigma::ThreadLocalStateGuard tls_guard(local_graph_task->thread_locals_);
-                xsigma::WarningUtils::WarningHandlerGuard warnings_guard(
+                quarisma::ThreadLocalStateGuard tls_guard(local_graph_task->thread_locals_);
+                quarisma::WarningUtils::WarningHandlerGuard warnings_guard(
                     &local_graph_task->warning_handler_);
 
                 try
@@ -609,9 +609,9 @@ auto Engine::thread_main(const std::shared_ptr<GraphTask>& graph_task) -> void
                     NodeGuard      ndguard(task.fn_);
                     {
                         RECORD_FUNCTION(
-                            xsigma::str(
+                            quarisma::str(
                                 "autograd::engine::evaluate_function: ", task.fn_.get()->name()),
-                            xsigma::ArrayRef<const xsigma::IValue>());
+                            quarisma::ArrayRef<const quarisma::IValue>());
                         evaluate_function(
                             local_graph_task,
                             task.fn_.get(),
@@ -662,8 +662,8 @@ auto Engine::thread_main(const std::shared_ptr<GraphTask>& graph_task) -> void
 // performance improvement and cuda thread still have to do the same thing.
 void Engine::reentrant_thread_init()
 {
-    xsigma::set_terminate_handler();
-    xsigma::init_num_threads();
+    quarisma::set_terminate_handler();
+    quarisma::init_num_threads();
     auto tp_shared = thread_pool_shared_;
     while (true)
     {
@@ -707,7 +707,7 @@ GraphTask::GraphTask(
     bool                          grad_mode,
     int                           reentrant_depth,
     std::shared_ptr<ReadyQueue>   cpu_ready_queue,
-    xsigma::SmallVector<Node*, 4> graph_roots,
+    quarisma::SmallVector<Node*, 4> graph_roots,
     bool                          exit_on_error)
     : keep_graph_(keep_graph),
       graph_roots_(std::move(graph_roots)),
@@ -716,8 +716,8 @@ GraphTask::GraphTask(
       exit_on_error_(exit_on_error),
       cpu_ready_queue_(std::move(cpu_ready_queue)),
       future_result_(
-          xsigma::make_intrusive<xsigma::ivalue::Future>(
-              xsigma::ListType::create(xsigma::TensorType::get()))),
+          quarisma::make_intrusive<quarisma::ivalue::Future>(
+              quarisma::ListType::create(quarisma::TensorType::get()))),
       id_(graph_task_id.fetch_add(1, std::memory_order_relaxed))
 {
     thread_locals_.set_grad_mode(grad_mode);
@@ -762,7 +762,7 @@ void GraphTask::mark_as_completed_and_run_post_processing()
 
 void GraphTask::exec_post_processing()
 {
-    XSIGMA_CHECK(not_ready_.empty(), "could not compute gradients for some functions");
+    QUARISMA_CHECK(not_ready_.empty(), "could not compute gradients for some functions");
 
     // set the thread_local current_graph_task_ as more callbacks can be installed
     // by existing final callbacks.
@@ -774,7 +774,7 @@ void GraphTask::exec_post_processing()
     std::unique_lock<std::mutex> cb_lock(final_callbacks_lock_);
 
     // caller_current_streams_ with nullopt entries removed
-    std::vector<xsigma::Stream> caller_current_streams_filtered;
+    std::vector<quarisma::Stream> caller_current_streams_filtered;
 
     // See Note [Streaming backwards].
     // Syncs caller_current_stream with leaf streams, so final_callbacks may use
@@ -794,7 +794,7 @@ void GraphTask::exec_post_processing()
 
             if (caller_current_stream.has_value() && caller_current_stream != leaf_stream)
             {
-                auto event = xsigma::Event{leaf_stream.device_type()};
+                auto event = quarisma::Event{leaf_stream.device_type()};
                 event.record(leaf_stream);
                 caller_current_stream->wait(event);
             }
@@ -820,12 +820,12 @@ void GraphTask::exec_post_processing()
         //  2. The callback's results can safely be used on (user-facing)
         //  caller_current_streams
         //     after backward().
-        xsigma::MultiStreamGuard g(caller_current_streams_filtered);
+        quarisma::MultiStreamGuard g(caller_current_streams_filtered);
 
         // Set the ThreadLocalState before calling the function.
         // NB: The ThreadLocalStateGuard doesn't set the grad_mode because GraphTask
         // always saves ThreadLocalState without grad_mode.
-        xsigma::ThreadLocalStateGuard tls_guard(this->thread_locals_);
+        quarisma::ThreadLocalStateGuard tls_guard(this->thread_locals_);
 
         // WARNING: Don't use a range-for loop here because more callbacks may be
         // added in between callback calls, so iterators may become invalidated.
@@ -912,15 +912,15 @@ void set_device(int device)
     if (device != CPU_DEVICE)
     {
         for (const auto i :
-             xsigma::irange(static_cast<size_t>(xsigma::DeviceType::COMPILE_TIME_MAX_DEVICE_TYPES)))
+             quarisma::irange(static_cast<size_t>(quarisma::DeviceType::COMPILE_TIME_MAX_DEVICE_TYPES)))
         {
-            auto* impl = xsigma::impl::device_guard_impl_registry[i].load();
+            auto* impl = quarisma::impl::device_guard_impl_registry[i].load();
             if (impl && device < impl->deviceCount())
             {
                 impl->setDevice(
-                    xsigma::Device(
-                        static_cast<xsigma::DeviceType>(i),
-                        static_cast<xsigma::DeviceIndex>(device)));
+                    quarisma::Device(
+                        static_cast<quarisma::DeviceType>(i),
+                        static_cast<quarisma::DeviceIndex>(device)));
             }
         }
     }
@@ -1003,9 +1003,9 @@ static void validate_outputs_impl(
         std::stringstream ss;
         ss << "invalid number of gradients - expected ";
         ss << input_metadata_container.size() << ", but got " << grads.size();
-        XSIGMA_CHECK(false, format_error(ss.str()));
+        QUARISMA_CHECK(false, format_error(ss.str()));
     }
-    for (const auto i : xsigma::irange(grads.size()))
+    for (const auto i : quarisma::irange(grads.size()))
     {
         if (!has_input_metadata(input_metadata_container[i]))
         {
@@ -1017,18 +1017,18 @@ static void validate_outputs_impl(
         {
             // FIXME: TestJit.test_ge_optimized fails this assertion.
             // std::stringstream ss;
-            // ss << "undefined gradient xsigma index " << i;
-            // XSIGMA_CHECK(false, format_error(ss.str()));
+            // ss << "undefined gradient quarisma index " << i;
+            // QUARISMA_CHECK(false, format_error(ss.str()));
             continue;
         }
 
         grad = metadata.maybe_reduce(i, std::move(grad), format_error);
 
         bool input_is_complex =
-            isComplexType(xsigma::typeMetaToScalarType(metadata.options().dtype()));
+            isComplexType(quarisma::typeMetaToScalarType(metadata.options().dtype()));
         bool grad_is_complex = isComplexType(grad.scalar_type());
 
-        XSIGMA_CHECK(isFloatingType(grad.scalar_type()) || (input_is_complex == grad_is_complex));
+        QUARISMA_CHECK(isFloatingType(grad.scalar_type()) || (input_is_complex == grad_is_complex));
 
         if (metadata.grad_dtype().has_value())
         {
@@ -1039,9 +1039,9 @@ static void validate_outputs_impl(
             if (grad.scalar_type() != metadata.grad_dtype().value())
             {
                 std::stringstream ss;
-                ss << "invalid gradient xsigma index " << i << " - expected dtype ";
+                ss << "invalid gradient quarisma index " << i << " - expected dtype ";
                 ss << metadata.grad_dtype().value() << " but got " << grad.dtype();
-                XSIGMA_CHECK(false, format_error(ss.str()));
+                QUARISMA_CHECK(false, format_error(ss.str()));
             }
         }
         if (grad.layout() != metadata.layout())
@@ -1054,14 +1054,14 @@ static void validate_outputs_impl(
             // autograd like AccumulateGrad correctly handle this. We allow grad to be
             // Strided when metadata is SparseCsr
             if (!grad.is_sparse() &&
-                !(grad.layout() == xsigma::kStrided &&
-                  (xsigma::sparse_csr::is_sparse_compressed(metadata.layout()) ||
-                   metadata.layout() == xsigma::kSparse)))
+                !(grad.layout() == quarisma::kStrided &&
+                  (quarisma::sparse_csr::is_sparse_compressed(metadata.layout()) ||
+                   metadata.layout() == quarisma::kSparse)))
             {
                 std::stringstream ss;
-                ss << "invalid gradient xsigma index " << i << " - expected layout ";
+                ss << "invalid gradient quarisma index " << i << " - expected layout ";
                 ss << metadata.layout() << " but got " << grad.layout();
-                XSIGMA_CHECK(false, format_error(ss.str()));
+                QUARISMA_CHECK(false, format_error(ss.str()));
             }
         }
 
@@ -1079,9 +1079,9 @@ static void validate_outputs_impl(
                       grad.unsafeGetTensorImpl()->is_python_dispatch()))
                 {
                     std::stringstream ss;
-                    ss << "invalid gradient xsigma index " << i << " - expected device ";
+                    ss << "invalid gradient quarisma index " << i << " - expected device ";
                     ss << metadata.device() << " but got " << grad.device();
-                    XSIGMA_CHECK(false, format_error(ss.str()));
+                    QUARISMA_CHECK(false, format_error(ss.str()));
                 }
             }
         }
@@ -1168,7 +1168,7 @@ void Engine::evaluate_function(
 {
     // Locally set the current stream to func's associated stream
     auto                        opt_parent_stream = (*func).stream();
-    xsigma::OptionalStreamGuard parent_stream_guard{opt_parent_stream};
+    quarisma::OptionalStreamGuard parent_stream_guard{opt_parent_stream};
 
     // Ensure that the incoming gradients are ready
     for (size_t pos = 0; pos < inputs.ready_events.size(); ++pos)
@@ -1178,7 +1178,7 @@ void Engine::evaluate_function(
             continue;
         }
         const auto device         = inputs.buffer[pos].device();
-        bool       is_accelerator = xsigma::accelerator::isAccelerator(device.type());
+        bool       is_accelerator = quarisma::accelerator::isAccelerator(device.type());
         if (!is_accelerator)
         {
             continue;
@@ -1197,7 +1197,7 @@ void Engine::evaluate_function(
     auto& exec_info_ = graph_task->exec_info_;
     if (!exec_info_.empty())
     {
-        auto&         fn_info    = exec_info_.xsigma(func);
+        auto&         fn_info    = exec_info_.quarisma(func);
         variable_list new_inputs = inputs.buffer;
         if (!fn_info.needed_)
         {
@@ -1260,11 +1260,11 @@ void Engine::evaluate_function(
     if (AnomalyMode::is_enabled() && AnomalyMode::should_check_nan())
     {
         AutoGradMode grad_mode(false);
-        for (const auto i : xsigma::irange(num_outputs))
+        for (const auto i : quarisma::irange(num_outputs))
         {
             auto&                       output = outputs[i];
-            xsigma::OptionalDeviceGuard guard(device_of(output));
-            XSIGMA_CHECK(
+            quarisma::OptionalDeviceGuard guard(device_of(output));
+            QUARISMA_CHECK(
                 !output.defined() || !isnan(output)._is_any_true().item<bool>(),
                 "Function '",
                 fn.name(),
@@ -1277,7 +1277,7 @@ void Engine::evaluate_function(
     // Lock mutex for the accesses to GraphTask dependencies_, not_ready_ and
     // cpu_ready_queue_ below
     std::lock_guard<std::mutex> lock(graph_task->mutex_);
-    for (const auto i : xsigma::irange(num_outputs))
+    for (const auto i : quarisma::irange(num_outputs))
     {
         auto&       output = outputs[i];
         const auto& next   = fn.next_edge(i);
@@ -1293,7 +1293,7 @@ void Engine::evaluate_function(
         if (it == dependencies.end())
         {
             auto name = next.function->name();
-            XSIGMA_CHECK(false, "dependency not found for ", name);
+            QUARISMA_CHECK(false, "dependency not found for ", name);
         }
         else if (--it->second == 0)
         {
@@ -1447,8 +1447,8 @@ auto Engine::execute(
 
     // Store root nodes so we can traverse through the graph later
     // e.g., for get_current_graph_task_execution_order
-    xsigma::SmallVector<Node*, 4> temp_roots{root_edges.size()};
-    for (const auto i : xsigma::irange(root_edges.size()))
+    quarisma::SmallVector<Node*, 4> temp_roots{root_edges.size()};
+    for (const auto i : quarisma::irange(root_edges.size()))
     {
         temp_roots[i] = root_edges[i].function.get();
     }
@@ -1462,7 +1462,7 @@ auto Engine::execute(
 
     // If we receive a single root, skip creating extra root node
     bool skip_dummy_node = root_edges.size() == 1 && compiled_autograd == nullptr;
-    auto graph_root      = skip_dummy_node ? root_edges.xsigma(0).function
+    auto graph_root      = skip_dummy_node ? root_edges.quarisma(0).function
                                            : std::make_shared<GraphRoot>(root_edges, inputs);
 
     auto min_topo_nr = compute_min_topological_nr(outputs);
@@ -1492,13 +1492,13 @@ auto Engine::execute(
     // Queue the root
     if (skip_dummy_node)
     {
-        InputBuffer input_buffer(root_edges.xsigma(0).function->num_inputs());
-        auto        input = inputs.xsigma(0);
+        InputBuffer input_buffer(root_edges.quarisma(0).function->num_inputs());
+        auto        input = inputs.quarisma(0);
 
         const auto input_stream    = InputMetadata(input).stream();
-        auto       opt_next_stream = root_edges.xsigma(0).function->stream();
+        auto       opt_next_stream = root_edges.quarisma(0).function->stream();
         input_buffer.add(
-            root_edges.xsigma(0).input_nr, std::move(input), input_stream, opt_next_stream);
+            root_edges.quarisma(0).input_nr, std::move(input), input_stream, opt_next_stream);
 
         execute_with_graph_task(graph_task, std::move(graph_root), std::move(input_buffer));
     }
@@ -1517,7 +1517,7 @@ auto Engine::execute(
 
 void Engine::initialize_device_threads_pool()
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         !in_bad_autograd_fork,
         "Unable to handle autograd's threading in combination with fork-based multiprocessing. "
         "See https://github.com/pytorch/pytorch/wiki/Autograd-and-Fork");
@@ -1529,7 +1529,7 @@ void Engine::initialize_device_threads_pool()
     }();
 }
 
-xsigma::intrusive_ptr<xsigma::ivalue::Future> Engine::execute_with_graph_task(
+quarisma::intrusive_ptr<quarisma::ivalue::Future> Engine::execute_with_graph_task(
     const std::shared_ptr<GraphTask>& graph_task,
     std::shared_ptr<Node>             graph_root,
     InputBuffer&&                     input_buffer)
@@ -1638,7 +1638,7 @@ void Engine::set_compiled_autograd(Engine::compiled_autograd_fn fn)
         return;
     }
     auto prior = the_compiled_autograd.exchange(COMPILED_AUTOGRAD_POISON);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         prior != COMPILED_AUTOGRAD_POISON,
         "compiled_autograd._enable() does not support multiple Python threads");
     the_compiled_autograd.store(fn);
@@ -1646,7 +1646,7 @@ void Engine::set_compiled_autograd(Engine::compiled_autograd_fn fn)
 
 void Engine::queue_callback(std::function<void()> callback)
 {
-    XSIGMA_CHECK(current_graph_task, "Final callbacks can only be installed during backward pass.");
+    QUARISMA_CHECK(current_graph_task, "Final callbacks can only be installed during backward pass.");
 
     std::lock_guard<std::mutex> lock(current_graph_task->final_callbacks_lock_);
     current_graph_task->final_callbacks_.emplace_back(std::move(callback));
@@ -1674,11 +1674,11 @@ void Engine::init_local_ready_queue(std::shared_ptr<ReadyQueue> ready_queue)
 
 // CPU ready queue is per GraphTask, but CUDA device ready queues are shared
 // across all graph tasks
-auto Engine::ready_queue(std::shared_ptr<ReadyQueue> cpu_ready_queue, xsigma::Device device)
+auto Engine::ready_queue(std::shared_ptr<ReadyQueue> cpu_ready_queue, quarisma::Device device)
     -> std::shared_ptr<ReadyQueue>
 {
     bool multithreading_disabled =
-        !xsigma::AutogradState::get_tls_state().get_multithreading_enabled();
+        !quarisma::AutogradState::get_tls_state().get_multithreading_enabled();
     if (multithreading_disabled || should_run_in_cpu_ready_queue(device.type()))
     {
         // return the cpu ready queue passed in
@@ -1689,9 +1689,9 @@ auto Engine::ready_queue(std::shared_ptr<ReadyQueue> cpu_ready_queue, xsigma::De
     {
         TORCH_INTERNAL_ASSERT(
             0 <= device.index() &&
-            device.index() < static_cast<xsigma::DeviceIndex>(device_ready_queues_.size()));
+            device.index() < static_cast<quarisma::DeviceIndex>(device_ready_queues_.size()));
         // See Note [Allocating GPUs to autograd threads]
-        return device_ready_queues_.xsigma(device.index());
+        return device_ready_queues_.quarisma(device.index());
     }
 }
 
@@ -1708,11 +1708,11 @@ auto Engine::ready_queue_by_index(std::shared_ptr<ReadyQueue> cpu_ready_queue, i
     {
         TORCH_INTERNAL_ASSERT(
             0 <= device_index &&
-            device_index < static_cast<xsigma::DeviceIndex>(device_ready_queues_.size()));
+            device_index < static_cast<quarisma::DeviceIndex>(device_ready_queues_.size()));
         // See Note [Allocating GPUs to autograd threads]
         // NB: This function would become obsolete if we truly allocated a CPU
         // thread per device, rather than colocate.
-        return device_ready_queues_.xsigma(device_index);
+        return device_ready_queues_.quarisma(device_index);
     }
 }
 
@@ -1723,8 +1723,8 @@ auto Engine::start_device_threads() -> void
 
     // Second, create special threads for each non-CPU device
     // See Note [Allocating GPUs to autograd threads]
-    xsigma::DeviceIndex num_devices = 0;
-    for (const auto& impl_atomic : xsigma::impl::device_guard_impl_registry)
+    quarisma::DeviceIndex num_devices = 0;
+    for (const auto& impl_atomic : quarisma::impl::device_guard_impl_registry)
     {
         auto* impl = impl_atomic.load();
         // Only record the number of devices for device that don't run on the
@@ -1753,7 +1753,7 @@ auto Engine::start_device_threads() -> void
         queue = std::make_shared<ReadyQueue>();
     }
 
-    for (const auto i : xsigma::irange(num_devices))
+    for (const auto i : quarisma::irange(num_devices))
     {
         std::thread t(&Engine::thread_init, this, i, device_ready_queues_[i], true);
         t.detach();
@@ -1796,15 +1796,15 @@ void Engine::add_thread_pool_task(const std::weak_ptr<GraphTask>& graph_task)
 void GraphTask::stash_current_streams()
 {
     // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-    const auto accelerator = xsigma::getAccelerator(true).value();
-    const auto guard       = xsigma::impl::VirtualGuardImpl{accelerator};
+    const auto accelerator = quarisma::getAccelerator(true).value();
+    const auto guard       = quarisma::impl::VirtualGuardImpl{accelerator};
     auto       num_devices = guard.deviceCount();
     caller_current_streams_.resize(num_devices);
     if (num_devices > 0)
     {
-        for (xsigma::DeviceIndex idx = 0; idx < num_devices; idx++)
+        for (quarisma::DeviceIndex idx = 0; idx < num_devices; idx++)
         {
-            if (xsigma::globalContext().getAcceleratorHooksInterface().hasPrimaryContext(idx))
+            if (quarisma::globalContext().getAcceleratorHooksInterface().hasPrimaryContext(idx))
             {
                 caller_current_streams_[idx] = guard.getStream({accelerator, idx});
             }

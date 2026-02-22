@@ -1,6 +1,6 @@
-# XSigma Autograd Source Inventory: Master Index
+# Quarisma Autograd Source Inventory: Master Index
 
-**Complete guide to XSigma's computational graph system source code**
+**Complete guide to Quarisma's computational graph system source code**
 
 ---
 
@@ -8,28 +8,28 @@
 
 This inventory consists of four comprehensive documents:
 
-### 1. **PYXSIGMA_AUTOGRAD_SOURCE_INVENTORY.md** (Main Catalog)
+### 1. **PYQUARISMA_AUTOGRAD_SOURCE_INVENTORY.md** (Main Catalog)
    - **Purpose:** Complete catalog of all 80+ source files
    - **Organization:** By functional area (Graph Structure, Building, Execution, Infrastructure)
    - **Format:** Organized tables with file paths, purposes, key classes, and line counts
    - **Best For:** Finding which file implements a specific feature
    - **Read Time:** 30-45 minutes
 
-### 2. **PYXSIGMA_AUTOGRAD_FILE_DETAILS.md** (Deep Dive)
+### 2. **PYQUARISMA_AUTOGRAD_FILE_DETAILS.md** (Deep Dive)
    - **Purpose:** In-depth information about key files
    - **Content:** Detailed descriptions of core components
    - **Includes:** Algorithms, key methods, usage examples
    - **Best For:** Understanding how specific components work
    - **Read Time:** 45-60 minutes
 
-### 3. **PYXSIGMA_AUTOGRAD_DEPENDENCY_MAP.md** (Architecture)
+### 3. **PYQUARISMA_AUTOGRAD_DEPENDENCY_MAP.md** (Architecture)
    - **Purpose:** Visual representation of file dependencies
    - **Content:** Dependency graphs, include hierarchies, compilation order
    - **Includes:** Circular dependency prevention, impact analysis
    - **Best For:** Understanding system architecture and dependencies
    - **Read Time:** 20-30 minutes
 
-### 4. **PYXSIGMA_AUTOGRAD_INVENTORY_INDEX.md** (This Document)
+### 4. **PYQUARISMA_AUTOGRAD_INVENTORY_INDEX.md** (This Document)
    - **Purpose:** Navigation guide and quick reference
    - **Content:** How to use the inventory, quick lookups, common tasks
    - **Best For:** Finding what you need quickly
@@ -42,44 +42,44 @@ This inventory consists of four comprehensive documents:
 ### I want to understand...
 
 **How nodes are represented**
-→ Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/csrc/autograd/function.h"
-→ File: `xsigma/csrc/autograd/function.h` (lines 113-792)
+→ Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/csrc/autograd/function.h"
+→ File: `quarisma/csrc/autograd/function.h` (lines 113-792)
 
 **How edges connect nodes**
-→ Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/csrc/autograd/edge.h"
-→ File: `xsigma/csrc/autograd/edge.h` (lines 1-57)
+→ Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/csrc/autograd/edge.h"
+→ File: `quarisma/csrc/autograd/edge.h` (lines 1-57)
 
 **How the backward pass executes**
-→ Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/csrc/autograd/engine.cpp"
-→ File: `xsigma/csrc/autograd/engine.cpp` (lines 1288-1380)
+→ Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/csrc/autograd/engine.cpp"
+→ File: `quarisma/csrc/autograd/engine.cpp` (lines 1288-1380)
 
 **How gradients are accumulated**
-→ Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/csrc/autograd/input_buffer.h"
-→ File: `xsigma/csrc/autograd/input_buffer.h/cpp`
+→ Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/csrc/autograd/input_buffer.h"
+→ File: `quarisma/csrc/autograd/input_buffer.h/cpp`
 
 **How tensors connect to grad_fn**
-→ Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/csrc/autograd/functions/utils.h"
-→ File: `xsigma/csrc/autograd/functions/utils.h` (lines 66-91)
+→ Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/csrc/autograd/functions/utils.h"
+→ File: `quarisma/csrc/autograd/functions/utils.h` (lines 66-91)
 
 **How custom functions work**
-→ Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/csrc/autograd/custom_function.h"
-→ File: `xsigma/csrc/autograd/custom_function.h/cpp`
+→ Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/csrc/autograd/custom_function.h"
+→ File: `quarisma/csrc/autograd/custom_function.h/cpp`
 
 **How to write custom autograd functions**
-→ Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/autograd/function.py"
-→ File: `xsigma/autograd/function.py` (lines 472-566)
+→ Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/autograd/function.py"
+→ File: `quarisma/autograd/function.py` (lines 472-566)
 
 **How to inspect the graph**
-→ Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/autograd/graph.py"
-→ File: `xsigma/autograd/graph.py`
+→ Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/autograd/graph.py"
+→ File: `quarisma/autograd/graph.py`
 
 **How to debug autograd issues**
-→ Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/csrc/autograd/anomaly_mode.h"
-→ File: `xsigma/csrc/autograd/anomaly_mode.h/cpp`
+→ Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/csrc/autograd/anomaly_mode.h"
+→ File: `quarisma/csrc/autograd/anomaly_mode.h/cpp`
 
 **How forward AD works**
-→ Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/csrc/autograd/forward_grad.h"
-→ File: `xsigma/csrc/autograd/forward_grad.h/cpp`
+→ Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/csrc/autograd/forward_grad.h"
+→ File: `quarisma/csrc/autograd/forward_grad.h/cpp`
 
 ---
 
@@ -87,7 +87,7 @@ This inventory consists of four comprehensive documents:
 
 ### Core Graph Structure (8 files)
 ```
-xsigma/csrc/autograd/
+quarisma/csrc/autograd/
 ├── function.h/cpp          # Node class
 ├── edge.h                  # Edge structure
 ├── graph_task.h            # Execution metadata
@@ -100,7 +100,7 @@ xsigma/csrc/autograd/
 
 ### Graph Building (8 files)
 ```
-xsigma/csrc/autograd/functions/
+quarisma/csrc/autograd/functions/
 ├── utils.h/cpp             # set_history()
 ├── basic_ops.h/cpp         # GraphRoot, Error
 ├── accumulate_grad.h/cpp   # AccumulateGrad
@@ -110,7 +110,7 @@ xsigma/csrc/autograd/functions/
 
 ### Graph Execution (8 files)
 ```
-xsigma/csrc/autograd/
+quarisma/csrc/autograd/
 ├── engine.h/cpp            # Backward engine
 ├── python_engine.h/cpp     # Python engine
 ├── grad_mode.h             # Gradient mode
@@ -122,7 +122,7 @@ xsigma/csrc/autograd/
 
 ### Supporting Infrastructure (40+ files)
 ```
-xsigma/csrc/autograd/
+quarisma/csrc/autograd/
 ├── custom_function.h/cpp
 ├── python_function.h/cpp
 ├── python_cpp_function.h/cpp
@@ -142,7 +142,7 @@ xsigma/csrc/autograd/
 
 ### Python API (8 files)
 ```
-xsigma/autograd/
+quarisma/autograd/
 ├── __init__.py             # Module initialization
 ├── function.py             # Custom functions
 ├── graph.py                # Graph inspection
@@ -167,11 +167,11 @@ xsigma/autograd/
 | Tensor metadata | `variable.h` | `input_metadata.h` |
 | History setting | `functions/utils.h` | `variable.h`, `function.h` |
 | Custom functions | `custom_function.h` | `python_function.h` |
-| Python API | `xsigma/autograd/function.py` | `xsigma/autograd/graph.py` |
-| Graph inspection | `xsigma/autograd/graph.py` | `xsigma/autograd/__init__.py` |
+| Python API | `quarisma/autograd/function.py` | `quarisma/autograd/graph.py` |
+| Graph inspection | `quarisma/autograd/graph.py` | `quarisma/autograd/__init__.py` |
 | Anomaly detection | `anomaly_mode.h` | `python_anomaly_mode.h` |
-| Forward AD | `forward_grad.h` | `xsigma/autograd/forward_ad.py` |
-| Profiling | `profiler*.h/cpp` | `xsigma/autograd/profiler.py` |
+| Forward AD | `forward_grad.h` | `quarisma/autograd/forward_ad.py` |
+| Profiling | `profiler*.h/cpp` | `quarisma/autograd/profiler.py` |
 | Hooks | `function_hook.h` | `cpp_hook.h`, `python_hook.h` |
 | Saved tensors | `saved_variable.h` | `saved_variable_hooks.h` |
 
@@ -182,7 +182,7 @@ xsigma/autograd/
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PYTHON API LAYER                             │
-│  xsigma/autograd/*.py - User-facing API                          │
+│  quarisma/autograd/*.py - User-facing API                          │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
@@ -236,82 +236,82 @@ xsigma/autograd/
 ### By Functional Area
 
 **Graph Structure:**
-- Main: `PYXSIGMA_AUTOGRAD_SOURCE_INVENTORY.md` → Section 1
-- Details: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "CORE GRAPH STRUCTURE FILES"
-- Dependencies: `PYXSIGMA_AUTOGRAD_DEPENDENCY_MAP.md` → Section 1
+- Main: `PYQUARISMA_AUTOGRAD_SOURCE_INVENTORY.md` → Section 1
+- Details: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "CORE GRAPH STRUCTURE FILES"
+- Dependencies: `PYQUARISMA_AUTOGRAD_DEPENDENCY_MAP.md` → Section 1
 
 **Graph Building:**
-- Main: `PYXSIGMA_AUTOGRAD_SOURCE_INVENTORY.md` → Section 2
-- Details: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "GRAPH BUILDING FILES"
-- Dependencies: `PYXSIGMA_AUTOGRAD_DEPENDENCY_MAP.md` → Section 2
+- Main: `PYQUARISMA_AUTOGRAD_SOURCE_INVENTORY.md` → Section 2
+- Details: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "GRAPH BUILDING FILES"
+- Dependencies: `PYQUARISMA_AUTOGRAD_DEPENDENCY_MAP.md` → Section 2
 
 **Graph Execution:**
-- Main: `PYXSIGMA_AUTOGRAD_SOURCE_INVENTORY.md` → Section 3
-- Details: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "GRAPH EXECUTION FILES"
-- Dependencies: `PYXSIGMA_AUTOGRAD_DEPENDENCY_MAP.md` → Section 3
+- Main: `PYQUARISMA_AUTOGRAD_SOURCE_INVENTORY.md` → Section 3
+- Details: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "GRAPH EXECUTION FILES"
+- Dependencies: `PYQUARISMA_AUTOGRAD_DEPENDENCY_MAP.md` → Section 3
 
 **Supporting Infrastructure:**
-- Main: `PYXSIGMA_AUTOGRAD_SOURCE_INVENTORY.md` → Section 4
-- Details: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "SUPPORTING INFRASTRUCTURE FILES"
-- Dependencies: `PYXSIGMA_AUTOGRAD_DEPENDENCY_MAP.md` → Section 4
+- Main: `PYQUARISMA_AUTOGRAD_SOURCE_INVENTORY.md` → Section 4
+- Details: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "SUPPORTING INFRASTRUCTURE FILES"
+- Dependencies: `PYQUARISMA_AUTOGRAD_DEPENDENCY_MAP.md` → Section 4
 
 **Python API:**
-- Main: `PYXSIGMA_AUTOGRAD_SOURCE_INVENTORY.md` → Section 5
-- Details: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "PYTHON API FILES"
-- Dependencies: `PYXSIGMA_AUTOGRAD_DEPENDENCY_MAP.md` → Section 5
+- Main: `PYQUARISMA_AUTOGRAD_SOURCE_INVENTORY.md` → Section 5
+- Details: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "PYTHON API FILES"
+- Dependencies: `PYQUARISMA_AUTOGRAD_DEPENDENCY_MAP.md` → Section 5
 
 ---
 
 ## 💡 COMMON TASKS
 
 ### Task: Add a new operation's backward function
-1. Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/csrc/autograd/functions/tensor.h"
-2. File: `xsigma/csrc/autograd/functions/tensor.h/cpp`
-3. Reference: `xsigma/csrc/autograd/functions/basic_ops.h` for examples
+1. Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/csrc/autograd/functions/tensor.h"
+2. File: `quarisma/csrc/autograd/functions/tensor.h/cpp`
+3. Reference: `quarisma/csrc/autograd/functions/basic_ops.h` for examples
 
 ### Task: Implement a custom autograd function
-1. Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/autograd/function.py"
-2. File: `xsigma/autograd/function.py`
+1. Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/autograd/function.py"
+2. File: `quarisma/autograd/function.py`
 3. Reference: Examples in documentation
 
 ### Task: Debug a backward pass issue
-1. Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/csrc/autograd/anomaly_mode.h"
-2. File: `xsigma/csrc/autograd/anomaly_mode.h/cpp`
-3. Reference: `xsigma/autograd/anomaly_mode.py` for Python API
+1. Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/csrc/autograd/anomaly_mode.h"
+2. File: `quarisma/csrc/autograd/anomaly_mode.h/cpp`
+3. Reference: `quarisma/autograd/anomaly_mode.py` for Python API
 
 ### Task: Optimize backward execution
-1. Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/csrc/autograd/engine.cpp"
-2. File: `xsigma/csrc/autograd/engine.h/cpp`
-3. Reference: `PYXSIGMA_AUTOGRAD_DEPENDENCY_MAP.md` for impact analysis
+1. Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/csrc/autograd/engine.cpp"
+2. File: `quarisma/csrc/autograd/engine.h/cpp`
+3. Reference: `PYQUARISMA_AUTOGRAD_DEPENDENCY_MAP.md` for impact analysis
 
 ### Task: Add profiling support
-1. Read: `PYXSIGMA_AUTOGRAD_SOURCE_INVENTORY.md` → Section 4.4
-2. Files: `xsigma/csrc/autograd/profiler*.h/cpp`
-3. Reference: `xsigma/autograd/profiler.py` for Python API
+1. Read: `PYQUARISMA_AUTOGRAD_SOURCE_INVENTORY.md` → Section 4.4
+2. Files: `quarisma/csrc/autograd/profiler*.h/cpp`
+3. Reference: `quarisma/autograd/profiler.py` for Python API
 
 ### Task: Implement forward AD
-1. Read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` → "xsigma/csrc/autograd/forward_grad.h"
-2. File: `xsigma/csrc/autograd/forward_grad.h/cpp`
-3. Reference: `xsigma/autograd/forward_ad.py` for Python API
+1. Read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` → "quarisma/csrc/autograd/forward_grad.h"
+2. File: `quarisma/csrc/autograd/forward_grad.h/cpp`
+3. Reference: `quarisma/autograd/forward_ad.py` for Python API
 
 ---
 
 ## 🚀 GETTING STARTED
 
 ### For Beginners
-1. Start with: `PYXSIGMA_AUTOGRAD_SOURCE_INVENTORY.md` (overview)
-2. Then read: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` (core files)
-3. Finally: `PYXSIGMA_AUTOGRAD_DEPENDENCY_MAP.md` (architecture)
+1. Start with: `PYQUARISMA_AUTOGRAD_SOURCE_INVENTORY.md` (overview)
+2. Then read: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` (core files)
+3. Finally: `PYQUARISMA_AUTOGRAD_DEPENDENCY_MAP.md` (architecture)
 
 ### For Intermediate Users
-1. Start with: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` (specific files)
-2. Reference: `PYXSIGMA_AUTOGRAD_SOURCE_INVENTORY.md` (quick lookup)
-3. Check: `PYXSIGMA_AUTOGRAD_DEPENDENCY_MAP.md` (dependencies)
+1. Start with: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` (specific files)
+2. Reference: `PYQUARISMA_AUTOGRAD_SOURCE_INVENTORY.md` (quick lookup)
+3. Check: `PYQUARISMA_AUTOGRAD_DEPENDENCY_MAP.md` (dependencies)
 
 ### For Advanced Users
-1. Use: `PYXSIGMA_AUTOGRAD_DEPENDENCY_MAP.md` (architecture)
-2. Reference: `PYXSIGMA_AUTOGRAD_FILE_DETAILS.md` (implementation details)
-3. Consult: `PYXSIGMA_AUTOGRAD_SOURCE_INVENTORY.md` (complete catalog)
+1. Use: `PYQUARISMA_AUTOGRAD_DEPENDENCY_MAP.md` (architecture)
+2. Reference: `PYQUARISMA_AUTOGRAD_FILE_DETAILS.md` (implementation details)
+3. Consult: `PYQUARISMA_AUTOGRAD_SOURCE_INVENTORY.md` (complete catalog)
 
 ---
 
@@ -332,11 +332,11 @@ xsigma/autograd/
 
 ## 📝 NOTES
 
-- All file paths are relative to XSigma repository root
+- All file paths are relative to Quarisma repository root
 - Line numbers are approximate and may vary between versions
-- Some files are generated during build (in `xsigma/csrc/autograd/generated/`)
-- Python files are in `xsigma/autograd/` directory
-- C++ files are in `xsigma/csrc/autograd/` directory
+- Some files are generated during build (in `quarisma/csrc/autograd/generated/`)
+- Python files are in `quarisma/autograd/` directory
+- C++ files are in `quarisma/csrc/autograd/` directory
 - Tools are in `tools/autograd/` directory
 
 ---

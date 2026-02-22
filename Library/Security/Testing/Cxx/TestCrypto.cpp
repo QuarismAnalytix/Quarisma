@@ -1,16 +1,16 @@
 #include <algorithm>
 #include <cstring>
 
-#include "Core/Testing/xsigmaTest.h"
+#include "Core/Testing/baseTest.h"
 #include "crypto.h"
 
-using namespace xsigma::security;
+using namespace quarisma::security;
 
 // ============================================================================
 // Secure Random Number Generation Tests
 // ============================================================================
 
-XSIGMATEST(crypto_test, generate_random_bytes_success)
+QUARISMATEST(crypto_test, generate_random_bytes_success)
 {
     uint8_t buffer[32];
     std::memset(buffer, 0, sizeof(buffer));
@@ -30,24 +30,24 @@ XSIGMATEST(crypto_test, generate_random_bytes_success)
     EXPECT_TRUE(has_non_zero);
 }
 
-XSIGMATEST(crypto_test, generate_random_bytes_null_buffer)
+QUARISMATEST(crypto_test, generate_random_bytes_null_buffer)
 {
     EXPECT_FALSE(crypto::generate_random_bytes(nullptr, 32));
 }
 
-XSIGMATEST(crypto_test, generate_random_bytes_zero_size)
+QUARISMATEST(crypto_test, generate_random_bytes_zero_size)
 {
     uint8_t buffer[32];
     EXPECT_FALSE(crypto::generate_random_bytes(buffer, 0));
 }
 
-XSIGMATEST(crypto_test, generate_random_int_success)
+QUARISMATEST(crypto_test, generate_random_int_success)
 {
     auto result = crypto::generate_random_int<uint64_t>();
     EXPECT_TRUE(result.has_value());
 }
 
-XSIGMATEST(crypto_test, generate_random_int_different_values)
+QUARISMATEST(crypto_test, generate_random_int_different_values)
 {
     auto val1 = crypto::generate_random_int<uint64_t>();
     auto val2 = crypto::generate_random_int<uint64_t>();
@@ -59,7 +59,7 @@ XSIGMATEST(crypto_test, generate_random_int_different_values)
     EXPECT_NE(val1.value(), val2.value());
 }
 
-XSIGMATEST(crypto_test, generate_random_int_range_valid)
+QUARISMATEST(crypto_test, generate_random_int_range_valid)
 {
     for (int i = 0; i < 100; ++i)
     {
@@ -70,20 +70,20 @@ XSIGMATEST(crypto_test, generate_random_int_range_valid)
     }
 }
 
-XSIGMATEST(crypto_test, generate_random_int_range_invalid)
+QUARISMATEST(crypto_test, generate_random_int_range_invalid)
 {
     auto result = crypto::generate_random_int_range(10, 1);
     EXPECT_FALSE(result.has_value());
 }
 
-XSIGMATEST(crypto_test, generate_random_string_success)
+QUARISMATEST(crypto_test, generate_random_string_success)
 {
     auto result = crypto::generate_random_string(16);
     EXPECT_TRUE(result.has_value());
     EXPECT_EQ(result.value().length(), 16);
 }
 
-XSIGMATEST(crypto_test, generate_random_string_custom_charset)
+QUARISMATEST(crypto_test, generate_random_string_custom_charset)
 {
     auto result = crypto::generate_random_string(10, "ABC");
     EXPECT_TRUE(result.has_value());
@@ -96,13 +96,13 @@ XSIGMATEST(crypto_test, generate_random_string_custom_charset)
     }
 }
 
-XSIGMATEST(crypto_test, generate_random_string_zero_length)
+QUARISMATEST(crypto_test, generate_random_string_zero_length)
 {
     auto result = crypto::generate_random_string(0);
     EXPECT_FALSE(result.has_value());
 }
 
-XSIGMATEST(crypto_test, generate_random_string_empty_charset)
+QUARISMATEST(crypto_test, generate_random_string_empty_charset)
 {
     auto result = crypto::generate_random_string(10, "");
     EXPECT_FALSE(result.has_value());
@@ -112,7 +112,7 @@ XSIGMATEST(crypto_test, generate_random_string_empty_charset)
 // SHA-256 Hashing Tests
 // ============================================================================
 
-XSIGMATEST(crypto_test, sha256_empty_string)
+QUARISMATEST(crypto_test, sha256_empty_string)
 {
     auto hash = crypto::sha256("");
     EXPECT_EQ(hash.size(), 32);
@@ -126,7 +126,7 @@ XSIGMATEST(crypto_test, sha256_empty_string)
     EXPECT_EQ(hash, expected);
 }
 
-XSIGMATEST(crypto_test, sha256_known_value)
+QUARISMATEST(crypto_test, sha256_known_value)
 {
     auto hash = crypto::sha256("hello");
     EXPECT_EQ(hash.size(), 32);
@@ -140,21 +140,21 @@ XSIGMATEST(crypto_test, sha256_known_value)
     EXPECT_EQ(hash, expected);
 }
 
-XSIGMATEST(crypto_test, sha256_hex_empty_string)
+QUARISMATEST(crypto_test, sha256_hex_empty_string)
 {
     std::string hash_hex = crypto::sha256_hex("");
     EXPECT_EQ(hash_hex.length(), 64);  // 32 bytes = 64 hex chars
     EXPECT_EQ(hash_hex, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
 }
 
-XSIGMATEST(crypto_test, sha256_hex_known_value)
+QUARISMATEST(crypto_test, sha256_hex_known_value)
 {
     std::string hash_hex = crypto::sha256_hex("hello");
     EXPECT_EQ(hash_hex.length(), 64);
     EXPECT_EQ(hash_hex, "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824");
 }
 
-XSIGMATEST(crypto_test, sha256_different_inputs)
+QUARISMATEST(crypto_test, sha256_different_inputs)
 {
     auto hash1 = crypto::sha256("test1");
     auto hash2 = crypto::sha256("test2");
@@ -162,7 +162,7 @@ XSIGMATEST(crypto_test, sha256_different_inputs)
     EXPECT_NE(hash1, hash2);
 }
 
-XSIGMATEST(crypto_test, sha256_deterministic)
+QUARISMATEST(crypto_test, sha256_deterministic)
 {
     auto hash1 = crypto::sha256("test");
     auto hash2 = crypto::sha256("test");
@@ -174,7 +174,7 @@ XSIGMATEST(crypto_test, sha256_deterministic)
 // Constant-Time Comparison Tests
 // ============================================================================
 
-XSIGMATEST(crypto_test, constant_time_compare_equal)
+QUARISMATEST(crypto_test, constant_time_compare_equal)
 {
     uint8_t a[] = {1, 2, 3, 4, 5};
     uint8_t b[] = {1, 2, 3, 4, 5};
@@ -182,7 +182,7 @@ XSIGMATEST(crypto_test, constant_time_compare_equal)
     EXPECT_TRUE(crypto::constant_time_compare(a, b, 5));
 }
 
-XSIGMATEST(crypto_test, constant_time_compare_not_equal)
+QUARISMATEST(crypto_test, constant_time_compare_not_equal)
 {
     uint8_t a[] = {1, 2, 3, 4, 5};
     uint8_t b[] = {1, 2, 3, 4, 6};
@@ -190,7 +190,7 @@ XSIGMATEST(crypto_test, constant_time_compare_not_equal)
     EXPECT_FALSE(crypto::constant_time_compare(a, b, 5));
 }
 
-XSIGMATEST(crypto_test, constant_time_compare_null_pointers)
+QUARISMATEST(crypto_test, constant_time_compare_null_pointers)
 {
     uint8_t a[] = {1, 2, 3};
     EXPECT_FALSE(crypto::constant_time_compare(nullptr, a, 3));
@@ -198,19 +198,19 @@ XSIGMATEST(crypto_test, constant_time_compare_null_pointers)
     EXPECT_FALSE(crypto::constant_time_compare(nullptr, nullptr, 3));
 }
 
-XSIGMATEST(crypto_test, constant_time_compare_strings_equal)
+QUARISMATEST(crypto_test, constant_time_compare_strings_equal)
 {
     EXPECT_TRUE(crypto::constant_time_compare("hello", "hello"));
     EXPECT_TRUE(crypto::constant_time_compare("", ""));
 }
 
-XSIGMATEST(crypto_test, constant_time_compare_strings_not_equal)
+QUARISMATEST(crypto_test, constant_time_compare_strings_not_equal)
 {
     EXPECT_FALSE(crypto::constant_time_compare("hello", "world"));
     EXPECT_FALSE(crypto::constant_time_compare("test", "testing"));
 }
 
-XSIGMATEST(crypto_test, constant_time_compare_strings_different_length)
+QUARISMATEST(crypto_test, constant_time_compare_strings_different_length)
 {
     EXPECT_FALSE(crypto::constant_time_compare("hello", "hello world"));
 }
@@ -219,20 +219,20 @@ XSIGMATEST(crypto_test, constant_time_compare_strings_different_length)
 // Utility Function Tests
 // ============================================================================
 
-XSIGMATEST(crypto_test, bytes_to_hex)
+QUARISMATEST(crypto_test, bytes_to_hex)
 {
     uint8_t     data[] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
     std::string hex    = crypto::bytes_to_hex(data, sizeof(data));
     EXPECT_EQ(hex, "0123456789abcdef");
 }
 
-XSIGMATEST(crypto_test, bytes_to_hex_empty)
+QUARISMATEST(crypto_test, bytes_to_hex_empty)
 {
     std::string hex = crypto::bytes_to_hex(nullptr, 0);
     EXPECT_EQ(hex, "");
 }
 
-XSIGMATEST(crypto_test, hex_to_bytes_valid)
+QUARISMATEST(crypto_test, hex_to_bytes_valid)
 {
     auto result = crypto::hex_to_bytes("0123456789abcdef");
     EXPECT_TRUE(result.has_value());
@@ -241,7 +241,7 @@ XSIGMATEST(crypto_test, hex_to_bytes_valid)
     EXPECT_EQ(result.value(), expected);
 }
 
-XSIGMATEST(crypto_test, hex_to_bytes_uppercase)
+QUARISMATEST(crypto_test, hex_to_bytes_uppercase)
 {
     auto result = crypto::hex_to_bytes("ABCDEF");
     EXPECT_TRUE(result.has_value());
@@ -250,26 +250,26 @@ XSIGMATEST(crypto_test, hex_to_bytes_uppercase)
     EXPECT_EQ(result.value(), expected);
 }
 
-XSIGMATEST(crypto_test, hex_to_bytes_invalid_length)
+QUARISMATEST(crypto_test, hex_to_bytes_invalid_length)
 {
     auto result = crypto::hex_to_bytes("123");  // Odd length
     EXPECT_FALSE(result.has_value());
 }
 
-XSIGMATEST(crypto_test, hex_to_bytes_invalid_chars)
+QUARISMATEST(crypto_test, hex_to_bytes_invalid_chars)
 {
     auto result = crypto::hex_to_bytes("12GH");
     EXPECT_FALSE(result.has_value());
 }
 
-XSIGMATEST(crypto_test, hex_to_bytes_empty)
+QUARISMATEST(crypto_test, hex_to_bytes_empty)
 {
     auto result = crypto::hex_to_bytes("");
     EXPECT_TRUE(result.has_value());
     EXPECT_TRUE(result.value().empty());
 }
 
-XSIGMATEST(crypto_test, hex_roundtrip)
+QUARISMATEST(crypto_test, hex_roundtrip)
 {
     uint8_t     original[] = {0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0};
     std::string hex        = crypto::bytes_to_hex(original, sizeof(original));
@@ -286,7 +286,7 @@ XSIGMATEST(crypto_test, hex_roundtrip)
 // Secure Zero Memory Tests
 // ============================================================================
 
-XSIGMATEST(crypto_test, secure_zero_memory)
+QUARISMATEST(crypto_test, secure_zero_memory)
 {
     uint8_t buffer[32];
     std::memset(buffer, 0xFF, sizeof(buffer));
@@ -300,13 +300,13 @@ XSIGMATEST(crypto_test, secure_zero_memory)
     }
 }
 
-XSIGMATEST(crypto_test, secure_zero_memory_null_pointer)
+QUARISMATEST(crypto_test, secure_zero_memory_null_pointer)
 {
     // Should not crash
     crypto::secure_zero_memory(nullptr, 32);
 }
 
-XSIGMATEST(crypto_test, secure_zero_memory_zero_size)
+QUARISMATEST(crypto_test, secure_zero_memory_zero_size)
 {
     uint8_t buffer[32];
     std::memset(buffer, 0xFF, sizeof(buffer));
@@ -319,7 +319,7 @@ XSIGMATEST(crypto_test, secure_zero_memory_zero_size)
 // Integration Tests
 // ============================================================================
 
-XSIGMATEST(crypto_test, hash_random_data)
+QUARISMATEST(crypto_test, hash_random_data)
 {
     auto random_data = crypto::generate_random_string(100);
     EXPECT_TRUE(random_data.has_value());
@@ -328,7 +328,7 @@ XSIGMATEST(crypto_test, hash_random_data)
     EXPECT_EQ(hash.size(), 32);
 }
 
-XSIGMATEST(crypto_test, compare_hashes)
+QUARISMATEST(crypto_test, compare_hashes)
 {
     std::string data1 = "test data";
     std::string data2 = "test data";

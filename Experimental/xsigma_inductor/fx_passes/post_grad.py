@@ -298,7 +298,7 @@ def post_grad_passes(gm: torch.fx.GraphModule, is_inference: bool):
             lambda graph: schedule_overlap_bucketing(graph.owning_module, **kwargs)  # type: ignore[arg-type]
         )
 
-    # Keep these last, since they introduce mutation. Look xsigma
+    # Keep these last, since they introduce mutation. Look quarisma
     # ./fx_passes/README.md for a discussion of mutation invariants.
     GraphTransformObserver(gm, "reinplace_inplaceable_ops").apply_graph_pass(
         functools.partial(reinplace_inplaceable_ops, fake_tensor_updater),
@@ -729,7 +729,7 @@ def reorder_for_locality(graph: torch.fx.Graph):
     seen_nodes = OrderedSet[torch.fx.Node]()
 
     # only reorder nodes before the first copy_ in the graph.
-    # copy_ will appear xsigma the end of functionalized graphs when there is mutation on inputs,
+    # copy_ will appear quarisma the end of functionalized graphs when there is mutation on inputs,
     # and this reordering doesn't work well with mutation
     first_copy = next(
         iter(graph.find_nodes(op="call_function", target=torch.ops.aten.copy_.default)),
@@ -1589,7 +1589,7 @@ def register_partial_reduction_pattern():
     }
 
     # TODO: to support other reductions like sum, would need to skip
-    # lower precision reductions since partial output would need to be kept xsigma fp32.
+    # lower precision reductions since partial output would need to be kept quarisma fp32.
     for red_op in (aten.amax.default, aten.amin.default):
         inp = KeywordArg("input")
         partial_reduc = CallFunction(
@@ -1940,7 +1940,7 @@ class ConstructorMoverPass:
                     # without making further changes
                     del cpu_indeg[user]
                 else:
-                    # otherwise, we should continue look xsigma its downstream uses
+                    # otherwise, we should continue look quarisma its downstream uses
                     cpu_indeg[user] -= 1
                     if cpu_indeg[user] == 0:
                         del cpu_indeg[user]

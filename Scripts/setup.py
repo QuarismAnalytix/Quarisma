@@ -41,7 +41,7 @@ class ErrorLogger:
         self.log_dir.mkdir(exist_ok=True)
         self.log_file = (
             self.log_dir
-            / f"xsigma_build_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+            / f"quarisma_build_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
         )
         self.errors = []
 
@@ -585,7 +585,7 @@ def debug_print(message):
         print(message)
 
 
-class XsigmaFlags:
+class QuarismaFlags:
     OFF = "OFF"
     ON = "ON"
 
@@ -667,36 +667,36 @@ class XsigmaFlags:
         debug_print("Build cmake flag")
         self.__name = {
             # Valid CMake options that exist in CMakeLists.txt
-            "cuda": "XSIGMA_ENABLE_CUDA",
-            "tbb": "XSIGMA_ENABLE_TBB",
-            "openmp": "XSIGMA_ENABLE_OPENMP",
-            "mkl": "XSIGMA_ENABLE_MKL",
-            "numa": "XSIGMA_ENABLE_NUMA",
-            "memkind": "XSIGMA_ENABLE_MEMKIND",
-            "vectorisation": "XSIGMA_VECTORIZATION_TYPE",
+            "cuda": "QUARISMA_ENABLE_CUDA",
+            "tbb": "QUARISMA_ENABLE_TBB",
+            "openmp": "QUARISMA_ENABLE_OPENMP",
+            "mkl": "QUARISMA_ENABLE_MKL",
+            "numa": "QUARISMA_ENABLE_NUMA",
+            "memkind": "QUARISMA_ENABLE_MEMKIND",
+            "vectorisation": "QUARISMA_VECTORIZATION_TYPE",
             "static": "BUILD_SHARED_LIBS",
-            "clangtidy": "XSIGMA_ENABLE_CLANGTIDY",
-            "iwyu": "XSIGMA_ENABLE_IWYU",
-            "sanitizer": "XSIGMA_ENABLE_SANITIZER",
-            "sanitizer_enum": "XSIGMA_SANITIZER_TYPE",
-            "benchmark": "XSIGMA_ENABLE_BENCHMARK",
-            "gtest": "XSIGMA_ENABLE_GTEST",
-            "valgrind": "XSIGMA_ENABLE_VALGRIND",
-            "coverage": "XSIGMA_ENABLE_COVERAGE",
-            "test": "XSIGMA_BUILD_TESTING",
-            "logging_backend": "XSIGMA_LOGGING_BACKEND",
-            "lto": "XSIGMA_ENABLE_LTO",
-            "magic_enum": "XSIGMA_ENABLE_MAGICENUM",
-            "mimalloc": "XSIGMA_ENABLE_MIMALLOC",
-            "external": "XSIGMA_ENABLE_EXTERNAL",
-            "profiler_type": "XSIGMA_PROFILER_TYPE",
-            "cxxstd": "XSIGMA_CXX_STANDARD",
-            "cppcheck": "XSIGMA_ENABLE_CPPCHECK",
-            "spell": "XSIGMA_ENABLE_SPELL",
-            "fix": "XSIGMA_ENABLE_FIX",
-            "cache_type": "XSIGMA_CACHE_BACKEND",
-            "enzyme": "XSIGMA_ENABLE_ENZYME",
-            "parallel_backend": "XSIGMA_PARALLEL_BACKEND",
+            "clangtidy": "QUARISMA_ENABLE_CLANGTIDY",
+            "iwyu": "QUARISMA_ENABLE_IWYU",
+            "sanitizer": "QUARISMA_ENABLE_SANITIZER",
+            "sanitizer_enum": "QUARISMA_SANITIZER_TYPE",
+            "benchmark": "QUARISMA_ENABLE_BENCHMARK",
+            "gtest": "QUARISMA_ENABLE_GTEST",
+            "valgrind": "QUARISMA_ENABLE_VALGRIND",
+            "coverage": "QUARISMA_ENABLE_COVERAGE",
+            "test": "QUARISMA_BUILD_TESTING",
+            "logging_backend": "QUARISMA_LOGGING_BACKEND",
+            "lto": "QUARISMA_ENABLE_LTO",
+            "magic_enum": "QUARISMA_ENABLE_MAGICENUM",
+            "mimalloc": "QUARISMA_ENABLE_MIMALLOC",
+            "external": "QUARISMA_ENABLE_EXTERNAL",
+            "profiler_type": "QUARISMA_PROFILER_TYPE",
+            "cxxstd": "QUARISMA_CXX_STANDARD",
+            "cppcheck": "QUARISMA_ENABLE_CPPCHECK",
+            "spell": "QUARISMA_ENABLE_SPELL",
+            "fix": "QUARISMA_ENABLE_FIX",
+            "cache_type": "QUARISMA_CACHE_BACKEND",
+            "enzyme": "QUARISMA_ENABLE_ENZYME",
+            "parallel_backend": "QUARISMA_PARALLEL_BACKEND",
             # Non-CMake flags (for internal use, not passed to CMake)
             "mkl_threading": "MKL_THREADING",
             "mkl_link": "MKL_LINK",
@@ -742,7 +742,7 @@ class XsigmaFlags:
             {
                 "vectorisation": "",  # Special case: string value
                 "static": self.ON,  # BUILD_SHARED_LIBS default is OFF, so static=ON
-                "test": self.ON,  # XSIGMA_BUILD_TESTING default is ON
+                "test": self.ON,  # QUARISMA_BUILD_TESTING default is ON
                 "javasourceversion": 1.8,  # Special case: numeric value
                 "javatargetversion": 1.8,  # Special case: numeric value
                 "cxxstd": "",  # Special case: let CMake decide
@@ -750,25 +750,25 @@ class XsigmaFlags:
                 "cache_type": "none",  # Default cache type is none
                 "parallel_backend": "std",  # Default SMP backend is std_thread for maximum compatibility
                 # CMake options with default OFF - keep OFF in setup.py
-                "lto": self.OFF,  # XSIGMA_ENABLE_LTO default is OFF
-                "gtest": self.ON,  # XSIGMA_ENABLE_GTEST default is ON
-                "magic_enum": self.ON,  # XSIGMA_ENABLE_MAGIC_ENUM default is ON
-                "mimalloc": self.ON,  # XSIGMA_ENABLE_MIMALLOC default is ON
+                "lto": self.OFF,  # QUARISMA_ENABLE_LTO default is OFF
+                "gtest": self.ON,  # QUARISMA_ENABLE_GTEST default is ON
+                "magic_enum": self.ON,  # QUARISMA_ENABLE_MAGIC_ENUM default is ON
+                "mimalloc": self.ON,  # QUARISMA_ENABLE_MIMALLOC default is ON
                 "profiler_type": "KINETO",
                 # CMake options with default OFF - keep OFF in setup.py
                 # (already set by dict.fromkeys above)
-                # "benchmark": self.OFF,  # XSIGMA_ENABLE_BENCHMARK default is OFF (changed from ON)
-                # "cuda": self.OFF,  # XSIGMA_ENABLE_CUDA default is OFF
-                # "mkl": self.OFF,  # XSIGMA_ENABLE_MKL default is OFF
-                # "numa": self.OFF,  # XSIGMA_ENABLE_NUMA default is OFF
-                # "memkind": self.OFF,  # XSIGMA_ENABLE_MEMKIND default is OFF
-                # "tbb": self.OFF,  # XSIGMA_ENABLE_TBB default is OFF
-                # "iwyu": self.OFF,  # XSIGMA_ENABLE_IWYU default is OFF
-                # "clangtidy": self.OFF,  # XSIGMA_ENABLE_CLANGTIDY default is OFF
-                # "cppcheck": self.OFF,  # XSIGMA_ENABLE_CPPCHECK default is OFF
-                # "valgrind": self.OFF,  # XSIGMA_ENABLE_VALGRIND default is OFF
-                # "coverage": self.OFF,  # XSIGMA_ENABLE_COVERAGE default is OFF
-                # "sanitizer": self.OFF,  # XSIGMA_ENABLE_SANITIZER default is OFF
+                # "benchmark": self.OFF,  # QUARISMA_ENABLE_BENCHMARK default is OFF (changed from ON)
+                # "cuda": self.OFF,  # QUARISMA_ENABLE_CUDA default is OFF
+                # "mkl": self.OFF,  # QUARISMA_ENABLE_MKL default is OFF
+                # "numa": self.OFF,  # QUARISMA_ENABLE_NUMA default is OFF
+                # "memkind": self.OFF,  # QUARISMA_ENABLE_MEMKIND default is OFF
+                # "tbb": self.OFF,  # QUARISMA_ENABLE_TBB default is OFF
+                # "iwyu": self.OFF,  # QUARISMA_ENABLE_IWYU default is OFF
+                # "clangtidy": self.OFF,  # QUARISMA_ENABLE_CLANGTIDY default is OFF
+                # "cppcheck": self.OFF,  # QUARISMA_ENABLE_CPPCHECK default is OFF
+                # "valgrind": self.OFF,  # QUARISMA_ENABLE_VALGRIND default is OFF
+                # "coverage": self.OFF,  # QUARISMA_ENABLE_COVERAGE default is OFF
+                # "sanitizer": self.OFF,  # QUARISMA_ENABLE_SANITIZER default is OFF
             }
         )
 
@@ -835,8 +835,8 @@ class XsigmaFlags:
                 # - openmp:  OpenMP parallel processing - optimized for OpenMP-aware code
                 # - tbb:     Intel Threading Building Blocks - high-performance parallel execution
                 # Only one backend can be active at a time. The selected backend affects:
-                # - XSIGMA_HAS_TBB compile definition (1 if tbb selected, 0 otherwise)
-                # - XSIGMA_HAS_OPENMP compile definition (1 if openmp selected, 0 otherwise)
+                # - QUARISMA_HAS_TBB compile definition (1 if tbb selected, 0 otherwise)
+                # - QUARISMA_HAS_OPENMP compile definition (1 if openmp selected, 0 otherwise)
                 # - Build directory suffix (e.g., build_ninja_parallel_tbb)
                 backend_value = arg.split(".", 1)[1].lower()
                 if backend_value in parallel_backend_list:
@@ -1041,7 +1041,7 @@ class XsigmaFlags:
         return None
 
 
-class XsigmaConfiguration:
+class QuarismaConfiguration:
     def __init__(self, args_list):
         # Check dependencies first
         missing_deps = check_dependencies()
@@ -1057,7 +1057,7 @@ class XsigmaConfiguration:
         self.summary_reporter = SummaryReporter()
 
         self.__initialize_values()
-        self.__xsigma_flags = XsigmaFlags(args_list)
+        self.__quarisma_flags = QuarismaFlags(args_list)
         self.__fill_compilation_flags(args_list)
 
     def __initialize_values(self):
@@ -1112,16 +1112,16 @@ class XsigmaConfiguration:
             self.__set_verbose_flags()
 
         if (
-            self.__xsigma_flags.is_coverage()
+            self.__quarisma_flags.is_coverage()
             and "clang" in self.__value["cmake_cxx_compiler"].lower()
         ):
-            self.__xsigma_flags.enable_gtest()
+            self.__quarisma_flags.enable_gtest()
 
     def __set_ninja_flags(self):
         self.__value["cmake_generator"] = "Ninja"
         self.__value["builder"] = "ninja"
         self.__value["build_folder"] = (
-            f"build_ninja{self.__xsigma_flags.builder_suffix}"
+            f"build_ninja{self.__quarisma_flags.builder_suffix}"
         )
 
     def __set_xcode_flags(self):
@@ -1130,7 +1130,7 @@ class XsigmaConfiguration:
                 self.__value["cmake_generator"] = "Xcode"
                 self.__value["builder"] = "xcodebuild"
                 self.__value["build_folder"] = (
-                    f"build_xcode{self.__xsigma_flags.builder_suffix}"
+                    f"build_xcode{self.__quarisma_flags.builder_suffix}"
                 )
                 # Set Xcode-specific compiler flags
                 self.__value["compiler_flags"] = ""
@@ -1193,7 +1193,7 @@ class XsigmaConfiguration:
         self.__value["cmake_generator"], base_build_folder = vs_versions[arg]
         self.__value["builder"] = "cmake"
         self.__value["build_folder"] = (
-            f"{base_build_folder}{self.__xsigma_flags.builder_suffix}"
+            f"{base_build_folder}{self.__quarisma_flags.builder_suffix}"
         )
         if not self.__compiler_user_specified:
             # Let Visual Studio decide the native MSVC toolchain unless the user requested otherwise.
@@ -1211,7 +1211,7 @@ class XsigmaConfiguration:
         print_status("Configuring build...", "INFO")
         try:
             cmake_flags = []
-            self.__value["build_enum"] = self.__xsigma_flags.create_cmake_flags(
+            self.__value["build_enum"] = self.__quarisma_flags.create_cmake_flags(
                 cmake_flags, self.__value["build_enum"], self.__value["system"]
             )
             print(f"build enum: {self.__value['build_enum']}")
@@ -1290,7 +1290,7 @@ class XsigmaConfiguration:
 
     def cppcheck(self, source_path, build_path):
         """Run cppcheck static analysis with user-friendly interface."""
-        if self.__value["build"] != "build" or not self.__xsigma_flags.is_cppcheck():
+        if self.__value["build"] != "build" or not self.__quarisma_flags.is_cppcheck():
             return 0
 
         print_status("Starting static code analysis with cppcheck...", "INFO")
@@ -1382,7 +1382,7 @@ class XsigmaConfiguration:
         if self.__value["test"] != "test":
             return 0
 
-        if self.__xsigma_flags.is_valgrind():
+        if self.__quarisma_flags.is_valgrind():
             exit_code = test_helper.run_valgrind_test(
                 source_path, build_path, self.__shell_flag()
             )
@@ -1396,7 +1396,7 @@ class XsigmaConfiguration:
             self.__value["system"],
             self.__value["verbosity"],
             self.__shell_flag(),
-            sanitizer_type=self.__xsigma_flags.get_sanitizer_type(),
+            sanitizer_type=self.__quarisma_flags.get_sanitizer_type(),
             source_path=source_path,
         )
 
@@ -1410,7 +1410,7 @@ class XsigmaConfiguration:
         Returns:
             Exit code (0 for success, non-zero for failure).
         """
-        if self.__value["build"] != "build" or not self.__xsigma_flags.is_coverage():
+        if self.__value["build"] != "build" or not self.__quarisma_flags.is_coverage():
             return 0
 
         print_status(
@@ -1423,7 +1423,7 @@ class XsigmaConfiguration:
             source_folder=os.path.join(source_path, "Library"),
             output_folder=os.path.join(build_path, "coverage_report"),
             summary=True,
-            xsigma_root=source_path,
+            quarisma_root=source_path,
         )
         if coverage_result == 0:
             print_status("Coverage collection completed successfully", "SUCCESS")
@@ -1617,7 +1617,7 @@ def parse_args(args):
             # Parse SMP backend selection flag (--parallel.std, --parallel.openmp, --parallel.tbb)
             # This is the first stage of argument parsing that converts command-line flags
             # into internal argument format. The actual backend selection happens later
-            # in XsigmaFlags.__process_arg_list() which sets CMake variables.
+            # in QuarismaFlags.__process_arg_list() which sets CMake variables.
             #
             # Supported backends:
             # - --parallel.std:     Use standard C++ threads (std_thread)
@@ -1625,9 +1625,9 @@ def parse_args(args):
             # - --parallel.tbb:     Use Intel Threading Building Blocks
             #
             # The selected backend controls which CMake options are enabled:
-            # - std:     XSIGMA_ENABLE_TBB=OFF, XSIGMA_ENABLE_OPENMP=OFF
-            # - openmp:  XSIGMA_ENABLE_OPENMP=ON, XSIGMA_ENABLE_TBB=OFF
-            # - tbb:     XSIGMA_ENABLE_TBB=ON, XSIGMA_ENABLE_OPENMP=OFF
+            # - std:     QUARISMA_ENABLE_TBB=OFF, QUARISMA_ENABLE_OPENMP=OFF
+            # - openmp:  QUARISMA_ENABLE_OPENMP=ON, QUARISMA_ENABLE_TBB=OFF
+            # - tbb:     QUARISMA_ENABLE_TBB=ON, QUARISMA_ENABLE_OPENMP=OFF
             backend_value = arg.split(".", 1)[1].lower()
             valid_backends = ["std", "openmp", "tbb"]
             if backend_value in valid_backends:
@@ -1742,7 +1742,7 @@ def main():
             "  #       Recommended to use with Release build for accurate performance results."
         )
         print("\nAvailable options:")
-        XsigmaFlags([]).helper()
+        QuarismaFlags([]).helper()
         return
 
     try:
@@ -1755,7 +1755,7 @@ def main():
             sys.exit(1)
 
         print_status(f"Starting build configuration for {platform.system()}", "INFO")
-        compilation_calc = XsigmaConfiguration(arg_list)
+        compilation_calc = QuarismaConfiguration(arg_list)
 
         source_path = os.path.dirname(os.getcwd())
         build_path = compilation_calc.move_to_build_folder()

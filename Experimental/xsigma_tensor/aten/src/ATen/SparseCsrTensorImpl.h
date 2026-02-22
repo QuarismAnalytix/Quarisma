@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/Tensor.h>
+#include <Quarisma/Tensor.h>
 #include <c10/core/TensorImpl.h>
 #include <c10/core/impl/TorchDispatchModeTLS.h>
 #include <c10/util/Exception.h>

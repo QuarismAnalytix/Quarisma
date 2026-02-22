@@ -67,7 +67,7 @@ using RegisterPass = RegisterPostPass;
  * types.
  */
 template <typename DerivedType>
-struct XSIGMA_EXPORT PassManager
+struct QUARISMA_EXPORT PassManager
 {
 private:
     // We want this class to be abstract because it's

@@ -3,8 +3,8 @@
 #include "common/export.h"
 #include "unwind.h"
 
-namespace xsigma
+namespace quarisma
 {
-XSIGMA_API bool get_cpp_stacktraces_enabled();
-XSIGMA_API xsigma::unwind::Mode get_symbolize_mode();
-}  // namespace xsigma
+QUARISMA_API bool get_cpp_stacktraces_enabled();
+QUARISMA_API quarisma::unwind::Mode get_symbolize_mode();
+}  // namespace quarisma

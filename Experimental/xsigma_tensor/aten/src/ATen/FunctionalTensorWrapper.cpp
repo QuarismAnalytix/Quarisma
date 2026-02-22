@@ -1,18 +1,18 @@
 
-#include <XSigma/FunctionalInverses.h>
-#include <XSigma/FunctionalTensorWrapper.h>
-#include <XSigma/TensorUtils.h>
-#include <XSigma/WrapDimUtils.h>
-#include <XSigma/core/IListRef.h>
-#include <XSigma/core/LegacyTypeDispatch.h>
+#include <Quarisma/FunctionalInverses.h>
+#include <Quarisma/FunctionalTensorWrapper.h>
+#include <Quarisma/TensorUtils.h>
+#include <Quarisma/WrapDimUtils.h>
+#include <Quarisma/core/IListRef.h>
+#include <Quarisma/core/LegacyTypeDispatch.h>
 #include <c10/util/Exception.h>
 #include <c10/util/irange.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/_propagate_xla_data.h>
-#include <XSigma/ops/_to_copy.h>
+#include <Quarisma/ops/_propagate_xla_data.h>
+#include <Quarisma/ops/_to_copy.h>
 #endif
 
 namespace at

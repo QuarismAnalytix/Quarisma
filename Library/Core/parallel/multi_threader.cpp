@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * Portions of this code are based on VTK (Visualization Toolkit):
 
@@ -43,7 +43,7 @@
 // platforms about passing function pointer to an argument expecting an
 // extern "C" function.  Placing the typedef of the function pointer type
 // inside an extern "C" block solves this problem.
-#if XSIGMA_USE_PTHREADS
+#if QUARISMA_USE_PTHREADS
 #include <pthread.h>
 extern "C"
 {
@@ -77,7 +77,7 @@ int multi_threader::get_global_maximum_number_of_threads()
 
 int multi_threader::get_global_static_maximum_number_of_threads()
 {
-    return XSIGMA_MAX_THREADS;
+    return QUARISMA_MAX_THREADS;
 }
 
 // 0 => Not initialized.
@@ -98,7 +98,7 @@ int multi_threader::get_global_default_number_of_threads()
     {
         int num = 1;  // default is 1
 
-#if XSIGMA_USE_PTHREADS
+#if QUARISMA_USE_PTHREADS
         // Default the number of threads to be the number of available
         // processors if we are using pthreads()
 #ifdef _SC_NPROCESSORS_ONLN
@@ -128,8 +128,8 @@ int multi_threader::get_global_default_number_of_threads()
         }
 #endif
 
-#if !XSIGMA_USE_WIN32_THREADS
-#if !XSIGMA_USE_PTHREADS
+#if !QUARISMA_USE_WIN32_THREADS
+#if !QUARISMA_USE_PTHREADS
         // If we are not multithreading, the number of threads should
         // always be 1
         // cppcheck-suppress redundantAssignment
@@ -137,8 +137,8 @@ int multi_threader::get_global_default_number_of_threads()
 #endif
 #endif
 
-        // Lets limit the number of threads to XSIGMA_MAX_THREADS
-        num = std::min(num, XSIGMA_MAX_THREADS);
+        // Lets limit the number of threads to QUARISMA_MAX_THREADS
+        num = std::min(num, QUARISMA_MAX_THREADS);
 
         g_multi_threader_global_default_number_of_threads = num;
     }
@@ -151,7 +151,7 @@ int multi_threader::get_global_default_number_of_threads()
 // and will not change.
 multi_threader::multi_threader()
 {
-    for (int i = 0; i < XSIGMA_MAX_THREADS; i++)
+    for (int i = 0; i < QUARISMA_MAX_THREADS; i++)
     {
         thread_info_array_[i].thread_id         = i;
         thread_info_array_[i].active_flag       = nullptr;
@@ -201,7 +201,7 @@ int multi_threader::get_number_of_threads()
 void multi_threader::set_number_of_threads(int num)
 {
     num                = std::max(num, 1);
-    num                = std::min(num, XSIGMA_MAX_THREADS);
+    num                = std::min(num, QUARISMA_MAX_THREADS);
     number_of_threads_ = num;
 }
 
@@ -235,13 +235,13 @@ void multi_threader::single_method_execute()
 {
     int thread_loop = 0;
 
-#if XSIGMA_USE_WIN32_THREADS
+#if QUARISMA_USE_WIN32_THREADS
     DWORD  threadId;
-    HANDLE process_id[XSIGMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
+    HANDLE process_id[QUARISMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
 #endif
 
-#if XSIGMA_USE_PTHREADS
-    pthread_t process_id[XSIGMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
+#if QUARISMA_USE_PTHREADS
+    pthread_t process_id[QUARISMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
 #endif
 
     if (single_method_ == nullptr)
@@ -257,7 +257,7 @@ void multi_threader::single_method_execute()
         number_of_threads_ = g_multi_threader_global_maximum_number_of_threads;
     }
 
-#if XSIGMA_USE_WIN32_THREADS
+#if QUARISMA_USE_WIN32_THREADS
     // Using CreateThread on Windows
     //
     // We want to use CreateThread to start number_of_threads_ - 1
@@ -303,7 +303,7 @@ void multi_threader::single_method_execute()
     }
 #endif
 
-#if XSIGMA_USE_PTHREADS
+#if QUARISMA_USE_PTHREADS
     // Using POSIX threads
     //
     // We want to use pthread_create to start number_of_threads_-1 additional
@@ -350,8 +350,8 @@ void multi_threader::single_method_execute()
     }
 #endif
 
-#if !XSIGMA_USE_WIN32_THREADS
-#if !XSIGMA_USE_PTHREADS
+#if !QUARISMA_USE_WIN32_THREADS
+#if !QUARISMA_USE_PTHREADS
     (void)thread_loop;
     // There is no multi threading, so there is only one thread.
     thread_info_array_[0].user_data         = single_data_;
@@ -365,13 +365,13 @@ void multi_threader::multiple_method_execute()
 {
     int thread_loop;
 
-#if XSIGMA_USE_WIN32_THREADS
+#if QUARISMA_USE_WIN32_THREADS
     DWORD  threadId;
-    HANDLE process_id[XSIGMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
+    HANDLE process_id[QUARISMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
 #endif
 
-#if XSIGMA_USE_PTHREADS
-    pthread_t process_id[XSIGMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
+#if QUARISMA_USE_PTHREADS
+    pthread_t process_id[QUARISMA_MAX_THREADS] = {};  // NOLINT(misc-const-correctness)
 #endif
 
     // obey the global maximum number of threads limit
@@ -390,7 +390,7 @@ void multi_threader::multiple_method_execute()
         }
     }
 
-#if XSIGMA_USE_WIN32_THREADS
+#if QUARISMA_USE_WIN32_THREADS
     // Using CreateThread on Windows
     for (thread_loop = 1; thread_loop < number_of_threads_; thread_loop++)
     {
@@ -428,7 +428,7 @@ void multi_threader::multiple_method_execute()
     }
 #endif
 
-#if XSIGMA_USE_PTHREADS
+#if QUARISMA_USE_PTHREADS
     // Using POSIX threads
     pthread_attr_t attr;
 
@@ -461,8 +461,8 @@ void multi_threader::multiple_method_execute()
     }
 #endif
 
-#if !XSIGMA_USE_WIN32_THREADS
-#if !XSIGMA_USE_PTHREADS
+#if !QUARISMA_USE_WIN32_THREADS
+#if !QUARISMA_USE_PTHREADS
     // There is no multi threading, so there is only one thread.
     thread_info_array_[0].user_data         = multiple_data_[0];
     thread_info_array_[0].number_of_threads = number_of_threads_;
@@ -475,7 +475,7 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
 {
     int id;
 
-    for (id = 0; id < XSIGMA_MAX_THREADS; id++)
+    for (id = 0; id < QUARISMA_MAX_THREADS; id++)
     {
         if (!spawned_thread_active_flag_lock_[id])
         {
@@ -490,7 +490,7 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
         }
     }
 
-    if (id >= XSIGMA_MAX_THREADS)
+    if (id >= QUARISMA_MAX_THREADS)
     {
         // Error: You have too many active threads!
         return -1;
@@ -501,7 +501,7 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
     spawned_thread_info_array_[id].active_flag       = &spawned_thread_active_flag_[id];
     spawned_thread_info_array_[id].active_flag_lock  = spawned_thread_active_flag_lock_[id].get();
 
-#if XSIGMA_USE_WIN32_THREADS
+#if QUARISMA_USE_WIN32_THREADS
     // Using CreateThread on Windows
     //
     DWORD threadId;                   // NOLINT
@@ -520,7 +520,7 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
     }
 #endif
 
-#if XSIGMA_USE_PTHREADS
+#if QUARISMA_USE_PTHREADS
     // Using POSIX threads
     //
     pthread_attr_t attr;
@@ -537,8 +537,8 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
 
 #endif
 
-#if !XSIGMA_USE_WIN32_THREADS
-#if !XSIGMA_USE_PTHREADS
+#if !QUARISMA_USE_WIN32_THREADS
+#if !QUARISMA_USE_PTHREADS
     (void)f;
     // There is no multi threading, so there is only one thread.
     // This won't work - so give an error message.
@@ -553,7 +553,7 @@ int multi_threader::spawn_thread(thread_function_type f, void* userdata)
 void multi_threader::terminate_thread(int thread_id)
 {
     // check if the thread_id argument is in range
-    if (thread_id >= XSIGMA_MAX_THREADS)
+    if (thread_id >= QUARISMA_MAX_THREADS)
     {
         // Error: thread_id is out of range
         return;
@@ -585,17 +585,17 @@ void multi_threader::terminate_thread(int thread_id)
         spawned_thread_active_flag_[thread_id] = 0;
     }
 
-#if XSIGMA_USE_WIN32_THREADS
+#if QUARISMA_USE_WIN32_THREADS
     WaitForSingleObject(spawned_thread_process_id_[thread_id], INFINITE);  // NOLINT
     CloseHandle(spawned_thread_process_id_[thread_id]);                    // NOLINT
 #endif
 
-#if XSIGMA_USE_PTHREADS
+#if QUARISMA_USE_PTHREADS
     pthread_join(spawned_thread_process_id_[thread_id], nullptr);
 #endif
 
-#if !XSIGMA_USE_WIN32_THREADS
-#if !XSIGMA_USE_PTHREADS
+#if !QUARISMA_USE_WIN32_THREADS
+#if !QUARISMA_USE_PTHREADS
     // There is no multi threading, so there is only one thread.
     // This won't work - so give an error message.
 #endif
@@ -607,9 +607,9 @@ void multi_threader::terminate_thread(int thread_id)
 //------------------------------------------------------------------------------
 multi_threader_id_type multi_threader::get_current_thread_id()
 {
-#if XSIGMA_USE_PTHREADS
+#if QUARISMA_USE_PTHREADS
     return pthread_self();
-#elif defined(XSIGMA_USE_WIN32_THREADS)
+#elif defined(QUARISMA_USE_WIN32_THREADS)
     return GetCurrentThreadId();  // NOLINT
 #else
     // No threading implementation.  Assume all callers are in the same
@@ -621,7 +621,7 @@ multi_threader_id_type multi_threader::get_current_thread_id()
 bool multi_threader::is_thread_active(int thread_id)
 {
     // check if the thread_id argument is in range
-    if (thread_id >= XSIGMA_MAX_THREADS)
+    if (thread_id >= QUARISMA_MAX_THREADS)
     {
         // Error: thread_id is out of range
         return false;
@@ -647,9 +647,9 @@ bool multi_threader::is_thread_active(int thread_id)
 //------------------------------------------------------------------------------
 bool multi_threader::threads_equal(multi_threader_id_type t1, multi_threader_id_type t2)
 {
-#if XSIGMA_USE_PTHREADS
+#if QUARISMA_USE_PTHREADS
     return pthread_equal(t1, t2) != 0;
-#elif defined(XSIGMA_USE_WIN32_THREADS)
+#elif defined(QUARISMA_USE_WIN32_THREADS)
     return t1 == t2;
 #else
     (void)t1;

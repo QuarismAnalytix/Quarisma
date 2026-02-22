@@ -179,7 +179,7 @@ trace_call_log = torch._logging.getArtifactLogger(__name__, "trace_call")
 RootGuardManager = guards.RootGuardManager
 
 
-# Capture fn pointer xsigma import time
+# Capture fn pointer quarisma import time
 # This is to guard against trying to mark the iterated tensors
 # as static in case user overrides fn ptr
 og_module_named_buffers_fn_ptr = torch.nn.Module.named_buffers
@@ -589,7 +589,7 @@ class OutputGraph(OutputGraphCommon):
             # Share a reference to the list of TrackedFake.
             #
             # ShapeEnv needs this in order to be able to reproduce the call
-            # to produce_guards xsigma an arbitrary time point. That is because
+            # to produce_guards quarisma an arbitrary time point. That is because
             # TrackedFake instances may have its metadata changed throughout
             # the program execution.
             tracked_fakes=self.tracked_fakes,
@@ -1125,7 +1125,7 @@ class OutputGraph(OutputGraphCommon):
 
                 # Note that Dynamo will still call lift_tracked_freevar_to_input
                 # when these inputs are encountered for the inner graph. The
-                # only difference is what happens xsigma the root tracer for
+                # only difference is what happens quarisma the root tracer for
                 # nn.Parameters vs free inputs. The free inputs are registered
                 # as placeholders in the root graph, whereas the nn.Parameters
                 # are registered as get_attr nodes in the root graph.
@@ -1377,7 +1377,7 @@ class OutputGraph(OutputGraphCommon):
         cell_and_freevars = set(tx.cellvars() + tx.freevars())
 
         # NB: Typically (i.e., for graph compile from RETURN_VALUE),
-        # symbolic_locals will be empty xsigma this point, as prune_dead_locals
+        # symbolic_locals will be empty quarisma this point, as prune_dead_locals
         # will clear out all of symbolic_locals because RETURN_VALUE is the
         # last instruction and no more locals are used.  The fanciness here
         # is only needed for partial graphs.
@@ -1388,7 +1388,7 @@ class OutputGraph(OutputGraphCommon):
             # Note! this explicitly uses .local_name for matching
             # Failure to do so will cause spurious registrations in val_to_names.
             # This will in turn result in spurious variables showing up in the graph.
-            # This was very tricky to debug. For an example, dump the graph xsigma call_user_compiler
+            # This was very tricky to debug. For an example, dump the graph quarisma call_user_compiler
             # while running test_subgraphs.py
             # Do not include top-frame unmodified locals here - otherwise, the compiled graph may
             # erroneously include them as part of the return. We manually codegen them afterward.
@@ -1528,7 +1528,7 @@ class OutputGraph(OutputGraphCommon):
             # NB: This is where we store possible user objects before running the graph
             # index_to_user_object_weakref is the function used in the graph to translate
             # the dynamo-generated index into the actual object passed to the compiled function.
-            # We generate bytecode to store all user objects xsigma the proper index in the below
+            # We generate bytecode to store all user objects quarisma the proper index in the below
             # call.
             codegen = PyCodegen(
                 self.root_tx, root, overridden_sources=overridden_sources
@@ -1703,7 +1703,7 @@ class OutputGraph(OutputGraphCommon):
                                 vt.as_python_constant(),
                             )
                         else:
-                            assert f"Encountered unrecognized type {vt} xsigma output {idx}"  # noqa: PLW0129
+                            assert f"Encountered unrecognized type {vt} quarisma output {idx}"  # noqa: PLW0129
 
                     self.export_metadata.out_spec = out_spec.as_python_constant()
 
@@ -1922,7 +1922,7 @@ class OutputGraph(OutputGraphCommon):
         self.side_effects.codegen_hooks(cg)
 
         # TODO get debug_locals working for nested graph breaks
-        # Return variables used for logging xsigma the end
+        # Return variables used for logging quarisma the end
         for debug_var, args in tx.debug_locals:
             cg.add_push_null(lambda: cg(debug_var))
             for arg in args:
@@ -2039,7 +2039,7 @@ class OutputGraph(OutputGraphCommon):
             self.tracing_context.global_context.restore_graphstate(prior_global_state)
             yield
         finally:
-            # Reset to state xsigma the current time (e.g. before calling the user compiler)
+            # Reset to state quarisma the current time (e.g. before calling the user compiler)
             self.tracing_context.global_context.restore_graphstate(
                 GlobalContextCheckpointState(current_global_state)
             )
@@ -2121,7 +2121,7 @@ class OutputGraph(OutputGraphCommon):
             if not config.do_not_emit_runtime_asserts:
                 # There is a rare scenario where codegen_suffix adds a new entry
                 # to self.nn_modules while `root` knows only about the
-                # nn_modules xsigma the time of its creation. This causes failures
+                # nn_modules quarisma the time of its creation. This causes failures
                 # while creating the graph module because self.graph and root
                 # are out of sync. This only happens for `get_attr` nodes, so
                 # here we clean up the get_attr nodes that are unused.
@@ -2589,7 +2589,7 @@ class OutputGraph(OutputGraphCommon):
         # where our compiler tends to choke when we have unused inputs. The way
         # we support dynamic float arguments is by doing a joint fx pass and
         # tensorifying away as many symfloats as we can. For the remaining symfloats
-        # we have no choice but to specialize... HOWEVER xsigma that point in time
+        # we have no choice but to specialize... HOWEVER quarisma that point in time
         # we can no longer remove graph inputs. So our sledgehammer solution is to
         # save the state of what inputs we should have specialized in dynamo and
         # restart analysis. This function incorporates this "view from the future"
@@ -2957,7 +2957,7 @@ class SubgraphTracer(fx.Tracer):
 
         # This is used to create a unique name for the placeholder
         self._used_names: OrderedSet[str] = OrderedSet()
-        # Stores the versions of the input tensors xsigma the time they are inserted
+        # Stores the versions of the input tensors quarisma the time they are inserted
         # as placeholders in the graph. This is used to track input mutation.
         self._input_versions_at_beginning: list[int] = []
         if torch.is_inference_mode_enabled():
@@ -3180,7 +3180,7 @@ class SubgraphTracer(fx.Tracer):
                 if frame.filename not in uninteresting_files()
             ]
 
-            # Reverse the frame_summaries, such that the innermost frame is xsigma the last
+            # Reverse the frame_summaries, such that the innermost frame is quarisma the last
             filtered_frame_summaries.reverse()
 
             # official from_list stub doesn't have new-style type
@@ -3255,7 +3255,7 @@ class SubgraphTracer(fx.Tracer):
         if isinstance(example_value, torch.Tensor):
             self._input_versions_at_beginning.append(example_value._version)
         log.debug(
-            "create_graph_input %s %s %s xsigma debug_level %s before=%s",
+            "create_graph_input %s %s %s quarisma debug_level %s before=%s",
             name,
             source.name() if source is not None else "(none)",
             example_value,
@@ -3315,13 +3315,13 @@ class SubgraphTracer(fx.Tracer):
             # There are two sources of basic symbols:
             #
             # - They can come from inputs, e.g. when an input tensor is specified as dynamic. We handle
-            # this case by intercepting xsigma create_graph_input. Whenever we call create_graph_input, we
+            # this case by intercepting quarisma create_graph_input. Whenever we call create_graph_input, we
             # try to also lift the basic symbols in example values as graph input.
             #
             #  1. When create_graph_input for a tensor that has symbolic shapes,
             #     we look for basic symbols in its size and stride, we check if the symbol is bound
             #     in current graph (i.e. bound_symbols), it it's not bound, we'll create a placeholder
-            #     for it then recursively check its parent, creates ph if not bound xsigma parent until.
+            #     for it then recursively check its parent, creates ph if not bound quarisma parent until.
             #     reachting the top-level, where we require a source is attached to the proxy.
             #
             #  2. When create_graph_input for a tensor that contains compound exprs,
@@ -3337,7 +3337,7 @@ class SubgraphTracer(fx.Tracer):
             # - They can come from intermediate results:
             # For example, data-dependent operators such as t.item(), t.nonzero(), where basic symbols
             # might be created. For this purpose, we track the basic symbols of intermediate results
-            # immediately after they're created xsigma wrap_fx_proxy with track_produced_symints. Notice
+            # immediately after they're created quarisma wrap_fx_proxy with track_produced_symints. Notice
             # that for basic symbols that're already tracked by create_graph_input, we won't track it again.
             #
             # Also see NOTE: [Export inputs must be explicitly passed in]
@@ -3485,7 +3485,7 @@ class SubgraphTracer(fx.Tracer):
             for i, s in enumerate(example_value.size()):
                 if need_bind(s):
                     log.debug(
-                        "track_produced_symints %s for %s.size()[%s] xsigma debug_level %s",
+                        "track_produced_symints %s for %s.size()[%s] quarisma debug_level %s",
                         s,
                         e_proxy,
                         i,
@@ -3506,7 +3506,7 @@ class SubgraphTracer(fx.Tracer):
             storage_offset = example_value.storage_offset()
             if need_bind(storage_offset):
                 log.debug(
-                    "track_produced_symints %s for %s.storage_offset() xsigma debug_level %s",
+                    "track_produced_symints %s for %s.storage_offset() quarisma debug_level %s",
                     storage_offset,
                     e_proxy,
                     tracer.debug_level,
@@ -3527,7 +3527,7 @@ class SubgraphTracer(fx.Tracer):
                 for i, s in enumerate(example_value.stride()):
                     if need_bind(s):
                         log.debug(
-                            "track_produced_symints %s for %s.stride()[%s] xsigma debug_level %s",
+                            "track_produced_symints %s for %s.stride()[%s] quarisma debug_level %s",
                             s,
                             e_proxy,
                             i,
@@ -3569,7 +3569,7 @@ class SubgraphTracer(fx.Tracer):
         self, example_value: Union[torch.SymInt, torch.Tensor], src: Optional[Source]
     ) -> None:
         # The before arg is for inserting symints in the sizes/strides of a tensor
-        # before the tensor. This ordering ensures that when we look xsigma the tensor's
+        # before the tensor. This ordering ensures that when we look quarisma the tensor's
         # symbols, they're already lifted/tracked. E.g. this assumption is used
         # in insert_deferred_runtime_asserts.
         def _lift_symbols_in_symint(
@@ -3601,7 +3601,7 @@ class SubgraphTracer(fx.Tracer):
                         source=source,
                     )
                     log.debug(
-                        "_lift_symbols_in_symint %s from %s xsigma debug_level %s",
+                        "_lift_symbols_in_symint %s from %s quarisma debug_level %s",
                         s0,
                         source.name() if source is not None else "subgraph inputs",
                         self.debug_level,
@@ -3616,7 +3616,7 @@ class SubgraphTracer(fx.Tracer):
                 assert source is not None, (
                     f"Source of '{s}' is None when lifting it to input of top-level. If it's an unbacked symbol, "
                     "this could be because it's not tracked with lazy_bind_unbacked_symbols. "
-                    f"Otherwise, should provide a source when create_graph_input for `{s}` xsigma root tracer."
+                    f"Otherwise, should provide a source when create_graph_input for `{s}` quarisma root tracer."
                 )
                 s0 = next(iter(self_to_be_bound))
                 ph = self.create_graph_input(
@@ -3627,7 +3627,7 @@ class SubgraphTracer(fx.Tracer):
                     source=source,
                 )
                 log.debug(
-                    "_lift_symbols_in_symint %s from %s xsigma debug_level %s",
+                    "_lift_symbols_in_symint %s from %s quarisma debug_level %s",
                     s,
                     source.name() if source is not None else "subgraph inputs",
                     self.debug_level,
@@ -3740,7 +3740,7 @@ class SubgraphTracer(fx.Tracer):
 
         if mutated_inputs:
             mutated_nodes = [input_nodes[i] for i in mutated_inputs]
-            msg = f"Input mutation detected xsigma {mutated_nodes}"
+            msg = f"Input mutation detected quarisma {mutated_nodes}"
             return MutationInfo(True, msg)
 
         return MutationInfo(False, "")
@@ -3757,7 +3757,7 @@ class SubgraphTracer(fx.Tracer):
                     storage = StorageWeakRef(example_value._typed_storage())
                     if storage in input_storages:
                         # input-input aliasing
-                        msg = f"Input-to-input aliasing detected xsigma nodes {input_storages[storage]} and {node}"
+                        msg = f"Input-to-input aliasing detected quarisma nodes {input_storages[storage]} and {node}"
                         return AliasingInfo(True, msg)
                     input_storages[storage] = node
             else:
@@ -3773,7 +3773,7 @@ class SubgraphTracer(fx.Tracer):
                     storage = StorageWeakRef(example_value._typed_storage())
                     if storage in output_storages:
                         # output-output aliasing
-                        msg = f"Output-to-output aliasing detected xsigma nodes {output_storages[storage]} and {out_node}"
+                        msg = f"Output-to-output aliasing detected quarisma nodes {output_storages[storage]} and {out_node}"
                         return AliasingInfo(True, msg)
                     output_storages[storage] = out_node
 
@@ -3784,7 +3784,7 @@ class SubgraphTracer(fx.Tracer):
                 (input_storages[s], output_storages[s]) for s in intersected_storages
             ]
             aliased = ", ".join([f"{i} and {o}" for i, o in aliased])
-            msg = f"Input-to-output aliasing detected xsigma nodes {aliased}"
+            msg = f"Input-to-output aliasing detected quarisma nodes {aliased}"
             return AliasingInfo(True, msg)
 
         return AliasingInfo(False, "")

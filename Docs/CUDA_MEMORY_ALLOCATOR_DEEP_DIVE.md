@@ -1,4 +1,4 @@
-# CUDA Memory Allocator Deep-Dive Analysis for xsigma_tensor
+# CUDA Memory Allocator Deep-Dive Analysis for quarisma_tensor
 
 ## Table of Contents
 1. [Overview](#overview)
@@ -13,7 +13,7 @@
 
 ## Overview
 
-The xsigma_tensor CUDA memory allocator is a sophisticated caching allocator that manages GPU memory efficiently for mathematical and financial computing workloads. It sits between application code and raw CUDA memory operations, providing:
+The quarisma_tensor CUDA memory allocator is a sophisticated caching allocator that manages GPU memory efficiently for mathematical and financial computing workloads. It sits between application code and raw CUDA memory operations, providing:
 
 - **Memory Caching**: Reuses previously allocated blocks instead of calling `cudaMalloc`/`cudaFree`
 - **Stream-Aware Allocation**: Tracks which CUDA streams use memory blocks
@@ -55,7 +55,7 @@ struct DeviceStats {
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Application Code                         │
-│              (xsigma_tensor operations)                     │
+│              (quarisma_tensor operations)                     │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -331,7 +331,7 @@ Timeline:
 ### Allocation Request Flow
 
 ```
-1. Application calls: tensor = xsigma.zeros(1000, 1000, device='cuda')
+1. Application calls: tensor = quarisma.zeros(1000, 1000, device='cuda')
                               ↓
 2. Allocator receives: allocate(4MB)
                               ↓
@@ -426,7 +426,7 @@ For financial computing:
 
 1. **Batch Operations**: Reduce allocation frequency
 2. **Stream Pooling**: Reuse streams to improve cache hit rate
-3. **Memory Limits**: Set `PYXSIGMA_CUDA_ALLOC_CONF` to control cache size
+3. **Memory Limits**: Set `PYQUARISMA_CUDA_ALLOC_CONF` to control cache size
 4. **Monitoring**: Use `getDeviceStats()` to track usage
 
 ---
@@ -439,7 +439,7 @@ For financial computing:
    ```python
    # Caching is enabled by default
    # Disable only if memory is extremely constrained
-   xsigma.cuda.empty_cache()  # Manual cache flush
+   quarisma.cuda.empty_cache()  # Manual cache flush
    ```
 
 2. **Use recordStream for Multi-Stream Operations**:
@@ -450,7 +450,7 @@ For financial computing:
 
 3. **Monitor Memory Usage**:
    ```python
-   stats = xsigma.cuda.memory_stats()
+   stats = quarisma.cuda.memory_stats()
    print(f"Reserved: {stats['reserved_bytes.all.current']}")
    print(f"Allocated: {stats['allocated_bytes.all.current']}")
    ```
@@ -458,19 +458,19 @@ For financial computing:
 4. **Batch Allocations**:
    ```python
    # Good: Allocate once, reuse
-   buffer = xsigma.zeros(10000, 10000, device='cuda')
+   buffer = quarisma.zeros(10000, 10000, device='cuda')
    for i in range(1000):
        result = compute(buffer)
 
    # Avoid: Frequent small allocations
    for i in range(1000):
-       buffer = xsigma.zeros(100, 100, device='cuda')
+       buffer = quarisma.zeros(100, 100, device='cuda')
    ```
 
 5. **Set Memory Limits**:
    ```bash
    # Limit cache to 50% of GPU memory
-   export PYXSIGMA_CUDA_ALLOC_CONF=max_split_size_mb:512
+   export PYQUARISMA_CUDA_ALLOC_CONF=max_split_size_mb:512
    ```
 
 ### Comparison: Cached vs. Uncached Allocation
@@ -498,7 +498,7 @@ For financial computing:
 ```
 User Code
    │
-   ├─ tensor = xsigma.zeros(1000, 1000, device='cuda')
+   ├─ tensor = quarisma.zeros(1000, 1000, device='cuda')
    │
    ▼
 ┌─────────────────────────────────────────────────────┐
@@ -668,8 +668,8 @@ stats.allocated_bytes[StatType::AGGREGATE].decrease(size);
 Symptom: RuntimeError: CUDA out of memory
 Cause: Cache not flushed, fragmentation
 Solution:
-  xsigma.cuda.empty_cache()  # Force cache flush
-  xsigma.cuda.reset_peak_memory_stats()  # Reset tracking
+  quarisma.cuda.empty_cache()  # Force cache flush
+  quarisma.cuda.reset_peak_memory_stats()  # Reset tracking
 ```
 
 **Issue 2: Memory Leak**
@@ -679,7 +679,7 @@ Cause: Tensors not released, circular references
 Solution:
   del tensor  # Explicit deletion
   gc.collect()  # Force garbage collection
-  xsigma.cuda.empty_cache()  # Flush cache
+  quarisma.cuda.empty_cache()  # Flush cache
 ```
 
 **Issue 3: Slow Allocation**
@@ -696,7 +696,7 @@ Solution:
 
 ```python
 # Get detailed statistics
-stats = xsigma.cuda.memory_stats()
+stats = quarisma.cuda.memory_stats()
 
 # Key metrics
 print(f"Allocated: {stats['allocated_bytes.all.current'] / 1e9:.2f} GB")
@@ -704,8 +704,8 @@ print(f"Reserved: {stats['reserved_bytes.all.current'] / 1e9:.2f} GB")
 print(f"Overhead: {(stats['reserved_bytes.all.current'] - stats['allocated_bytes.all.current']) / stats['reserved_bytes.all.current'] * 100:.1f}%")
 
 # Reset statistics
-xsigma.cuda.reset_peak_memory_stats()
-xsigma.cuda.reset_accumulated_stats()
+quarisma.cuda.reset_peak_memory_stats()
+quarisma.cuda.reset_accumulated_stats()
 ```
 
 ---
@@ -765,10 +765,10 @@ Benefit: Prevents data races, enables safe multi-stream ops
 ### Example 1: Basic Allocation and Deallocation
 
 ```python
-import xsigma
+import quarisma
 
 # Allocation
-tensor = xsigma.zeros(1000, 1000, dtype=xsigma.float64, device='cuda')
+tensor = quarisma.zeros(1000, 1000, dtype=quarisma.float64, device='cuda')
 # Internally:
 # 1. Size = 1000 * 1000 * 8 bytes = 8MB
 # 2. Rounded to 20MB (large block)
@@ -790,22 +790,22 @@ del tensor
 ### Example 2: Multi-Stream Operations with recordStream
 
 ```python
-import xsigma
+import quarisma
 
 # Create streams
-stream0 = xsigma.cuda.Stream()
-stream1 = xsigma.cuda.Stream()
+stream0 = quarisma.cuda.Stream()
+stream1 = quarisma.cuda.Stream()
 
 # Allocate tensor
-tensor = xsigma.zeros(1000, 1000, dtype=xsigma.float64, device='cuda')
+tensor = quarisma.zeros(1000, 1000, dtype=quarisma.float64, device='cuda')
 
 # Use on stream 0
-with xsigma.cuda.stream(stream0):
+with quarisma.cuda.stream(stream0):
     result0 = tensor @ tensor.T
     tensor.record_stream(stream0)  # Associate with stream 0
 
 # Use on stream 1 (concurrent)
-with xsigma.cuda.stream(stream1):
+with quarisma.cuda.stream(stream1):
     result1 = tensor + tensor
     tensor.record_stream(stream1)  # Associate with stream 1
 
@@ -819,16 +819,16 @@ stream1.synchronize()
 ### Example 3: Memory Monitoring
 
 ```python
-import xsigma
+import quarisma
 
 # Get initial stats
-xsigma.cuda.reset_peak_memory_stats()
+quarisma.cuda.reset_peak_memory_stats()
 
 # Allocate tensors
-tensors = [xsigma.randn(1000, 1000, device='cuda') for _ in range(10)]
+tensors = [quarisma.randn(1000, 1000, device='cuda') for _ in range(10)]
 
 # Get statistics
-stats = xsigma.cuda.memory_stats()
+stats = quarisma.cuda.memory_stats()
 
 print(f"Allocated: {stats['allocated_bytes.all.current'] / 1e9:.2f} GB")
 print(f"Reserved: {stats['reserved_bytes.all.current'] / 1e9:.2f} GB")
@@ -839,13 +839,13 @@ overhead = (stats['reserved_bytes.all.current'] -
 print(f"Memory overhead: {overhead * 100:.1f}%")
 
 # Clear cache
-xsigma.cuda.empty_cache()
+quarisma.cuda.empty_cache()
 ```
 
 ### Example 4: Batch Processing with Memory Reuse
 
 ```python
-import xsigma
+import quarisma
 
 class FinancialSimulator:
     def __init__(self, n_assets, n_simulations):
@@ -853,12 +853,12 @@ class FinancialSimulator:
         self.n_simulations = n_simulations
 
         # Pre-allocate buffers (memory reused across iterations)
-        self.prices = xsigma.zeros(n_simulations, n_assets,
-                                  dtype=xsigma.float64, device='cuda')
-        self.returns = xsigma.zeros(n_simulations, n_assets,
-                                   dtype=xsigma.float64, device='cuda')
-        self.portfolio_values = xsigma.zeros(n_simulations,
-                                            dtype=xsigma.float64, device='cuda')
+        self.prices = quarisma.zeros(n_simulations, n_assets,
+                                  dtype=quarisma.float64, device='cuda')
+        self.returns = quarisma.zeros(n_simulations, n_assets,
+                                   dtype=quarisma.float64, device='cuda')
+        self.portfolio_values = quarisma.zeros(n_simulations,
+                                            dtype=quarisma.float64, device='cuda')
 
     def simulate(self, n_iterations):
         for i in range(n_iterations):
@@ -875,16 +875,16 @@ class FinancialSimulator:
 
     def generate_prices(self):
         # Simulate price movements
-        noise = xsigma.randn_like(self.prices)
+        noise = quarisma.randn_like(self.prices)
         self.prices = self.prices * (1 + 0.01 * noise)
 
     def compute_returns(self):
         # Compute log returns
-        self.returns = xsigma.log(self.prices / (self.prices + 1e-8))
+        self.returns = quarisma.log(self.prices / (self.prices + 1e-8))
 
     def compute_portfolio_values(self):
         # Compute portfolio values
-        weights = xsigma.ones(self.n_assets, device='cuda') / self.n_assets
+        weights = quarisma.ones(self.n_assets, device='cuda') / self.n_assets
         self.portfolio_values = (self.prices @ weights)
 
 # Usage
@@ -895,12 +895,12 @@ simulator.simulate(n_iterations=100)
 
 ---
 
-## Integration with xsigma_tensor
+## Integration with quarisma_tensor
 
-### How xsigma_tensor Uses the Allocator
+### How quarisma_tensor Uses the Allocator
 
 ```cpp
-// Tensor creation in xsigma_tensor
+// Tensor creation in quarisma_tensor
 Tensor zeros(IntArrayRef size, Device device) {
   // 1. Calculate total elements
   size_t numel = std::accumulate(size.begin(), size.end(), 1, std::multiplies<>());
@@ -946,9 +946,9 @@ class PortfolioOptimizer {
 public:
   void optimize() {
     // Pre-allocate buffers
-    weights = xsigma::zeros({n_assets}, device);
+    weights = quarisma::zeros({n_assets}, device);
     covariance = compute_covariance();
-    gradients = xsigma::zeros({n_assets}, device);
+    gradients = quarisma::zeros({n_assets}, device);
 
     // Iterate with memory reuse
     for (int iter = 0; iter < max_iterations; iter++) {
@@ -965,7 +965,7 @@ public:
 
 ## Conclusion
 
-The xsigma_tensor CUDA memory allocator provides sophisticated memory management optimized for mathematical and financial computing workloads. By understanding its architecture, stream integration, and lifecycle management, developers can write efficient GPU code that maximizes performance while maintaining memory safety.
+The quarisma_tensor CUDA memory allocator provides sophisticated memory management optimized for mathematical and financial computing workloads. By understanding its architecture, stream integration, and lifecycle management, developers can write efficient GPU code that maximizes performance while maintaining memory safety.
 
 Key takeaways:
 - **Caching dramatically improves performance** for typical workloads
@@ -990,7 +990,7 @@ cudaFree(ptr);              // ~100-500 microseconds
 // Total: ~600-1500 microseconds per allocation
 ```
 
-### xsigma_tensor Caching Allocator
+### quarisma_tensor Caching Allocator
 
 ```cpp
 // Cached allocation approach
@@ -1003,7 +1003,7 @@ allocator->deallocate(ptr);            // ~1-5 microseconds (add to cache)
 
 ### Detailed Comparison Table
 
-| Aspect | Standard CUDA | xsigma_tensor Caching |
+| Aspect | Standard CUDA | quarisma_tensor Caching |
 |--------|---------------|----------------------|
 | **Allocation Speed** | 500-1000 μs | 1-10 μs (cached) |
 | **Deallocation Speed** | 100-500 μs | 1-5 μs |
@@ -1029,7 +1029,7 @@ Total: 10 seconds
 Allocation overhead: 75%
 ```
 
-xsigma_tensor Caching:
+quarisma_tensor Caching:
 ```
 Allocations per iteration: 10 (first iteration only)
 Total allocations: 10 (reused)
@@ -1056,7 +1056,7 @@ Problem: Cannot allocate 2MB contiguous block
 Fragmentation ratio: 30%
 ```
 
-**xsigma_tensor Caching**:
+**quarisma_tensor Caching**:
 ```
 After 100 allocations/deallocations:
 ┌──────────────────────────────────────────────────┐
@@ -1076,7 +1076,7 @@ Fragmentation ratio: 5%
 - Simplicity is critical
 - One-time initialization
 
-**Use xsigma_tensor Caching when**:
+**Use quarisma_tensor Caching when**:
 - Frequent allocations (> 100 per second)
 - Performance is critical
 - Multi-stream operations needed
@@ -1090,29 +1090,29 @@ Fragmentation ratio: 5%
 
 ```bash
 # Disable caching (use direct cudaMalloc)
-export PYXSIGMA_CUDA_ALLOC_CONF=caching_allocator:False
+export PYQUARISMA_CUDA_ALLOC_CONF=caching_allocator:False
 
 # Set maximum split size (default: 512MB)
-export PYXSIGMA_CUDA_ALLOC_CONF=max_split_size_mb:256
+export PYQUARISMA_CUDA_ALLOC_CONF=max_split_size_mb:256
 
 # Set garbage collection threshold
-export PYXSIGMA_CUDA_ALLOC_CONF=garbage_collection_threshold:0.8
+export PYQUARISMA_CUDA_ALLOC_CONF=garbage_collection_threshold:0.8
 
 # Combine multiple settings
-export PYXSIGMA_CUDA_ALLOC_CONF=max_split_size_mb:256,garbage_collection_threshold:0.8
+export PYQUARISMA_CUDA_ALLOC_CONF=max_split_size_mb:256,garbage_collection_threshold:0.8
 ```
 
 ### Monitoring Environment Variables
 
 ```bash
 # Enable memory profiling
-export PYXSIGMA_CUDA_ALLOC_CONF=trace_malloc_mode:1
+export PYQUARISMA_CUDA_ALLOC_CONF=trace_malloc_mode:1
 
 # Enable debug output
 export CUDA_LAUNCH_BLOCKING=1
 
 # Set memory fraction (limit GPU memory usage)
-export PYXSIGMA_CUDA_ALLOC_CONF=max_split_size_mb:512
+export PYQUARISMA_CUDA_ALLOC_CONF=max_split_size_mb:512
 ```
 
 ---
@@ -1134,22 +1134,22 @@ export PYXSIGMA_CUDA_ALLOC_CONF=max_split_size_mb:512
 
 ## References and Further Reading
 
-### Key Files in xsigma_tensor
+### Key Files in quarisma_tensor
 
 - `c10/core/CachingDeviceAllocator.h` - Allocator interface
 - `c10/core/CachingDeviceAllocator.cpp` - Base implementation
-- `aten/src/XSigma/native/cuda/RecordStream.cu` - Stream recording
-- `aten/src/XSigma/native/Memory.cpp` - Memory utilities
-- `aten/src/XSigma/native/Resize.cpp` - Tensor resizing
+- `aten/src/Quarisma/native/cuda/RecordStream.cu` - Stream recording
+- `aten/src/Quarisma/native/Memory.cpp` - Memory utilities
+- `aten/src/Quarisma/native/Resize.cpp` - Tensor resizing
 
-### Related XSigma Documentation
+### Related Quarisma Documentation
 
-- [XSigma CUDA Memory Management](https://pytorch.org/docs/stable/notes/cuda.html)
+- [Quarisma CUDA Memory Management](https://pytorch.org/docs/stable/notes/cuda.html)
 - [CUDA Streams and Events](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#streams-and-events)
 - [Memory Optimization Guide](https://pytorch.org/docs/stable/notes/cuda.html#memory-management)
 
 ### Performance Tuning Resources
 
 - NVIDIA CUDA Best Practices Guide
-- XSigma Performance Tuning Documentation
-- xsigma_tensor Optimization Guide (forthcoming)
+- Quarisma Performance Tuning Documentation
+- quarisma_tensor Optimization Guide (forthcoming)

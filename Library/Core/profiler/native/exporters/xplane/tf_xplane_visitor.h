@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
@@ -37,7 +37,7 @@ limitations under the License.
 #include "profiler/native/exporters/xplane/xplane_schema.h"
 #include "profiler/native/exporters/xplane/xplane_visitor.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 inline xplane_visitor CreateTfXPlaneVisitor(const xplane* plane)
@@ -45,4 +45,4 @@ inline xplane_visitor CreateTfXPlaneVisitor(const xplane* plane)
     return xplane_visitor(plane, {FindHostEventType, FindTfOpEventType}, {FindStatType});
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

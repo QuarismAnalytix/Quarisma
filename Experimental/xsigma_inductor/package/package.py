@@ -125,7 +125,7 @@ def load_package(
             # handle reading the buffer. This is just a temporary workaround
             path.seek(0)
             f.write(path.read())
-            log.debug("Writing buffer to tmp file located xsigma %s.", f.name)
+            log.debug("Writing buffer to tmp file located quarisma %s.", f.name)
             loader = torch._C._aoti.AOTIModelPackageLoader(
                 f.name, model_name, run_single_threaded, num_runners, device_index
             )

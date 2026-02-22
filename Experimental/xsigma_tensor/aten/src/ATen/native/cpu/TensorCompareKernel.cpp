@@ -1,16 +1,16 @@
 #include <c10/core/ScalarType.h>
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
-#include <XSigma/Dispatch.h>
-#include <XSigma/NumericUtils.h>
-#include <XSigma/Parallel.h>
-#include <XSigma/TensorIterator.h>
-#include <XSigma/WrapDimUtils.h>
-#include <XSigma/core/Tensor.h>
-#include <XSigma/native/ReduceOps.h>
-#include <XSigma/native/ReduceOpsUtils.h>
-#include <XSigma/native/Resize.h>
-#include <XSigma/native/TensorCompare.h>
-#include <XSigma/native/cpu/Loops.h>
+#include <Quarisma/Dispatch.h>
+#include <Quarisma/NumericUtils.h>
+#include <Quarisma/Parallel.h>
+#include <Quarisma/TensorIterator.h>
+#include <Quarisma/WrapDimUtils.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/native/ReduceOps.h>
+#include <Quarisma/native/ReduceOpsUtils.h>
+#include <Quarisma/native/Resize.h>
+#include <Quarisma/native/TensorCompare.h>
+#include <Quarisma/native/cpu/Loops.h>
 #include <c10/util/irange.h>
 
 #include <algorithm>
@@ -20,9 +20,9 @@
 #include <vector>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/result_type.h>
+#include <Quarisma/ops/result_type.h>
 #endif
 
 namespace at::native

@@ -1,14 +1,14 @@
 #pragma once
 /*
-//#include <XSigma/core/DimVector.h>
-//#include <XSigma/core/TensorBody.h>
-//#include <XSigma/core/blob.h>
-//#include <XSigma/core/custom_class.h>
-//#include <XSigma/core/ivalue_to.h>
-//#include <XSigma/core/jit_type_base.h>
-//#include <XSigma/core/type_factory.h>
-#include <xsigma/core/SymBool.h>
-#include <xsigma/core/SymFloat.h>
+//#include <Quarisma/core/DimVector.h>
+//#include <Quarisma/core/TensorBody.h>
+//#include <Quarisma/core/blob.h>
+//#include <Quarisma/core/custom_class.h>
+//#include <Quarisma/core/ivalue_to.h>
+//#include <Quarisma/core/jit_type_base.h>
+//#include <Quarisma/core/type_factory.h>
+#include <quarisma/core/SymBool.h>
+#include <quarisma/core/SymFloat.h>
 */
 #include <complex>
 #include <limits>
@@ -23,20 +23,20 @@
 // profiler_xxx note: this copy intentionally disables Tensor functionality.
 #define PROFILER_XXX_DISABLE_TENSOR 1
 
-namespace xsigma
+namespace quarisma
 {
-class XSIGMA_VISIBILITY CustomClassHolder : public xsigma::intrusive_ptr_target
+class QUARISMA_VISIBILITY CustomClassHolder : public quarisma::intrusive_ptr_target
 {
 };
 namespace jit
 {
-using ::xsigma::CustomClassHolder;
+using ::quarisma::CustomClassHolder;
 struct Function;
 struct CompilationUnit;
 struct Module;
 }  // namespace jit
-}  // namespace xsigma
-namespace xsigma
+}  // namespace quarisma
+namespace quarisma
 {
 template <class Key, class Value>
 class Dict;
@@ -52,16 +52,16 @@ class RRefInterface;
 struct ClassType;
 using ClassTypePtr = std::shared_ptr<ClassType>;
 
-XSIGMA_API bool _fastEqualsForContainer(const IValue& lhs, const IValue& rhs);
+QUARISMA_API bool _fastEqualsForContainer(const IValue& lhs, const IValue& rhs);
 
-XSIGMA_API xsigma::jit::Function* checkObjectSortSchema(
-    const xsigma::ClassTypePtr& t, std::stringstream& why_not);
+QUARISMA_API quarisma::jit::Function* checkObjectSortSchema(
+    const quarisma::ClassTypePtr& t, std::stringstream& why_not);
 
 // A comparator that checks ordering of two IValues of same type.
 typedef std::function<bool(const IValue& a, const IValue& b)> IValueComparator;
 
-XSIGMA_API IValueComparator getLessThanComparator(const IValue& v);
-XSIGMA_API IValueComparator getGreaterThanComparator(const IValue& v);
+QUARISMA_API IValueComparator getLessThanComparator(const IValue& v);
+QUARISMA_API IValueComparator getGreaterThanComparator(const IValue& v);
 
 namespace ivalue
 {
@@ -77,7 +77,7 @@ struct EnumHolder;
 // only take 64 bits. Since ComplexDouble takes up 128 bits, and is too big
 // to fit in the IValue directly, we indirect complex numbers through an
 // intrusive pointer to ComplexHolder (which contains a std::complex).
-struct ComplexHolder : xsigma::intrusive_ptr_target
+struct ComplexHolder : quarisma::intrusive_ptr_target
 {
 public:
     template <typename T>
@@ -92,12 +92,12 @@ public:
 #if 0
 // Disabled: StreamData3 type not available in profiler-only build.
 // Similar to ComplexHolder, for StreamData3
-struct StreamData3Holder : xsigma::intrusive_ptr_target
+struct StreamData3Holder : quarisma::intrusive_ptr_target
 {
 public:
-    StreamData3Holder(struct xsigma::StreamData3 d) : val(d) {}
+    StreamData3Holder(struct quarisma::StreamData3 d) : val(d) {}
     StreamData3Holder() = delete;
-    struct xsigma::StreamData3 val;
+    struct quarisma::StreamData3 val;
 };
 #endif
 
@@ -133,7 +133,7 @@ struct OptionalArray
     // Used when saving an argument for the backwards pass.
 #if 0
     // Disabled: OptionalArrayRef type not available in profiler-only build.
-    OptionalArray& operator=(xsigma::OptionalArrayRef<T> ref)
+    OptionalArray& operator=(quarisma::OptionalArrayRef<T> ref)
     {
         if (ref)
         {
@@ -147,7 +147,7 @@ struct OptionalArray
     }
 #endif
 
-    operator std::optional<xsigma::array_ref<T>>()
+    operator std::optional<quarisma::array_ref<T>>()
     {
         if (!list)
         {
@@ -158,7 +158,7 @@ struct OptionalArray
 
 #if 0
     // Disabled: OptionalArrayRef type not available in profiler-only build.
-    operator xsigma::OptionalArrayRef<T>()
+    operator quarisma::OptionalArrayRef<T>()
     {
         if (!list)
         {
@@ -171,15 +171,15 @@ struct OptionalArray
 
 // Capsule is an internal implementation detail of custom C++ classes. We
 // define it as an owning wrapper for
-// xsigma::intrusive_ptr<xsigma::CustomClassHolder> This wrapper is here to serve as
+// quarisma::intrusive_ptr<quarisma::CustomClassHolder> This wrapper is here to serve as
 // an abstraction of the type erased custom class object pointer. It also allow
 // pybind11 to treat this as a standalone class to register as a separate type
 // caster, instead of a custom pointer holder which the pointer holder type
 // caster try to "unwrap" it automatically.
 struct Capsule
 {
-    xsigma::intrusive_ptr<xsigma::CustomClassHolder> obj_ptr;
-    explicit Capsule(xsigma::intrusive_ptr<xsigma::CustomClassHolder> ptr) : obj_ptr(std::move(ptr))
+    quarisma::intrusive_ptr<quarisma::CustomClassHolder> obj_ptr;
+    explicit Capsule(quarisma::intrusive_ptr<quarisma::CustomClassHolder> ptr) : obj_ptr(std::move(ptr))
     {
     }
 };
@@ -188,10 +188,10 @@ struct Capsule
 // all value types.
 // It is a 16-byte object with an 8-byte payload and an 8-byte tag.
 // The tag is currently 4 bytes to determine the type, and 1 byte
-// to mark whether that type is a subtype of xsigma::intrusive_ptr_target and needs
+// to mark whether that type is a subtype of quarisma::intrusive_ptr_target and needs
 // retain/release calls.
 
-#define XSIGMA_FORALL_TAGS(_) \
+#define QUARISMA_FORALL_TAGS(_) \
     _(None)                   \
     _(Tensor)                 \
     _(Storage)                \
@@ -230,10 +230,10 @@ struct Capsule
 /// supported by the TorchScript interpreter. IValues contain their
 /// values as an `IValue::Payload`, which holds primitive types
 /// (`int64_t`, `bool`, `double`, `device_option`) and `Tensor` as values,
-/// and all other types as a `xsigma::intrusive_ptr`. In order to
+/// and all other types as a `quarisma::intrusive_ptr`. In order to
 /// optimize performance of the destructor and related operations by
-/// making the `Tensor` and `xsigma::intrusive_ptr` paths generate the
-/// same code, we represent a null `xsigma::intrusive_ptr` as
+/// making the `Tensor` and `quarisma::intrusive_ptr` paths generate the
+/// same code, we represent a null `quarisma::intrusive_ptr` as
 /// `UndefinedTensorImpl::singleton()`, *not* `nullptr`.
 ///
 /// IValues are used as inputs to and outputs from the TorchScript interpreter.
@@ -246,7 +246,7 @@ struct Capsule
 /// .. code-block:: cpp
 ///
 ///   // Make the IValue
-///   xsigma::IValue my_ivalue(26);
+///   quarisma::IValue my_ivalue(26);
 ///   std::cout << my_ivalue << "\n";
 ///
 ///   // Unwrap the IValue
@@ -255,19 +255,19 @@ struct Capsule
 ///
 ///   // This will throw an error!
 ///   // `my_ivalue` is tagged as an int and cannot be used as another type
-///   xsigma::Tensor my_tensor = my_ivalue.toTensor();
+///   quarisma::Tensor my_tensor = my_ivalue.toTensor();
 /// \endrst
 #if 0
 // Disabled: Full IValue struct requires types (UndefinedTensorImpl, Payload, Tag, etc.) not available in profiler-only build.
 // Using stub IValue class from record_function.h instead.
-struct XSIGMA_VISIBILITY IValue final
+struct QUARISMA_VISIBILITY IValue final
 {
     IValue(const IValue& rhs) : IValue(rhs.payload, rhs.tag)
     {
         if (isIntrusivePtr() &&
-            payload.u.as_intrusive_ptr != xsigma::UndefinedTensorImpl::singleton())
+            payload.u.as_intrusive_ptr != quarisma::UndefinedTensorImpl::singleton())
         {
-            xsigma::raw::intrusive_ptr::incref(payload.u.as_intrusive_ptr);
+            quarisma::raw::intrusive_ptr::incref(payload.u.as_intrusive_ptr);
         }
     }
 
@@ -276,7 +276,7 @@ struct XSIGMA_VISIBILITY IValue final
     /// @private [doxygen private]
     ~IValue() { destroy(); }
 
-    XSIGMA_FORCE_INLINE IValue& operator=(IValue&& rhs) & noexcept
+    QUARISMA_FORCE_INLINE IValue& operator=(IValue&& rhs) & noexcept
     {
         if (&rhs == this)
         {
@@ -300,7 +300,7 @@ struct XSIGMA_VISIBILITY IValue final
    * Equality comparison. The semantics are the same as Python's `==`:
    * 1. Numerical types are compared by value.
    * 2. Tensors compute element-wise equality, returning a BoolTensor (see:
-   * `xsigma.eq()`)
+   * `quarisma.eq()`)
    * 3. Strings are compared by value.
    * 4. Sequence types (list, tuple) are compared lexicographically by
    *    comparing their elements. Different sequence types never compare equal.
@@ -308,7 +308,7 @@ struct XSIGMA_VISIBILITY IValue final
    * 6. If not listed above, the default behavior for is to test identity
    * equality (e.g. pointer equality).
    *
-   * Why does this return an IValue instead of a bool? Because in XSigma,
+   * Why does this return an IValue instead of a bool? Because in Quarisma,
    * `tensor1 == tensor2` returns a `BoolTensor`, not a bool.
    *
    * NOTE: we (like Python) assume that identity equality implies value equality
@@ -320,8 +320,8 @@ struct XSIGMA_VISIBILITY IValue final
    * This implements the same semantics as `bool(lhs == rhs)` in Python. which
    * is the same as `equals()` except for Tensor types.
    */
-    XSIGMA_API friend bool operator==(const IValue& lhs, const IValue& rhs);
-    XSIGMA_API friend bool operator!=(const IValue& lhs, const IValue& rhs);
+    QUARISMA_API friend bool operator==(const IValue& lhs, const IValue& rhs);
+    QUARISMA_API friend bool operator!=(const IValue& lhs, const IValue& rhs);
 
     /**
    * Identity comparison. Checks if `this` is the same object as `rhs`. The
@@ -345,7 +345,7 @@ struct XSIGMA_VISIBILITY IValue final
    *   dict), following Python. Calling `hash()` on these types will throw.
    */
     IValue hash() const { return (int64_t)IValue::hash(*this); }
-    // This is defined because `xsigma::hash` dispatches to a function of this
+    // This is defined because `quarisma::hash` dispatches to a function of this
     // signature. See the member function `hash()`.
     static size_t hash(const IValue& iv);
 
@@ -355,12 +355,12 @@ struct XSIGMA_VISIBILITY IValue final
    * This is an equality implementation that assumes objects with the same
    * identity equal themselves, for efficiency reasons. We primarily have this
    * for consistency, because Python does the same thing. This actually
-   * provokes user-visible changes in behavior due to quirks in xsigma:
+   * provokes user-visible changes in behavior due to quirks in quarisma:
    *      [tensor1] == [tensor1] -> True (because container equality will first
    * compare identity) [tensor1] == [tensor1_copy] -> RuntimeError:
    * Boolean value of Tensor with more than one value is ambiguous
    */
-    XSIGMA_API friend bool _fastEqualsForContainer(const IValue& lhs, const IValue& rhs);
+    QUARISMA_API friend bool _fastEqualsForContainer(const IValue& lhs, const IValue& rhs);
 
 private:
 #if !PROFILER_XXX_DISABLE_TENSOR
@@ -445,11 +445,11 @@ public:
             return 1;
         }
 
-        if (payload.u.as_intrusive_ptr == xsigma::UndefinedTensorImpl::singleton())
+        if (payload.u.as_intrusive_ptr == quarisma::UndefinedTensorImpl::singleton())
         {
             return 0;
         }
-        return xsigma::raw::intrusive_ptr::use_count(payload.u.as_intrusive_ptr);
+        return quarisma::raw::intrusive_ptr::use_count(payload.u.as_intrusive_ptr);
     }
 
     /// @private [doxygen private]
@@ -511,7 +511,7 @@ public:
     const at::Tensor& toTensor() const&;
     at::TensorImpl*   unsafeToTensorImpl() const
     {
-        XSIGMA_CHECK(isTensor());
+        QUARISMA_CHECK(isTensor());
         return payload.as_tensor.unsafeGetTensorImpl();
     }
 #else
@@ -521,7 +521,7 @@ public:
 private:
     [[noreturn]] void reportToTensorTypeError() const
     {
-        XSIGMA_CHECK(false, "Tensor-specific APIs are disabled in profiler_xxx.");
+        QUARISMA_CHECK(false, "Tensor-specific APIs are disabled in profiler_xxx.");
     }
 
 public:
@@ -536,8 +536,8 @@ public:
         payload.u.as_intrusive_ptr = null_to_undefined_tensor(s.unsafeReleaseStorageImpl());
     }
     bool            isStorage() const { return Tag::Storage == tag; }
-    xsigma::Storage toStorage() &&;
-    xsigma::Storage toStorage() const&;
+    quarisma::Storage toStorage() &&;
+    quarisma::Storage toStorage() const&;
 
     const IValue& toIValue() const { return *this; }
     IValue&       toIValue() { return *this; }
@@ -554,31 +554,31 @@ public:
     bool isBlob() const { return Tag::Blob == tag; }
 
     /// @private [doxygen private]
-    xsigma::intrusive_ptr<caffe2::Blob> toBlob() &&;
+    quarisma::intrusive_ptr<caffe2::Blob> toBlob() &&;
 
     /// @private [doxygen private]
-    xsigma::intrusive_ptr<caffe2::Blob> toBlob() const&;
+    quarisma::intrusive_ptr<caffe2::Blob> toBlob() const&;
 
     // Capsule. No new callsites of these APIs should
     // be introduced.
-    static inline IValue make_capsule(intrusive_ptr<xsigma::CustomClassHolder> blob);
+    static inline IValue make_capsule(intrusive_ptr<quarisma::CustomClassHolder> blob);
     bool                 isCapsule() const { return Tag::Capsule == tag; }
-    xsigma::intrusive_ptr<xsigma::CustomClassHolder> toCapsule() &&;
-    xsigma::intrusive_ptr<xsigma::CustomClassHolder> toCapsule() const&;
+    quarisma::intrusive_ptr<quarisma::CustomClassHolder> toCapsule() &&;
+    quarisma::intrusive_ptr<quarisma::CustomClassHolder> toCapsule() const&;
 
     // Custom C++ classes
     template <
         typename T,
-        std::enable_if_t<std::is_base_of_v<xsigma::CustomClassHolder, T>, int> = 0>
+        std::enable_if_t<std::is_base_of_v<quarisma::CustomClassHolder, T>, int> = 0>
     IValue(intrusive_ptr<T> custom_class);
     bool isCustomClass() const;
     template <typename T>
-    xsigma::intrusive_ptr<T> toCustomClass() &&;
+    quarisma::intrusive_ptr<T> toCustomClass() &&;
     template <typename T>
-    xsigma::intrusive_ptr<T> toCustomClass() const&;
+    quarisma::intrusive_ptr<T> toCustomClass() const&;
 
     // Tuple
-    IValue(xsigma::intrusive_ptr<ivalue::Tuple> v);
+    IValue(quarisma::intrusive_ptr<ivalue::Tuple> v);
 
     template <
         typename... Args,
@@ -597,8 +597,8 @@ public:
             std::nullptr_t> = nullptr>
     IValue(std::tuple<Args...>&& t);
     bool                                 isTuple() const { return Tag::Tuple == tag; }
-    xsigma::intrusive_ptr<ivalue::Tuple> toTuple() &&;
-    xsigma::intrusive_ptr<ivalue::Tuple> toTuple() const&;
+    quarisma::intrusive_ptr<ivalue::Tuple> toTuple() &&;
+    quarisma::intrusive_ptr<ivalue::Tuple> toTuple() const&;
     [[nodiscard]] ivalue::Tuple&         toTupleRef() const;
 
     // Double
@@ -616,7 +616,7 @@ public:
         }
         else
         {
-            XSIGMA_CHECK(0, "expected double");
+            QUARISMA_CHECK(0, "expected double");
         }
     }
 
@@ -627,32 +627,32 @@ public:
     std::complex<double> toComplexDouble() const;
 
     // Future
-    IValue(xsigma::intrusive_ptr<ivalue::Future> v);
+    IValue(quarisma::intrusive_ptr<ivalue::Future> v);
     bool                                  isFuture() const { return Tag::Future == tag; }
-    xsigma::intrusive_ptr<ivalue::Future> toFuture() &&;
-    xsigma::intrusive_ptr<ivalue::Future> toFuture() const&;
+    quarisma::intrusive_ptr<ivalue::Future> toFuture() &&;
+    quarisma::intrusive_ptr<ivalue::Future> toFuture() const&;
 
-    IValue(xsigma::intrusive_ptr<ivalue::Await> v);
+    IValue(quarisma::intrusive_ptr<ivalue::Await> v);
     bool                                 isAwait() const { return Tag::Await == tag; }
-    xsigma::intrusive_ptr<ivalue::Await> toAwait() &&;
-    xsigma::intrusive_ptr<ivalue::Await> toAwait() const&;
+    quarisma::intrusive_ptr<ivalue::Await> toAwait() &&;
+    quarisma::intrusive_ptr<ivalue::Await> toAwait() const&;
 
     // RRef
-    IValue(xsigma::intrusive_ptr<xsigma::RRefInterface> v);
+    IValue(quarisma::intrusive_ptr<quarisma::RRefInterface> v);
     bool                                         isRRef() const { return Tag::RRef == tag; }
-    xsigma::intrusive_ptr<xsigma::RRefInterface> toRRef() &&;
-    xsigma::intrusive_ptr<xsigma::RRefInterface> toRRef() const&;
+    quarisma::intrusive_ptr<quarisma::RRefInterface> toRRef() &&;
+    quarisma::intrusive_ptr<quarisma::RRefInterface> toRRef() const&;
 
     // Quantizer
-    IValue(xsigma::intrusive_ptr<at::Quantizer> v);
+    IValue(quarisma::intrusive_ptr<at::Quantizer> v);
     bool                                 isQuantizer() const { return Tag::Quantizer == tag; }
-    xsigma::intrusive_ptr<at::Quantizer> toQuantizer() &&;
-    xsigma::intrusive_ptr<at::Quantizer> toQuantizer() const&;
+    quarisma::intrusive_ptr<at::Quantizer> toQuantizer() &&;
+    quarisma::intrusive_ptr<at::Quantizer> toQuantizer() const&;
 
     // Int
     IValue(int64_t i) : tag(Tag::Int) { payload.u.as_int = i; }
 
-    IValue(const xsigma::SymInt& i)
+    IValue(const quarisma::SymInt& i)
     {
         if (auto mi = i.maybe_as_int())
         {
@@ -668,10 +668,10 @@ public:
 
     bool isSymInt() const { return Tag::SymInt == tag; }
 
-    xsigma::SymInt toSymInt() &&;
-    xsigma::SymInt toSymInt() const&;
+    quarisma::SymInt toSymInt() &&;
+    quarisma::SymInt toSymInt() const&;
 
-    IValue(const xsigma::SymFloat& i)
+    IValue(const quarisma::SymFloat& i)
     {
         if (i.is_symbolic())
         {
@@ -687,10 +687,10 @@ public:
 
     bool isSymFloat() const { return Tag::SymFloat == tag; }
 
-    xsigma::SymFloat toSymFloat() &&;
-    xsigma::SymFloat toSymFloat() const&;
+    quarisma::SymFloat toSymFloat() &&;
+    quarisma::SymFloat toSymFloat() const&;
 
-    IValue(const xsigma::SymBool& i)
+    IValue(const quarisma::SymBool& i)
     {
         if (auto mi = i.maybe_as_bool())
         {
@@ -713,8 +713,8 @@ public:
 
     bool isSymBool() const { return Tag::SymBool == tag; }
 
-    xsigma::SymBool toSymBool() &&;
-    xsigma::SymBool toSymBool() const&;
+    quarisma::SymBool toSymBool() &&;
+    quarisma::SymBool toSymBool() const&;
 
     // allow you to pass literals (3, 4) without ambiguity
     IValue(int32_t i) : IValue(static_cast<int64_t>(i)) {}
@@ -733,7 +733,7 @@ public:
         }
         else
         {
-            XSIGMA_CHECK(0, "expected int");
+            QUARISMA_CHECK(0, "expected int");
         }
     }
 
@@ -744,7 +744,7 @@ public:
     }
 
     // See Note [Meaning of HAS_u]
-    // IValue type model closely follows that of xsigma::Scalar
+    // IValue type model closely follows that of quarisma::Scalar
     // Where all integers are upcast to 64-bit representation, and `as_int` is used as default
     // representation unless value could not be represented as signed int
     bool isUnsigned() const
@@ -760,7 +760,7 @@ public:
         }
         else
         {
-            XSIGMA_CHECK(0, "expected unsigned int");
+            QUARISMA_CHECK(0, "expected unsigned int");
         }
     }
 
@@ -789,61 +789,61 @@ public:
         }
         else
         {
-            XSIGMA_CHECK(0, "expected bool");
+            QUARISMA_CHECK(0, "expected bool");
         }
     }
 
     // IntList
     bool                         isIntList() const;
     bool                         isSymIntList() const;
-    xsigma::List<int64_t>        toIntList() &&;
-    xsigma::List<int64_t>        toIntList() const&;
+    quarisma::List<int64_t>        toIntList() &&;
+    quarisma::List<int64_t>        toIntList() const&;
     std::vector<int64_t>         toIntVector() const;
-    xsigma::List<xsigma::SymInt> toSymIntList() &&;
-    xsigma::List<xsigma::SymInt> toSymIntList() const&;
-    std::vector<xsigma::SymInt>  toSymIntVector() const;
+    quarisma::List<quarisma::SymInt> toSymIntList() &&;
+    quarisma::List<quarisma::SymInt> toSymIntList() const&;
+    std::vector<quarisma::SymInt>  toSymIntVector() const;
     at::DimVector                toDimVector() const;
 
     // ConstantString
-    IValue(xsigma::intrusive_ptr<ivalue::ConstantString> v);
+    IValue(quarisma::intrusive_ptr<ivalue::ConstantString> v);
     IValue(std::string v);
     IValue(const char* v) : IValue(std::string(v)) {}
     IValue(std::string_view v) : IValue(std::string(v)) {}
     bool                                          isString() const { return Tag::String == tag; }
-    xsigma::intrusive_ptr<ivalue::ConstantString> toString() &&;
-    xsigma::intrusive_ptr<ivalue::ConstantString> toString() const&;
+    quarisma::intrusive_ptr<ivalue::ConstantString> toString() &&;
+    quarisma::intrusive_ptr<ivalue::ConstantString> toString() const&;
     const std::string&                            toStringRef() const;
     std::optional<std::reference_wrapper<const std::string>> toOptionalStringRef() const;
     std::string_view                                         toStringView() const;
 
     // DoubleList
     bool                 isDoubleList() const;
-    xsigma::List<double> toDoubleList() &&;
-    xsigma::List<double> toDoubleList() const&;
+    quarisma::List<double> toDoubleList() &&;
+    quarisma::List<double> toDoubleList() const&;
     std::vector<double>  toDoubleVector() const;
 
     // ComplexDoubleList
     bool                               isComplexDoubleList() const;
-    xsigma::List<std::complex<double>> toComplexDoubleList() &&;
-    xsigma::List<std::complex<double>> toComplexDoubleList() const&;
+    quarisma::List<std::complex<double>> toComplexDoubleList() &&;
+    quarisma::List<std::complex<double>> toComplexDoubleList() const&;
     std::vector<std::complex<double>>  toComplexDoubleVector() const;
 
     // BoolList
     bool               isBoolList() const;
-    xsigma::List<bool> toBoolList() &&;
-    xsigma::List<bool> toBoolList() const&;
+    quarisma::List<bool> toBoolList() &&;
+    quarisma::List<bool> toBoolList() const&;
 
 #if !PROFILER_XXX_DISABLE_TENSOR
     // TensorList
     bool                     isTensorList() const;
-    xsigma::List<at::Tensor> toTensorList() &&;
-    xsigma::List<at::Tensor> toTensorList() const&;
+    quarisma::List<at::Tensor> toTensorList() &&;
+    quarisma::List<at::Tensor> toTensorList() const&;
     std::vector<at::Tensor>  toTensorVector() const;
 
     // OptionalTensorList
     bool                                    isOptionalTensorList() const;
-    xsigma::List<std::optional<at::Tensor>> toOptionalTensorList() &&;
-    xsigma::List<std::optional<at::Tensor>> toOptionalTensorList() const&;
+    quarisma::List<std::optional<at::Tensor>> toOptionalTensorList() &&;
+    quarisma::List<std::optional<at::Tensor>> toOptionalTensorList() const&;
     std::vector<std::optional<at::Tensor>>  toOptionalTensorVector() const;
 #else
     bool isTensorList() const { return false; }
@@ -851,11 +851,11 @@ public:
 #endif
 
     // GenericList
-    IValue(xsigma::List<IValue> v);
+    IValue(quarisma::List<IValue> v);
     bool                      isList() const { return Tag::GenericList == tag; }
-    xsigma::List<IValue>      toList() &&;
-    xsigma::List<IValue>      toList() const&;
-    xsigma::array_ref<IValue> toListRef() const;
+    quarisma::List<IValue>      toList() &&;
+    quarisma::List<IValue>      toList() const&;
+    quarisma::array_ref<IValue> toListRef() const;
 
     // Some template constructors of IValue calls another constructor recursively.
     // This SFINAEs the called constructor exists.
@@ -873,13 +873,13 @@ public:
     // they're not selectable.
     template <class T>
     using enable_if_list_is_ivalue_constructible = std::enable_if_t<
-        std::is_constructible_v<IValue, T> && !std::is_same_v<T, xsigma::SymInt>,
+        std::is_constructible_v<IValue, T> && !std::is_same_v<T, quarisma::SymInt>,
         std::nullptr_t>;
 
     template <class T, enable_if_list_is_ivalue_constructible<T> = nullptr>
-    IValue(xsigma::List<T>&& v);
+    IValue(quarisma::List<T>&& v);
     template <class T, enable_if_list_is_ivalue_constructible<T> = nullptr>
-    IValue(const xsigma::List<T>& v);
+    IValue(const quarisma::List<T>& v);
     template <class T, enable_if_list_is_ivalue_constructible<T> = nullptr>
     IValue(at::array_ref<T> v);
     template <class T, enable_if_list_is_ivalue_constructible<T> = nullptr>
@@ -893,7 +893,7 @@ public:
     // possible.  To avoid ambiguous overload situations, we template them
     // to prevent implicit conversions
     template <class T>
-    using enable_if_symint = std::enable_if_t<std::is_same_v<T, xsigma::SymInt>, std::nullptr_t>;
+    using enable_if_symint = std::enable_if_t<std::is_same_v<T, quarisma::SymInt>, std::nullptr_t>;
 
     template <class T, enable_if_symint<T> = nullptr>
     IValue(at::array_ref<T> v);
@@ -908,58 +908,58 @@ public:
     using enable_if_ilist_is_ivalue_constructible = std::enable_if_t<
         std::is_constructible_v<IValue, T> &&
             std::is_constructible_v<IValue, typename IListRef<T>::boxed_type> &&
-            !std::is_same_v<T, xsigma::SymInt>,
+            !std::is_same_v<T, quarisma::SymInt>,
         std::nullptr_t>;
 
     template <class T, enable_if_ilist_is_ivalue_constructible<T> = nullptr>
-    IValue(xsigma::IListRef<T> v);
+    IValue(quarisma::IListRef<T> v);
 
     // GenericDict
-    IValue(xsigma::Dict<IValue, IValue> v);
+    IValue(quarisma::Dict<IValue, IValue> v);
     bool                         isGenericDict() const { return Tag::GenericDict == tag; }
-    xsigma::Dict<IValue, IValue> toGenericDict() &&;
-    xsigma::Dict<IValue, IValue> toGenericDict() const&;
+    quarisma::Dict<IValue, IValue> toGenericDict() &&;
+    quarisma::Dict<IValue, IValue> toGenericDict() const&;
 
     template <class Key, class Value>
-    IValue(xsigma::Dict<Key, Value> v);
+    IValue(quarisma::Dict<Key, Value> v);
 
     template <class Key, class Value>
     /// \cond
     /// DOXYGEN_CANNOT_HANDLE_CONSTRUCTORS_WITH_MACROS_SO_EXCLUDE_THIS_LINE_FROM_DOXYGEN
-    XSIGMA_DEPRECATED_MESSAGE(
+    QUARISMA_DEPRECATED_MESSAGE(
         "IValues based on std::unordered_map<K, V> are slow and deprecated. Please use "
-        "xsigma::Dict<K, V> instead.")
+        "quarisma::Dict<K, V> instead.")
         /// \endcond
         IValue(std::unordered_map<Key, Value> v);
 
     template <class T, enable_if_ivalue_constructible<T> = nullptr>
     IValue(std::optional<T> v);
     template <class T, enable_if_list_is_ivalue_constructible<T> = nullptr>
-    IValue(xsigma::OptionalArrayRef<T> v);
+    IValue(quarisma::OptionalArrayRef<T> v);
     IValue(std::nullopt_t /*unused*/);
 
     // ClassType
-    IValue(xsigma::intrusive_ptr<ivalue::Object> v);
+    IValue(quarisma::intrusive_ptr<ivalue::Object> v);
     bool                                  isObject() const { return tag == Tag::Object; }
-    xsigma::intrusive_ptr<ivalue::Object> toObject() &&;
-    xsigma::intrusive_ptr<ivalue::Object> toObject() const&;
+    quarisma::intrusive_ptr<ivalue::Object> toObject() &&;
+    quarisma::intrusive_ptr<ivalue::Object> toObject() const&;
     ivalue::Object&                       toObjectRef() const;
 
-    xsigma::jit::Module toModule() const;
+    quarisma::jit::Module toModule() const;
     bool                isModule() const;
 
     // PyObject
-    IValue(xsigma::intrusive_ptr<ivalue::PyObjectHolder> v);
+    IValue(quarisma::intrusive_ptr<ivalue::PyObjectHolder> v);
     bool isPyObject() const { return tag == Tag::PyObject; }
-    xsigma::intrusive_ptr<ivalue::PyObjectHolder> toPyObjectHolder() &&;
-    xsigma::intrusive_ptr<ivalue::PyObjectHolder> toPyObjectHolder() const&;
+    quarisma::intrusive_ptr<ivalue::PyObjectHolder> toPyObjectHolder() &&;
+    quarisma::intrusive_ptr<ivalue::PyObjectHolder> toPyObjectHolder() const&;
     PyObject*                                     toPyObject() const;
 
     // Enum
-    explicit IValue(xsigma::intrusive_ptr<ivalue::EnumHolder> v);
+    explicit IValue(quarisma::intrusive_ptr<ivalue::EnumHolder> v);
     bool                                      isEnum() const { return tag == Tag::Enum; }
-    xsigma::intrusive_ptr<ivalue::EnumHolder> toEnumHolder() &&;
-    xsigma::intrusive_ptr<ivalue::EnumHolder> toEnumHolder() const&;
+    quarisma::intrusive_ptr<ivalue::EnumHolder> toEnumHolder() &&;
+    quarisma::intrusive_ptr<ivalue::EnumHolder> toEnumHolder() const&;
 
     // None
     IValue() = default;
@@ -1013,7 +1013,7 @@ public:
         }
         else
         {
-            XSIGMA_CHECK_DEBUG(s.isIntegral(false), "Unknown type in Scalar");
+            QUARISMA_CHECK_DEBUG(s.isIntegral(false), "Unknown type in Scalar");
             if (s.isUnsigned())
             {
                 const auto val    = s.toUInt64();
@@ -1052,30 +1052,30 @@ public:
             return toSymBool();
         else if (isUnsigned())
             return toUInt();
-        XSIGMA_CHECK(false, "IValue is not a Scalar");
+        QUARISMA_CHECK(false, "IValue is not a Scalar");
     }
 
     // device_option
-    IValue(xsigma::device_option d) : tag(Tag::device_option)
+    IValue(quarisma::device_option d) : tag(Tag::device_option)
     {
         payload.u.as_device.type  = d.type();
         payload.u.as_device.index = d.index();
     }
     bool                  isDevice() const { return Tag::device_option == tag; }
-    xsigma::device_option toDevice() const
+    quarisma::device_option toDevice() const
     {
         AT_ASSERT(isDevice());
-        return xsigma::device_option(payload.u.as_device.type, payload.u.as_device.index);
+        return quarisma::device_option(payload.u.as_device.type, payload.u.as_device.index);
     }
 
     // Stream
-    IValue(xsigma::Stream s) : tag(Tag::Stream)
+    IValue(quarisma::Stream s) : tag(Tag::Stream)
     {
-        auto v                     = xsigma::make_intrusive<ivalue::StreamData3Holder>(s.pack3());
+        auto v                     = quarisma::make_intrusive<ivalue::StreamData3Holder>(s.pack3());
         payload.u.as_intrusive_ptr = v.release();
     }
-    xsigma::Stream toStream() &&;
-    xsigma::Stream toStream() const&;
+    quarisma::Stream toStream() &&;
+    quarisma::Stream toStream() const&;
     bool           isStream() const { return Tag::Stream == tag; }
 
     // ScalarType
@@ -1123,7 +1123,7 @@ public:
 #define DEFINE_CASE(x) \
     case Tag::x:       \
         return #x;
-            XSIGMA_FORALL_TAGS(DEFINE_CASE)
+            QUARISMA_FORALL_TAGS(DEFINE_CASE)
 #undef DEFINE_CASE
         }
         return "InvalidTag(" + std::to_string(static_cast<int>(tag)) + ")";
@@ -1142,7 +1142,7 @@ public:
     template <typename T>
     T to() &&;
     template <typename T>
-    typename xsigma::detail::ivalue_to_const_ref_overload_return<T>::type to() const&;
+    typename quarisma::detail::ivalue_to_const_ref_overload_return<T>::type to() const&;
 
     // ToOptional: convert a IValue to the Optional obj that accepts both T and
     // None
@@ -1174,7 +1174,7 @@ public:
     // This is different from `repr()` in that there is no expectation that we can
     // exactly reconstruct an IValue from the output; feel free to use a
     // concise/pretty form
-    XSIGMA_API friend std::ostream& operator<<(std::ostream& out, const IValue& v);
+    QUARISMA_API friend std::ostream& operator<<(std::ostream& out, const IValue& v);
 
     bool isPtrType() const
     {
@@ -1190,7 +1190,7 @@ public:
     /// @private [doxygen private]
     const void* internalToPointer() const
     {
-        XSIGMA_CHECK(isPtrType(), "Can only call internalToPointer() for pointer types");
+        QUARISMA_CHECK(isPtrType(), "Can only call internalToPointer() for pointer types");
 #if !PROFILER_XXX_DISABLE_TENSOR
         if (isTensor())
         {
@@ -1199,7 +1199,7 @@ public:
         else
         {
 #endif
-            return payload.u.as_intrusive_ptr != xsigma::UndefinedTensorImpl::singleton()
+            return payload.u.as_intrusive_ptr != quarisma::UndefinedTensorImpl::singleton()
                        ? payload.u.as_intrusive_ptr
                        : nullptr;
 #if !PROFILER_XXX_DISABLE_TENSOR
@@ -1207,7 +1207,7 @@ public:
 #endif
     }
 
-    template <typename T = xsigma::PlatformType>
+    template <typename T = quarisma::PlatformType>
     TypePtr type() const;
 
     // Detect aliased tensors.
@@ -1296,11 +1296,11 @@ public:
         HashIdentityIValueMap& memo, std::optional<at::device_option> device = std::nullopt) const;
 
 private:
-    static xsigma::intrusive_ptr_target* null_to_undefined_tensor(xsigma::intrusive_ptr_target* p)
+    static quarisma::intrusive_ptr_target* null_to_undefined_tensor(quarisma::intrusive_ptr_target* p)
     {
         return p ? p
-                 : static_cast<xsigma::intrusive_ptr_target*>(
-                       xsigma::UndefinedTensorImpl::singleton());
+                 : static_cast<quarisma::intrusive_ptr_target*>(
+                       quarisma::UndefinedTensorImpl::singleton());
     }
 
     static bool ptrEqual(const IValue& lhs, const IValue& rhs);
@@ -1313,18 +1313,18 @@ private:
     enum class Tag : uint32_t
     {
 #define DEFINE_TAG(x) x,
-        XSIGMA_FORALL_TAGS(DEFINE_TAG)
+        QUARISMA_FORALL_TAGS(DEFINE_TAG)
 #undef DEFINE_TAG
     };
 
 #define COUNT_TAG(x) 1 +
-    static constexpr auto kNumTags = XSIGMA_FORALL_TAGS(COUNT_TAG) 0;
+    static constexpr auto kNumTags = QUARISMA_FORALL_TAGS(COUNT_TAG) 0;
 #undef COUNT_TAG
 
-    template <class T, class NullType = xsigma::detail::intrusive_target_default_null_type<T>>
-    xsigma::intrusive_ptr<T, NullType> moveToIntrusivePtr();
-    template <typename T, class NullType = xsigma::detail::intrusive_target_default_null_type<T>>
-    xsigma::intrusive_ptr<T, NullType> toIntrusivePtr() const;
+    template <class T, class NullType = quarisma::detail::intrusive_target_default_null_type<T>>
+    quarisma::intrusive_ptr<T, NullType> moveToIntrusivePtr();
+    template <typename T, class NullType = quarisma::detail::intrusive_target_default_null_type<T>>
+    quarisma::intrusive_ptr<T, NullType> toIntrusivePtr() const;
 
     void destroy()
     {
@@ -1335,23 +1335,23 @@ private:
 #if !PROFILER_XXX_DISABLE_TENSOR
         if (isTensor() || isIntrusivePtr())
         {
-            xsigma::intrusive_ptr_target* p =
+            quarisma::intrusive_ptr_target* p =
                 isTensor() ? payload.as_tensor.unsafeGetTensorImpl() : payload.u.as_intrusive_ptr;
-            xsigma::intrusive_ptr<intrusive_ptr_target, xsigma::UndefinedTensorImpl>::reclaim(p);
+            quarisma::intrusive_ptr<intrusive_ptr_target, quarisma::UndefinedTensorImpl>::reclaim(p);
             // No need to make this destructor call!
             // payload.as_tensor.~Tensor();
         }
 #else
         if (isIntrusivePtr())
         {
-            xsigma::intrusive_ptr<intrusive_ptr_target, xsigma::UndefinedTensorImpl>::reclaim(
+            quarisma::intrusive_ptr<intrusive_ptr_target, quarisma::UndefinedTensorImpl>::reclaim(
                 payload.u.as_intrusive_ptr);
         }
 #endif
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
-    XSIGMA_FORCE_INLINE void moveFrom(IValue&& rhs) noexcept
+    QUARISMA_FORCE_INLINE void moveFrom(IValue&& rhs) noexcept
     {
 #if !PROFILER_XXX_DISABLE_TENSOR
         if (rhs.isTensor())
@@ -1471,11 +1471,11 @@ public:
         // could find to accomplish that elimination.
         static constexpr uint32_t kTruthTableBitVector =
 #define TRUTH_TABLE_ENTRY(tag) (uint32_t(isIntrusivePtrConstexpr(Tag::tag)) << uint32_t(Tag::tag)) |
-            XSIGMA_FORALL_TAGS(TRUTH_TABLE_ENTRY)
+            QUARISMA_FORALL_TAGS(TRUTH_TABLE_ENTRY)
 #undef TRUTH_TABLE_ENTRY
                 0;
 
-        XSIGMA_CHECK_DEBUG(
+        QUARISMA_CHECK_DEBUG(
             static_cast<uint32_t>(tag) < kNumTags, "unexpected tag ", static_cast<int>(tag));
         return kTruthTableBitVector & (1 << (uint32_t(tag) % 32));
     }
@@ -1487,7 +1487,7 @@ public:
     {
         if (tag == Tag::Storage || tag == Tag::Generator)
         {
-            return payload.u.as_intrusive_ptr != xsigma::UndefinedTensorImpl::singleton();
+            return payload.u.as_intrusive_ptr != quarisma::UndefinedTensorImpl::singleton();
         }
         else
         {
@@ -1512,12 +1512,12 @@ public:
             double   as_double;
             bool     as_bool;
             // Invariant: never nullptr; null state is represented as
-            // xsigma::UndefinedTensorImpl::singleton() for consistency of
+            // quarisma::UndefinedTensorImpl::singleton() for consistency of
             // representation with Tensor.
-            xsigma::intrusive_ptr_target* as_intrusive_ptr;
+            quarisma::intrusive_ptr_target* as_intrusive_ptr;
             struct
             {
-                xsigma::device_enum  type;
+                quarisma::device_enum  type;
                 device_option::int_t index;
             } as_device;
         } u;
@@ -1560,7 +1560,7 @@ public:
     friend struct WeakIValue;
 };
 
-struct XSIGMA_VISIBILITY WeakIValue final
+struct QUARISMA_VISIBILITY WeakIValue final
 {
     WeakIValue() = default;
 
@@ -1568,9 +1568,9 @@ struct XSIGMA_VISIBILITY WeakIValue final
         : payload(rhs.payload), tag(rhs.tag), is_intrusive_ptr(rhs.is_intrusive_ptr)
     {
         if (is_intrusive_ptr &&
-            payload.as_intrusive_ptr != xsigma::UndefinedTensorImpl::singleton())
+            payload.as_intrusive_ptr != quarisma::UndefinedTensorImpl::singleton())
         {
-            xsigma::raw::weak_intrusive_ptr::incref(payload.as_intrusive_ptr);
+            quarisma::raw::weak_intrusive_ptr::incref(payload.as_intrusive_ptr);
         }
     }
     WeakIValue(const IValue& rhs)
@@ -1587,9 +1587,9 @@ struct XSIGMA_VISIBILITY WeakIValue final
         }
         if (is_intrusive_ptr)
         {
-            if (payload.as_intrusive_ptr != xsigma::UndefinedTensorImpl::singleton())
+            if (payload.as_intrusive_ptr != quarisma::UndefinedTensorImpl::singleton())
             {
-                xsigma::raw::weak_intrusive_ptr::incref(payload.as_intrusive_ptr);
+                quarisma::raw::weak_intrusive_ptr::incref(payload.as_intrusive_ptr);
             }
         }
     }
@@ -1597,9 +1597,9 @@ struct XSIGMA_VISIBILITY WeakIValue final
     ~WeakIValue()
     {
         if (is_intrusive_ptr &&
-            payload.as_intrusive_ptr != xsigma::UndefinedTensorImpl::singleton())
+            payload.as_intrusive_ptr != quarisma::UndefinedTensorImpl::singleton())
         {
-            xsigma::raw::weak_intrusive_ptr::decref(payload.as_intrusive_ptr);
+            quarisma::raw::weak_intrusive_ptr::decref(payload.as_intrusive_ptr);
         }
     }
     WeakIValue& operator=(WeakIValue&& rhs) & noexcept
@@ -1636,9 +1636,9 @@ struct XSIGMA_VISIBILITY WeakIValue final
         if (IValue::Tag::Tensor == tag)
         {
             auto temp =
-                xsigma::weak_intrusive_ptr<at::TensorImpl, xsigma::UndefinedTensorImpl>::reclaim(
+                quarisma::weak_intrusive_ptr<at::TensorImpl, quarisma::UndefinedTensorImpl>::reclaim(
                     static_cast<at::TensorImpl*>(payload.as_intrusive_ptr));
-            xsigma::intrusive_ptr<at::TensorImpl, xsigma::UndefinedTensorImpl> ip(temp.lock());
+            quarisma::intrusive_ptr<at::TensorImpl, quarisma::UndefinedTensorImpl> ip(temp.lock());
             temp.release();
             if (!ip)
             {
@@ -1651,8 +1651,8 @@ struct XSIGMA_VISIBILITY WeakIValue final
         }
         else
         {
-            auto temp = xsigma::weak_intrusive_ptr<xsigma::intrusive_ptr_target>::reclaim(
-                payload.as_intrusive_ptr == xsigma::UndefinedTensorImpl::singleton()
+            auto temp = quarisma::weak_intrusive_ptr<quarisma::intrusive_ptr_target>::reclaim(
+                payload.as_intrusive_ptr == quarisma::UndefinedTensorImpl::singleton()
                     ? nullptr
                     : payload.as_intrusive_ptr);
             IValue::Payload pl;
@@ -1676,7 +1676,7 @@ struct XSIGMA_VISIBILITY WeakIValue final
             return 1;
         }
         auto temp =
-            xsigma::weak_intrusive_ptr<xsigma::intrusive_ptr_target, xsigma::UndefinedTensorImpl>::
+            quarisma::weak_intrusive_ptr<quarisma::intrusive_ptr_target, quarisma::UndefinedTensorImpl>::
                 reclaim(payload.as_intrusive_ptr);
         size_t result = temp.use_count();
         temp.release();
@@ -1690,7 +1690,7 @@ struct XSIGMA_VISIBILITY WeakIValue final
             return 1;
         }
         auto temp =
-            xsigma::weak_intrusive_ptr<xsigma::intrusive_ptr_target, xsigma::UndefinedTensorImpl>::
+            quarisma::weak_intrusive_ptr<quarisma::intrusive_ptr_target, quarisma::UndefinedTensorImpl>::
                 reclaim(payload.as_intrusive_ptr);
         size_t result = temp.weak_use_count();
         temp.release();
@@ -1712,11 +1712,11 @@ private:
 // An owning pointer to a type. When the type is class type, it requires a pair
 // of shared_ptrs to the class type and its owning CU, so that the class type is
 // guaranteed to stay alive as long as we hold this object.
-struct XSIGMA_VISIBILITY StrongTypePtr
+struct QUARISMA_VISIBILITY StrongTypePtr
 {
-    StrongTypePtr(std::shared_ptr<xsigma::jit::CompilationUnit> cu, TypePtr type);
+    StrongTypePtr(std::shared_ptr<quarisma::jit::CompilationUnit> cu, TypePtr type);
 
-    std::shared_ptr<xsigma::jit::CompilationUnit> cu_;
+    std::shared_ptr<quarisma::jit::CompilationUnit> cu_;
     TypePtr                                       type_;
 };
 
@@ -1725,36 +1725,36 @@ struct XSIGMA_VISIBILITY StrongTypePtr
 // into a graph, if we used a strong pointer we would have a circular reference
 // from Object -> CompilationUnit and CompilationUnit -> Graph (which owns the
 // Constant Object)
-struct XSIGMA_VISIBILITY WeakTypePtr
+struct QUARISMA_VISIBILITY WeakTypePtr
 {
-    WeakTypePtr(std::weak_ptr<xsigma::jit::CompilationUnit> cu, TypePtr type);
+    WeakTypePtr(std::weak_ptr<quarisma::jit::CompilationUnit> cu, TypePtr type);
 
-    std::weak_ptr<xsigma::jit::CompilationUnit> cu_;
+    std::weak_ptr<quarisma::jit::CompilationUnit> cu_;
     TypePtr                                     type_;
 };
 
 // internal build errors with std::variant :/
 struct WeakOrStrongCompilationUnit
 {
-    explicit WeakOrStrongCompilationUnit(std::shared_ptr<xsigma::jit::CompilationUnit> shared_cu)
+    explicit WeakOrStrongCompilationUnit(std::shared_ptr<quarisma::jit::CompilationUnit> shared_cu)
         : strong_ptr_(std::move(shared_cu)), weak_ptr_(std::nullopt)
     {
     }
 
-    explicit WeakOrStrongCompilationUnit(std::weak_ptr<xsigma::jit::CompilationUnit> weak_cu)
+    explicit WeakOrStrongCompilationUnit(std::weak_ptr<quarisma::jit::CompilationUnit> weak_cu)
         : strong_ptr_(std::nullopt), weak_ptr_(std::move(weak_cu))
     {
     }
 
-    std::shared_ptr<xsigma::jit::CompilationUnit> getStrongRefOrThrow() const
+    std::shared_ptr<quarisma::jit::CompilationUnit> getStrongRefOrThrow() const
     {
-        XSIGMA_CHECK(strong_ptr_.has_value());
+        QUARISMA_CHECK(strong_ptr_.has_value());
         return *strong_ptr_;
     }
 
-    std::weak_ptr<xsigma::jit::CompilationUnit> getWeakRefOrThrow() const
+    std::weak_ptr<quarisma::jit::CompilationUnit> getWeakRefOrThrow() const
     {
-        XSIGMA_CHECK(weak_ptr_.has_value());
+        QUARISMA_CHECK(weak_ptr_.has_value());
         return *weak_ptr_;
     }
 
@@ -1762,13 +1762,13 @@ struct WeakOrStrongCompilationUnit
 
     bool holdingEmptyStrongRef() const { return strong_ptr_ == nullptr; }
 
-    std::optional<std::shared_ptr<xsigma::jit::CompilationUnit>> strong_ptr_;
-    std::optional<std::weak_ptr<xsigma::jit::CompilationUnit>>   weak_ptr_;
+    std::optional<std::shared_ptr<quarisma::jit::CompilationUnit>> strong_ptr_;
+    std::optional<std::weak_ptr<quarisma::jit::CompilationUnit>>   weak_ptr_;
 };
 
 // An Object will hold a non-owning Compilation Unit reference if it is a
 // Constant in the graph and a Owning reference otherwise
-struct XSIGMA_VISIBILITY WeakOrStrongTypePtr
+struct QUARISMA_VISIBILITY WeakOrStrongTypePtr
 {
     explicit WeakOrStrongTypePtr(WeakTypePtr weak)
         : cu_(WeakOrStrongCompilationUnit(std::move(weak.cu_))), type_(std::move(weak.type_))
@@ -1793,6 +1793,6 @@ struct XSIGMA_VISIBILITY WeakOrStrongTypePtr
 };
 #endif  // Disabled type pointer structures
 
-}  // namespace xsigma
+}  // namespace quarisma
 
-//#include <XSigma/core/ivalue_inl.h> // IWYU pragma: keep
+//#include <Quarisma/core/ivalue_inl.h> // IWYU pragma: keep

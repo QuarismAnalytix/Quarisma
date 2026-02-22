@@ -891,7 +891,7 @@ def repro_analyze(options: Any, mod: nn.Module, load_args: Any) -> None:
         meta2 = reader.read_tensor_metadata(os.path.join("inductor", name))
         reason = compare_tuples(meta, meta2)
         if reason is not None:
-            pbar.write(f"NONDETERMINISTIC INDUCTOR xsigma {name} ({reason})")
+            pbar.write(f"NONDETERMINISTIC INDUCTOR quarisma {name} ({reason})")
         pbar.update(1)
 
     if not options.skip_check_deterministic:
@@ -933,7 +933,7 @@ def repro_analyze(options: Any, mod: nn.Module, load_args: Any) -> None:
                 meta2 = reader.read_tensor_metadata(os.path.join("float64", name))
                 reason = compare_tuples(meta, meta2)
                 if reason is not None:
-                    pbar.write(f"NONDETERMINISTIC FLOAT64 xsigma {name} ({reason})")
+                    pbar.write(f"NONDETERMINISTIC FLOAT64 quarisma {name} ({reason})")
                 pbar.update(1)
             return r
 
@@ -959,7 +959,7 @@ def repro_analyze(options: Any, mod: nn.Module, load_args: Any) -> None:
                 def log_error(msg: str, *args: Any) -> None:
                     nonlocal logged
                     logged = True
-                    pbar.write(f"DIVERGED xsigma {name}: {msg % args}")
+                    pbar.write(f"DIVERGED quarisma {name}: {msg % args}")
 
                 if not same(
                     r,
@@ -1093,7 +1093,7 @@ approaches that detect the necessary working precision and compute it in
 arbitrary precision floating point; unfortunately, this is not practical for
 tensor computation; (2) if there are not enough samples in the output being
 compared, we may get unlucky and have an unlucky greater RMSE than eager; this
-could be overcome by applying a more rigorous statistical test xsigma some
+could be overcome by applying a more rigorous statistical test quarisma some
 p-value, which we leave for future work.
 """,
         )
@@ -1180,13 +1180,13 @@ divergences--you just might not end up with a useful repro in the end.""",
     parser_minify.add_argument(
         "--skip-sanity",
         action="store_true",
-        help="skip sanity check xsigma beginning of minification on original graph",
+        help="skip sanity check quarisma beginning of minification on original graph",
     )
     parser_minify.add_argument(
         "--max-granularity",
         type=int,
         default=None,
-        help="start xsigma this granularity and work down; must be power of 2",
+        help="start quarisma this granularity and work down; must be power of 2",
     )
     parser_minify.add_argument(
         "--check-str",

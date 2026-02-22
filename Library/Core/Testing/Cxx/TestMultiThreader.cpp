@@ -1,5 +1,5 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -13,10 +13,10 @@
 #include <thread>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "parallel/multi_threader.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 // ============================================================================
@@ -91,7 +91,7 @@ static void spawned_worker(void* data)
 // ============================================================================
 
 // Comprehensive test for MultiThreader
-XSIGMATEST(MultiThreader, Test)
+QUARISMATEST(MultiThreader, Test)
 {
     // Test 1: Create and destroy multi_threader
     {
@@ -109,7 +109,7 @@ XSIGMATEST(MultiThreader, Test)
     // Test 3: Get maximum number of threads
     {
         int max_threads = multi_threader::get_global_static_maximum_number_of_threads();
-        EXPECT_EQ(max_threads, XSIGMA_MAX_THREADS);
+        EXPECT_EQ(max_threads, QUARISMA_MAX_THREADS);
     }
 
     // Test 4: Set and get number of threads
@@ -134,8 +134,8 @@ XSIGMATEST(MultiThreader, Test)
         EXPECT_GE(mt->get_number_of_threads(), 1);
 
         // Test maximum clamping
-        mt->set_number_of_threads(XSIGMA_MAX_THREADS + 10);
-        EXPECT_LE(mt->get_number_of_threads(), XSIGMA_MAX_THREADS);
+        mt->set_number_of_threads(QUARISMA_MAX_THREADS + 10);
+        EXPECT_LE(mt->get_number_of_threads(), QUARISMA_MAX_THREADS);
 
         delete mt;
     }
@@ -236,7 +236,7 @@ XSIGMATEST(MultiThreader, Test)
         int              thread_id = mt->spawn_thread(spawned_worker, &counter);
 
         EXPECT_GE(thread_id, 0);
-        EXPECT_LT(thread_id, XSIGMA_MAX_THREADS);
+        EXPECT_LT(thread_id, QUARISMA_MAX_THREADS);
 
         // Wait a bit for thread to start
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -393,14 +393,14 @@ XSIGMATEST(MultiThreader, Test)
     // Test 18: Maximum threads execution
     {
         multi_threader* mt = multi_threader::create();
-        mt->set_number_of_threads(XSIGMA_MAX_THREADS);
+        mt->set_number_of_threads(QUARISMA_MAX_THREADS);
 
         std::atomic<int> counter{0};
         mt->set_single_method(single_method_worker, &counter);
         mt->single_method_execute();
 
-        EXPECT_EQ(counter.load(), XSIGMA_MAX_THREADS);
+        EXPECT_EQ(counter.load(), QUARISMA_MAX_THREADS);
         delete mt;
     }
 }
-}  // namespace xsigma
+}  // namespace quarisma

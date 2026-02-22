@@ -15,7 +15,7 @@
 #include "memory/cpu/allocator.h"
 #include "memory/unified_memory_stats.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -28,7 +28,7 @@ namespace xsigma
  * **Thread Safety**: Thread-safe for concurrent access
  * **Performance**: Minimal overhead when disabled, configurable update intervals
  */
-class XSIGMA_VISIBILITY web_dashboard
+class QUARISMA_VISIBILITY web_dashboard
 {
 public:
     /**
@@ -113,7 +113,7 @@ public:
      * dashboard.start_dashboard(8080);
      * ```
      */
-    XSIGMA_API bool start_dashboard(int port = 0);
+    QUARISMA_API bool start_dashboard(int port = 0);
 
     /**
      * @brief Stop the web dashboard server
@@ -121,7 +121,7 @@ public:
      * Gracefully shuts down HTTP server and stops metrics collection.
      * Blocks until server is fully stopped.
      */
-    XSIGMA_API void stop_dashboard();
+    QUARISMA_API void stop_dashboard();
 
     /**
      * @brief Register allocator for monitoring
@@ -134,27 +134,27 @@ public:
      * 
      * **Thread Safety**: Safe to call from any thread
      */
-    XSIGMA_API bool register_allocator(const std::string& name, Allocator* allocator);
+    QUARISMA_API bool register_allocator(const std::string& name, Allocator* allocator);
 
     /**
      * @brief Unregister allocator from monitoring
      * @param name Name of allocator to unregister
      * @return True if unregistration successful
      */
-    XSIGMA_API bool unregister_allocator(const std::string& name);
+    QUARISMA_API bool unregister_allocator(const std::string& name);
 
     /**
      * @brief Get list of registered allocators
      * @return Vector of allocator names
      */
-    XSIGMA_API std::vector<std::string> get_registered_allocators() const;
+    QUARISMA_API std::vector<std::string> get_registered_allocators() const;
 
     /**
      * @brief Get current metrics for specific allocator
      * @param allocator_name Name of allocator
      * @return JSON string with current metrics, empty if not found
      */
-    XSIGMA_API std::string get_allocator_metrics_json(const std::string& allocator_name) const;
+    QUARISMA_API std::string get_allocator_metrics_json(const std::string& allocator_name) const;
 
     /**
      * @brief Get historical metrics for specific allocator
@@ -162,14 +162,14 @@ public:
      * @param max_points Maximum number of historical points to return
      * @return JSON string with historical metrics
      */
-    XSIGMA_API std::string get_allocator_history_json(
+    QUARISMA_API std::string get_allocator_history_json(
         const std::string& allocator_name, size_t max_points = 100) const;
 
     /**
      * @brief Get summary of all allocators
      * @return JSON string with summary of all registered allocators
      */
-    XSIGMA_API std::string get_all_allocators_summary_json() const;
+    QUARISMA_API std::string get_all_allocators_summary_json() const;
 
     /**
      * @brief Export metrics in Prometheus format
@@ -178,7 +178,7 @@ public:
      * Exports current metrics in Prometheus format for integration
      * with monitoring systems like Grafana.
      */
-    XSIGMA_API std::string export_prometheus_metrics() const;
+    QUARISMA_API std::string export_prometheus_metrics() const;
 
     /**
      * @brief Check if dashboard is currently running
@@ -210,7 +210,7 @@ public:
      * Forces immediate collection and broadcast of current metrics.
      * Useful for testing or on-demand updates.
      */
-    XSIGMA_API void update_metrics_now();
+    QUARISMA_API void update_metrics_now();
 
 private:
     dashboard_config  config_;
@@ -331,4 +331,4 @@ private:
     double calculate_allocation_rate(const std::string& allocator_name) const;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

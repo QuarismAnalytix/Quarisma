@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,12 +18,12 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "memory/backend/allocator_tracking.h"
@@ -50,7 +50,7 @@
 #include "memory/unified_memory_stats.h"
 #include "util/exception.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 allocator_tracking::allocator_tracking(
@@ -73,7 +73,7 @@ allocator_tracking::allocator_tracking(
     // Log initialization if enabled
     if (log_level_.load(std::memory_order_relaxed) >= tracking_log_level::INFO)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "allocator_tracking initialized: track_sizes={}, enhanced={}, underlying={}",
             track_sizes_locally_,
             enhanced_tracking_enabled_,
@@ -92,7 +92,7 @@ void* allocator_tracking::allocate_raw(
     if (current_log_level >= tracking_log_level::DEBUG_LEVEL)
     {
         // Simplified logging to avoid macro issues
-        // XSIGMA_LOG_INFO("allocator_tracking::allocate_raw: "
+        // QUARISMA_LOG_INFO("allocator_tracking::allocate_raw: "
         //                + std::to_string(num_bytes) + " bytes, alignment=" + std::to_string(alignment));
     }
 
@@ -131,7 +131,7 @@ void* allocator_tracking::allocate_raw(
     {
         if (current_log_level >= tracking_log_level::WARNING)
         {
-            XSIGMA_LOG_WARNING(
+            QUARISMA_LOG_WARNING(
                 "allocator_tracking::allocate_raw failed: {} bytes, alignment={}",
                 num_bytes,
                 alignment);
@@ -143,7 +143,7 @@ void* allocator_tracking::allocate_raw(
     if (current_log_level >= tracking_log_level::TRACE)
     {
         // Simplified logging to avoid macro issues
-        // XSIGMA_LOG_INFO("allocator_tracking::allocate_raw success: ptr="
+        // QUARISMA_LOG_INFO("allocator_tracking::allocate_raw success: ptr="
         //                + std::to_string(reinterpret_cast<uintptr_t>(ptr)) + ", "
         //                + std::to_string(num_bytes) + " bytes, time="
         //                + std::to_string(duration_us) + "μs");
@@ -294,7 +294,7 @@ void allocator_tracking::deallocate_raw(void* ptr)
     if (current_log_level >= tracking_log_level::TRACE)
     {
         // Simplified logging to avoid macro issues
-        // XSIGMA_LOG_INFO("allocator_tracking::deallocate_raw: ptr="
+        // QUARISMA_LOG_INFO("allocator_tracking::deallocate_raw: ptr="
         //                + std::to_string(reinterpret_cast<uintptr_t>(ptr)));
     }
 
@@ -327,7 +327,7 @@ void allocator_tracking::deallocate_raw(void* ptr)
         std::unique_lock<std::mutex> const lock(mu_);
         if (tracks_allocation_sizes)
         {
-            XSIGMA_CHECK_DEBUG(allocated_ >= allocated_bytes);
+            QUARISMA_CHECK_DEBUG(allocated_ >= allocated_bytes);
             allocated_ -= allocated_bytes;
             int64_t const tmp = std::chrono::duration_cast<std::chrono::microseconds>(
                                     std::chrono::steady_clock::now().time_since_epoch())
@@ -387,7 +387,7 @@ void allocator_tracking::deallocate_raw(void* ptr)
     if (current_log_level >= tracking_log_level::TRACE)
     {
         // Simplified logging to avoid macro issues
-        // XSIGMA_LOG_INFO("allocator_tracking::deallocate_raw success: ptr="
+        // QUARISMA_LOG_INFO("allocator_tracking::deallocate_raw success: ptr="
         //                + std::to_string(reinterpret_cast<uintptr_t>(ptr)) + ", time="
         //                + std::to_string(duration_us) + "μs");
     }
@@ -396,7 +396,7 @@ void allocator_tracking::deallocate_raw(void* ptr)
     {
         if (current_log_level >= tracking_log_level::INFO)
         {
-            XSIGMA_LOG_INFO("allocator_tracking self-destructing: ref_count=0");
+            QUARISMA_LOG_INFO("allocator_tracking self-destructing: ref_count=0");
         }
         delete this;
     }
@@ -508,7 +508,7 @@ std::vector<alloc_record> allocator_tracking::GetCurrentRecords()
 
 bool allocator_tracking::UnRef()
 {
-    XSIGMA_CHECK_DEBUG(ref_ > 0);
+    QUARISMA_CHECK_DEBUG(ref_ > 0);
     --ref_;
     return (ref_ == 0);
 }
@@ -594,7 +594,7 @@ void allocator_tracking::SetLoggingLevel(tracking_log_level level) noexcept
 
     if (level >= tracking_log_level::INFO)
     {
-        XSIGMA_LOG_INFO("allocator_tracking logging level changed to: {}", static_cast<int>(level));
+        QUARISMA_LOG_INFO("allocator_tracking logging level changed to: {}", static_cast<int>(level));
     }
 }
 
@@ -609,7 +609,7 @@ void allocator_tracking::ResetTimingStats() noexcept
 
     if (log_level_.load(std::memory_order_relaxed) >= tracking_log_level::INFO)
     {
-        XSIGMA_LOG_INFO("allocator_tracking timing statistics reset");
+        QUARISMA_LOG_INFO("allocator_tracking timing statistics reset");
     }
 }
 
@@ -652,7 +652,7 @@ std::string allocator_tracking::GenerateReport(bool include_allocations) const
     std::ostringstream report;
 
     // Header
-    report << "=== XSigma Memory Allocation Tracking Report ===\n";
+    report << "=== Quarisma Memory Allocation Tracking Report ===\n";
     report << "Underlying Allocator: " << allocator_->Name() << "\n";
     report << "Enhanced Tracking: " << (enhanced_tracking_enabled_ ? "Enabled" : "Disabled")
            << "\n";
@@ -774,4 +774,4 @@ std::string allocator_tracking::GenerateReport(bool include_allocations) const
     return report.str();
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

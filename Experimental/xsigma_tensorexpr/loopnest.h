@@ -345,7 +345,7 @@ public:
 
     // Reorder the given list of loops according to the permutation specified.
     // Here `permutation[i]` represents the position of the loop in the input
-    // which will end up xsigma position `i` after the reorder.
+    // which will end up quarisma position `i` after the reorder.
     //
     // For example, consider the following code:
     //   for p
@@ -467,7 +467,7 @@ public:
     // TODO: Add an IR verifier check to detect invalidly compressed buffers.
     static void compressAllBuffers(const StmtPtr& stmt);
 
-    // Get 'num' loops from the loopnest starting xsigma 'f'.
+    // Get 'num' loops from the loopnest starting quarisma 'f'.
     static std::vector<ForPtr> getLoopStmtsInLoopNest(const ForPtr& f, size_t num);
 
     // LoopOptions are propagated to tail.
@@ -488,14 +488,14 @@ public:
     // S is assumed to be a Store or a Block containing a Store. Along with the
     // computation itself, this transformation inserts Alloc/Free statements for
     // the temporary buffer used in the computation.
-    static void computeAt(const StmtPtr& s, const ForPtr& xsigma);
+    static void computeAt(const StmtPtr& s, const ForPtr& quarisma);
 
     // Rfactor a reduction axis into a normal axis.
     //
     // Requirements:
     //  * S is the reduction store
     //  * S is the only statement in the innermost loop
-    //  * There is xsigma least two reduction arguments in S
+    //  * There is quarisma least two reduction arguments in S
     //  * OUTER_REDUCTION_FOR loop corresponds to the outermost reduction variable
     //  used in the store and all other reduction variables are index variables of
     //  children loops of OUTER_REDUCTION_FOR

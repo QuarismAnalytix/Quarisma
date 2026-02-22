@@ -1,6 +1,6 @@
 #pragma once
-#include <XSigma/core/IListRef.h>
-#include <XSigma/core/Tensor.h>
+#include <Quarisma/core/IListRef.h>
+#include <Quarisma/core/Tensor.h>
 #include <c10/util/irange.h>
 
 namespace at::native

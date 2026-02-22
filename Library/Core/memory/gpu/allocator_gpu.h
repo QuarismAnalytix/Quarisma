@@ -1,6 +1,6 @@
 /*
- * XSigma: High-Performance Quantitative Library
- * Copyright 2025 XSigma Contributors
+ * Quarisma: High-Performance Quantitative Library
+ * Copyright 2025 Quarisma Contributors
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
 
@@ -16,16 +16,16 @@
 #include "memory/cpu/allocator.h"
 #include "memory/sub_allocator.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda.h>  // For CUDA Driver API
 #include <cuda_runtime.h>
 #endif
 
-#if XSIGMA_HAS_HIP
+#if QUARISMA_HAS_HIP
 #include <hip/hip_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -33,10 +33,10 @@ namespace gpu
 /**
  * @brief GPU sub-allocator that interfaces with GPU memory management APIs.
  *
- * Provides a bridge between XSigma's allocator interface and GPU memory
+ * Provides a bridge between Quarisma's allocator interface and GPU memory
  * management functions (CUDA/HIP). Handles device context switching and error management.
  */
-class XSIGMA_VISIBILITY basic_gpu_allocator : public sub_allocator
+class QUARISMA_VISIBILITY basic_gpu_allocator : public sub_allocator
 {
 public:
     /**
@@ -47,7 +47,7 @@ public:
      * @param free_visitors Functions called on each deallocation for monitoring
      * @param numa_node NUMA node affinity (ignored for GPU memory)
      */
-    XSIGMA_API basic_gpu_allocator(
+    QUARISMA_API basic_gpu_allocator(
         int                         device_id,
         const std::vector<Visitor>& alloc_visitors = {},
         const std::vector<Visitor>& free_visitors  = {},
@@ -56,7 +56,7 @@ public:
     /**
      * @brief Destructor ensures proper cleanup of device context.
      */
-    XSIGMA_API ~basic_gpu_allocator() override;
+    QUARISMA_API ~basic_gpu_allocator() override;
 
     /**
      * @brief Allocates GPU memory using appropriate GPU API.
@@ -66,7 +66,7 @@ public:
      * @param bytes_received Actual bytes allocated (output)
      * @return Pointer to GPU memory or nullptr on failure
      */
-    XSIGMA_API void* Alloc(size_t alignment, size_t num_bytes, size_t* bytes_received) override;
+    QUARISMA_API void* Alloc(size_t alignment, size_t num_bytes, size_t* bytes_received) override;
 
     /**
      * @brief Frees GPU memory using appropriate GPU API.
@@ -74,21 +74,21 @@ public:
      * @param ptr Pointer to GPU memory to free
      * @param num_bytes Size of memory block (for validation)
      */
-    XSIGMA_API void Free(void* ptr, size_t num_bytes) override;
+    QUARISMA_API void Free(void* ptr, size_t num_bytes) override;
 
     /**
      * @brief Indicates this allocator supports coalescing.
      *
      * @return true (GPU memory supports coalescing)
      */
-    XSIGMA_API bool SupportsCoalescing() const override { return true; }
+    QUARISMA_API bool SupportsCoalescing() const override { return true; }
 
     /**
      * @brief Returns the memory type managed by this allocator.
      *
      * @return DEVICE memory type for GPU allocations
      */
-    XSIGMA_API allocator_memory_enum GetMemoryType() const noexcept override
+    QUARISMA_API allocator_memory_enum GetMemoryType() const noexcept override
     {
         return allocator_memory_enum::DEVICE;
     }
@@ -103,18 +103,18 @@ private:
 /**
  * @brief GPU allocation method enumeration (determined at compile time).
  *
- * The actual allocation method is controlled by the XSIGMA_GPU_ALLOC CMake flag:
+ * The actual allocation method is controlled by the QUARISMA_GPU_ALLOC CMake flag:
  * - SYNC: Uses cuMemAlloc/cuMemFree or hipMalloc/hipFree (synchronous allocation)
  * - ASYNC: Uses cuMemAllocAsync/cuMemFreeAsync or hipMallocAsync/hipFreeAsync (asynchronous allocation)
  * - POOL_ASYNC: Uses cuMemAllocFromPoolAsync or hipMallocFromPoolAsync (pool-based async allocation)
  */
 enum class gpu_allocation_method
 {
-#if defined(XSIGMA_CUDA_ALLOC_SYNC) || defined(XSIGMA_HIP_ALLOC_SYNC)
+#if defined(QUARISMA_CUDA_ALLOC_SYNC) || defined(QUARISMA_HIP_ALLOC_SYNC)
     SYNC,  ///< Synchronous allocation using cuMemAlloc/cuMemFree or hipMalloc/hipFree
-#elif defined(XSIGMA_CUDA_ALLOC_ASYNC) || defined(XSIGMA_HIP_ALLOC_ASYNC)
+#elif defined(QUARISMA_CUDA_ALLOC_ASYNC) || defined(QUARISMA_HIP_ALLOC_ASYNC)
     ASYNC,  ///< Asynchronous allocation using cuMemAllocAsync/cuMemFreeAsync or hipMallocAsync/hipFreeAsync
-#elif defined(XSIGMA_CUDA_ALLOC_POOL_ASYNC) || defined(XSIGMA_HIP_ALLOC_POOL_ASYNC)
+#elif defined(QUARISMA_CUDA_ALLOC_POOL_ASYNC) || defined(QUARISMA_HIP_ALLOC_POOL_ASYNC)
     POOL_ASYNC,  ///< Pool-based async allocation using cuMemAllocFromPoolAsync or hipMallocFromPoolAsync
 #else
     SYNC  ///< Default to synchronous allocation
@@ -126,7 +126,7 @@ enum class gpu_allocation_method
  *
  * allocator_gpu provides a direct wrapper around GPU memory allocation functions
  * (CUDA/HIP), eliminating intermediate backend layers for optimal performance.
- * The allocation method is determined at compile time via the XSIGMA_GPU_ALLOC CMake flag.
+ * The allocation method is determined at compile time via the QUARISMA_GPU_ALLOC CMake flag.
  *
  * **Key Features**:
  * - Direct GPU API integration (no backend layers)
@@ -137,7 +137,7 @@ enum class gpu_allocation_method
  * - Thread-safe operation
  * - Support for synchronous and asynchronous allocation
  *
- * **Allocation Methods** (controlled by XSIGMA_GPU_ALLOC):
+ * **Allocation Methods** (controlled by QUARISMA_GPU_ALLOC):
  * - SYNC: cuMemAlloc/cuMemFree or hipMalloc/hipFree - O(1) allocation, best for large allocations
  * - ASYNC: cuMemAllocAsync/cuMemFreeAsync or hipMallocAsync/hipFreeAsync - O(1) async, best for stream-based workloads
  * - POOL_ASYNC: cuMemAllocFromPoolAsync or hipMallocFromPoolAsync - O(1) pooled async, best for frequent small allocations
@@ -150,7 +150,7 @@ enum class gpu_allocation_method
  * **Thread Safety**: Fully thread-safe with device-level synchronization
  * **Memory Type**: GPU device memory (CUDA global memory or HIP device memory)
  */
-class XSIGMA_VISIBILITY allocator_gpu : public Allocator
+class QUARISMA_VISIBILITY allocator_gpu : public Allocator
 {
 public:
     /**
@@ -177,11 +177,11 @@ public:
      * @param name Human-readable name for debugging and profiling
      *
      * **Device Context**: Automatically manages GPU device context
-     * **Allocation Method**: Determined at compile time by XSIGMA_GPU_ALLOC flag
+     * **Allocation Method**: Determined at compile time by QUARISMA_GPU_ALLOC flag
      * **Thread Safety**: Constructor is not thread-safe
      * **Exception Safety**: Strong guarantee - no partial construction
      */
-    XSIGMA_API allocator_gpu(int device_id, const Options& options, std::string name);
+    QUARISMA_API allocator_gpu(int device_id, const Options& options, std::string name);
 
     /**
      * @brief Destructor that cleans up device context and resources.
@@ -190,7 +190,7 @@ public:
      * **Resource Cleanup**: Ensures proper cleanup of device resources
      * **Exception Safety**: noexcept - logs errors but doesn't throw
      */
-    XSIGMA_API ~allocator_gpu() override;
+    QUARISMA_API ~allocator_gpu() override;
 
     /**
      * @brief Returns the human-readable name of this allocator.
@@ -211,7 +211,7 @@ public:
      * **Thread Safety**: Thread-safe through device-level synchronization
      * **Performance**: O(1) direct GPU API call
      */
-    XSIGMA_API void* allocate_raw(size_t alignment, size_t num_bytes) override;
+    QUARISMA_API void* allocate_raw(size_t alignment, size_t num_bytes) override;
 
     /**
      * @brief Allocates GPU memory with allocation attributes.
@@ -221,7 +221,7 @@ public:
      * @param allocation_attr Attributes controlling allocation behavior
      * @return Pointer to GPU memory or nullptr on failure
      */
-    XSIGMA_API void* allocate_raw(
+    QUARISMA_API void* allocate_raw(
         size_t alignment, size_t num_bytes, const allocation_attributes& allocation_attr) override;
 
     /**
@@ -233,7 +233,7 @@ public:
      * **Direct API**: Calls GPU deallocation functions directly (no backend layers)
      * **Thread Safety**: Thread-safe through device-level synchronization
      */
-    XSIGMA_API void deallocate_raw(void* ptr) override;
+    QUARISMA_API void deallocate_raw(void* ptr) override;
 
     /**
      * @brief Indicates whether this allocator tracks allocation sizes.
@@ -304,11 +304,11 @@ public:
      */
     constexpr gpu_allocation_method allocation_method() const noexcept
     {
-#if defined(XSIGMA_CUDA_ALLOC_SYNC) || defined(XSIGMA_HIP_ALLOC_SYNC)
+#if defined(QUARISMA_CUDA_ALLOC_SYNC) || defined(QUARISMA_HIP_ALLOC_SYNC)
         return gpu_allocation_method::SYNC;
-#elif defined(XSIGMA_CUDA_ALLOC_ASYNC) || defined(XSIGMA_HIP_ALLOC_ASYNC)
+#elif defined(QUARISMA_CUDA_ALLOC_ASYNC) || defined(QUARISMA_HIP_ALLOC_ASYNC)
         return gpu_allocation_method::ASYNC;
-#elif defined(XSIGMA_CUDA_ALLOC_POOL_ASYNC) || defined(XSIGMA_HIP_ALLOC_POOL_ASYNC)
+#elif defined(QUARISMA_CUDA_ALLOC_POOL_ASYNC) || defined(QUARISMA_HIP_ALLOC_POOL_ASYNC)
         return gpu_allocation_method::POOL_ASYNC;
 #else
         return gpu_allocation_method::SYNC;
@@ -361,9 +361,9 @@ private:
  * @param name Allocator name for debugging
  * @return Unique pointer to allocator_gpu instance
  *
- * **Allocation Method**: Determined at compile time by XSIGMA_GPU_ALLOC flag
+ * **Allocation Method**: Determined at compile time by QUARISMA_GPU_ALLOC flag
  */
-XSIGMA_API std::unique_ptr<allocator_gpu> create_gpu_allocator(
+QUARISMA_API std::unique_ptr<allocator_gpu> create_gpu_allocator(
     int device_id, const std::string& name = "GPU-Direct");
 
 /**
@@ -374,8 +374,8 @@ XSIGMA_API std::unique_ptr<allocator_gpu> create_gpu_allocator(
  * @param name Allocator name for debugging
  * @return Unique pointer to allocator_gpu instance
  */
-XSIGMA_API std::unique_ptr<allocator_gpu> create_gpu_allocator(
+QUARISMA_API std::unique_ptr<allocator_gpu> create_gpu_allocator(
     int device_id, const allocator_gpu::Options& options, const std::string& name = "GPU-Direct");
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

@@ -1,8 +1,8 @@
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/onnx/constant_fold.h>
 #include <torch/csrc/jit/passes/onnx/helper.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <algorithm>
 #include <optional>
@@ -14,7 +14,7 @@ namespace torch::jit
 
 namespace onnx
 {
-using namespace ::xsigma::onnx;
+using namespace ::quarisma::onnx;
 }
 
 namespace onnx_constant_fold
@@ -34,24 +34,24 @@ enum OnnxType : int
     ONNX_UINT32,
 };
 
-static std::unordered_map<int, xsigma::ScalarType> onnxTypeToScalarTypeMap = {
+static std::unordered_map<int, quarisma::ScalarType> onnxTypeToScalarTypeMap = {
     // Only conversion of ONNX numeric types is included here.
     // Unsigned ONNX types are mapped to the next higher signed
     // ScalarType type.
-    {ONNX_FLOAT, xsigma::kFloat},
-    {ONNX_UINT8, xsigma::kByte},
-    {ONNX_INT8, xsigma::kChar},
-    {ONNX_UINT16, xsigma::kInt},
-    {ONNX_INT16, xsigma::kShort},
-    {ONNX_INT32, xsigma::kInt},
-    {ONNX_INT64, xsigma::kLong},
-    {ONNX_FLOAT16, xsigma::kFloat},
-    {ONNX_DOUBLE, xsigma::kDouble},
-    {ONNX_UINT32, xsigma::kLong},
+    {ONNX_FLOAT, quarisma::kFloat},
+    {ONNX_UINT8, quarisma::kByte},
+    {ONNX_INT8, quarisma::kChar},
+    {ONNX_UINT16, quarisma::kInt},
+    {ONNX_INT16, quarisma::kShort},
+    {ONNX_INT32, quarisma::kInt},
+    {ONNX_INT64, quarisma::kLong},
+    {ONNX_FLOAT16, quarisma::kFloat},
+    {ONNX_DOUBLE, quarisma::kDouble},
+    {ONNX_UINT32, quarisma::kLong},
 };
 
 static void handleNegativeStartEndIndex(
-    int64_t& start, int64_t& end, int64_t& axis, xsigma::IntArrayRef tensorSizes)
+    int64_t& start, int64_t& end, int64_t& axis, quarisma::IntArrayRef tensorSizes)
 {
     if (start < 0)
     {
@@ -68,8 +68,8 @@ static void handleNegativeStartEndIndex(
     }
 }
 
-static std::optional<xsigma::Tensor> runTorchSlice_opset9(
-    const Node* node, std::vector<xsigma::Tensor>& inputTensorValues)
+static std::optional<quarisma::Tensor> runTorchSlice_opset9(
+    const Node* node, std::vector<quarisma::Tensor>& inputTensorValues)
 {
     assert(inputTensorValues.size() == 1);
     if (inputTensorValues.size() != 1)
@@ -100,7 +100,7 @@ static std::optional<xsigma::Tensor> runTorchSlice_opset9(
         std::iota(axesAttr.begin(), axesAttr.end(), 0);
     }
     auto updated_val = inputTensorValues[0];
-    for (const auto i : xsigma::irange(axesAttr.size()))
+    for (const auto i : quarisma::irange(axesAttr.size()))
     {
         // ONNX slice accepts negative starts and ends values.
         int64_t axis = axesAttr[i], start = startsAttr[i], end = endsAttr[i];
@@ -110,13 +110,13 @@ static std::optional<xsigma::Tensor> runTorchSlice_opset9(
         int64_t length = end - start;
         if (length < 0 || start > updated_val.sizes()[axis] - length)
             return std::nullopt;
-        updated_val = xsigma::narrow(updated_val, axis, start, length);
+        updated_val = quarisma::narrow(updated_val, axis, start, length);
     }
-    return std::optional<xsigma::Tensor>(updated_val);
+    return std::optional<quarisma::Tensor>(updated_val);
 }
 
-static std::optional<xsigma::Tensor> runTorchSlice_opset10(
-    const Node* node, std::vector<xsigma::Tensor>& inputTensorValues)
+static std::optional<quarisma::Tensor> runTorchSlice_opset10(
+    const Node* node, std::vector<quarisma::Tensor>& inputTensorValues)
 {
     const int maxSliceInputCount = 5;
     const int minSliceInputCount = 3;
@@ -168,7 +168,7 @@ static std::optional<xsigma::Tensor> runTorchSlice_opset10(
         auto axes_a = inputTensorValues[3].accessor<int64_t, 1>();
         axes.resize(inputTensorValues[3].sizes()[0]);
         // ONNX slice accepts negative axis, fix this for aten op
-        for (const auto i : xsigma::irange(inputTensorValues[3].sizes()[0]))
+        for (const auto i : quarisma::irange(inputTensorValues[3].sizes()[0]))
         {
             axes[i] = axes_a[i] < 0 ? axes_a[i] + inputTensorValues[0].sizes().size() : axes_a[i];
         }
@@ -198,7 +198,7 @@ static std::optional<xsigma::Tensor> runTorchSlice_opset10(
             return std::nullopt;
         }
         auto steps_a = inputTensorValues[4].accessor<int64_t, 1>();
-        for (const auto i : xsigma::irange(inputTensorValues[4].sizes()[0]))
+        for (const auto i : quarisma::irange(inputTensorValues[4].sizes()[0]))
         {
             // Only steps == 1 are supported for constant-folding.
             if (steps_a[i] != 1)
@@ -214,7 +214,7 @@ static std::optional<xsigma::Tensor> runTorchSlice_opset10(
     auto starts_a    = inputTensorValues[1].accessor<int64_t, 1>();
     auto ends_a      = inputTensorValues[2].accessor<int64_t, 1>();
     auto updated_val = inputTensorValues[0];
-    for (const auto i : xsigma::irange(inputTensorValues[1].sizes()[0]))
+    for (const auto i : quarisma::irange(inputTensorValues[1].sizes()[0]))
     {
         // ONNX slice accepts negative starts and ends values.
         int64_t start = starts_a[i], end = ends_a[i], axis = axes[i];
@@ -222,58 +222,58 @@ static std::optional<xsigma::Tensor> runTorchSlice_opset10(
         int64_t length = end - start;
         if (length < 0 || start > updated_val.sizes()[axis] - length)
             return std::nullopt;
-        updated_val = xsigma::narrow(updated_val, axis, start, length);
+        updated_val = quarisma::narrow(updated_val, axis, start, length);
     }
-    return std::optional<xsigma::Tensor>(updated_val);
+    return std::optional<quarisma::Tensor>(updated_val);
 }
 
 // Refer to AT_FORALL_SCALAR_TYPES_WITH_COMPLEX_EXCEPT_COMPLEX_HALF
-static xsigma::Tensor runTorchArange_opset11(
-    const Node* node, const std::vector<xsigma::Tensor>& inputTensorValues)
+static quarisma::Tensor runTorchArange_opset11(
+    const Node* node, const std::vector<quarisma::Tensor>& inputTensorValues)
 {
     TORCH_INTERNAL_ASSERT(inputTensorValues.size() == 3);
     auto           dtype = inputTensorValues[0].scalar_type();
-    xsigma::Tensor updated_val;
+    quarisma::Tensor updated_val;
     switch (dtype)
     {
-    case xsigma::ScalarType::Float:
+    case quarisma::ScalarType::Float:
     {
         auto start  = inputTensorValues[0].item<float>();
         auto end    = inputTensorValues[1].item<float>();
         auto step   = inputTensorValues[2].item<float>();
-        updated_val = xsigma::arange(start, end, step);
+        updated_val = quarisma::arange(start, end, step);
         break;
     }
-    case xsigma::ScalarType::Double:
+    case quarisma::ScalarType::Double:
     {
         auto start  = inputTensorValues[0].item<double>();
         auto end    = inputTensorValues[1].item<double>();
         auto step   = inputTensorValues[2].item<double>();
-        updated_val = xsigma::arange(start, end, step);
+        updated_val = quarisma::arange(start, end, step);
         break;
     }
-    case xsigma::ScalarType::Short:
+    case quarisma::ScalarType::Short:
     {
         auto start  = inputTensorValues[0].item<int16_t>();
         auto end    = inputTensorValues[1].item<int16_t>();
         auto step   = inputTensorValues[2].item<int16_t>();
-        updated_val = xsigma::arange(start, end, step);
+        updated_val = quarisma::arange(start, end, step);
         break;
     }
-    case xsigma::ScalarType::Int:
+    case quarisma::ScalarType::Int:
     {
         auto start  = inputTensorValues[0].item<int>();
         auto end    = inputTensorValues[1].item<int>();
         auto step   = inputTensorValues[2].item<int>();
-        updated_val = xsigma::arange(start, end, step);
+        updated_val = quarisma::arange(start, end, step);
         break;
     }
-    case xsigma::ScalarType::Long:
+    case quarisma::ScalarType::Long:
     {
         auto start  = inputTensorValues[0].item<int64_t>();
         auto end    = inputTensorValues[1].item<int64_t>();
         auto step   = inputTensorValues[2].item<int64_t>();
-        updated_val = xsigma::arange(start, end, step);
+        updated_val = quarisma::arange(start, end, step);
         break;
     }
     default:
@@ -284,21 +284,21 @@ static xsigma::Tensor runTorchArange_opset11(
     return updated_val;
 }
 
-xsigma::Tensor IntToTensor(int64_t value)
+quarisma::Tensor IntToTensor(int64_t value)
 {
-    auto options = xsigma::TensorOptions().dtype(xsigma::kLong).device(xsigma::kCPU);
+    auto options = quarisma::TensorOptions().dtype(quarisma::kLong).device(quarisma::kCPU);
     std::vector<int64_t> size_data = {value};
-    auto f = xsigma::from_blob(size_data.data(), {1}, xsigma::kLong).to(xsigma::kCPU);
+    auto f = quarisma::from_blob(size_data.data(), {1}, quarisma::kLong).to(quarisma::kCPU);
     // Need copy here
-    xsigma::Tensor f_copy = xsigma::empty({1}, options);
+    quarisma::Tensor f_copy = quarisma::empty({1}, options);
     f_copy.copy_(f);
-    return xsigma::squeeze(f_copy, 0);
+    return quarisma::squeeze(f_copy, 0);
 }
 
-std::optional<xsigma::Tensor> runTorchBackendForOnnx(
-    const Node* node, std::vector<xsigma::Tensor>& inputTensorValues, int opset_version)
+std::optional<quarisma::Tensor> runTorchBackendForOnnx(
+    const Node* node, std::vector<quarisma::Tensor>& inputTensorValues, int opset_version)
 {
-    xsigma::Tensor updated_val;
+    quarisma::Tensor updated_val;
     if (node->kind() == onnx::Slice)
     {
         if (opset_version == ONNX_OPSET_9)
@@ -322,39 +322,39 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
         {
             return std::nullopt;
         }
-        updated_val = xsigma::cat(xsigma::TensorList(inputTensorValues), node->i(attr::axis));
-        return std::optional<xsigma::Tensor>(updated_val);
+        updated_val = quarisma::cat(quarisma::TensorList(inputTensorValues), node->i(attr::axis));
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Sqrt)
     {
-        updated_val = xsigma::sqrt(inputTensorValues[0]);
-        return std::optional<xsigma::Tensor>(updated_val);
+        updated_val = quarisma::sqrt(inputTensorValues[0]);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Div)
     {
-        // One example shows xsigma::div(CPULongType, CPULongType) = CPUFloatType,
+        // One example shows quarisma::div(CPULongType, CPULongType) = CPUFloatType,
         // So we add a cast below.
-        updated_val = xsigma::div(inputTensorValues[0], inputTensorValues[1]);
+        updated_val = quarisma::div(inputTensorValues[0], inputTensorValues[1]);
         if (inputTensorValues[0].scalar_type() == inputTensorValues[1].scalar_type())
         {
             updated_val = updated_val.to(inputTensorValues[0].scalar_type());
         }
-        return std::optional<xsigma::Tensor>(updated_val);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Mul)
     {
-        updated_val = xsigma::mul(inputTensorValues[0], inputTensorValues[1]);
-        return std::optional<xsigma::Tensor>(updated_val);
+        updated_val = quarisma::mul(inputTensorValues[0], inputTensorValues[1]);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Sub)
     {
-        updated_val = xsigma::sub(inputTensorValues[0], inputTensorValues[1]);
-        return std::optional<xsigma::Tensor>(updated_val);
+        updated_val = quarisma::sub(inputTensorValues[0], inputTensorValues[1]);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Add)
     {
-        updated_val = xsigma::add(inputTensorValues[0], inputTensorValues[1]);
-        return std::optional<xsigma::Tensor>(updated_val);
+        updated_val = quarisma::add(inputTensorValues[0], inputTensorValues[1]);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Unsqueeze)
     {
@@ -376,7 +376,7 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
             {
                 // ONNX unsqueeze accepts negative axes
                 // From https://pytorch.org/docs/stable/generated/torch.unsqueeze.html
-                // Negative dim will correspond to unsqueeze() applied xsigma dim = dim +
+                // Negative dim will correspond to unsqueeze() applied quarisma dim = dim +
                 // input.dim() + 1.
                 axes_a[i] += axes_a[i] < 0 ? inputTensorValues[0].sizes().size() + 1 : 0;
                 axes.push_back(axes_a[i]);
@@ -385,9 +385,9 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
             updated_val = inputTensorValues[0];
             for (int64_t i = 0; i < inputTensorValues[1].sizes()[0]; ++i)
             {
-                updated_val = xsigma::unsqueeze(updated_val, axes[i]);
+                updated_val = quarisma::unsqueeze(updated_val, axes[i]);
             }
-            return std::optional<xsigma::Tensor>(updated_val);
+            return std::optional<quarisma::Tensor>(updated_val);
         }
         else if (opset_version >= ONNX_OPSET_9)
         {
@@ -401,9 +401,9 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
             std::sort(axesAttr.begin(), axesAttr.end());
             for (auto axis : axesAttr)
             {
-                updated_val = xsigma::unsqueeze(updated_val, axis);
+                updated_val = quarisma::unsqueeze(updated_val, axis);
             }
-            return std::optional<xsigma::Tensor>(updated_val);
+            return std::optional<quarisma::Tensor>(updated_val);
         }
         else
         {
@@ -443,10 +443,10 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
                 std::sort(axes.begin(), axes.end());
                 for (int64_t i = 0; i < inputTensorValues[1].sizes()[0]; ++i)
                 {
-                    updated_val = xsigma::squeeze(updated_val, axes[i]);
+                    updated_val = quarisma::squeeze(updated_val, axes[i]);
                 }
             }
-            return std::optional<xsigma::Tensor>(updated_val);
+            return std::optional<quarisma::Tensor>(updated_val);
         }
         else if (opset_version >= ONNX_OPSET_9)
         {
@@ -458,10 +458,10 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
                 std::sort(axesAttr.begin(), axesAttr.end());
                 for (auto axis : axesAttr)
                 {
-                    updated_val = xsigma::squeeze(updated_val, axis);
+                    updated_val = quarisma::squeeze(updated_val, axis);
                 }
             }
-            return std::optional<xsigma::Tensor>(updated_val);
+            return std::optional<quarisma::Tensor>(updated_val);
         }
         else
         {
@@ -479,7 +479,7 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
             return std::nullopt;
         }
         updated_val = inputTensorValues[0].permute(node->is(attr::perm));
-        return std::optional<xsigma::Tensor>(updated_val);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Cast)
     {
@@ -487,7 +487,7 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
         if (node->hasAttributeS("to") && ONNXTypeToATenType(node->i(attr::to)))
         {
             updated_val = inputTensorValues[0].to(ONNXTypeToATenType(node->i(attr::to)).value());
-            return std::optional<xsigma::Tensor>(updated_val);
+            return std::optional<quarisma::Tensor>(updated_val);
         }
         return std::nullopt;
     }
@@ -509,7 +509,7 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
             // All shape dim values should be >= -1
             // onnx::Reshape supports a shape dim value to be zero, in
             // which case the actual dim value remains unchanged. However,
-            // xsigma::reshape does not support shape dim value to be zero
+            // quarisma::reshape does not support shape dim value to be zero
             assert(shape_a[i] >= -1);
             if (shape_a[i] == 0 && !allowzero)
             {
@@ -525,13 +525,13 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
                 shape[i] = shape_a[i];
             }
         }
-        return std::optional<xsigma::Tensor>(xsigma::reshape(updated_val, shape));
+        return std::optional<quarisma::Tensor>(quarisma::reshape(updated_val, shape));
     }
     else if (node->kind() == onnx::Shape)
     {
         TORCH_INTERNAL_ASSERT(inputTensorValues.size() == 1);
-        updated_val = xsigma::_shape_as_tensor(inputTensorValues[0]);
-        return std::optional<xsigma::Tensor>(updated_val);
+        updated_val = quarisma::_shape_as_tensor(inputTensorValues[0]);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::ReduceL1 || node->kind() == onnx::ReduceL2)
     {
@@ -546,8 +546,8 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
         }
         int p = node->kind() == onnx::ReduceL1 ? 1 : 2;
         updated_val =
-            xsigma::norm(inputTensorValues[0], p, node->is(attr::axes), node->i(attr::keepdims));
-        return std::optional<xsigma::Tensor>(updated_val);
+            quarisma::norm(inputTensorValues[0], p, node->is(attr::axes), node->i(attr::keepdims));
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::ReduceProd)
     {
@@ -571,9 +571,9 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
         updated_val   = inputTensorValues[0];
         for (const auto& axis : axes)
         {
-            updated_val = xsigma::prod(updated_val, axis, keepdims);
+            updated_val = quarisma::prod(updated_val, axis, keepdims);
         }
-        return std::optional<xsigma::Tensor>(updated_val);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Gather)
     {
@@ -587,9 +587,9 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
         // If axis attribute for onnx::Gather has a value less than 0,
         // It needs to be adjusted (+= dim sizes) for aten op
         axis += axis < 0 ? inputTensorValues[0].sizes().size() : 0;
-        xsigma::Tensor indices = inputTensorValues[1];
+        quarisma::Tensor indices = inputTensorValues[1];
         auto           q       = indices.dim();
-        // xsigma::index_select only supports indices with rank <= 1.
+        // quarisma::index_select only supports indices with rank <= 1.
         // See https://pytorch.org/docs/main/generated/torch.index_select.html
         if (q > 1)
         {
@@ -603,54 +603,54 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
         }
         // If indices input for onnx::Gather has a value less than 0,
         // It needs to be adjusted (+= dim value) for aten op
-        auto less_mask      = xsigma::lt(indices, 0);
-        auto indices_corr   = xsigma::add(indices, inputTensorValues[0].sizes()[axis]);
-        auto indices_masked = xsigma::where(less_mask, indices_corr, indices);
-        updated_val         = xsigma::index_select(inputTensorValues[0], axis, indices_masked);
+        auto less_mask      = quarisma::lt(indices, 0);
+        auto indices_corr   = quarisma::add(indices, inputTensorValues[0].sizes()[axis]);
+        auto indices_masked = quarisma::where(less_mask, indices_corr, indices);
+        updated_val         = quarisma::index_select(inputTensorValues[0], axis, indices_masked);
         // If rank of indices is 0, rank of output tensor should be
         // rank_of_input - 1.
         if (q < 1)
         {
             updated_val = updated_val.squeeze(axis);
         }
-        return std::optional<xsigma::Tensor>(updated_val);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Range)
     {
         updated_val = runTorchArange_opset11(node, inputTensorValues);
-        return std::optional<xsigma::Tensor>(updated_val);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Where)
     {
         updated_val =
-            xsigma::where(inputTensorValues[0], inputTensorValues[1], inputTensorValues[2]);
-        return std::optional<xsigma::Tensor>(updated_val);
+            quarisma::where(inputTensorValues[0], inputTensorValues[1], inputTensorValues[2]);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Equal)
     {
-        updated_val = xsigma::eq(inputTensorValues[0], inputTensorValues[1]);
-        return std::optional<xsigma::Tensor>(updated_val);
+        updated_val = quarisma::eq(inputTensorValues[0], inputTensorValues[1]);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Greater)
     {
-        updated_val = xsigma::greater(inputTensorValues[0], inputTensorValues[1]);
-        return std::optional<xsigma::Tensor>(updated_val);
+        updated_val = quarisma::greater(inputTensorValues[0], inputTensorValues[1]);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Less)
     {
-        updated_val = xsigma::less(inputTensorValues[0], inputTensorValues[1]);
-        return std::optional<xsigma::Tensor>(updated_val);
+        updated_val = quarisma::less(inputTensorValues[0], inputTensorValues[1]);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Neg)
     {
-        updated_val = xsigma::neg(inputTensorValues[0]);
-        return std::optional<xsigma::Tensor>(updated_val);
+        updated_val = quarisma::neg(inputTensorValues[0]);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Not)
     {
-        auto ones   = xsigma::ones(inputTensorValues[0].sizes(), inputTensorValues[0].dtype());
-        updated_val = xsigma::ne(inputTensorValues[0], ones);
-        return std::optional<xsigma::Tensor>(updated_val);
+        auto ones   = quarisma::ones(inputTensorValues[0].sizes(), inputTensorValues[0].dtype());
+        updated_val = quarisma::ne(inputTensorValues[0], ones);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else if (node->kind() == onnx::Size)
     {
@@ -659,13 +659,13 @@ std::optional<xsigma::Tensor> runTorchBackendForOnnx(
         {
             total_size *= size;
         }
-        return std::optional<xsigma::Tensor>(IntToTensor(total_size));
+        return std::optional<quarisma::Tensor>(IntToTensor(total_size));
     }
     else if (node->kind() == onnx::Softmax)
     {
         int64_t axis = node->hasAttributeS("axis") ? node->i(attr::axis) : -1;
-        updated_val  = xsigma::softmax(inputTensorValues[0], axis);
-        return std::optional<xsigma::Tensor>(updated_val);
+        updated_val  = quarisma::softmax(inputTensorValues[0], axis);
+        return std::optional<quarisma::Tensor>(updated_val);
     }
     else
     {
@@ -695,10 +695,10 @@ static bool hasParamInput(Node* n, const ValueToParamPairMap& valsToParamsMap)
     return false;
 }
 
-static std::vector<xsigma::Tensor> getValues(Node* node, const ValueToParamPairMap& valsToParamsMap)
+static std::vector<quarisma::Tensor> getValues(Node* node, const ValueToParamPairMap& valsToParamsMap)
 {
     size_t                      numInputs = node->inputs().size();
-    std::vector<xsigma::Tensor> inputTensorValues;
+    std::vector<quarisma::Tensor> inputTensorValues;
     inputTensorValues.reserve(numInputs);
     for (auto val : node->inputs())
     {
@@ -802,7 +802,7 @@ static void ConstantFoldONNX(Block* b, ParamMap& paramsDict, int opset_version)
             continue;
         }
 
-        xsigma::Tensor updatedVal          = *updatedValWrapped;
+        quarisma::Tensor updatedVal          = *updatedValWrapped;
         auto           newSourceNodeOutput = [&]() -> Value*
         {
             if (onnx_constant_fold::hasParamInput(node, valsToParamsMap))
@@ -825,7 +825,7 @@ static void ConstantFoldONNX(Block* b, ParamMap& paramsDict, int opset_version)
             }
         }();
         newSourceNodeOutput->inferTypeFrom(updatedVal);
-        node->outputs().xsigma(0)->replaceAllUsesWith(newSourceNodeOutput);
+        node->outputs().quarisma(0)->replaceAllUsesWith(newSourceNodeOutput);
         // Next we remove the current node that has been replaced by
         // an initializer. But before we start de-wiring this node,
         // we check if any parents of this nodes were onnx::Constant

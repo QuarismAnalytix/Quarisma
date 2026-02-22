@@ -8,14 +8,14 @@
 #include "common/macros.h"
 #include "util/exception.h"
 
-XSIGMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED("-Wsuggest-override")
+QUARISMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED("-Wsuggest-override")
 #include <llvm/ExecutionEngine/JITSymbol.h>
-XSIGMA_DIAGNOSTIC_POP()
-XSIGMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED("-Wextra-semi")
+QUARISMA_DIAGNOSTIC_POP()
+QUARISMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED("-Wextra-semi")
 #include <llvm/ExecutionEngine/Orc/Core.h>
 #include <llvm/ExecutionEngine/Orc/ThreadSafeModule.h>
 #include <llvm/Target/TargetMachine.h>
-XSIGMA_DIAGNOSTIC_POP()
+QUARISMA_DIAGNOSTIC_POP()
 
 #include <memory>
 #include <string>

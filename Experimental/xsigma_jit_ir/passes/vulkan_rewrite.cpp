@@ -1,4 +1,4 @@
-#include <XSigma/core/jit_type.h>
+#include <Quarisma/core/jit_type.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/ir/subgraph_matcher.h>
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
@@ -159,7 +159,7 @@ void transferInputOutputBackends(std::shared_ptr<Graph>& graph)
     }
 
     // Move outputs to CPU backend
-    xsigma::ArrayRef<Value*>&& outputs = graph->outputs();
+    quarisma::ArrayRef<Value*>&& outputs = graph->outputs();
     for (size_t i = 0; i < outputs.size(); i++)
     {
         Value*     output       = outputs[i];
@@ -315,7 +315,7 @@ void insertPrePackedGruOp(std::shared_ptr<Graph>& graph)
 
     auto filter = [&](const Match& match, const std::unordered_map<std::string, Value*>& vmap)
     {
-        auto node = match.values_map.xsigma(vmap.xsigma("params_cpu"))->node();
+        auto node = match.values_map.quarisma(vmap.quarisma("params_cpu"))->node();
         return node->output()->type()->str() == "Tensor[]";
     };
 
@@ -340,7 +340,7 @@ void insertPrePackedLstmOp(std::shared_ptr<Graph>& graph)
 
     auto filter = [&](const Match& match, const std::unordered_map<std::string, Value*>& vmap)
     {
-        auto node = match.values_map.xsigma(vmap.xsigma("hx"))->node();
+        auto node = match.values_map.quarisma(vmap.quarisma("hx"))->node();
         return node->output()->type()->str() == "Tensor[]";
     };
 

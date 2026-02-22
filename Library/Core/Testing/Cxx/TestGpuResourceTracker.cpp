@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,15 +13,15 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 #if 0
 #include "common/configure.h"
 #include "common/macros.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 
 #include <chrono>
 #include <memory>
@@ -32,13 +32,13 @@
 #include "memory/device.h"
 #include "memory/gpu/gpu_resource_tracker.h"
 
-using namespace xsigma;
-using namespace xsigma::gpu;
+using namespace quarisma;
+using namespace quarisma::gpu;
 
 /**
  * @brief Test GPU resource tracker singleton access
  */
-XSIGMATEST(GpuResourceTracker, provides_singleton_instance)
+QUARISMATEST(GpuResourceTracker, provides_singleton_instance)
 {
     // Test singleton access
     auto& tracker1 = gpu_resource_tracker::instance();
@@ -47,13 +47,13 @@ XSIGMATEST(GpuResourceTracker, provides_singleton_instance)
     // Should be the same instance
     EXPECT_EQ(&tracker1, &tracker2);
 
-    XSIGMA_LOG_INFO("GPU resource tracker singleton test passed");
+    QUARISMA_LOG_INFO("GPU resource tracker singleton test passed");
 }
 
 /**
  * @brief Test leak detection configuration
  */
-XSIGMATEST(GpuResourceTracker, configures_leak_detection)
+QUARISMATEST(GpuResourceTracker, configures_leak_detection)
 {
     auto& tracker = gpu_resource_tracker::instance();
 
@@ -70,18 +70,18 @@ XSIGMATEST(GpuResourceTracker, configures_leak_detection)
         tracker.configure_leak_detection(config);
         EXPECT_TRUE(true);  // Configuration succeeded
 
-        XSIGMA_LOG_INFO("GPU resource tracker leak detection configuration test passed");
+        QUARISMA_LOG_INFO("GPU resource tracker leak detection configuration test passed");
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO("GPU resource tracker configuration failed: {}", e.what());
+        QUARISMA_LOG_INFO("GPU resource tracker configuration failed: {}", e.what());
     }
 }
 
 /**
  * @brief Test allocation tracking functionality
  */
-XSIGMATEST(GpuResourceTracker, tracks_allocations)
+QUARISMATEST(GpuResourceTracker, tracks_allocations)
 {
     auto& tracker = gpu_resource_tracker::instance();
 
@@ -117,13 +117,13 @@ XSIGMATEST(GpuResourceTracker, tracks_allocations)
     // Clean up
     free(test_ptr);
 
-    XSIGMA_LOG_INFO("GPU resource tracker allocation tracking test passed");
+    QUARISMA_LOG_INFO("GPU resource tracker allocation tracking test passed");
 }
 
 /**
  * @brief Test memory access recording
  */
-XSIGMATEST(GpuResourceTracker, records_memory_access)
+QUARISMATEST(GpuResourceTracker, records_memory_access)
 {
     auto& tracker = gpu_resource_tracker::instance();
 
@@ -148,13 +148,13 @@ XSIGMATEST(GpuResourceTracker, records_memory_access)
     tracker.track_deallocation(test_ptr);
     free(test_ptr);
 
-    XSIGMA_LOG_INFO("GPU resource tracker memory access recording test passed");
+    QUARISMA_LOG_INFO("GPU resource tracker memory access recording test passed");
 }
 
 /**
  * @brief Test statistics collection
  */
-XSIGMATEST(GpuResourceTracker, provides_resource_statistics)
+QUARISMATEST(GpuResourceTracker, provides_resource_statistics)
 {
     auto& tracker = gpu_resource_tracker::instance();
 
@@ -188,13 +188,13 @@ XSIGMATEST(GpuResourceTracker, provides_resource_statistics)
         free(ptr);
     }
 
-    XSIGMA_LOG_INFO("GPU resource tracker statistics test passed");
+    QUARISMA_LOG_INFO("GPU resource tracker statistics test passed");
 }
 
 /**
  * @brief Test active allocations retrieval
  */
-XSIGMATEST(GpuResourceTracker, retrieves_active_allocations)
+QUARISMATEST(GpuResourceTracker, retrieves_active_allocations)
 {
     auto& tracker = gpu_resource_tracker::instance();
 
@@ -228,13 +228,13 @@ XSIGMATEST(GpuResourceTracker, retrieves_active_allocations)
         free(ptr2);
     }
 
-    XSIGMA_LOG_INFO("GPU resource tracker active allocations test passed");
+    QUARISMA_LOG_INFO("GPU resource tracker active allocations test passed");
 }
 
 /**
  * @brief Test allocations by tag retrieval
  */
-XSIGMATEST(GpuResourceTracker, retrieves_allocations_by_tag)
+QUARISMATEST(GpuResourceTracker, retrieves_allocations_by_tag)
 {
     auto& tracker = gpu_resource_tracker::instance();
 
@@ -273,13 +273,13 @@ XSIGMATEST(GpuResourceTracker, retrieves_allocations_by_tag)
         free(ptr3);
     }
 
-    XSIGMA_LOG_INFO("GPU resource tracker allocations by tag test passed");
+    QUARISMA_LOG_INFO("GPU resource tracker allocations by tag test passed");
 }
 
 /**
  * @brief Test allocations by device retrieval
  */
-XSIGMATEST(GpuResourceTracker, retrieves_allocations_by_device)
+QUARISMATEST(GpuResourceTracker, retrieves_allocations_by_device)
 {
     auto& tracker = gpu_resource_tracker::instance();
 
@@ -331,13 +331,13 @@ XSIGMATEST(GpuResourceTracker, retrieves_allocations_by_device)
         free(gpu_ptr);
     }
 
-    XSIGMA_LOG_INFO("GPU resource tracker allocations by device test passed");
+    QUARISMA_LOG_INFO("GPU resource tracker allocations by device test passed");
 }
 
 /**
  * @brief Test leak detection functionality
  */
-XSIGMATEST(GpuResourceTracker, detects_memory_leaks)
+QUARISMATEST(GpuResourceTracker, detects_memory_leaks)
 {
     auto& tracker = gpu_resource_tracker::instance();
 
@@ -379,13 +379,13 @@ XSIGMATEST(GpuResourceTracker, detects_memory_leaks)
         free(leak_ptr);
     }
 
-    XSIGMA_LOG_INFO("GPU resource tracker leak detection test passed");
+    QUARISMA_LOG_INFO("GPU resource tracker leak detection test passed");
 }
 
 /**
  * @brief Test report generation
  */
-XSIGMATEST(GpuResourceTracker, generates_resource_reports)
+QUARISMATEST(GpuResourceTracker, generates_resource_reports)
 {
     auto& tracker = gpu_resource_tracker::instance();
 
@@ -418,13 +418,13 @@ XSIGMATEST(GpuResourceTracker, generates_resource_reports)
         free(ptr2);
     }
 
-    XSIGMA_LOG_INFO("GPU resource tracker report generation test passed");
+    QUARISMA_LOG_INFO("GPU resource tracker report generation test passed");
 }
 
 /**
  * @brief Test tracking enable/disable functionality
  */
-XSIGMATEST(GpuResourceTracker, controls_tracking_state)
+QUARISMATEST(GpuResourceTracker, controls_tracking_state)
 {
     auto& tracker = gpu_resource_tracker::instance();
 
@@ -440,13 +440,13 @@ XSIGMATEST(GpuResourceTracker, controls_tracking_state)
     tracker.set_tracking_enabled(true);
     EXPECT_TRUE(tracker.is_tracking_enabled());
 
-    XSIGMA_LOG_INFO("GPU resource tracker tracking control test passed");
+    QUARISMA_LOG_INFO("GPU resource tracker tracking control test passed");
 }
 
 /**
  * @brief Test data clearing functionality
  */
-XSIGMATEST(GpuResourceTracker, clears_tracking_data)
+QUARISMATEST(GpuResourceTracker, clears_tracking_data)
 {
     auto& tracker = gpu_resource_tracker::instance();
 
@@ -475,8 +475,8 @@ XSIGMATEST(GpuResourceTracker, clears_tracking_data)
         free(ptr2);
     }
 
-    XSIGMA_LOG_INFO("GPU resource tracker data clearing test passed");
+    QUARISMA_LOG_INFO("GPU resource tracker data clearing test passed");
 }
 
-#endif  // XSIGMA_HAS_CUDA
+#endif  // QUARISMA_HAS_CUDA
 #endif

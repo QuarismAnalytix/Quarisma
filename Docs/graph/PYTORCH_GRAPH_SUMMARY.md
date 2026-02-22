@@ -1,8 +1,8 @@
-# XSigma Graph Architecture: Executive Summary
+# Quarisma Graph Architecture: Executive Summary
 
 ## Overview
 
-XSigma implements a **dynamic computational graph** system that:
+Quarisma implements a **dynamic computational graph** system that:
 1. **Builds graphs lazily** during forward pass
 2. **Executes graphs eagerly** during backward pass
 3. **Supports flexible control flow** through eager evaluation
@@ -120,7 +120,7 @@ y = x + x
 loss.backward()
 
 # .grad(): Execute only nodes on path to x, return gradients
-grad_x = xsigma.autograd.grad(loss, x)
+grad_x = quarisma.autograd.grad(loss, x)
 ```
 
 ### Implicit Summation
@@ -158,10 +158,10 @@ loss = y + z
 ## 6. COMPLETE EXAMPLE
 
 ```python
-import xsigma
+import quarisma
 
 # Forward: Build graph
-x = xsigma.tensor([2.0], requires_grad=True)
+x = quarisma.tensor([2.0], requires_grad=True)
 y = x * 3           # MulBackward0
 z = y + 2           # AddBackward0
 loss = z.sum()      # SumBackward0
@@ -185,9 +185,9 @@ print(x.grad)  # tensor([3.])
 ## 7. MULTI-PATH GRADIENT ACCUMULATION
 
 ```python
-import xsigma
+import quarisma
 
-x = xsigma.tensor([1.0], requires_grad=True)
+x = quarisma.tensor([1.0], requires_grad=True)
 
 # Multiple paths
 y = x * 2
@@ -215,13 +215,13 @@ print(x.grad)  # tensor([5.])
 
 | Component | File | Lines |
 |-----------|------|-------|
-| Node class | `xsigma/csrc/autograd/function.h` | 113-792 |
-| Edge struct | `xsigma/csrc/autograd/edge.h` | 1-57 |
-| Engine | `xsigma/csrc/autograd/engine.h/cpp` | 1288-1380 |
-| GraphTask | `xsigma/csrc/autograd/graph_task.h` | 17-230 |
-| set_history | `xsigma/csrc/autograd/functions/utils.h` | 66-91 |
-| GraphRoot | `xsigma/csrc/autograd/functions/basic_ops.h` | 85-113 |
-| ReadyQueue | `xsigma/csrc/autograd/engine.h` | 86-125 |
+| Node class | `quarisma/csrc/autograd/function.h` | 113-792 |
+| Edge struct | `quarisma/csrc/autograd/edge.h` | 1-57 |
+| Engine | `quarisma/csrc/autograd/engine.h/cpp` | 1288-1380 |
+| GraphTask | `quarisma/csrc/autograd/graph_task.h` | 17-230 |
+| set_history | `quarisma/csrc/autograd/functions/utils.h` | 66-91 |
+| GraphRoot | `quarisma/csrc/autograd/functions/basic_ops.h` | 85-113 |
+| ReadyQueue | `quarisma/csrc/autograd/engine.h` | 86-125 |
 
 ---
 
@@ -259,7 +259,7 @@ print(x.grad)  # tensor([5.])
 print(loss.grad_fn)
 
 # Enable anomaly detection
-xsigma.autograd.set_detect_anomaly(True)
+quarisma.autograd.set_detect_anomaly(True)
 
 # Inspect next functions
 print(loss.grad_fn.next_functions)
@@ -275,7 +275,7 @@ loss.backward(retain_graph=True)
 
 ## 12. CONCLUSION
 
-XSigma's graph system elegantly combines:
+Quarisma's graph system elegantly combines:
 - **Dynamic construction** for research flexibility
 - **Efficient execution** via topological ordering
 - **Scalable parallelism** through multi-threaded engine
@@ -288,7 +288,7 @@ This design enables both research innovation and production performance.
 ## 13. FURTHER READING
 
 - **Autograd Documentation:** https://pytorch.org/docs/stable/autograd.html
-- **Custom Functions:** https://pytorch.org/docs/stable/autograd.html#extending-xsigma-autograd
+- **Custom Functions:** https://pytorch.org/docs/stable/autograd.html#extending-quarisma-autograd
 - **Profiling:** https://pytorch.org/docs/stable/profiler.html
 - **Debugging:** https://pytorch.org/docs/stable/autograd.html#anomaly-detection
 

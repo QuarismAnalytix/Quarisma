@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -30,11 +30,11 @@
 #include "common/macros.h"
 #include "memory/device.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -46,7 +46,7 @@ namespace gpu
  * and manage GPU memory pools, including block sizes, pool limits, and
  * allocation strategies optimized for Monte Carlo simulations and PDE solvers.
  */
-struct XSIGMA_VISIBILITY gpu_memory_pool_config
+struct QUARISMA_VISIBILITY gpu_memory_pool_config
 {
     /** @brief Minimum block size in bytes (default: 1KB) */
     size_t min_block_size = 1024;
@@ -82,7 +82,7 @@ struct XSIGMA_VISIBILITY gpu_memory_pool_config
  * Contains statistics about memory pool usage including allocation counts,
  * cache performance, and memory utilization metrics.
  */
-struct XSIGMA_VISIBILITY gpu_memory_pool_statistics
+struct QUARISMA_VISIBILITY gpu_memory_pool_statistics
 {
     /** @brief Total number of allocations performed */
     size_t total_allocations = 0;
@@ -124,7 +124,7 @@ struct XSIGMA_VISIBILITY gpu_memory_pool_statistics
  * Contains metadata about allocated memory blocks including size,
  * device information, and usage statistics for profiling and debugging.
  */
-struct XSIGMA_VISIBILITY gpu_memory_block
+struct QUARISMA_VISIBILITY gpu_memory_block
 {
     /** @brief Pointer to the allocated memory */
     void* ptr = nullptr;
@@ -226,7 +226,7 @@ struct XSIGMA_VISIBILITY gpu_memory_block
  * pool->deallocate(block);
  * ```
  */
-class XSIGMA_VISIBILITY gpu_memory_pool
+class QUARISMA_VISIBILITY gpu_memory_pool
 {
 public:
     /**
@@ -234,12 +234,12 @@ public:
      * @param config Configuration parameters for the memory pool
      * @return Unique pointer to the created memory pool
      */
-    XSIGMA_API static std::unique_ptr<gpu_memory_pool> create(const gpu_memory_pool_config& config);
+    QUARISMA_API static std::unique_ptr<gpu_memory_pool> create(const gpu_memory_pool_config& config);
 
     /**
      * @brief Virtual destructor for proper cleanup
      */
-    XSIGMA_API virtual ~gpu_memory_pool() = default;
+    QUARISMA_API virtual ~gpu_memory_pool() = default;
 
     /**
      * @brief Allocate memory from the pool
@@ -250,7 +250,7 @@ public:
      * @throws std::bad_alloc if allocation fails
      * @throws std::invalid_argument if size is zero or device is invalid
      */
-    XSIGMA_API virtual gpu_memory_block allocate(
+    QUARISMA_API virtual gpu_memory_block allocate(
         size_t size, device_enum device_type, int device_index = 0) = 0;
 
     /**
@@ -258,48 +258,48 @@ public:
      * @param block Memory block to deallocate
      * @throws std::invalid_argument if block is invalid
      */
-    XSIGMA_API virtual void deallocate(const gpu_memory_block& block) = 0;
+    QUARISMA_API virtual void deallocate(const gpu_memory_block& block) = 0;
 
     /**
      * @brief Get current memory usage statistics
      * @return Total allocated memory in bytes
      */
-    XSIGMA_API virtual size_t get_allocated_bytes() const = 0;
+    QUARISMA_API virtual size_t get_allocated_bytes() const = 0;
 
     /**
      * @brief Get peak memory usage since pool creation
      * @return Peak allocated memory in bytes
      */
-    XSIGMA_API virtual size_t get_peak_allocated_bytes() const = 0;
+    QUARISMA_API virtual size_t get_peak_allocated_bytes() const = 0;
 
     /**
      * @brief Get number of active allocations
      * @return Number of currently allocated blocks
      */
-    XSIGMA_API virtual size_t get_active_allocations() const = 0;
+    QUARISMA_API virtual size_t get_active_allocations() const = 0;
 
     /**
      * @brief Clear all cached memory blocks
      * Forces immediate deallocation of all cached blocks to free GPU memory
      */
-    XSIGMA_API virtual void clear_cache() = 0;
+    QUARISMA_API virtual void clear_cache() = 0;
 
     /**
      * @brief Get detailed memory usage report
      * @return String containing detailed memory statistics
      */
-    XSIGMA_API virtual std::string get_memory_report() const = 0;
+    QUARISMA_API virtual std::string get_memory_report() const = 0;
 
     /**
      * @brief Get comprehensive memory pool statistics
      * @return Structure containing detailed statistics about pool usage
      */
-    XSIGMA_API virtual gpu_memory_pool_statistics get_statistics() const = 0;
+    QUARISMA_API virtual gpu_memory_pool_statistics get_statistics() const = 0;
 
 protected:
     gpu_memory_pool() = default;
-    XSIGMA_DELETE_COPY_AND_MOVE(gpu_memory_pool);
+    QUARISMA_DELETE_COPY_AND_MOVE(gpu_memory_pool);
 };
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

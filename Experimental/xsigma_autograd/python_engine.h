@@ -27,7 +27,7 @@ struct PythonEngine : public Engine
         bool                 accumulate_grad,
         const edge_list&     outputs = {}) override;
 
-    xsigma::intrusive_ptr<xsigma::ivalue::Future> execute_with_graph_task(
+    quarisma::intrusive_ptr<quarisma::ivalue::Future> execute_with_graph_task(
         const std::shared_ptr<GraphTask>& graph_task,
         std::shared_ptr<Node>             graph_root,
         InputBuffer&&                     input_buffer) override;

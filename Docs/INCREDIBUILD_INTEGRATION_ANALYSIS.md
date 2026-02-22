@@ -1,10 +1,10 @@
-# IncrediBuild Integration Feasibility Analysis for XSigma
+# IncrediBuild Integration Feasibility Analysis for Quarisma
 
 ## Executive Summary
 
 **Integration Feasibility: PARTIALLY FEASIBLE with significant platform limitations**
 
-IncrediBuild can be integrated into XSigma's build system, but with critical constraints that limit its applicability to the project's multi-platform strategy.
+IncrediBuild can be integrated into Quarisma's build system, but with critical constraints that limit its applicability to the project's multi-platform strategy.
 
 ---
 
@@ -15,18 +15,18 @@ IncrediBuild can be integrated into XSigma's build system, but with critical con
 - **Linux**: ⚠️ Limited support (agent-only, requires Windows coordinator)
 - **macOS**: ❌ No support
 
-### XSigma Platform Requirements
+### Quarisma Platform Requirements
 - Windows (MSVC, Clang)
 - Linux (Clang, GCC)
 - macOS (Clang)
 
-**Conflict**: IncrediBuild's Windows-only coordinator and lack of macOS support conflicts with XSigma's cross-platform requirements.
+**Conflict**: IncrediBuild's Windows-only coordinator and lack of macOS support conflicts with Quarisma's cross-platform requirements.
 
 ---
 
 ## 2. Build System Compatibility
 
-### Current XSigma Build Configuration
+### Current Quarisma Build Configuration
 - **CMake Generators**: Ninja (default), Make, Visual Studio, Xcode
 - **Compilers**: Clang (default), MSVC, GCC, Clang-CL
 - **Build Acceleration**: Icecream (distributed), ccache/sccache/buildcache (caching)
@@ -69,7 +69,7 @@ IncrediBuild can be integrated into XSigma's build system, but with critical con
 
 ### CMake Configuration Files
 1. **Cmake/tools/incredibuild.cmake** (NEW)
-   - Option: `XSIGMA_ENABLE_INCREDIBUILD` (default: OFF)
+   - Option: `QUARISMA_ENABLE_INCREDIBUILD` (default: OFF)
    - Platform check: Windows only
    - Coordinator detection
    - Agent configuration
@@ -84,7 +84,7 @@ IncrediBuild can be integrated into XSigma's build system, but with critical con
 
 ### Build Script Updates
 1. **Scripts/setup.py** (MODIFY)
-   - Add `incredibuild` flag to XsigmaFlags
+   - Add `incredibuild` flag to QuarismaFlags
    - Add `--incredibuild-coordinator` parameter
    - Platform validation (Windows only)
    - Conflict warnings with sanitizers/coverage

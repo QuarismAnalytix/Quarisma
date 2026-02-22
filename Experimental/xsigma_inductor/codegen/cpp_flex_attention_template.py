@@ -32,19 +32,19 @@ inline void {{kernel_name}}_exp_reduce_sum_fusion_kernel(
     const int& size,
     T2* out,
     T1& val) {
-  auto vec_size = xsigma::vec::Vectorized<T1>::size();
-  auto vec_max = xsigma::vec::Vectorized<T1>(val);
+  auto vec_size = quarisma::vec::Vectorized<T1>::size();
+  auto vec_max = quarisma::vec::Vectorized<T1>(val);
   T1 tmp_sum = 0;
-  auto vec_tmp_sum = xsigma::vec::Vectorized<T1>(tmp_sum);
+  auto vec_tmp_sum = quarisma::vec::Vectorized<T1>(tmp_sum);
   for (long i = 0; i < vec_size * (size / vec_size); i += vec_size) {
-    auto tmp0 = xsigma::vec::Vectorized<T1>::loadu(a + i);
+    auto tmp0 = quarisma::vec::Vectorized<T1>::loadu(a + i);
     auto tmp1 = tmp0 - vec_max;
     auto tmp2 = tmp1.exp_u20();
     vec_tmp_sum += tmp2;
-    xsigma::native::_store(out + i, tmp2);
+    quarisma::native::_store(out + i, tmp2);
   }
-  tmp_sum = xsigma::vec::vec_reduce_all<T1>(
-      [](xsigma::vec::Vectorized<T1>& x, xsigma::vec::Vectorized<T1>& y) {
+  tmp_sum = quarisma::vec::vec_reduce_all<T1>(
+      [](quarisma::vec::Vectorized<T1>& x, quarisma::vec::Vectorized<T1>& y) {
         return x + y;
       },
       vec_tmp_sum);
@@ -67,15 +67,15 @@ inline void {{kernel_name}}_mul_reduce_max_fusion_kernel(
     const int& size,
     scalar_t* out,
     scalar_t& max) {
-  auto vec_size = xsigma::vec::Vectorized<scalar_t>::size();
-  auto vec_scale = xsigma::vec::Vectorized<scalar_t>(scale);
+  auto vec_size = quarisma::vec::Vectorized<scalar_t>::size();
+  auto vec_scale = quarisma::vec::Vectorized<scalar_t>(scale);
   scalar_t tmp_max = -std::numeric_limits<scalar_t>::infinity();
-  auto vec_tmp_max = xsigma::vec::Vectorized<scalar_t>(tmp_max);
+  auto vec_tmp_max = quarisma::vec::Vectorized<scalar_t>(tmp_max);
   for (long i = 0; i < vec_size * (size / vec_size); i += vec_size) {
-    auto tmp0 = xsigma::vec::Vectorized<scalar_t>::loadu(a + i);
+    auto tmp0 = quarisma::vec::Vectorized<scalar_t>::loadu(a + i);
     auto tmp1 = tmp0 * vec_scale;
-    vec_tmp_max = xsigma::vec::maximum(vec_tmp_max, tmp1);
-    xsigma::native::_store(out + i, tmp1);
+    vec_tmp_max = quarisma::vec::maximum(vec_tmp_max, tmp1);
+    quarisma::native::_store(out + i, tmp1);
   }
   for (long i = vec_size * (size / vec_size); i < size; i++) {
     auto tmp0 = a[i];
@@ -85,28 +85,28 @@ inline void {{kernel_name}}_mul_reduce_max_fusion_kernel(
   }
   max = std::max(
       tmp_max,
-      xsigma::vec::vec_reduce_all<scalar_t>(
-          [](xsigma::vec::Vectorized<scalar_t>& x, xsigma::vec::Vectorized<scalar_t>& y) {
-            return xsigma::vec::maximum(x, y);
+      quarisma::vec::vec_reduce_all<scalar_t>(
+          [](quarisma::vec::Vectorized<scalar_t>& x, quarisma::vec::Vectorized<scalar_t>& y) {
+            return quarisma::vec::maximum(x, y);
           },
           vec_tmp_max));
 }
 
 template <typename scalar_t>
 static inline scalar_t* {{kernel_name}}_conditional_data_ptr(scalar_t* ptr, scalar_t* ptr2) {
-  XSIGMA_CHECK(ptr2 == nullptr);
+  QUARISMA_CHECK(ptr2 == nullptr);
   return ptr;
 }
 
 template <typename scalar_t,
-          typename std::enable_if_t<xsigma::is_reduced_floating_point_v<scalar_t>, int> = 0>
+          typename std::enable_if_t<quarisma::is_reduced_floating_point_v<scalar_t>, int> = 0>
 static inline scalar_t* {{kernel_name}}_conditional_data_ptr(float* ptr, scalar_t* ptr2) {
   return ptr2;
 }
 
 template <typename scalar_t>
 inline void {{kernel_name}}_fill_stub(scalar_t* data, scalar_t val, int64_t size) {
-  using Vec = xsigma::vec::Vectorized<scalar_t>;
+  using Vec = quarisma::vec::Vectorized<scalar_t>;
   Vec data_vec = Vec(val);
   int64_t d = 0;
   for (; d < size - (size % Vec::size()); d += Vec::size()) {
@@ -126,12 +126,12 @@ inline void {{kernel_name}}_mul_scale_kernel(
     scalar_t* a,
     scalar_t scale,
     int64_t size) {
-  auto vec_size = xsigma::vec::Vectorized<scalar_t>::size();
-  auto vec_scale = xsigma::vec::Vectorized<scalar_t>(scale);
+  auto vec_size = quarisma::vec::Vectorized<scalar_t>::size();
+  auto vec_scale = quarisma::vec::Vectorized<scalar_t>(scale);
   for (int64_t i = 0; i < vec_size * (size / vec_size); i += vec_size) {
-    auto tmp0 = xsigma::vec::Vectorized<scalar_t>::loadu(a + i);
+    auto tmp0 = quarisma::vec::Vectorized<scalar_t>::loadu(a + i);
     auto tmp1 = tmp0 * vec_scale;
-    xsigma::native::_store(a + i, tmp1);
+    quarisma::native::_store(a + i, tmp1);
   }
   for (int64_t i = vec_size * (size / vec_size); i < size; i++) {
     auto tmp0 = a[i];
@@ -152,18 +152,18 @@ inline void {{kernel_name}}_copy_value_with_pad(
     int64_t prows,
     int64_t pcols,
     int64_t ldi) {
-  auto vec_size = xsigma::vec::Vectorized<scalar_t>::size();
+  auto vec_size = quarisma::vec::Vectorized<scalar_t>::size();
   int64_t i = 0;
   for (; i < rows; i++) {
     int64_t j = 0;
     for (; j < cols - (cols % vec_size); j += vec_size) {
       auto vec_v =
-          xsigma::vec::Vectorized<scalar_t>::loadu(value_ptr + i * ldi + j);
+          quarisma::vec::Vectorized<scalar_t>::loadu(value_ptr + i * ldi + j);
       vec_v.store(dst_ptr + i * pcols + j);
     }
 
     if (j < cols) {
-      auto vec_v = xsigma::vec::Vectorized<scalar_t>::loadu(
+      auto vec_v = quarisma::vec::Vectorized<scalar_t>::loadu(
           value_ptr + i * ldi + j, cols - j);
       vec_v.store(dst_ptr + i * pcols + j, cols - j);
     }
@@ -171,7 +171,7 @@ inline void {{kernel_name}}_copy_value_with_pad(
     // col padding
     auto psize = pcols - cols;
     if (psize > 0) {
-      auto zero_vec = xsigma::vec::Vectorized<scalar_t>(0);
+      auto zero_vec = quarisma::vec::Vectorized<scalar_t>(0);
       int64_t pj = 0;
       for (; pj < psize - (psize % vec_size); pj += vec_size) {
         zero_vec.store(dst_ptr + i * pcols + cols + pj);
@@ -183,7 +183,7 @@ inline void {{kernel_name}}_copy_value_with_pad(
   }
   // row padding
   for (; i < prows; i++) {
-    auto zero_vec = xsigma::vec::Vectorized<scalar_t>(0);
+    auto zero_vec = quarisma::vec::Vectorized<scalar_t>(0);
     int64_t j = 0;
     for (; j < pcols - (pcols % vec_size); j += vec_size) {
       zero_vec.store(dst_ptr + i * pcols + j);
@@ -201,8 +201,8 @@ GEMM_DEFINE
 """
 
 ALLOCATE_BUFFER = r"""
-  int64_t {{buffer_name}}_dtype_itemsize = xsigma::is_reduced_floating_point_v<{{buffer_dtype}}> ? 2 : 4;
-  auto& {{buffer_name}}_allocator = *xsigma::getCPUAllocator();
+  int64_t {{buffer_name}}_dtype_itemsize = quarisma::is_reduced_floating_point_v<{{buffer_dtype}}> ? 2 : 4;
+  auto& {{buffer_name}}_allocator = *quarisma::getCPUAllocator();
   auto {{buffer_name}}_work_data = {{buffer_name}}_allocator.allocate({{buffer_size}}*{{buffer_name}}_dtype_itemsize);
   void* {{buffer_name}}_data_ptr = {{buffer_name}}_work_data.get();
   {{buffer_dtype}}* {{buffer_name}} = ({{buffer_dtype}}*){{buffer_name}}_data_ptr;
@@ -210,9 +210,9 @@ ALLOCATE_BUFFER = r"""
 
 FLEX_ATTENTION_TEMPLATE = r"""
 {{template.header().getvalue()}}
-#include <XSigma/native/cpu/utils.h>
-#include <XSigma/native/CPUBlas.h>
-#include <XSigma/Context.h>
+#include <Quarisma/native/cpu/utils.h>
+#include <Quarisma/native/CPUBlas.h>
+#include <Quarisma/Context.h>
 {{template.codegen_micro_gemm(kernel.kernel_name)}}
 {{template.codegen_softmax_fusion(kernel.kernel_name)}}
 {{template.codegen_brgemm_pack_function(kernel.kernel_name)}}
@@ -231,9 +231,9 @@ extern "C"
 
   // dtypes of kernel and internal buffers
   using scalar_t = {{kernel.dtype(query)}};
-  constexpr bool is_reduced_type = xsigma::is_reduced_floating_point_v<scalar_t>;
-  using accum_t = xsigma::opmath_type<{{kernel.dtype(query)}}>;
-  using Vec = xsigma::vec::Vectorized<accum_t>;
+  constexpr bool is_reduced_type = quarisma::is_reduced_floating_point_v<scalar_t>;
+  using accum_t = quarisma::opmath_type<{{kernel.dtype(query)}}>;
+  using Vec = quarisma::vec::Vectorized<accum_t>;
   accum_t scaling_factor = {{scale}};
   int64_t batchSize = {{kernel.size(query, 0)}};
   int64_t qSize = {{kernel.size(query, 1)}};
@@ -306,8 +306,8 @@ extern "C"
   // Whether pack is needed for BFloat16/Half
   if (is_reduced_type) {
     // check platform ability
-    need_pack = std::is_same_v<scalar_t, xsigma::BFloat16> ? xsigma::native::cpublas::could_pack(xsigma::kBFloat16)
-                                                       : xsigma::native::cpublas::could_pack(xsigma::kHalf);
+    need_pack = std::is_same_v<scalar_t, quarisma::BFloat16> ? quarisma::native::cpublas::could_pack(quarisma::kBFloat16)
+                                                       : quarisma::native::cpublas::could_pack(quarisma::kHalf);
   }
   if (need_pack) {
     // When the number of gemm is greater than the number of pack,
@@ -350,12 +350,12 @@ extern "C"
   {{template.codegen_allocate_buffer("query_padding_ptr", "scalar_t", "num_thread*qSplitSize*eheadSize")}}
   if (need_pack) {
     // Pack K, V
-    xsigma::parallel_for(0, batchSize_k * num_head_k * kvSlice, 1, [&](int64_t begin, int64_t end) {
-      int ompIdx = xsigma::get_thread_num();
+    quarisma::parallel_for(0, batchSize_k * num_head_k * kvSlice, 1, [&](int64_t begin, int64_t end) {
+      int ompIdx = quarisma::get_thread_num();
       int64_t i = 0, j = 0, l = 0, n = 0;
       scalar_t* transpose_ptr = need_pack? transpose_buffer_ptr + ompIdx * kvSplitSize * headSize : nullptr;
-      xsigma::native::data_index_init(begin, i, batchSize_k, j, num_head_k, l, kvSlice);
-      for ([[maybe_unused]] auto z : xsigma::irange(begin, end)) {
+      quarisma::native::data_index_init(begin, i, batchSize_k, j, num_head_k, l, kvSlice);
+      for ([[maybe_unused]] auto z : quarisma::irange(begin, end)) {
         n = l * kvSplitSize;
         int64_t cur_kvSplitSize = std::min(kvSplitSize, kvSize - n);
         auto k_addr =
@@ -363,7 +363,7 @@ extern "C"
         auto v_addr =
               v_data + i * vStrideB + j * vStrideH + n * vStrideN;
         // transpose [cur_kvSplitSize, headSize] -> [headSize, cur_kvSplitSize]
-        xsigma::native::utils::transpose<uint16_t>(
+        quarisma::native::utils::transpose<uint16_t>(
           cur_kvSplitSize,
           headSize,
           /* src_ptr */
@@ -373,7 +373,7 @@ extern "C"
           /* ld_dst */ cur_kvSplitSize);
 
         // Pack [headSize, cur_kvSplitSize]
-        xsigma::vec::pack_vnni2(
+        quarisma::vec::pack_vnni2(
           /* src */ reinterpret_cast<const uint16_t*>(transpose_ptr),
           /* dst */ reinterpret_cast<uint16_t*>(key_reorder_ptr + i * num_head_k * eheadSize * kvSize +
                   j * eheadSize * kvSize + n * eheadSize),
@@ -382,7 +382,7 @@ extern "C"
           /* N */ cur_kvSplitSize);
 
         // Pack [cur_kvSplitSize, headSize_v]
-        xsigma::vec::pack_vnni2(
+        quarisma::vec::pack_vnni2(
           /* src */ reinterpret_cast<const uint16_t*>(v_addr),
           /* dst */ reinterpret_cast<uint16_t*>(value_reorder_ptr +
                   i * num_head_k * kv_padding_size * headSize_v +
@@ -391,15 +391,15 @@ extern "C"
           /* K */ cur_kvSplitSize,
           /* N */ headSize_v);
       // Move to the next query
-      xsigma::native::data_index_step(i, batchSize_k, j, num_head_k, l, kvSlice);
+      quarisma::native::data_index_step(i, batchSize_k, j, num_head_k, l, kvSlice);
       }
     });
   }
   // Attention loop below
-  xsigma::parallel_for(0, batchSize * num_head * qSlice, 1, [&](int64_t begin, int64_t end) {
+  quarisma::parallel_for(0, batchSize * num_head * qSlice, 1, [&](int64_t begin, int64_t end) {
     int64_t i = 0, j = 0, k = 0;
-    xsigma::native::data_index_init(begin, i, batchSize, j, num_head, k, qSlice);
-    int ompIdx = xsigma::get_thread_num();
+    quarisma::native::data_index_init(begin, i, batchSize, j, num_head, k, qSlice);
+    int ompIdx = quarisma::get_thread_num();
     accum_t* buf_ptr = buf_data + ompIdx * _size_per_thread;
     accum_t* qk_data = buf_ptr;
     accum_t* qk_max_data = qk_data + qSplitSize * kvSplitSize;
@@ -413,7 +413,7 @@ extern "C"
             ? query_padding_ptr + ompIdx * qSplitSize * eheadSize
             : nullptr;
 
-    for ([[maybe_unused]] auto z : xsigma::irange(begin, end)) {
+    for ([[maybe_unused]] auto z : quarisma::irange(begin, end)) {
       auto i_kvi = is_broadcast_bs_kvi ? i/bs_shards_kvi : i;
       auto j_kvi = is_broadcast_head_kvi ? j/gqa_shards_kvi : j;
       auto kv_logical_num_data = kv_num_blocks_data + i_kvi * num_kviStrideB +
@@ -494,7 +494,7 @@ extern "C"
               cur_kvSplitSize);
 
         } else {
-          xsigma::native::cpublas::brgemm(
+          quarisma::native::cpublas::brgemm(
               cur_qSplitSize,
               cur_kvSplitSize,
               eheadSize,
@@ -583,7 +583,7 @@ extern "C"
             qk_max_data[row] = tmp_max;
             // dst <- dst * exp_tmp
             if (n_idx > 0) {
-              xsigma::vec::map<accum_t>(
+              quarisma::vec::map<accum_t>(
               [exp_tmp](Vec x) { return x * Vec(exp_tmp); },
               dst_data + row * headSize_v,
               dst_data + row * headSize_v,
@@ -600,8 +600,8 @@ extern "C"
           auto v_addr =
               v_data + i_kv * vStrideB + j_kv * vStrideH + n * vStrideN;
           // Fallback Half brgemm is slower than micro gemm
-          if (!std::is_same_v<scalar_t, xsigma::Half>) {
-            xsigma::native::cpublas::brgemm(
+          if (!std::is_same_v<scalar_t, quarisma::Half>) {
+            quarisma::native::cpublas::brgemm(
                   cur_qSplitSize,
                   headSize_v,
                   cur_ekvSplitSize,
@@ -640,7 +640,7 @@ extern "C"
           }
         } else {
           int64_t psize = n / kvSplitSize * ekvSplitSize;
-          xsigma::native::cpublas::brgemm(
+          quarisma::native::cpublas::brgemm(
               cur_qSplitSize,
               headSize_v,
               cur_ekvSplitSize,
@@ -666,7 +666,7 @@ extern "C"
         qk_max_data[row] = qk_max_data[row] == -std::numeric_limits<accum_t>::infinity() ? 0 : qk_max_data[row];
         qk_sum_data[row] = qk_sum_data[row] == 0 ? 1 : qk_sum_data[row];
         accum_t sum_reciprocal = 1 / qk_sum_data[row];
-        xsigma::vec::map<scalar_t>(
+        quarisma::vec::map<scalar_t>(
             [sum_reciprocal, is_skip_kv](Vec x) { return  is_skip_kv ? Vec(0.0) : x * Vec(sum_reciprocal); },
             out_data + i * oStrideB + j * oStrideH + m * oStrideM + row * oStrideM,
             dst_data + row * headSize_v,
@@ -674,10 +674,10 @@ extern "C"
       }
 
       // Move to the next query
-      xsigma::native::data_index_step(i, batchSize, j, num_head, k, qSlice);
+      quarisma::native::data_index_step(i, batchSize, j, num_head, k, qSlice);
     }
 
-    xsigma::native::cpublas::brgemm_release(need_pack);
+    quarisma::native::cpublas::brgemm_release(need_pack);
 
   });
 }

@@ -1,75 +1,75 @@
-#include <XSigma/Functions.h>
-#include <XSigma/NativeFunctions.h>
-#include <XSigma/Parallel.h>
-#include <XSigma/XSigma.h>
-#include <XSigma/core/Tensor.h>
-#include <XSigma/native/mkldnn/OpContext.h>
-#include <XSigma/native/quantized/PackedParams.h>
-#include <XSigma/native/quantized/cpu/BinaryOps.h>
-#include <XSigma/native/quantized/cpu/QuantUtils.h>
-#include <XSigma/native/quantized/cpu/QuantizedOps.h>
-#include <XSigma/native/quantized/cpu/conv_serialization.h>
-#include <XSigma/native/xnnpack/OpContext.h>
-#include <XSigma/quantized/QTensorImpl.h>
+#include <Quarisma/Functions.h>
+#include <Quarisma/NativeFunctions.h>
+#include <Quarisma/Parallel.h>
+#include <Quarisma/Quarisma.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/native/mkldnn/OpContext.h>
+#include <Quarisma/native/quantized/PackedParams.h>
+#include <Quarisma/native/quantized/cpu/BinaryOps.h>
+#include <Quarisma/native/quantized/cpu/QuantUtils.h>
+#include <Quarisma/native/quantized/cpu/QuantizedOps.h>
+#include <Quarisma/native/quantized/cpu/conv_serialization.h>
+#include <Quarisma/native/xnnpack/OpContext.h>
+#include <Quarisma/quantized/QTensorImpl.h>
 #include <torch/csrc/jit/serialization/import_source.h>
 #include <torch/csrc/jit/serialization/pickle.h>
 #include <torch/csrc/jit/tensorexpr/exceptions.h>
 #include <torch/csrc/jit/tensorexpr/external_functions.h>
 #include <torch/csrc/jit/tensorexpr/external_functions_registry.h>
-#include <xsigma/core/TensorImpl.h>
-#include <xsigma/core/TensorOptions.h>
-#include <xsigma/util/ArrayRef.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/core/TensorImpl.h>
+#include <quarisma/core/TensorOptions.h>
+#include <quarisma/util/ArrayRef.h>
+#include <quarisma/util/irange.h>
 
 #include <utility>
 
 namespace torch::jit::tensorexpr
 {
 
-static xsigma::MemoryFormat deduce_memory_format(
-    xsigma::IntArrayRef strides, xsigma::IntArrayRef dims)
+static quarisma::MemoryFormat deduce_memory_format(
+    quarisma::IntArrayRef strides, quarisma::IntArrayRef dims)
 {
     if (strides.size() == 4 && strides[3] == dims[1] && strides[1] == 1l)
     {
-        return xsigma::MemoryFormat::ChannelsLast;
+        return quarisma::MemoryFormat::ChannelsLast;
     }
-    return xsigma::MemoryFormat::Contiguous;
+    return quarisma::MemoryFormat::Contiguous;
 }
 
-static xsigma::MemoryFormat deduce_memory_format(
+static quarisma::MemoryFormat deduce_memory_format(
     const std::vector<int64_t>& strides, const std::vector<int64_t>& dims)
 {
-    return deduce_memory_format(xsigma::IntArrayRef(strides), xsigma::IntArrayRef(dims));
+    return deduce_memory_format(quarisma::IntArrayRef(strides), quarisma::IntArrayRef(dims));
 }
 
-static xsigma::Tensor from_blob_quantized(
+static quarisma::Tensor from_blob_quantized(
     void*               data,
-    xsigma::IntArrayRef sizes,
-    xsigma::IntArrayRef strides,
+    quarisma::IntArrayRef sizes,
+    quarisma::IntArrayRef strides,
     double              qscale,
     int64_t             qzero,
-    xsigma::ScalarType  dtype)
+    quarisma::ScalarType  dtype)
 {
     auto memory_format = deduce_memory_format(strides, sizes);
-    auto qx            = xsigma::_empty_affine_quantized(
-        sizes, dtype, xsigma::kStrided, xsigma::kCPU, false, qscale, qzero, memory_format);
-    auto        qtensor_impl = static_cast<xsigma::QTensorImpl*>(qx.unsafeGetTensorImpl());
-    auto        typeMeta     = xsigma::scalarTypeToTypeMeta(dtype);
+    auto qx            = quarisma::_empty_affine_quantized(
+        sizes, dtype, quarisma::kStrided, quarisma::kCPU, false, qscale, qzero, memory_format);
+    auto        qtensor_impl = static_cast<quarisma::QTensorImpl*>(qx.unsafeGetTensorImpl());
+    auto        typeMeta     = quarisma::scalarTypeToTypeMeta(dtype);
     std::size_t size         = 1;
     for (std::int64_t s : sizes)
     {
         size *= static_cast<std::size_t>(s);
     }
     qtensor_impl->ShareExternalPointer(
-        xsigma::InefficientStdFunctionContext::makeDataPtr(
-            data, [](void*) {}, xsigma::kCPU),
+        quarisma::InefficientStdFunctionContext::makeDataPtr(
+            data, [](void*) {}, quarisma::kCPU),
         typeMeta,
         size * typeMeta.itemsize());
     qtensor_impl->set_sizes_and_strides(sizes, strides);
     return qx;
 }
 
-std::vector<xsigma::Tensor> constructTensors(
+std::vector<quarisma::Tensor> constructTensors(
     int64_t                                               bufs_num,
     void**                                                buf_data,
     int64_t*                                              buf_ranks,
@@ -81,37 +81,37 @@ std::vector<xsigma::Tensor> constructTensors(
     std::vector<void*>                buf_data_vec;
     std::vector<std::vector<int64_t>> buf_dims_vec;
     std::vector<std::vector<int64_t>> buf_strides_vec;
-    std::vector<xsigma::ScalarType>   buf_dtypes_vec;
+    std::vector<quarisma::ScalarType>   buf_dtypes_vec;
     int64_t                           buf_dims_idx    = 0;
     int64_t                           buf_strides_idx = 0;
-    for (const auto i : xsigma::irange(bufs_num))
+    for (const auto i : quarisma::irange(bufs_num))
     {
         buf_data_vec.push_back(buf_data[i]);
         buf_dims_vec.emplace_back();
         buf_strides_vec.emplace_back();
-        for (const auto dim : xsigma::irange(buf_ranks[i]))
+        for (const auto dim : quarisma::irange(buf_ranks[i]))
         {
             (void)dim;
             buf_dims_vec[i].push_back(buf_dims[buf_dims_idx++]);
             buf_strides_vec[i].push_back(buf_strides[buf_strides_idx++]);
         }
-        buf_dtypes_vec.push_back(static_cast<xsigma::ScalarType>(buf_dtypes[i]));
+        buf_dtypes_vec.push_back(static_cast<quarisma::ScalarType>(buf_dtypes[i]));
     }
 
-    std::vector<xsigma::Tensor> tensors;
+    std::vector<quarisma::Tensor> tensors;
     if (!qdataArg.has_value())
     {
-        for (const auto i : xsigma::irange(buf_data_vec.size()))
+        for (const auto i : quarisma::irange(buf_data_vec.size()))
         {
             auto options =
-                xsigma::TensorOptions()
+                quarisma::TensorOptions()
                     .dtype(buf_dtypes_vec[i])
-                    .layout(xsigma::kStrided)
-                    .device(xsigma::kCPU)  // TODO: support GPUs too
+                    .layout(quarisma::kStrided)
+                    .device(quarisma::kCPU)  // TODO: support GPUs too
                     .memory_format(deduce_memory_format(buf_strides_vec[i], buf_dims_vec[i]))
                     .requires_grad(false);
             auto tensor =
-                xsigma::from_blob(buf_data_vec[i], buf_dims_vec[i], buf_strides_vec[i], options);
+                quarisma::from_blob(buf_data_vec[i], buf_dims_vec[i], buf_strides_vec[i], options);
             tensors.emplace_back(std::move(tensor));
         }
     }
@@ -123,13 +123,13 @@ std::vector<xsigma::Tensor> constructTensors(
         {
             qdata[qd.first] = qd.second;
         }
-        for (const auto i : xsigma::irange(buf_data_vec.size()))
+        for (const auto i : quarisma::irange(buf_data_vec.size()))
         {
             auto options =
-                xsigma::TensorOptions()
+                quarisma::TensorOptions()
                     .dtype(buf_dtypes_vec[i])
-                    .layout(xsigma::kStrided)
-                    .device(xsigma::kCPU)  // TODO: support GPUs too
+                    .layout(quarisma::kStrided)
+                    .device(quarisma::kCPU)  // TODO: support GPUs too
                     .memory_format(deduce_memory_format(buf_strides_vec[i], buf_dims_vec[i]))
                     .requires_grad(false);
             if (auto qd = qdata[i])
@@ -146,7 +146,7 @@ std::vector<xsigma::Tensor> constructTensors(
             }
             else
             {
-                auto tensor = xsigma::from_blob(
+                auto tensor = quarisma::from_blob(
                     buf_data_vec[i], buf_dims_vec[i], buf_strides_vec[i], options);
                 tensors.emplace_back(std::move(tensor));
             }
@@ -155,7 +155,7 @@ std::vector<xsigma::Tensor> constructTensors(
     return tensors;
 }
 
-static std::vector<xsigma::Tensor> constructTensors(
+static std::vector<quarisma::Tensor> constructTensors(
     int64_t                                bufs_num,
     void**                                 buf_data,
     int64_t*                               buf_ranks,
@@ -168,7 +168,7 @@ static std::vector<xsigma::Tensor> constructTensors(
     return constructTensors(bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes, opt);
 }
 
-std::vector<xsigma::Tensor> constructTensors2(
+std::vector<quarisma::Tensor> constructTensors2(
     int64_t                                               bufs_in_num,
     void**                                                buf_data,
     int64_t*                                              buf_ranks,
@@ -181,43 +181,43 @@ std::vector<xsigma::Tensor> constructTensors2(
     std::vector<void*>                buf_data_vec;
     std::vector<std::vector<int64_t>> buf_dims_vec;
     std::vector<std::vector<int64_t>> buf_strides_vec;
-    std::vector<xsigma::ScalarType>   buf_dtypes_vec;
+    std::vector<quarisma::ScalarType>   buf_dtypes_vec;
     int64_t                           buf_dims_idx    = 0;
     int64_t                           buf_strides_idx = 0;
-    for (const auto i : xsigma::irange(bufs_in_num))
+    for (const auto i : quarisma::irange(bufs_in_num))
     {
         buf_data_vec.push_back(buf_data[bufs_out_num + i]);
         buf_dims_vec.emplace_back();
         buf_strides_vec.emplace_back();
-        for (const auto dim : xsigma::irange(buf_ranks[i]))
+        for (const auto dim : quarisma::irange(buf_ranks[i]))
         {
             (void)dim;
             buf_dims_vec[i].push_back(buf_dims[buf_dims_idx++]);
             buf_strides_vec[i].push_back(buf_strides[buf_strides_idx++]);
         }
-        buf_dtypes_vec.push_back(static_cast<xsigma::ScalarType>(buf_dtypes[i]));
+        buf_dtypes_vec.push_back(static_cast<quarisma::ScalarType>(buf_dtypes[i]));
     }
 
-    std::vector<xsigma::Tensor> tensors;
-    xsigma::Tensor              und;
-    for (const auto i : xsigma::irange(bufs_out_num))
+    std::vector<quarisma::Tensor> tensors;
+    quarisma::Tensor              und;
+    for (const auto i : quarisma::irange(bufs_out_num))
     {
         (void)i;
         tensors.emplace_back(und);
     }
     if (!qdataArg.has_value())
     {
-        for (const auto i : xsigma::irange(buf_data_vec.size()))
+        for (const auto i : quarisma::irange(buf_data_vec.size()))
         {
             auto options =
-                xsigma::TensorOptions()
+                quarisma::TensorOptions()
                     .dtype(buf_dtypes_vec[i])
-                    .layout(xsigma::kStrided)
-                    .device(xsigma::kCPU)  // TODO: support GPUs too
+                    .layout(quarisma::kStrided)
+                    .device(quarisma::kCPU)  // TODO: support GPUs too
                     .memory_format(deduce_memory_format(buf_strides_vec[i], buf_dims_vec[i]))
                     .requires_grad(false);
             auto tensor =
-                xsigma::from_blob(buf_data_vec[i], buf_dims_vec[i], buf_strides_vec[i], options);
+                quarisma::from_blob(buf_data_vec[i], buf_dims_vec[i], buf_strides_vec[i], options);
             tensors.emplace_back(std::move(tensor));
         }
     }
@@ -229,13 +229,13 @@ std::vector<xsigma::Tensor> constructTensors2(
         {
             qdata[qd.first - bufs_out_num] = qd.second;
         }
-        for (const auto i : xsigma::irange(buf_data_vec.size()))
+        for (const auto i : quarisma::irange(buf_data_vec.size()))
         {
             auto options =
-                xsigma::TensorOptions()
+                quarisma::TensorOptions()
                     .dtype(buf_dtypes_vec[i])
-                    .layout(xsigma::kStrided)
-                    .device(xsigma::kCPU)  // TODO: support GPUs too
+                    .layout(quarisma::kStrided)
+                    .device(quarisma::kCPU)  // TODO: support GPUs too
                     .memory_format(deduce_memory_format(buf_strides_vec[i], buf_dims_vec[i]))
                     .requires_grad(false);
             if (auto qd = qdata[i])
@@ -252,7 +252,7 @@ std::vector<xsigma::Tensor> constructTensors2(
             }
             else
             {
-                auto tensor = xsigma::from_blob(
+                auto tensor = quarisma::from_blob(
                     buf_data_vec[i], buf_dims_vec[i], buf_strides_vec[i], options);
                 tensors.emplace_back(std::move(tensor));
             }
@@ -261,7 +261,7 @@ std::vector<xsigma::Tensor> constructTensors2(
     return tensors;
 }
 
-static std::vector<xsigma::Tensor> constructTensors2(
+static std::vector<quarisma::Tensor> constructTensors2(
     int64_t                                bufs_in_num,
     void**                                 buf_data,
     int64_t*                               buf_ranks,
@@ -277,54 +277,54 @@ static std::vector<xsigma::Tensor> constructTensors2(
 }
 
 #ifndef _WIN32
-static xsigma::Tensor quantized_add(
-    const xsigma::Tensor& x1, const xsigma::Tensor& x2, double scale, int64_t zero)
+static quarisma::Tensor quantized_add(
+    const quarisma::Tensor& x1, const quarisma::Tensor& x2, double scale, int64_t zero)
 {
     const auto qadd_op =
-        xsigma::Dispatcher::singleton()
+        quarisma::Dispatcher::singleton()
             .findSchemaOrThrow("quantized::add", "")
-            .typed<xsigma::Tensor(xsigma::Tensor, xsigma::Tensor, double, int64_t)>();
+            .typed<quarisma::Tensor(quarisma::Tensor, quarisma::Tensor, double, int64_t)>();
     return qadd_op.call(x1, x2, scale, zero);
 }
 
-static xsigma::Tensor quantized_mul(
-    const xsigma::Tensor& x1, const xsigma::Tensor& x2, double scale, int64_t zero)
+static quarisma::Tensor quantized_mul(
+    const quarisma::Tensor& x1, const quarisma::Tensor& x2, double scale, int64_t zero)
 {
-    const auto op = xsigma::Dispatcher::singleton()
+    const auto op = quarisma::Dispatcher::singleton()
                         .findSchemaOrThrow("quantized::mul", "")
-                        .typed<xsigma::Tensor(xsigma::Tensor, xsigma::Tensor, double, int64_t)>();
+                        .typed<quarisma::Tensor(quarisma::Tensor, quarisma::Tensor, double, int64_t)>();
     return op.call(x1, x2, scale, zero);
 }
 
-static xsigma::Tensor quantized_mul_scalar(const xsigma::Tensor& x, double scalar)
+static quarisma::Tensor quantized_mul_scalar(const quarisma::Tensor& x, double scalar)
 {
-    const auto op = xsigma::Dispatcher::singleton()
+    const auto op = quarisma::Dispatcher::singleton()
                         .findSchemaOrThrow("quantized::mul", "Scalar")
-                        .typed<xsigma::Tensor(xsigma::Tensor, xsigma::Scalar const&)>();
-    auto s = xsigma::Scalar(scalar);
+                        .typed<quarisma::Tensor(quarisma::Tensor, quarisma::Scalar const&)>();
+    auto s = quarisma::Scalar(scalar);
     return op.call(x, s);
 }
 
-static xsigma::Tensor quantized_cat(
-    const xsigma::List<xsigma::Tensor>& qxs,
+static quarisma::Tensor quantized_cat(
+    const quarisma::List<quarisma::Tensor>& qxs,
     int64_t                             dim,
     std::optional<double>               scale,
     std::optional<int64_t>              zero)
 {
-    const auto op = xsigma::Dispatcher::singleton()
+    const auto op = quarisma::Dispatcher::singleton()
                         .findSchemaOrThrow("quantized::cat", "")
-                        .typed<xsigma::Tensor(
-                            xsigma::List<xsigma::Tensor> const&,
+                        .typed<quarisma::Tensor(
+                            quarisma::List<quarisma::Tensor> const&,
                             int64_t,
                             std::optional<double>,
                             std::optional<int64_t>)>();
     return op.redispatch(
-        xsigma::DispatchKeySet({xsigma::DispatchKey::QuantizedCPU}), qxs, dim, scale, zero);
+        quarisma::DispatchKeySet({quarisma::DispatchKey::QuantizedCPU}), qxs, dim, scale, zero);
 }
 
 #endif  // _WIN32
 
-#ifdef XSIGMA_MOBILE
+#ifdef QUARISMA_MOBILE
 extern "C"
 {
 #endif
@@ -342,15 +342,15 @@ extern "C"
         auto tensors =
             constructTensors(bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
 
-        xsigma::Tensor&       r = tensors[0];
-        const xsigma::Tensor& x = tensors[1];
-        const xsigma::Tensor& w = tensors[2];
+        quarisma::Tensor&       r = tensors[0];
+        const quarisma::Tensor& x = tensors[1];
+        const quarisma::Tensor& w = tensors[2];
         if (args_num > 0)
         {
             // Check that if the extra arguments are provided, then the bias tensor is
             // also present
             TORCH_INTERNAL_ASSERT(args_num == 7 && bufs_num == 4);
-            const xsigma::Tensor& b = tensors[3];
+            const quarisma::Tensor& b = tensors[3];
 
             int64_t strideH   = extra_args[0];
             int64_t strideW   = extra_args[1];
@@ -362,7 +362,7 @@ extern "C"
 
             try
             {
-                r = xsigma::conv2d(
+                r = quarisma::conv2d(
                     x,
                     w,
                     b,
@@ -379,7 +379,7 @@ extern "C"
         {
             try
             {
-                r = xsigma::conv2d(x, w);
+                r = quarisma::conv2d(x, w);
             }
             catch (...)
             {
@@ -402,7 +402,7 @@ extern "C"
     {
         const double             x_qscale = ((double*)extra_args)[0];
         const int64_t            x_qzero  = extra_args[1];
-        const xsigma::ScalarType x_qdtype = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors  = constructTensors(
             bufs_num,
             buf_data,
@@ -433,7 +433,7 @@ extern "C"
         const size_t             bufs_out_num = 1u;
         const double             x_qscale     = ((double*)extra_args)[0];
         const int64_t            x_qzero      = extra_args[1];
-        const xsigma::ScalarType x_qdtype     = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype     = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors      = constructTensors2(
             bufs_in_num,
             buf_data,
@@ -450,7 +450,7 @@ extern "C"
         auto          r                = convPackedParams->apply(qx, out_qscale, out_qzero);
         r                              = r.squeeze_(quant_utils::kConv1dSqueezeDim + 2);
         buf_data[0]                    = r.data_ptr();
-        xsigma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
+        quarisma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
         buf_data[bufs_in_num + bufs_out_num] = r.getIntrusivePtr().get();
     }
 
@@ -466,7 +466,7 @@ extern "C"
     {
         const double             x_qscale = ((double*)extra_args)[0];
         const int64_t            x_qzero  = extra_args[1];
-        const xsigma::ScalarType x_qdtype = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors  = constructTensors(
             bufs_num,
             buf_data,
@@ -495,7 +495,7 @@ extern "C"
         const size_t             bufs_out_num = 1u;
         const double             x_qscale     = ((double*)extra_args)[0];
         const int64_t            x_qzero      = extra_args[1];
-        const xsigma::ScalarType x_qdtype     = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype     = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors      = constructTensors2(
             bufs_in_num,
             buf_data,
@@ -510,7 +510,7 @@ extern "C"
         const int64_t out_qzero        = extra_args[4];
         auto          r                = convPackedParams->apply(tensors[1], out_qscale, out_qzero);
         buf_data[0]                    = r.data_ptr();
-        xsigma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
+        quarisma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
         buf_data[bufs_in_num + bufs_out_num] = r.getIntrusivePtr().get();
     }
 
@@ -526,7 +526,7 @@ extern "C"
     {
         const double             x_qscale = ((double*)extra_args)[0];
         const int64_t            x_qzero  = extra_args[1];
-        const xsigma::ScalarType x_qdtype = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors  = constructTensors(
             bufs_num,
             buf_data,
@@ -555,7 +555,7 @@ extern "C"
         const size_t             bufs_out_num = 1u;
         const double             x_qscale     = ((double*)extra_args)[0];
         const int64_t            x_qzero      = extra_args[1];
-        const xsigma::ScalarType x_qdtype     = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype     = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors      = constructTensors2(
             bufs_in_num,
             buf_data,
@@ -570,7 +570,7 @@ extern "C"
         const int64_t out_qzero        = extra_args[4];
         auto          r = convPackedParams->apply_relu(tensors[1], out_qscale, out_qzero);
         buf_data[0]     = r.data_ptr();
-        xsigma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
+        quarisma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
         buf_data[bufs_in_num + bufs_out_num] = r.getIntrusivePtr().get();
     }
 
@@ -586,7 +586,7 @@ extern "C"
     {
         const double             x_qscale = ((double*)extra_args)[0];
         const int64_t            x_qzero  = extra_args[1];
-        const xsigma::ScalarType x_qdtype = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors  = constructTensors(
             bufs_num,
             buf_data,
@@ -615,7 +615,7 @@ extern "C"
         const size_t             bufs_out_num = 1u;
         const double             x_qscale     = ((double*)extra_args)[0];
         const int64_t            x_qzero      = extra_args[1];
-        const xsigma::ScalarType x_qdtype     = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype     = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors      = constructTensors2(
             bufs_in_num,
             buf_data,
@@ -630,7 +630,7 @@ extern "C"
         const int64_t out_qzero          = extra_args[4];
         auto          r = linearPackedParams->apply(tensors[1], out_qscale, out_qzero);
         buf_data[0]     = r.data_ptr();
-        xsigma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
+        quarisma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
         buf_data[bufs_in_num + bufs_out_num] = r.getIntrusivePtr().get();
     }
 
@@ -646,7 +646,7 @@ extern "C"
     {
         const double             x_qscale = ((double*)extra_args)[0];
         const int64_t            x_qzero  = extra_args[1];
-        const xsigma::ScalarType x_qdtype = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors  = constructTensors(
             bufs_num,
             buf_data,
@@ -677,10 +677,10 @@ extern "C"
 
         const double             a_qscale = ((double*)extra_args)[0];
         const int64_t            a_qzero  = extra_args[1];
-        const xsigma::ScalarType a_qdtype = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType a_qdtype = static_cast<quarisma::ScalarType>(extra_args[2]);
         const double             b_qscale = ((double*)extra_args)[3];
         const int64_t            b_qzero  = extra_args[4];
-        const xsigma::ScalarType b_qdtype = static_cast<xsigma::ScalarType>(extra_args[5]);
+        const quarisma::ScalarType b_qdtype = static_cast<quarisma::ScalarType>(extra_args[5]);
         auto                     tensors  = constructTensors(
             bufs_num,
             buf_data,
@@ -709,10 +709,10 @@ extern "C"
     {
         const double             a_qscale = ((double*)extra_args)[0];
         const int64_t            a_qzero  = extra_args[1];
-        const xsigma::ScalarType a_qdtype = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType a_qdtype = static_cast<quarisma::ScalarType>(extra_args[2]);
         const double             b_qscale = ((double*)extra_args)[3];
         const int64_t            b_qzero  = extra_args[4];
-        const xsigma::ScalarType b_qdtype = static_cast<xsigma::ScalarType>(extra_args[5]);
+        const quarisma::ScalarType b_qdtype = static_cast<quarisma::ScalarType>(extra_args[5]);
         auto                     tensors  = constructTensors(
             bufs_num,
             buf_data,
@@ -741,10 +741,10 @@ extern "C"
         const size_t             bufs_out_num = 1u;
         const double             a_qscale     = ((double*)extra_args)[0];
         const int64_t            a_qzero      = extra_args[1];
-        const xsigma::ScalarType a_qdtype     = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType a_qdtype     = static_cast<quarisma::ScalarType>(extra_args[2]);
         const double             b_qscale     = ((double*)extra_args)[3];
         const int64_t            b_qzero      = extra_args[4];
-        const xsigma::ScalarType b_qdtype     = static_cast<xsigma::ScalarType>(extra_args[5]);
+        const quarisma::ScalarType b_qdtype     = static_cast<quarisma::ScalarType>(extra_args[5]);
         auto                     tensors      = constructTensors2(
             bufs_in_num,
             buf_data,
@@ -759,7 +759,7 @@ extern "C"
         const int64_t out_qzero  = extra_args[7];
         auto          r          = quantized_mul(tensors[1], tensors[2], out_qscale, out_qzero);
         buf_data[0]              = r.data_ptr();
-        xsigma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
+        quarisma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
         buf_data[bufs_in_num + bufs_out_num] = r.getIntrusivePtr().get();
     }
 
@@ -775,7 +775,7 @@ extern "C"
     {
         const double             x_qscale = ((double*)extra_args)[0];
         const int64_t            x_qzero  = extra_args[1];
-        const xsigma::ScalarType x_qdtype = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors  = constructTensors(
             bufs_num,
             buf_data,
@@ -802,7 +802,7 @@ extern "C"
         const size_t             bufs_out_num = 1u;
         const double             x_qscale     = ((double*)extra_args)[0];
         const int64_t            x_qzero      = extra_args[1];
-        const xsigma::ScalarType x_qdtype     = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype     = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors      = constructTensors2(
             bufs_in_num,
             buf_data,
@@ -815,7 +815,7 @@ extern "C"
         const double scalar = ((double*)extra_args)[3];
         auto         r      = quantized_mul_scalar(tensors[1], scalar);
         buf_data[0]         = r.data_ptr();
-        xsigma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
+        quarisma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
         buf_data[bufs_in_num + bufs_out_num] = r.getIntrusivePtr().get();
     }
 
@@ -831,7 +831,7 @@ extern "C"
     {
         const double             x_qscale = ((double*)extra_args)[0];
         const int64_t            x_qzero  = extra_args[1];
-        const xsigma::ScalarType x_qdtype = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors  = constructTensors(
             bufs_num,
             buf_data,
@@ -840,7 +840,7 @@ extern "C"
             buf_strides,
             buf_dtypes,
             {{1u, {x_qscale, x_qzero, toQIntType(x_qdtype)}}});
-        auto r = xsigma::relu(tensors[1]);
+        auto r = quarisma::relu(tensors[1]);
         memcpy(buf_data[0], r.const_data_ptr(), r.element_size() * r.numel());
     }
 
@@ -856,7 +856,7 @@ extern "C"
     {
         const double             x_qscale = ((double*)extra_args)[0];
         const int64_t            x_qzero  = extra_args[1];
-        const xsigma::ScalarType x_qdtype = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype = static_cast<quarisma::ScalarType>(extra_args[2]);
         auto                     tensors  = constructTensors(
             bufs_num,
             buf_data,
@@ -866,7 +866,7 @@ extern "C"
             buf_dtypes,
             {{1u, {x_qscale, x_qzero, toQIntType(x_qdtype)}}});
 
-        auto r = xsigma::sigmoid(tensors[1]);
+        auto r = quarisma::sigmoid(tensors[1]);
         memcpy(buf_data[0], r.const_data_ptr(), r.element_size() * r.numel());
     }
 
@@ -882,7 +882,7 @@ extern "C"
     {
         const double             x_qscale     = ((double*)extra_args)[0];
         const int64_t            x_qzero      = extra_args[1];
-        const xsigma::ScalarType x_qdtype     = static_cast<xsigma::ScalarType>(extra_args[2]);
+        const quarisma::ScalarType x_qdtype     = static_cast<quarisma::ScalarType>(extra_args[2]);
         const size_t             bufs_out_num = 1u;
         auto                     tensors      = constructTensors2(
             bufs_in_num,
@@ -894,9 +894,9 @@ extern "C"
             {{1u, {x_qscale, x_qzero, toQIntType(x_qdtype)}}},
             bufs_out_num);
 
-        auto r      = xsigma::sigmoid(tensors[1]);
+        auto r      = quarisma::sigmoid(tensors[1]);
         buf_data[0] = r.data_ptr();
-        xsigma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
+        quarisma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
         buf_data[bufs_in_num + bufs_out_num] = r.getIntrusivePtr().get();
     }
 
@@ -915,20 +915,20 @@ extern "C"
         const double  out_qscale = ((double*)extra_args)[3 * in_bufs_num + 1];
         const int64_t out_qzero  = extra_args[3 * in_bufs_num + 2];
         qdata.emplace_back(
-            0u, QIData{out_qscale, out_qzero, static_cast<xsigma::ScalarType>(extra_args[2])});
-        for (const size_t i : xsigma::irange(in_bufs_num))
+            0u, QIData{out_qscale, out_qzero, static_cast<quarisma::ScalarType>(extra_args[2])});
+        for (const size_t i : quarisma::irange(in_bufs_num))
         {
             const double             qscale = ((double*)extra_args)[3 * i + 0];
             const int64_t            qzero  = extra_args[3 * i + 1];
-            const xsigma::ScalarType qdtype =
-                static_cast<xsigma::ScalarType>(extra_args[3 * i + 2]);
+            const quarisma::ScalarType qdtype =
+                static_cast<quarisma::ScalarType>(extra_args[3 * i + 2]);
             qdata.emplace_back(i + 1u, QIData{qscale, qzero, qdtype});
         }
         auto tensors = constructTensors(
             bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes, qdata);
         const int64_t dim = extra_args[3 * in_bufs_num + 0];
-        auto          qxs = xsigma::List<xsigma::Tensor>(
-            std::vector<xsigma::Tensor>(tensors.begin() + 1, tensors.end()));
+        auto          qxs = quarisma::List<quarisma::Tensor>(
+            std::vector<quarisma::Tensor>(tensors.begin() + 1, tensors.end()));
         auto r = quantized_cat(qxs, dim, out_qscale, out_qzero);
         memcpy(buf_data[0], r.const_data_ptr(), r.element_size() * r.numel());
     }
@@ -956,7 +956,7 @@ extern "C"
                 {1u,
                  {x_qscale,
                   x_qzero,
-                  xsigma::toQIntType(static_cast<xsigma::ScalarType>(x_qdtype))}}};
+                  quarisma::toQIntType(static_cast<quarisma::ScalarType>(x_qdtype))}}};
         }
         auto tensors = constructTensors(
             bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes, qdata);
@@ -967,13 +967,13 @@ extern "C"
         double  scale_factor_h = ((double*)extra_args)[5];
         double  scale_factor_w = ((double*)extra_args)[6];
 
-        auto r = xsigma::upsample_nearest2d(
+        auto r = quarisma::upsample_nearest2d(
             x,
             (output_size_h != -1)
-                ? std::optional<xsigma::IntArrayRef>({output_size_h, output_size_w})
+                ? std::optional<quarisma::IntArrayRef>({output_size_h, output_size_w})
                 : std::nullopt,
             (scale_factor_h != -1.f)
-                ? std::optional<xsigma::ArrayRef<double>>({scale_factor_h, scale_factor_w})
+                ? std::optional<quarisma::ArrayRef<double>>({scale_factor_h, scale_factor_w})
                 : std::nullopt);
         memcpy(buf_data[0], r.const_data_ptr(), r.element_size() * r.numel());
     }
@@ -1001,7 +1001,7 @@ extern "C"
                 {1u,
                  {x_qscale,
                   x_qzero,
-                  xsigma::toQIntType(static_cast<xsigma::ScalarType>(x_qdtype))}}};
+                  quarisma::toQIntType(static_cast<quarisma::ScalarType>(x_qdtype))}}};
         }
         auto tensors = constructTensors2(
             bufs_in_num,
@@ -1019,16 +1019,16 @@ extern "C"
         double  scale_factor_h = ((double*)extra_args)[5];
         double  scale_factor_w = ((double*)extra_args)[6];
 
-        auto r = xsigma::upsample_nearest2d(
+        auto r = quarisma::upsample_nearest2d(
             x,
             (output_size_h != -1)
-                ? std::optional<xsigma::IntArrayRef>({output_size_h, output_size_w})
+                ? std::optional<quarisma::IntArrayRef>({output_size_h, output_size_w})
                 : std::nullopt,
             (scale_factor_h != -1.f)
-                ? std::optional<xsigma::ArrayRef<double>>({scale_factor_h, scale_factor_w})
+                ? std::optional<quarisma::ArrayRef<double>>({scale_factor_h, scale_factor_w})
                 : std::nullopt);
         buf_data[0] = r.data_ptr();
-        xsigma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
+        quarisma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
         buf_data[bufs_in_num + bufs_out_num] = r.getIntrusivePtr().get();
     }
 
@@ -1045,11 +1045,11 @@ extern "C"
         auto tensors =
             constructTensors(bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
         // NOLINTNEXTLINE(facebook-hte-LocalUncheckedArrayBounds)
-        xsigma::Tensor           x      = tensors[1];
+        quarisma::Tensor           x      = tensors[1];
         const double             qscale = ((double*)extra_args)[0];
         const int64_t            qzero  = extra_args[1];
-        const xsigma::ScalarType qdtype = static_cast<xsigma::ScalarType>(extra_args[2]);
-        auto                     r      = xsigma::quantize_per_tensor(x, qscale, qzero, qdtype);
+        const quarisma::ScalarType qdtype = static_cast<quarisma::ScalarType>(extra_args[2]);
+        auto                     r      = quarisma::quantize_per_tensor(x, qscale, qzero, qdtype);
         memcpy(buf_data[0], r.const_data_ptr(), r.element_size() * r.numel());
     }
 
@@ -1074,13 +1074,13 @@ extern "C"
             std::nullopt,
             bufs_out_num);
         // NOLINTNEXTLINE(facebook-hte-LocalUncheckedArrayBounds)
-        const xsigma::Tensor&    x      = tensors[1];
+        const quarisma::Tensor&    x      = tensors[1];
         const double             qscale = ((double*)extra_args)[0];
         const int64_t            qzero  = extra_args[1];
-        const xsigma::ScalarType qdtype = static_cast<xsigma::ScalarType>(extra_args[2]);
-        auto                     r      = xsigma::quantize_per_tensor(x, qscale, qzero, qdtype);
+        const quarisma::ScalarType qdtype = static_cast<quarisma::ScalarType>(extra_args[2]);
+        auto                     r      = quarisma::quantize_per_tensor(x, qscale, qzero, qdtype);
         buf_data[0]                     = r.data_ptr();
-        xsigma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
+        quarisma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
         buf_data[bufs_in_num + bufs_out_num] = r.getIntrusivePtr().get();
     }
 
@@ -1104,8 +1104,8 @@ extern "C"
             buf_dims,
             buf_strides,
             buf_dtypes,
-            {{1u, {qscale, qzero, toQIntType(static_cast<xsigma::ScalarType>(qdtype))}}});
-        auto r = xsigma::dequantize(tensors[1]);
+            {{1u, {qscale, qzero, toQIntType(static_cast<quarisma::ScalarType>(qdtype))}}});
+        auto r = quarisma::dequantize(tensors[1]);
         memcpy(buf_data[0], r.const_data_ptr(), r.element_size() * r.numel());
     }
 
@@ -1130,11 +1130,11 @@ extern "C"
             buf_dims,
             buf_strides,
             buf_dtypes,
-            {{1u, {qscale, qzero, toQIntType(static_cast<xsigma::ScalarType>(qdtype))}}},
+            {{1u, {qscale, qzero, toQIntType(static_cast<quarisma::ScalarType>(qdtype))}}},
             bufs_out_num);
-        auto r      = xsigma::dequantize(tensors[1]);
+        auto r      = quarisma::dequantize(tensors[1]);
         buf_data[0] = r.data_ptr();
-        xsigma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
+        quarisma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
         buf_data[bufs_in_num + bufs_out_num] = r.getIntrusivePtr().get();
     }
 
@@ -1151,15 +1151,15 @@ extern "C"
         auto tensors =
             constructTensors(bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
 
-        xsigma::Tensor&       r = tensors[0];
-        const xsigma::Tensor& x = tensors[1];
-        const xsigma::Tensor& w = tensors[2];
+        quarisma::Tensor&       r = tensors[0];
+        const quarisma::Tensor& x = tensors[1];
+        const quarisma::Tensor& w = tensors[2];
         if (args_num > 0)
         {
             // Check that if the extra arguments are provided, then the bias tensor is
             // also present
             TORCH_INTERNAL_ASSERT(args_num == 4 && bufs_num == 4);
-            const xsigma::Tensor& b = tensors[3];
+            const quarisma::Tensor& b = tensors[3];
 
             int64_t stride   = extra_args[0];
             int64_t padding  = extra_args[1];
@@ -1168,7 +1168,7 @@ extern "C"
 
             try
             {
-                r = xsigma::conv1d(x, w, b, {stride}, {padding}, {dilation}, groups);
+                r = quarisma::conv1d(x, w, b, {stride}, {padding}, {dilation}, groups);
             }
             catch (...)
             {
@@ -1178,7 +1178,7 @@ extern "C"
         {
             try
             {
-                r = xsigma::conv1d(x, w);
+                r = quarisma::conv1d(x, w);
             }
             catch (...)
             {
@@ -1209,15 +1209,15 @@ extern "C"
             std::nullopt,
             bufs_out_num);
 
-        xsigma::Tensor        r;
-        const xsigma::Tensor& x = tensors[1];
-        const xsigma::Tensor& w = tensors[2];
+        quarisma::Tensor        r;
+        const quarisma::Tensor& x = tensors[1];
+        const quarisma::Tensor& w = tensors[2];
         if (args_num > 0)
         {
             // Check that if the extra arguments are provided, then the bias tensor is
             // also present
             TORCH_INTERNAL_ASSERT(args_num == 4 && bufs_in_num == 3);
-            const xsigma::Tensor& b = tensors[3];
+            const quarisma::Tensor& b = tensors[3];
 
             int64_t stride   = extra_args[0];
             int64_t padding  = extra_args[1];
@@ -1226,7 +1226,7 @@ extern "C"
 
             try
             {
-                r = xsigma::conv1d(x, w, b, {stride}, {padding}, {dilation}, groups);
+                r = quarisma::conv1d(x, w, b, {stride}, {padding}, {dilation}, groups);
             }
             catch (...)
             {
@@ -1236,7 +1236,7 @@ extern "C"
         {
             try
             {
-                r = xsigma::conv1d(x, w);
+                r = quarisma::conv1d(x, w);
             }
             catch (...)
             {
@@ -1244,7 +1244,7 @@ extern "C"
         }
 
         buf_data[0] = r.data_ptr();
-        xsigma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
+        quarisma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
         buf_data[bufs_in_num + bufs_out_num] = r.getIntrusivePtr().get();
     }
 
@@ -1261,8 +1261,8 @@ extern "C"
         auto tensors =
             constructTensors(bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
 
-        xsigma::Tensor&       r = tensors[0];
-        const xsigma::Tensor& x = tensors[1];
+        quarisma::Tensor&       r = tensors[0];
+        const quarisma::Tensor& x = tensors[1];
         int64_t               H = extra_args[0];
         int64_t               W = H;
         if (args_num > 1)
@@ -1271,7 +1271,7 @@ extern "C"
         }
         try
         {
-            r = xsigma::adaptive_avg_pool2d(x, {H, W});
+            r = quarisma::adaptive_avg_pool2d(x, {H, W});
         }
         catch (...)
         {
@@ -1292,8 +1292,8 @@ extern "C"
         auto tensors =
             constructTensors(bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
 
-        xsigma::Tensor&       r = tensors[0];
-        const xsigma::Tensor& x = tensors[1];
+        quarisma::Tensor&       r = tensors[0];
+        const quarisma::Tensor& x = tensors[1];
         std::vector<int64_t>  mean_dims(args_num - 1);
         bool                  keepdim = (bool)extra_args[args_num - 1];
         if (args_num > 1)
@@ -1302,7 +1302,7 @@ extern "C"
         }
         try
         {
-            xsigma::mean_out(r, x, mean_dims, keepdim);
+            quarisma::mean_out(r, x, mean_dims, keepdim);
         }
         catch (...)
         {
@@ -1322,13 +1322,13 @@ extern "C"
         auto tensors =
             constructTensors(bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
 
-        xsigma::Tensor&       r        = tensors[0];
-        const xsigma::Tensor& x        = tensors[1];
+        quarisma::Tensor&       r        = tensors[0];
+        const quarisma::Tensor& x        = tensors[1];
         int64_t               max_dim  = extra_args[0];
         bool                  keep_dim = extra_args[1];
         try
         {
-            r = std::get<0>(xsigma::max(x, max_dim, keep_dim));
+            r = std::get<0>(quarisma::max(x, max_dim, keep_dim));
         }
         catch (...)
         {
@@ -1350,20 +1350,20 @@ extern "C"
         auto   tensors =
             constructTensors2(bufs_in_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
 
-        xsigma::Tensor r;
+        quarisma::Tensor r;
         // @lint-ignore CLANGTIDY
-        const xsigma::Tensor& x        = tensors[1];
+        const quarisma::Tensor& x        = tensors[1];
         int64_t               max_dim  = extra_args[0];
         bool                  keep_dim = extra_args[1];
         try
         {
-            r = std::get<0>(xsigma::max(x, max_dim, keep_dim));
+            r = std::get<0>(quarisma::max(x, max_dim, keep_dim));
         }
         catch (...)
         {
         }
         buf_data[0] = r.data_ptr();
-        xsigma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
+        quarisma::raw::intrusive_ptr::incref(r.getIntrusivePtr().get());
         buf_data[bufs_in_num + bufs_out_num] = r.getIntrusivePtr().get();
     }
 
@@ -1380,16 +1380,16 @@ extern "C"
         auto tensors =
             constructTensors(bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
 
-        xsigma::Tensor&       r = tensors[0];
-        const xsigma::Tensor& x = tensors[1];
-        const xsigma::Tensor& y = tensors[2];
-        const xsigma::Tensor& z = tensors[3];
+        quarisma::Tensor&       r = tensors[0];
+        const quarisma::Tensor& x = tensors[1];
+        const quarisma::Tensor& y = tensors[2];
+        const quarisma::Tensor& z = tensors[3];
         // TODO: handle other alpha and beta dtypes, e.g. alpha=0.6, beta=0.2
         int64_t beta = extra_args[0], alpha = extra_args[1];
 
         try
         {
-            xsigma::addmm_out(r, x, y, z, beta, alpha);
+            quarisma::addmm_out(r, x, y, z, beta, alpha);
         }
         catch (...)
         {
@@ -1410,13 +1410,13 @@ extern "C"
     {
         auto tensors =
             constructTensors(bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
-        xsigma::Tensor&       r     = tensors[0];
-        xsigma::Tensor        r2    = tensors[2].clone();
-        const xsigma::Tensor& input = tensors[1];
-        const xsigma::Tensor& A     = tensors[2];
+        quarisma::Tensor&       r     = tensors[0];
+        quarisma::Tensor        r2    = tensors[2].clone();
+        const quarisma::Tensor& input = tensors[1];
+        const quarisma::Tensor& A     = tensors[2];
         try
         {
-            xsigma::triangular_solve_out(
+            quarisma::triangular_solve_out(
                 r, r2, input, A, extra_args[0], extra_args[2], extra_args[3]);
         }
         catch (...)
@@ -1436,12 +1436,12 @@ extern "C"
         int64_t  args_num,
         int64_t* extra_args)
     {
-        using namespace xsigma::native::mkldnn;
+        using namespace quarisma::native::mkldnn;
 
         auto tensors =
             constructTensors(bufs_num - 1, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
 
-        const xsigma::Tensor& x       = tensors[1];
+        const quarisma::Tensor& x       = tensors[1];
         auto                  context = reinterpret_cast<ConvOpContext*>(buf_data[2]);
 
         context->run(x, buf_data[0]);
@@ -1461,14 +1461,14 @@ extern "C"
         int64_t  args_num,
         int64_t* extra_args)
     {
-        using namespace xsigma::native::xnnpack;
+        using namespace quarisma::native::xnnpack;
 
         auto tensors =
             constructTensors(bufs_num - 1, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
 
-        const xsigma::Tensor& x       = tensors[1];
+        const quarisma::Tensor& x       = tensors[1];
         auto                  context = reinterpret_cast<LinearOpContext*>(buf_data[2]);
-        xsigma::Tensor        output  = context->run(x);
+        quarisma::Tensor        output  = context->run(x);
         memcpy(buf_data[0], output.const_data_ptr(), output.element_size() * output.numel());
     }
 
@@ -1482,14 +1482,14 @@ extern "C"
         int64_t  args_num,
         int64_t* extra_args)
     {
-        using namespace xsigma::native::xnnpack;
+        using namespace quarisma::native::xnnpack;
 
         auto tensors =
             constructTensors(bufs_num - 1, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
 
-        const xsigma::Tensor& x       = tensors[1];
+        const quarisma::Tensor& x       = tensors[1];
         auto                  context = reinterpret_cast<Conv2dOpContext*>(buf_data[2]);
-        xsigma::Tensor        output  = context->run(x);
+        quarisma::Tensor        output  = context->run(x);
         memcpy(buf_data[0], output.const_data_ptr(), output.element_size() * output.numel());
     }
 
@@ -1508,22 +1508,22 @@ extern "C"
         auto tensors =
             constructTensors(bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
 
-        xsigma::Tensor&       r       = tensors[0];
-        const xsigma::Tensor& weight  = tensors[1];
-        const xsigma::Tensor& indices = tensors[2];
+        quarisma::Tensor&       r       = tensors[0];
+        const quarisma::Tensor& weight  = tensors[1];
+        const quarisma::Tensor& indices = tensors[2];
         try
         {
-            r = xsigma::embedding(weight, indices);
+            r = quarisma::embedding(weight, indices);
         }
         catch (...)
         {
         }
-        // TODO: have to copy output because xsigma::embedding doesn't have an out
+        // TODO: have to copy output because quarisma::embedding doesn't have an out
         // variant and NNC's external calls don't support allocations
         memcpy(buf_data[0], r.const_data_ptr(), r.element_size() * r.numel());
     }
 
-#ifndef XSIGMA_MOBILE
+#ifndef QUARISMA_MOBILE
 
     const static RegisterNNCExternalFunction nnc_conv2d("nnc_aten_conv2d", nnc_aten_conv2d);
 
@@ -1605,9 +1605,9 @@ extern "C"
         "nnc_prepacked_conv2d_clamp_run", nnc_prepacked_conv2d_clamp_run);
 #endif  // USE_XNNPACK
 
-#endif  // XSIGMA_MOBILE
+#endif  // QUARISMA_MOBILE
 
-#ifdef XSIGMA_MOBILE
+#ifdef QUARISMA_MOBILE
 }  // extern "C"
 #endif
 

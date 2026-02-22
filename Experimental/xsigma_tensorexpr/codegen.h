@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/XSigma.h>
+#include <Quarisma/Quarisma.h>
 #include <torch/csrc/jit/tensorexpr/ir.h>
 #include <torch/csrc/jit/tensorexpr/tensor.h>
 
@@ -26,7 +26,7 @@ public:
     CodeGen(
         StmtPtr                stmt,
         std::vector<BufferArg> buffer_args,
-        xsigma::Device         device           = xsigma::kCPU,
+        quarisma::Device         device           = quarisma::kCPU,
         std::string            kernel_func_name = "func");
 
     virtual ~CodeGen() = default;
@@ -43,7 +43,7 @@ public:
 
     const std::vector<BufferArg>& buffer_args() const { return buffer_args_; }
 
-    xsigma::Device device() { return device_; }
+    quarisma::Device device() { return device_; }
 
     // This function returns the generated code as
     // a string.
@@ -65,15 +65,15 @@ public:
     /// a simple division, rather than evaluating an expression.
     virtual void call_with_numel(void** args, int64_t numel);
 
-    virtual xsigma::Tensor empty_strided(
-        xsigma::IntArrayRef               size,
-        xsigma::IntArrayRef               stride,
-        std::optional<xsigma::ScalarType> dtype_opt,
-        std::optional<xsigma::Layout>     layout_opt,
-        std::optional<xsigma::Device>     device_opt,
+    virtual quarisma::Tensor empty_strided(
+        quarisma::IntArrayRef               size,
+        quarisma::IntArrayRef               stride,
+        std::optional<quarisma::ScalarType> dtype_opt,
+        std::optional<quarisma::Layout>     layout_opt,
+        std::optional<quarisma::Device>     device_opt,
         std::optional<bool>               pin_memory_opt)
     {
-        return xsigma::empty_strided(
+        return quarisma::empty_strided(
             size, stride, dtype_opt, layout_opt, device_opt, pin_memory_opt);
     }
 
@@ -87,7 +87,7 @@ protected:
 private:
     StmtPtr                stmt_;
     std::vector<BufferArg> buffer_args_;
-    xsigma::Device         device_           = xsigma::kCPU;
+    quarisma::Device         device_           = quarisma::kCPU;
     std::string            kernel_func_name_ = "func";
 };
 
@@ -209,7 +209,7 @@ public:
     using StmtFactoryMethod = std::function<std::unique_ptr<CodeGen>(
         StmtPtr stmt,
         const std::vector<CodeGen::BufferArg>&,
-        xsigma::Device     device,
+        quarisma::Device     device,
         const std::string& kernel_func_name)>;
 
     TORCH_API StmtFactoryMethod FindStmtFactoryMethod(const std::string& name);
@@ -237,7 +237,7 @@ public:
             name,
             [](const StmtPtr&                         stmt,
                const std::vector<CodeGen::BufferArg>& params,
-               xsigma::Device                         device,
+               quarisma::Device                         device,
                const std::string&                     kernel_func_name)
             { return std::make_unique<CodeGenType>(stmt, params, device, kernel_func_name); });
     }
@@ -247,7 +247,7 @@ TORCH_API std::unique_ptr<CodeGen> CreateCodeGen(
     const std::string&                     name,
     StmtPtr                                stmt,
     const std::vector<CodeGen::BufferArg>& params,
-    xsigma::Device                         device           = xsigma::kCPU,
+    quarisma::Device                         device           = quarisma::kCPU,
     const std::string&                     kernel_func_name = "func");
 
 class TORCH_API GenericIntrinsicsExpander : public IRMutator

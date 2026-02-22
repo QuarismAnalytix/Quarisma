@@ -106,7 +106,7 @@ inductor_decompositions = get_decompositions(
 )
 decompositions = {**core_aten_decompositions(), **inductor_decompositions}
 
-# Remove unwanted decompositions included via the core XSigma decompositions from
+# Remove unwanted decompositions included via the core Quarisma decompositions from
 # the Inductor decomp table.
 decomps_to_exclude: list[Union[torch._ops.OpOverload, torch._ops.OpOverloadPacket]] = [
     aten._unsafe_index,
@@ -119,8 +119,8 @@ decomps_to_exclude: list[Union[torch._ops.OpOverload, torch._ops.OpOverloadPacke
     aten.embedding_dense_backward,  # we fall back on xpu
     aten.index_add,  # we conditionally call this decomp
     aten.glu,  # inductor lowers this directly
-    aten.select_scatter,  # need to be in the XSigma graph in order for it to work with the re-inplacing pass
-    aten.slice_scatter,  # need to be in the XSigma graph in order for it to work with the re-inplacing pass
+    aten.select_scatter,  # need to be in the Quarisma graph in order for it to work with the re-inplacing pass
+    aten.slice_scatter,  # need to be in the Quarisma graph in order for it to work with the re-inplacing pass
     aten.split.Tensor,  # inductor lowers this directly
     aten.squeeze,  # inductor lowers this directly
     aten.sum,  # inductor lowers this directly

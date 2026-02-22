@@ -269,7 +269,7 @@ def _get_view_inverse_node_usages(
             try:
                 # The we're trying to reuse the args from the view_scatter call inside of the corresponding
                 # view op, which might throw. This just indicates that view_scatter op isn't a valid inverse
-                # of the current alias we're looking xsigma.
+                # of the current alias we're looking quarisma.
                 view_replay_metadata = original_view(
                     self_alias_base.meta["fake_result"], *n.args[2:], **n.kwargs
                 )
@@ -295,7 +295,7 @@ def reinplace(gm, *sample_args):
     as long as the input to the current operator ("a") isn't reused
     anywhere later in the graph.
 
-    This pass currently expects to operate on a **functional, XSigma** graph.
+    This pass currently expects to operate on a **functional, Quarisma** graph.
     This can be obtained by running `make_fx(functionalize(f))`.
 
     Sample inputs are needed to determine aliasing relationships of the inputs.
@@ -365,7 +365,7 @@ def reinplace(gm, *sample_args):
             It's only a problem if "a" (or that view) is later passed
             into a normal operator, or if it is returned as the program output.
         (b) If "a" is a repeat argument in `foo()`, then don't reinplace.
-            Most XSigma kernels don't make any guarantees that this is sound,
+            Most Quarisma kernels don't make any guarantees that this is sound,
             e.g. if you do aten.mul_(a, a).
             So we'll just ban re-inplacing in this case.
             It's only a problem if "a" (or that view) is later passed
@@ -536,7 +536,7 @@ def reinplace(gm, *sample_args):
             # - {view}_scatter ops that can be potentially removed from the graph.
             # Both of these ops take in tensor first args, so filtering on this condition
             # makes the later code simpler.
-            # We should revisit this xsigma some point though, particularly when we also want
+            # We should revisit this quarisma some point though, particularly when we also want
             # the reinplacer to be able to handle out= and mutable operators
             # and tensorlist first args (like `_foreach_` ops).
             if not isinstance(node.target, torch._ops.OpOverload):
@@ -741,7 +741,7 @@ def reinplace(gm, *sample_args):
                         # Technically, "old_ref" and all its aliases will remain
                         # in our mapping.
                         # That should be fine though, since we deleted "old"
-                        # from the graph xsigma this point.
+                        # from the graph quarisma this point.
                         storage_to_nodes[node_ref].update(storage_to_nodes[new_ref])
                         storage_to_nodes[new_ref].update(storage_to_nodes[node_ref])
 

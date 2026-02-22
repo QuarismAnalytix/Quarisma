@@ -1,4 +1,4 @@
-#include <XSigma/XSigma.h>
+#include <Quarisma/Quarisma.h>
 #include <torch/csrc/jit/api/module.h>
 #include <torch/csrc/jit/passes/constant_pooling.h>
 #include <torch/csrc/jit/passes/constant_propagation.h>
@@ -25,13 +25,13 @@ bool isPrepackNode(Node* n)
 
 std::pair<Value*, std::string> findFPWeight(Node* prepack_node)
 {
-    XSIGMA_CHECK(isPrepackNode(prepack_node));
+    QUARISMA_CHECK(isPrepackNode(prepack_node));
     Node* n = nullptr;
     n       = prepack_node->input(0)->node();
     bool is_quantize_node =
         (n->kind() == Symbol::fromQualString("aten::quantize_per_tensor") ||
          n->kind() == Symbol::fromQualString("aten::quantize_per_channel"));
-    XSIGMA_CHECK(is_quantize_node, "Input to prepack node must be output of weight quantization.");
+    QUARISMA_CHECK(is_quantize_node, "Input to prepack node must be output of weight quantization.");
     // First input of quantize node is FP32 weight
     n                    = n->input(0)->node();
     bool is_getattr_node = (n->kind() == prim::GetAttr);
@@ -76,9 +76,9 @@ std::unordered_set<std::string> RegisterPrePackParams(
             {
                 WithInsertPoint ins(n->next());
                 Value*          packed_param_value = n->output(0);
-                XSIGMA_CHECK(n->outputs().size() == 1, "Prepack ops have single output");
+                QUARISMA_CHECK(n->outputs().size() == 1, "Prepack ops have single output");
                 auto attr_name = attr_name_base + std::to_string(uid++);
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     packed_param_value->uses().size() == 1,
                     "Packed param must be used by exactly one op.");
                 auto use = packed_param_value->uses()[0];
@@ -87,9 +87,9 @@ std::unordered_set<std::string> RegisterPrePackParams(
                     attr_name = attr_name_base + "_" + std::to_string(uid++);
                 }
                 // Now register attribute for this packed param but dont set it to any
-                // value. No value because we dont know what the value is xsigma this point.
+                // value. No value because we dont know what the value is quarisma this point.
                 // Only when we run on-device ptq workflow, e.g. run quantize_forward
-                // method, is when the linear_prepack op will be executed and xsigma that
+                // method, is when the linear_prepack op will be executed and quarisma that
                 // point we will have the actual value for this attribute.
                 m.register_attribute(attr_name, n->output(0)->type(), IValue());
                 // In order to add the output of linear_prepack, we now have to do
@@ -128,11 +128,11 @@ std::unordered_set<std::string> RegisterPrePackParams(
                 Value*      v                       = value_weight_names_pair.first;
                 std::string weight_name             = std::move(value_weight_names_pair.second);
                 auto        empty_tensor =
-                    xsigma::empty({0}, xsigma::TensorOptions().requires_grad(false));
+                    quarisma::empty({0}, quarisma::TensorOptions().requires_grad(false));
                 Node* none_node = graph->create(prim::Constant);
                 none_node->t_(attr::value, empty_tensor);
-                // none_node->output()->setType(TensorType::create(xsigma::kFloat,
-                // xsigma::kCPU, 1, false));
+                // none_node->output()->setType(TensorType::create(quarisma::kFloat,
+                // quarisma::kCPU, 1, false));
                 Node* set_attr_orig_weight =
                     graph->createSetAttr(v, weight_name, none_node->output());
                 set_attr_orig_weight->insertAfter(packed_param_attr->node());

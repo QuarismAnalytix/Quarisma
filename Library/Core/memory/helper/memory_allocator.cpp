@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "memory_allocator.h"
@@ -26,7 +26,7 @@
 #include "common/macros.h"
 #include "util/exception.h"
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 
 #ifdef _MSC_VER
 #pragma push_macro("__TBB_NO_IMPLICIT_LINKAGE")
@@ -40,36 +40,36 @@
 #endif
 #endif
 
-#if XSIGMA_HAS_NUMA
+#if QUARISMA_HAS_NUMA
 #include "memory/numa.h"
-#endif  // XSIGMA_HAS_NUMA
+#endif  // QUARISMA_HAS_NUMA
 
-#if XSIGMA_HAS_MIMALLOC
+#if QUARISMA_HAS_MIMALLOC
 #include <mimalloc.h>
 #endif
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda.h>  // For CUDA Driver API
 #include <cuda_runtime.h>
 #endif
 
-#if XSIGMA_HAS_HIP
+#if QUARISMA_HAS_HIP
 #include <hip/hip_runtime.h>
 #endif
 
 #include "logging/logger.h"
 
-namespace xsigma::cpu::memory_allocator
+namespace quarisma::cpu::memory_allocator
 {
 
 void* allocate(std::size_t nbytes, std::size_t alignment, init_policy_enum init)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         static_cast<std::ptrdiff_t>(nbytes) > 0,
         "cpu allocate() called with negative or zero size: {}",
         nbytes);
 
-    XSIGMA_CHECK_DEBUG(
+    QUARISMA_CHECK_DEBUG(
         is_valid_alignment(alignment),
         "cpu allocate() called with invalid alignment: {} (must be power of 2 >= {})",
         alignment,
@@ -78,9 +78,9 @@ void* allocate(std::size_t nbytes, std::size_t alignment, init_policy_enum init)
     void* ptr = nullptr;
 
     // Platform-specific allocation
-#if XSIGMA_HAS_MIMALLOC
+#if QUARISMA_HAS_MIMALLOC
     ptr = mi_aligned_alloc(alignment, nbytes);
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
     ptr = scalable_aligned_malloc(nbytes, alignment);
 #elif defined(__ANDROID__)
     ptr = memalign(alignment, nbytes);
@@ -95,20 +95,20 @@ void* allocate(std::size_t nbytes, std::size_t alignment, init_policy_enum init)
     else
     {
         // cppcheck-suppress syntaxError
-        if XSIGMA_UNLIKELY (posix_memalign(&ptr, alignment, nbytes) != 0)
+        if QUARISMA_UNLIKELY (posix_memalign(&ptr, alignment, nbytes) != 0)
         {
             return nullptr;
         }
     }
 #endif
     // cppcheck-suppress syntaxError
-    if XSIGMA_UNLIKELY (ptr == nullptr)
+    if QUARISMA_UNLIKELY (ptr == nullptr)
     {
         return nullptr;
     }
 
     // NUMA optimization
-#if XSIGMA_HAS_NUMA
+#if QUARISMA_HAS_NUMA
     NUMAMove(ptr, nbytes, GetCurrentNUMANode());
 #endif
 
@@ -132,13 +132,13 @@ void* allocate(std::size_t nbytes, std::size_t alignment, init_policy_enum init)
     return ptr;
 }
 
-void free(void* ptr, XSIGMA_UNUSED std::size_t nbytes) noexcept
+void free(void* ptr, QUARISMA_UNUSED std::size_t nbytes) noexcept
 {
-    if XSIGMA_LIKELY (ptr != nullptr)
+    if QUARISMA_LIKELY (ptr != nullptr)
     {
-#if XSIGMA_HAS_MIMALLOC
+#if QUARISMA_HAS_MIMALLOC
         mi_free(ptr);
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
         scalable_aligned_free(ptr);
 #elif defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
         _aligned_free(ptr);  // Fixed syntax error
@@ -146,7 +146,7 @@ void free(void* ptr, XSIGMA_UNUSED std::size_t nbytes) noexcept
         ::free(ptr);
 #endif
 
-#if XSIGMA_HAS_ALLOCATION_STATS
+#if QUARISMA_HAS_ALLOCATION_STATS
         if (nbytes > 0)
         {
             update_free_stats(nbytes);
@@ -155,51 +155,51 @@ void free(void* ptr, XSIGMA_UNUSED std::size_t nbytes) noexcept
     }
 }
 
-void* allocate_tbb(XSIGMA_UNUSED std::size_t nbytes, XSIGMA_UNUSED std::size_t alignment)
+void* allocate_tbb(QUARISMA_UNUSED std::size_t nbytes, QUARISMA_UNUSED std::size_t alignment)
 {
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
     return scalable_aligned_malloc(nbytes, alignment);
 #else
     return nullptr;
 #endif
 }
 
-void free_tbb(XSIGMA_UNUSED void* ptr, XSIGMA_UNUSED std::size_t nbytes) noexcept
+void free_tbb(QUARISMA_UNUSED void* ptr, QUARISMA_UNUSED std::size_t nbytes) noexcept
 {
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
     scalable_aligned_free(ptr);
 #endif
 }
 
-void* allocate_mi(XSIGMA_UNUSED std::size_t nbytes, XSIGMA_UNUSED std::size_t alignment)
+void* allocate_mi(QUARISMA_UNUSED std::size_t nbytes, QUARISMA_UNUSED std::size_t alignment)
 {
-#if XSIGMA_HAS_MIMALLOC
+#if QUARISMA_HAS_MIMALLOC
     return mi_malloc_aligned(nbytes, alignment);
 #else
     return nullptr;
 #endif
 }
 
-void free_mi(XSIGMA_UNUSED void* ptr, XSIGMA_UNUSED std::size_t nbytes) noexcept
+void free_mi(QUARISMA_UNUSED void* ptr, QUARISMA_UNUSED std::size_t nbytes) noexcept
 {
-#if XSIGMA_HAS_MIMALLOC
+#if QUARISMA_HAS_MIMALLOC
     mi_free(ptr);
 #endif
 }
-}  // namespace xsigma::cpu::memory_allocator
+}  // namespace quarisma::cpu::memory_allocator
 
-namespace xsigma::gpu::memory_allocator
+namespace quarisma::gpu::memory_allocator
 {
 
 // CUDA error checking helper macros
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #define CUDA_CHECK_RETURN_NULL(call)                                                    \
     do                                                                                  \
     {                                                                                   \
         cudaError_t error = call;                                                       \
         if (error != cudaSuccess)                                                       \
         {                                                                               \
-            XSIGMA_LOG_ERROR("CUDA error in {}: {}", #call, cudaGetErrorString(error)); \
+            QUARISMA_LOG_ERROR("CUDA error in {}: {}", #call, cudaGetErrorString(error)); \
             return nullptr;                                                             \
         }                                                                               \
     } while (0)
@@ -210,7 +210,7 @@ namespace xsigma::gpu::memory_allocator
         const cudaError_t error = call;                                                 \
         if (error != cudaSuccess)                                                       \
         {                                                                               \
-            XSIGMA_LOG_ERROR("CUDA error in {}: {}", #call, cudaGetErrorString(error)); \
+            QUARISMA_LOG_ERROR("CUDA error in {}: {}", #call, cudaGetErrorString(error)); \
             return false;                                                               \
         }                                                                               \
     } while (0)
@@ -220,14 +220,14 @@ namespace xsigma::gpu::memory_allocator
 #endif
 
 // HIP error checking helper macros
-#if XSIGMA_HAS_HIP
+#if QUARISMA_HAS_HIP
 #define HIP_CHECK_RETURN_NULL(call)                                                   \
     do                                                                                \
     {                                                                                 \
         hipError_t error = call;                                                      \
         if (error != hipSuccess)                                                      \
         {                                                                             \
-            XSIGMA_LOG_ERROR("HIP error in {}: {}", #call, hipGetErrorString(error)); \
+            QUARISMA_LOG_ERROR("HIP error in {}: {}", #call, hipGetErrorString(error)); \
             return nullptr;                                                           \
         }                                                                             \
     } while (0)
@@ -238,7 +238,7 @@ namespace xsigma::gpu::memory_allocator
         hipError_t error = call;                                                      \
         if (error != hipSuccess)                                                      \
         {                                                                             \
-            XSIGMA_LOG_ERROR("HIP error in {}: {}", #call, hipGetErrorString(error)); \
+            QUARISMA_LOG_ERROR("HIP error in {}: {}", #call, hipGetErrorString(error)); \
             return false;                                                             \
         }                                                                             \
     } while (0)
@@ -248,9 +248,9 @@ namespace xsigma::gpu::memory_allocator
 #endif
 
 void* allocate(
-    std::size_t nbytes, int device_id, XSIGMA_UNUSED void* stream, XSIGMA_UNUSED void* memory_pool)
+    std::size_t nbytes, int device_id, QUARISMA_UNUSED void* stream, QUARISMA_UNUSED void* memory_pool)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         static_cast<std::ptrdiff_t>(nbytes) > 0,
         "gpu allocate() called with negative or zero size: {}",
         nbytes);
@@ -268,14 +268,14 @@ void* allocate(
 
     void* ptr = nullptr;  //NOLINT
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 
-#ifdef XSIGMA_CUDA_ALLOC_SYNC
+#ifdef QUARISMA_CUDA_ALLOC_SYNC
     // Use synchronous CUDA Runtime API allocation (more commonly available)
     cudaError_t result = cudaMalloc(&ptr, nbytes);
     if (result != cudaSuccess)
     {
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "GPU synchronous allocation failed for {} bytes on device {}: {}",
             nbytes,
             device_id,
@@ -283,13 +283,13 @@ void* allocate(
         return nullptr;
     }
 
-#elif defined(XSIGMA_CUDA_ALLOC_ASYNC)
+#elif defined(QUARISMA_CUDA_ALLOC_ASYNC)
     // Use asynchronous CUDA Runtime API allocation
     cudaStream_t gpu_stream_cuda = static_cast<cudaStream_t>(stream);
     cudaError_t  result          = cudaMallocAsync(&ptr, nbytes, gpu_stream_cuda);
     if (result != cudaSuccess)
     {
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "GPU asynchronous allocation failed for {} bytes on device {}: {}",
             nbytes,
             device_id,
@@ -297,7 +297,7 @@ void* allocate(
         return nullptr;
     }
 
-#elif defined(XSIGMA_CUDA_ALLOC_POOL_ASYNC)
+#elif defined(QUARISMA_CUDA_ALLOC_POOL_ASYNC)
     // Use pool-based asynchronous CUDA Runtime API allocation
     auto* gpu_stream_cuda = static_cast<cudaStream_t>(stream);
     auto* cuda_pool       = static_cast<cudaMemPool_t>(memory_pool);
@@ -315,7 +315,7 @@ void* allocate(
 
     if (result != cudaSuccess)
     {
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "GPU pool-based allocation failed for {} bytes on device {}: {}",
             nbytes,
             device_id,
@@ -328,7 +328,7 @@ void* allocate(
     cudaError_t const result = cudaMalloc(&ptr, nbytes);
     if (result != cudaSuccess)
     {
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "GPU default allocation failed for {} bytes on device {}: {}",
             nbytes,
             device_id,
@@ -337,14 +337,14 @@ void* allocate(
     }
 #endif
 
-#elif XSIGMA_HAS_HIP
+#elif QUARISMA_HAS_HIP
 
-#if defined(XSIGMA_HIP_ALLOC_SYNC)
+#if defined(QUARISMA_HIP_ALLOC_SYNC)
     // Use synchronous HIP allocation
     hipError_t result = hipMalloc(&ptr, nbytes);
     if (result != hipSuccess)
     {
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "HIP synchronous allocation failed for {} bytes on device {}: {}",
             nbytes,
             device_id,
@@ -352,13 +352,13 @@ void* allocate(
         return nullptr;
     }
 
-#elif defined(XSIGMA_HIP_ALLOC_ASYNC)
+#elif defined(QUARISMA_HIP_ALLOC_ASYNC)
     // Use asynchronous HIP allocation
     hipStream_t hip_stream = static_cast<hipStream_t>(stream);
     hipError_t  result     = hipMallocAsync(&ptr, nbytes, hip_stream);
     if (result != hipSuccess)
     {
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "HIP asynchronous allocation failed for {} bytes on device {}: {}",
             nbytes,
             device_id,
@@ -366,7 +366,7 @@ void* allocate(
         return nullptr;
     }
 
-#elif defined(XSIGMA_HIP_ALLOC_POOL_ASYNC)
+#elif defined(QUARISMA_HIP_ALLOC_POOL_ASYNC)
     // Use pool-based asynchronous HIP allocation
     hipStream_t  hip_stream = static_cast<hipStream_t>(stream);
     hipMemPool_t hip_pool   = static_cast<hipMemPool_t>(memory_pool);
@@ -384,7 +384,7 @@ void* allocate(
 
     if (result != hipSuccess)
     {
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "HIP pool allocation failed for {} bytes on device {}: {}",
             nbytes,
             device_id,
@@ -397,7 +397,7 @@ void* allocate(
     hipError_t result = hipMalloc(&ptr, nbytes);
     if (result != hipSuccess)
     {
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "HIP default allocation failed for {} bytes on device {}: {}",
             nbytes,
             device_id,
@@ -409,14 +409,14 @@ void* allocate(
 #else
     (void)stream;
     (void)memory_pool;
-    XSIGMA_LOG_ERROR("GPU support not enabled in this build");
+    QUARISMA_LOG_ERROR("GPU support not enabled in this build");
 #endif
 
     return ptr;
 }
 
 void free(
-    void* ptr, XSIGMA_UNUSED std::size_t nbytes, int device_id, XSIGMA_UNUSED void* stream) noexcept
+    void* ptr, QUARISMA_UNUSED std::size_t nbytes, int device_id, QUARISMA_UNUSED void* stream) noexcept
 {
     if (ptr == nullptr)
     {
@@ -426,14 +426,14 @@ void free(
     // Set device context (ignore errors in free)
     set_device(device_id);
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 
-#ifdef XSIGMA_CUDA_ALLOC_SYNC
+#ifdef QUARISMA_CUDA_ALLOC_SYNC
     // Use synchronous CUDA Runtime API deallocation
     cudaError_t result = cudaFree(ptr);
     if (result != cudaSuccess)
     {
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "GPU synchronous deallocation failed for {} bytes at {} on device {}: {}",
             nbytes,
             ptr,
@@ -441,13 +441,13 @@ void free(
             cudaGetErrorString(result));
     }
 
-#elif defined(XSIGMA_CUDA_ALLOC_ASYNC)
+#elif defined(QUARISMA_CUDA_ALLOC_ASYNC)
     // Use asynchronous CUDA Runtime API deallocation
     cudaStream_t gpu_stream_cuda = static_cast<cudaStream_t>(stream);
     cudaError_t  result          = cudaFreeAsync(ptr, gpu_stream_cuda);
     if (result != cudaSuccess)
     {
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "GPU asynchronous deallocation failed for {} bytes at {} on device {}: {}",
             nbytes,
             ptr,
@@ -455,13 +455,13 @@ void free(
             cudaGetErrorString(result));
     }
 
-#elif defined(XSIGMA_CUDA_ALLOC_POOL_ASYNC)
+#elif defined(QUARISMA_CUDA_ALLOC_POOL_ASYNC)
     // Use asynchronous CUDA Runtime API deallocation (same for pool and non-pool)
     auto*             gpu_stream_cuda = static_cast<cudaStream_t>(stream);
     const cudaError_t result          = cudaFreeAsync(ptr, gpu_stream_cuda);
     if (result != cudaSuccess)
     {
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "GPU pool-based deallocation failed for {} bytes at {} on device {}: {}",
             nbytes,
             ptr,
@@ -474,7 +474,7 @@ void free(
     cudaError_t const result = cudaFree(ptr);
     if (result != cudaSuccess)
     {
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "GPU default deallocation failed for {} bytes at {} on device {}: {}",
             nbytes,
             ptr,
@@ -483,14 +483,14 @@ void free(
     }
 #endif
 
-#elif XSIGMA_HAS_HIP
+#elif QUARISMA_HAS_HIP
 
-#if defined(XSIGMA_HIP_ALLOC_SYNC)
+#if defined(QUARISMA_HIP_ALLOC_SYNC)
     // Use synchronous HIP deallocation
     hipError_t result = hipFree(ptr);
     if (result != hipSuccess)
     {
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "HIP synchronous deallocation failed for {} bytes at {} on device {}: {}",
             nbytes,
             ptr,
@@ -498,13 +498,13 @@ void free(
             hipGetErrorString(result));
     }
 
-#elif defined(XSIGMA_HIP_ALLOC_ASYNC)
+#elif defined(QUARISMA_HIP_ALLOC_ASYNC)
     // Use asynchronous HIP deallocation
     hipStream_t hip_stream = static_cast<hipStream_t>(stream);
     hipError_t  result     = hipFreeAsync(ptr, hip_stream);
     if (result != hipSuccess)
     {
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "HIP asynchronous deallocation failed for {} bytes at {} on device {}: {}",
             nbytes,
             ptr,
@@ -512,13 +512,13 @@ void free(
             hipGetErrorString(result));
     }
 
-#elif defined(XSIGMA_HIP_ALLOC_POOL_ASYNC)
+#elif defined(QUARISMA_HIP_ALLOC_POOL_ASYNC)
     // Use asynchronous HIP deallocation (same for pool and non-pool)
     hipStream_t hip_stream = static_cast<hipStream_t>(stream);
     hipError_t  result     = hipFreeAsync(ptr, hip_stream);
     if (result != hipSuccess)
     {
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "HIP pool deallocation failed for {} bytes at {} on device {}: {}",
             nbytes,
             ptr,
@@ -531,7 +531,7 @@ void free(
     hipError_t result = hipFree(ptr);
     if (result != hipSuccess)
     {
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "HIP default deallocation failed for {} bytes at {} on device {}: {}",
             nbytes,
             ptr,
@@ -549,10 +549,10 @@ void free(
 
 bool set_device(int device_id) noexcept
 {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     CUDA_CHECK_RETURN_FALSE(cudaSetDevice(device_id));
     return true;
-#elif XSIGMA_HAS_HIP
+#elif QUARISMA_HAS_HIP
     HIP_CHECK_RETURN_FALSE(hipSetDevice(device_id));
     return true;
 #else
@@ -563,21 +563,21 @@ bool set_device(int device_id) noexcept
 
 int get_current_device() noexcept
 {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     int               device_id = -1;
     cudaError_t const error     = cudaGetDevice(&device_id);
     if (error != cudaSuccess)
     {
-        XSIGMA_LOG_ERROR("Failed to get current CUDA device: {}", cudaGetErrorString(error));
+        QUARISMA_LOG_ERROR("Failed to get current CUDA device: {}", cudaGetErrorString(error));
         return -1;
     }
     return device_id;
-#elif XSIGMA_HAS_HIP
+#elif QUARISMA_HAS_HIP
     int        device_id = -1;
     hipError_t error     = hipGetDevice(&device_id);
     if (error != hipSuccess)
     {
-        XSIGMA_LOG_ERROR("Failed to get current HIP device: {}", hipGetErrorString(error));
+        QUARISMA_LOG_ERROR("Failed to get current HIP device: {}", hipGetErrorString(error));
         return -1;
     }
     return device_id;
@@ -586,4 +586,4 @@ int get_current_device() noexcept
 #endif
 }
 
-}  // namespace xsigma::gpu::memory_allocator
+}  // namespace quarisma::gpu::memory_allocator

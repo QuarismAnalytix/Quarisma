@@ -122,9 +122,9 @@ def compute_size_for_scheduler_buffer(
         buf1 = buf0[0] # assume 10 bytes
         buf2 = buf0[1] # assume 20 bytes
     In such cases,
-        buf0: xsigma creation, 30 bytes allocated, when deleted, 0 bytes freed
-        buf1: xsigma creation, 0 bytes allocated, when deleted, 10 bytes freed
-        buf2: xsigma creation, 0 bytes allocated, when deleted, 20 bytes freed
+        buf0: quarisma creation, 30 bytes allocated, when deleted, 0 bytes freed
+        buf1: quarisma creation, 0 bytes allocated, when deleted, 10 bytes freed
+        buf2: quarisma creation, 0 bytes allocated, when deleted, 20 bytes freed
 
     When an operation mutates a buffer in-place, the scheduler creates a new buffer name
     to track the "before" and "after" states, even though they share the same memory.
@@ -405,14 +405,14 @@ def estimate_peak_memory(
 
     Returns:
         int: peak memory
-        List[int]: memory usage xsigma each node (or each step).
+        List[int]: memory usage quarisma each node (or each step).
     """
 
     buf_info_list, _, _ = compute_memory_timeline(
         nodes, name_to_freeable_input_buf, graph_outputs
     )
 
-    # incremental memory changes xsigma each step
+    # incremental memory changes quarisma each step
     memory = [0 for _ in range(len(nodes) + 1)]
 
     # for each buffer, update memory when created and when freed
@@ -457,7 +457,7 @@ def estimate_peak_memory_allocfree(
     estimate_peak_memory collapses memory into one value: size_alloc - size_free
     While peak memory happens after alloc.
 
-    Duplicating the code to not migrate all callsites xsigma once,
+    Duplicating the code to not migrate all callsites quarisma once,
     In future usages of estimate_peak_memory will migrate to this version.
     """
 
@@ -465,7 +465,7 @@ def estimate_peak_memory_allocfree(
         nodes, name_to_freeable_input_buf, graph_outputs
     )
 
-    # incremental memory changes xsigma each step
+    # incremental memory changes quarisma each step
     step_idx_allocfree = [SNodeMemory(0, 0) for _ in range(len(nodes))]
 
     # for each buffer, update memory when created and when freed
@@ -582,7 +582,7 @@ def topological_sort_lpmf(
             if buf_info[buf]["outdegree"] == 0:
                 node_info[node]["memory_to_free"] += buf.mpi_buffer.size_free
 
-    # schedule nodes one xsigma a time
+    # schedule nodes one quarisma a time
     schedule: list[BaseSchedulerNode] = []
     size_threshold = config.size_threshold_for_succ_based_strategy
     num_iters: int = 0
@@ -645,7 +645,7 @@ def topological_sort_lpmf(
 def topological_sort_bfs(nodes: list[BaseSchedulerNode]) -> list[BaseSchedulerNode]:
     """
     A BFS topological sort that selects nodes whose dependencies are executed the
-    earliest. This follows a FIFO idea. Specifically, xsigma every iteration, for each node
+    earliest. This follows a FIFO idea. Specifically, quarisma every iteration, for each node
     that is schedulable, we gather the order in which its predecessor nodes are executed,
     and this sorted list of execution orders of predecessor nodes defines the priority.
     We select the node whose predecessors nodes are executed the earliest. The FIFO
@@ -688,7 +688,7 @@ def topological_sort_bfs(nodes: list[BaseSchedulerNode]) -> list[BaseSchedulerNo
                 nodes_to_schedule, NodeWithPriority(_node_priority(node), node)
             )
 
-    # schedule nodes one xsigma a time
+    # schedule nodes one quarisma a time
     schedule: list[BaseSchedulerNode] = []
     num_iters: int = 0
     while num_iters < len(nodes) and nodes_to_schedule:
@@ -851,7 +851,7 @@ def prepare_planning_info(
     graph_outputs: OrderedSet[str],
 ) -> tuple[int, dict[str, FreeableInputBuffer]]:
     """
-    Prepare planning info. As nodes are scheduled one xsigma a time, these help
+    Prepare planning info. As nodes are scheduled one quarisma a time, these help
     keep track of when a buffer can be freed, and when a node can be scheduled
 
     Returns:

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -29,11 +29,11 @@
 #include "memory/device.h"
 #include "memory/unified_memory_stats.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime_api.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -50,14 +50,14 @@ namespace gpu
  * - Comprehensive performance statistics
  * - Thread-safe operations
  * - Exception-safe RAII design
- * - Integration with XSigma device management
+ * - Integration with Quarisma device management
  *
  * @note This allocator is designed for CUDA devices only
  */
-class XSIGMA_VISIBILITY cuda_caching_allocator
+class QUARISMA_VISIBILITY cuda_caching_allocator
 {
 public:
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     using stream_type = cudaStream_t;
 #else
     using stream_type = void*;
@@ -69,13 +69,13 @@ public:
      * @param max_cached_bytes Maximum bytes to cache (default: unlimited)
      * @throws std::runtime_error if device is invalid
      */
-    XSIGMA_API explicit cuda_caching_allocator(
+    QUARISMA_API explicit cuda_caching_allocator(
         int device = 0, size_t max_cached_bytes = std::numeric_limits<size_t>::max());
 
     /**
      * @brief Destructor - releases all cached memory
      */
-    XSIGMA_API ~cuda_caching_allocator();
+    QUARISMA_API ~cuda_caching_allocator();
 
     /**
      * @brief Allocate GPU memory with caching
@@ -85,7 +85,7 @@ public:
      * @throws std::bad_alloc if allocation fails
      * @throws std::invalid_argument if size is zero
      */
-    XSIGMA_API void* allocate(size_t size, stream_type stream = nullptr);
+    QUARISMA_API void* allocate(size_t size, stream_type stream = nullptr);
 
     /**
      * @brief Deallocate GPU memory (may cache for reuse)
@@ -95,43 +95,43 @@ public:
      * @throws std::invalid_argument if ptr is not owned by this allocator
      * @throws std::logic_error if double free detected
      */
-    XSIGMA_API void deallocate(void* ptr, size_t size, stream_type stream = nullptr);
+    QUARISMA_API void deallocate(void* ptr, size_t size, stream_type stream = nullptr);
 
     /**
      * @brief Clear all cached memory immediately
      * @note This will synchronize with all pending CUDA operations
      */
-    XSIGMA_API void empty_cache();
+    QUARISMA_API void empty_cache();
 
     /**
      * @brief Set maximum bytes to cache
      * @param bytes Maximum cache size (0 = no caching)
      */
-    XSIGMA_API void set_max_cached_bytes(size_t bytes);
+    QUARISMA_API void set_max_cached_bytes(size_t bytes);
 
     /**
      * @brief Get maximum cache size
      * @return Maximum bytes that can be cached
      */
-    XSIGMA_API size_t max_cached_bytes() const;
+    QUARISMA_API size_t max_cached_bytes() const;
 
     /**
      * @brief Get comprehensive allocation statistics
      * @return Statistics structure with performance metrics
      */
-    XSIGMA_API unified_cache_stats stats() const;
+    QUARISMA_API unified_cache_stats stats() const;
 
     /**
      * @brief Get device index this allocator manages
      * @return CUDA device index
      */
-    XSIGMA_API int device() const;
+    QUARISMA_API int device() const;
 
     // Non-copyable but movable
     cuda_caching_allocator(const cuda_caching_allocator&)                       = delete;
     cuda_caching_allocator&            operator=(const cuda_caching_allocator&) = delete;
-    XSIGMA_API                         cuda_caching_allocator(cuda_caching_allocator&&) noexcept;
-    XSIGMA_API cuda_caching_allocator& operator=(cuda_caching_allocator&&) noexcept;
+    QUARISMA_API                         cuda_caching_allocator(cuda_caching_allocator&&) noexcept;
+    QUARISMA_API cuda_caching_allocator& operator=(cuda_caching_allocator&&) noexcept;
 
 private:
     struct Impl;
@@ -141,7 +141,7 @@ private:
 /**
  * @brief Template wrapper for type-safe CUDA caching allocator
  *
- * Provides a template interface compatible with XSigma's GPU allocator patterns
+ * Provides a template interface compatible with Quarisma's GPU allocator patterns
  * while leveraging the high-performance caching allocator underneath.
  *
  * @tparam T Element type
@@ -219,4 +219,4 @@ private:
 };
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

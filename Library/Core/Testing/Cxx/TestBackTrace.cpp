@@ -2,9 +2,9 @@
 #include <vector>
 
 #include "logging/back_trace.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace
 {
@@ -27,20 +27,20 @@ void level_1()
 }
 
 }  // namespace
-}  // namespace xsigma
-using namespace xsigma;
+}  // namespace quarisma
+using namespace quarisma;
 // ============================================================================
 // Basic Functionality Tests
 // ============================================================================
 
-XSIGMATEST(BackTrace, basic_print)
+QUARISMATEST(BackTrace, basic_print)
 {
     auto trace = back_trace::print();
     EXPECT_FALSE(trace.empty());
     END_TEST();
 }
 
-XSIGMATEST(BackTrace, print_with_skip_frames)
+QUARISMATEST(BackTrace, print_with_skip_frames)
 {
     auto trace_no_skip = back_trace::print(0, 5, false);
     auto trace_skip_2  = back_trace::print(2, 5, false);
@@ -50,7 +50,7 @@ XSIGMATEST(BackTrace, print_with_skip_frames)
     END_TEST();
 }
 
-XSIGMATEST(BackTrace, print_with_max_frames)
+QUARISMATEST(BackTrace, print_with_max_frames)
 {
     auto trace_5  = back_trace::print(0, 5, false);
     auto trace_10 = back_trace::print(0, 10, false);
@@ -64,7 +64,7 @@ XSIGMATEST(BackTrace, print_with_max_frames)
 // Enhanced API Tests
 // ============================================================================
 
-XSIGMATEST(BackTrace, capture_and_format)
+QUARISMATEST(BackTrace, capture_and_format)
 {
     // Capture raw frames
     backtrace_options options;
@@ -88,7 +88,7 @@ XSIGMATEST(BackTrace, capture_and_format)
     END_TEST();
 }
 
-XSIGMATEST(BackTrace, compact_format)
+QUARISMATEST(BackTrace, compact_format)
 {
     backtrace_options options;
     options.frames_to_skip           = 0;
@@ -105,7 +105,7 @@ XSIGMATEST(BackTrace, compact_format)
     END_TEST();
 }
 
-XSIGMATEST(BackTrace, compact_helper)
+QUARISMATEST(BackTrace, compact_helper)
 {
     auto trace = back_trace::compact(5);
     EXPECT_FALSE(trace.empty());
@@ -115,7 +115,7 @@ XSIGMATEST(BackTrace, compact_helper)
     END_TEST();
 }
 
-XSIGMATEST(BackTrace, detailed_format_with_options)
+QUARISMATEST(BackTrace, detailed_format_with_options)
 {
     backtrace_options options;
     options.frames_to_skip           = 0;
@@ -132,7 +132,7 @@ XSIGMATEST(BackTrace, detailed_format_with_options)
     END_TEST();
 }
 
-XSIGMATEST(BackTrace, detailed_format_without_addresses)
+QUARISMATEST(BackTrace, detailed_format_without_addresses)
 {
     backtrace_options options;
     options.frames_to_skip           = 0;
@@ -149,7 +149,7 @@ XSIGMATEST(BackTrace, detailed_format_without_addresses)
 // Call Stack Depth Tests
 // ============================================================================
 
-XSIGMATEST(BackTrace, deep_call_stack)
+QUARISMATEST(BackTrace, deep_call_stack)
 {
     level_1();
     END_TEST();
@@ -159,7 +159,7 @@ XSIGMATEST(BackTrace, deep_call_stack)
 // Platform Support Tests
 // ============================================================================
 
-XSIGMATEST(BackTrace, is_supported)
+QUARISMATEST(BackTrace, is_supported)
 {
     bool supported = back_trace::is_supported();
 
@@ -174,7 +174,7 @@ XSIGMATEST(BackTrace, is_supported)
 // Edge Cases
 // ============================================================================
 
-XSIGMATEST(BackTrace, empty_frames_format)
+QUARISMATEST(BackTrace, empty_frames_format)
 {
     std::vector<stack_frame> empty_frames;
     auto                     formatted = back_trace::format(empty_frames);
@@ -184,7 +184,7 @@ XSIGMATEST(BackTrace, empty_frames_format)
     END_TEST();
 }
 
-XSIGMATEST(BackTrace, zero_max_frames)
+QUARISMATEST(BackTrace, zero_max_frames)
 {
     backtrace_options options;
     options.maximum_number_of_frames = 0;
@@ -198,7 +198,7 @@ XSIGMATEST(BackTrace, zero_max_frames)
 // Configuration Tests
 // ============================================================================
 
-XSIGMATEST(BackTrace, set_stack_trace_on_error)
+QUARISMATEST(BackTrace, set_stack_trace_on_error)
 {
     // Test the configuration method (currently a no-op placeholder)
     back_trace::set_stack_trace_on_error(1);
@@ -211,15 +211,15 @@ XSIGMATEST(BackTrace, set_stack_trace_on_error)
 // Integration Tests
 // ============================================================================
 
-XSIGMATEST(BackTrace, usage_in_logging)
+QUARISMATEST(BackTrace, usage_in_logging)
 {
-    XSIGMA_LOG_INFO("Error occurred at:\n{}", back_trace::print(0, 5));
+    QUARISMA_LOG_INFO("Error occurred at:\n{}", back_trace::print(0, 5));
     END_TEST();
 }
 
-XSIGMATEST(BackTrace, usage_in_compact_logging)
+QUARISMATEST(BackTrace, usage_in_compact_logging)
 {
     // Test that compact backtrace can be used in logging
-    XSIGMA_LOG_INFO("Call chain: {}", back_trace::compact(5));
+    QUARISMA_LOG_INFO("Call chain: {}", back_trace::compact(5));
     END_TEST();
 }

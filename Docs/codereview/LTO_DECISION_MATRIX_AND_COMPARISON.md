@@ -1,4 +1,4 @@
-# LTO Decision Matrix & Comparison for XSigma
+# LTO Decision Matrix & Comparison for Quarisma
 
 **Purpose**: Visual comparison and decision-making guide for LTO configuration
 
@@ -139,7 +139,7 @@ Legend:
 │ MSVC (Windows)       │ ✅ ON    │ Works with /LTCG flag        │
 └──────────────────────┴──────────┴──────────────────────────────┘
 
-Current XSigma Behavior:
+Current Quarisma Behavior:
 - When LTO enabled: Faster linkers (gold, mold, lld) are SKIPPED
 - Reason: Prevent out-of-memory errors
 - Result: Default linker used (slower but stable)
@@ -150,7 +150,7 @@ Current XSigma Behavior:
 ## 6. Workflow Decision Tree
 
 ```
-START: Building XSigma
+START: Building Quarisma
 │
 ├─ What's your goal?
 │  │
@@ -171,7 +171,7 @@ START: Building XSigma
 │  │
 │  ├─ DEBUGGING
 │  │  └─ Use: cmake -B build -S . -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-│  │           -DXSIGMA_ENABLE_LTO=OFF
+│  │           -DQUARISMA_ENABLE_LTO=OFF
 │  │     LTO: OFF (better debugging)
 │  │     Time: ~10-15 minutes
 │  │
@@ -251,10 +251,10 @@ MinSizeRel (LTO ON)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ CURRENT XSIGMA LTO CONFIGURATION                            │
+│ CURRENT QUARISMA LTO CONFIGURATION                            │
 ├─────────────────────────────────────────────────────────────┤
 │ Default:        ON (for Release builds)                     │
-│ Can be toggled: YES (-DXSIGMA_ENABLE_LTO=OFF)              │
+│ Can be toggled: YES (-DQUARISMA_ENABLE_LTO=OFF)              │
 │ Status:         ✅ Acceptable                              │
 │ Recommendation: Keep current configuration                 │
 │                                                             │
@@ -288,10 +288,10 @@ $ python setup.py config.build.ninja.clang.release
 → LTO: ON, Time: ~15-20 min
 
 DISABLE LTO EXPLICITLY:
-$ cmake -B build -S . -DXSIGMA_ENABLE_LTO=OFF
+$ cmake -B build -S . -DQUARISMA_ENABLE_LTO=OFF
 
 ENABLE LTO EXPLICITLY:
-$ cmake -B build -S . -DXSIGMA_ENABLE_LTO=ON
+$ cmake -B build -S . -DQUARISMA_ENABLE_LTO=ON
 
 CHECK LTO STATUS:
 $ cmake -B build -S . | grep -i "LTO"

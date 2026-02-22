@@ -16,7 +16,7 @@ class TemplateConfigHeuristics:
 
     def should_run(self, inputs: KernelInputs) -> bool:
         """
-        hookup to check whether the configs are right to run xsigma all e.g. you can check
+        hookup to check whether the configs are right to run quarisma all e.g. you can check
         max-autotune specific to your heuristic here or other things
         If this returns False, get_template_configs will yield no configs
 

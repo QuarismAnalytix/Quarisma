@@ -6,7 +6,7 @@
 #include "memory/device.h"
 #include "util/exception.h"
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 namespace
@@ -16,7 +16,7 @@ struct DefaultStubs : public ProfilerStubs
     explicit DefaultStubs(const char* name) : name_{name} {}
 
     void record(
-        xsigma::device_option* /*device*/,
+        quarisma::device_option* /*device*/,
         ProfilerVoidEventStub* /*event*/,
         int64_t* /*cpu_ns*/) const override
     {
@@ -37,7 +37,7 @@ struct DefaultStubs : public ProfilerStubs
     ~DefaultStubs() override = default;
 
 private:
-    void fail() const { XSIGMA_CHECK(false, name_, " used in profiler but not enabled."); }
+    void fail() const { QUARISMA_CHECK(false, name_, " used in profiler but not enabled."); }
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
     const char* const name_;
@@ -75,4 +75,4 @@ REGISTER_DEFAULT(itt, ITT)
 REGISTER_DEFAULT(privateuse1, PrivateUse1)
 #undef REGISTER_DEFAULT
 
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl

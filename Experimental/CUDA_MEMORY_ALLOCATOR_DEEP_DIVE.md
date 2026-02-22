@@ -1,4 +1,4 @@
-# CUDA Memory Allocator Deep-Dive Analysis for xsigma_tensor
+# CUDA Memory Allocator Deep-Dive Analysis for quarisma_tensor
 
 ## Table of Contents
 1. [Overview](#overview)
@@ -13,7 +13,7 @@
 
 ## Overview
 
-The xsigma_tensor CUDA memory allocator is a sophisticated caching allocator that manages GPU memory efficiently for mathematical and financial computing workloads. It sits between application code and raw CUDA memory operations, providing:
+The quarisma_tensor CUDA memory allocator is a sophisticated caching allocator that manages GPU memory efficiently for mathematical and financial computing workloads. It sits between application code and raw CUDA memory operations, providing:
 
 - **Memory Caching**: Reuses previously allocated blocks instead of calling `cudaMalloc`/`cudaFree`
 - **Stream-Aware Allocation**: Tracks which CUDA streams use memory blocks
@@ -55,7 +55,7 @@ struct DeviceStats {
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Application Code                         │
-│              (xsigma_tensor operations)                     │
+│              (quarisma_tensor operations)                     │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -895,12 +895,12 @@ simulator.simulate(n_iterations=100)
 
 ---
 
-## Integration with xsigma_tensor
+## Integration with quarisma_tensor
 
-### How xsigma_tensor Uses the Allocator
+### How quarisma_tensor Uses the Allocator
 
 ```cpp
-// Tensor creation in xsigma_tensor
+// Tensor creation in quarisma_tensor
 Tensor zeros(IntArrayRef size, Device device) {
   // 1. Calculate total elements
   size_t numel = std::accumulate(size.begin(), size.end(), 1, std::multiplies<>());
@@ -965,7 +965,7 @@ public:
 
 ## Conclusion
 
-The xsigma_tensor CUDA memory allocator provides sophisticated memory management optimized for mathematical and financial computing workloads. By understanding its architecture, stream integration, and lifecycle management, developers can write efficient GPU code that maximizes performance while maintaining memory safety.
+The quarisma_tensor CUDA memory allocator provides sophisticated memory management optimized for mathematical and financial computing workloads. By understanding its architecture, stream integration, and lifecycle management, developers can write efficient GPU code that maximizes performance while maintaining memory safety.
 
 Key takeaways:
 - **Caching dramatically improves performance** for typical workloads
@@ -990,7 +990,7 @@ cudaFree(ptr);              // ~100-500 microseconds
 // Total: ~600-1500 microseconds per allocation
 ```
 
-### xsigma_tensor Caching Allocator
+### quarisma_tensor Caching Allocator
 
 ```cpp
 // Cached allocation approach
@@ -1003,7 +1003,7 @@ allocator->deallocate(ptr);            // ~1-5 microseconds (add to cache)
 
 ### Detailed Comparison Table
 
-| Aspect | Standard CUDA | xsigma_tensor Caching |
+| Aspect | Standard CUDA | quarisma_tensor Caching |
 |--------|---------------|----------------------|
 | **Allocation Speed** | 500-1000 μs | 1-10 μs (cached) |
 | **Deallocation Speed** | 100-500 μs | 1-5 μs |
@@ -1029,7 +1029,7 @@ Total: 10 seconds
 Allocation overhead: 75%
 ```
 
-xsigma_tensor Caching:
+quarisma_tensor Caching:
 ```
 Allocations per iteration: 10 (first iteration only)
 Total allocations: 10 (reused)
@@ -1056,7 +1056,7 @@ Problem: Cannot allocate 2MB contiguous block
 Fragmentation ratio: 30%
 ```
 
-**xsigma_tensor Caching**:
+**quarisma_tensor Caching**:
 ```
 After 100 allocations/deallocations:
 ┌──────────────────────────────────────────────────┐
@@ -1076,7 +1076,7 @@ Fragmentation ratio: 5%
 - Simplicity is critical
 - One-time initialization
 
-**Use xsigma_tensor Caching when**:
+**Use quarisma_tensor Caching when**:
 - Frequent allocations (> 100 per second)
 - Performance is critical
 - Multi-stream operations needed
@@ -1134,13 +1134,13 @@ export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
 
 ## References and Further Reading
 
-### Key Files in xsigma_tensor
+### Key Files in quarisma_tensor
 
 - `c10/core/CachingDeviceAllocator.h` - Allocator interface
 - `c10/core/CachingDeviceAllocator.cpp` - Base implementation
-- `aten/src/XSigma/native/cuda/RecordStream.cu` - Stream recording
-- `aten/src/XSigma/native/Memory.cpp` - Memory utilities
-- `aten/src/XSigma/native/Resize.cpp` - Tensor resizing
+- `aten/src/Quarisma/native/cuda/RecordStream.cu` - Stream recording
+- `aten/src/Quarisma/native/Memory.cpp` - Memory utilities
+- `aten/src/Quarisma/native/Resize.cpp` - Tensor resizing
 
 ### Related PyTorch Documentation
 
@@ -1152,5 +1152,5 @@ export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
 
 - NVIDIA CUDA Best Practices Guide
 - PyTorch Performance Tuning Documentation
-- xsigma_tensor Optimization Guide (forthcoming)
+- quarisma_tensor Optimization Guide (forthcoming)
 

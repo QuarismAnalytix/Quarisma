@@ -33,9 +33,9 @@ void PrePackingOpsFolder(
                     if (optional_outputs)
                     {
                         auto outputs = optional_outputs.value();
-                        XSIGMA_CHECK(outputs.size() == 1, "Prepack ops have single output");
+                        QUARISMA_CHECK(outputs.size() == 1, "Prepack ops have single output");
                         auto attr_name = attr_name_base + std::to_string(uid++);
-                        XSIGMA_CHECK(
+                        QUARISMA_CHECK(
                             !(m.type()->findAttributeSlot(attr_name)),
                             "Attribute name ",
                             attr_name,
@@ -43,7 +43,7 @@ void PrePackingOpsFolder(
                             " module of type:",
                             m.type()->name()->qualifiedName(),
                             ". Please make sure that",
-                            " FoldPrePackingOps is run xsigma the top level module only.");
+                            " FoldPrePackingOps is run quarisma the top level module only.");
                         m.register_attribute(attr_name, n->output(0)->type(), outputs[0]);
                         Value*          prepack_op_value = n->output(0);
                         WithInsertPoint ins(prepack_op_value->node());

@@ -1,5 +1,5 @@
-#include <XSigma/core/functional.h>
-#include <XSigma/core/interned_strings.h>
+#include <Quarisma/core/functional.h>
+#include <Quarisma/core/interned_strings.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/ir/ir_views.h>
 #include <torch/csrc/jit/jit_log.h>
@@ -9,8 +9,8 @@
 #include <torch/csrc/jit/runtime/graph_iterator.h>
 #include <torch/csrc/jit/runtime/register_ops_utils.h>
 #include <torch/csrc/jit/runtime/static/ops.h>
-#include <xsigma/core/MemoryFormat.h>
-#include <xsigma/core/ScalarType.h>
+#include <quarisma/core/MemoryFormat.h>
+#include <quarisma/core/ScalarType.h>
 
 #include <sstream>
 #include <utility>
@@ -43,7 +43,7 @@ static std::map<int64_t, Value*> InsertSymbolicShapesCompute(
         if (*enclosing_graph_input->second->type() == *shape_graph_input->type())
         {
             shape_compute_graph_inputs.push_back(
-                tensorexpr_graph->inputs().xsigma(enclosing_graph_input->second->offset()));
+                tensorexpr_graph->inputs().quarisma(enclosing_graph_input->second->offset()));
         }
         else
         {
@@ -52,7 +52,7 @@ static std::map<int64_t, Value*> InsertSymbolicShapesCompute(
                 shape_graph_input->type()->isSubtypeOf(ListType::ofInts()));
             shape_compute_graph_inputs.push_back(enclosing_graph->insert(
                 aten::size,
-                {tensorexpr_graph->inputs().xsigma(enclosing_graph_input->second->offset())}));
+                {tensorexpr_graph->inputs().quarisma(enclosing_graph_input->second->offset())}));
         }
     }
     auto sym_shape_values = insertGraph(
@@ -60,7 +60,7 @@ static std::map<int64_t, Value*> InsertSymbolicShapesCompute(
     std::map<int64_t, Value*> sym_shape_to_enclosing_graph_value;
     for (size_t i = 0; i < shape_mapping.partial_eval_shape_graph->outputs().size(); ++i)
     {
-        Value* output    = shape_mapping.partial_eval_shape_graph->outputs().xsigma(i);
+        Value* output    = shape_mapping.partial_eval_shape_graph->outputs().quarisma(i);
         auto   sym_shape = shape_mapping.graph_output_to_symbolic_shape_dim_.find(output);
         TORCH_INTERNAL_ASSERT(sym_shape != shape_mapping.graph_output_to_symbolic_shape_dim_.end());
         sym_shape_to_enclosing_graph_value[sym_shape->second] = sym_shape_values[i];
@@ -131,8 +131,8 @@ StrideInput strideInputFromString(const std::string& si)
 // vector. stride_inputs_offset indexes into that vector
 // where the strides of this tensor begin
 static inline StrideInput summarizeStrideDim(
-    const xsigma::IntArrayRef       sizes,
-    const xsigma::IntArrayRef       strides,
+    const quarisma::IntArrayRef       sizes,
+    const quarisma::IntArrayRef       strides,
     size_t                          dim,
     const std::vector<StrideInput>& stride_inputs,
     size_t                          stride_inputs_offset)
@@ -164,12 +164,12 @@ static std::vector<StrideInput> summarizeInputStrides(const TensorType& tt)
 {
     auto strides = *tt.strides().concrete_sizes();
     auto sizes   = *tt.sizes().concrete_sizes();
-    if (xsigma::is_contiguous_strides(sizes, strides))
+    if (quarisma::is_contiguous_strides(sizes, strides))
     {
         return {StrideInput::TENSOR_CONT};
         // TODO: channels last 3d
     }
-    else if (xsigma::is_channels_last_strides_2d(sizes, strides))
+    else if (quarisma::is_channels_last_strides_2d(sizes, strides))
     {
         return {StrideInput::TENSOR_CONT_CHANNELS_LAST};
     }
@@ -189,7 +189,7 @@ static StrideInput summarizeOutputStrides(const TensorType& tt)
     // We only try to maintain output striding for channels last tensors,
     // otherwise we defer to contiguous
     // TODO: channels last 3d
-    if (xsigma::is_channels_last_strides_2d(sizes, strides))
+    if (quarisma::is_channels_last_strides_2d(sizes, strides))
     {
         return StrideInput::TENSOR_CONT_CHANNELS_LAST;
     }
@@ -222,10 +222,10 @@ TryGeneralizeInputDimensionsToSymbolicShapes(const std::shared_ptr<Graph>& tenso
             return std::nullopt;
         }
         input_striding.push_back(summarizeInputStrides(tt));
-        std::vector<xsigma::ShapeSymbol> shape_vec = *tt.symbolic_sizes().sizes();
-        auto                             new_sizes = xsigma::fmap(
+        std::vector<quarisma::ShapeSymbol> shape_vec = *tt.symbolic_sizes().sizes();
+        auto                             new_sizes = quarisma::fmap(
             shape_vec,
-            [&](const xsigma::ShapeSymbol& shape)
+            [&](const quarisma::ShapeSymbol& shape)
             {
                 auto value = shape.value();
                 TORCH_INTERNAL_ASSERT(value >= 0, "Expected complete tensor");
@@ -239,12 +239,12 @@ TryGeneralizeInputDimensionsToSymbolicShapes(const std::shared_ptr<Graph>& tenso
                 }
                 else
                 {
-                    auto new_shape_symbol = xsigma::ShapeSymbol::newSymbol().value();
+                    auto new_shape_symbol = quarisma::ShapeSymbol::newSymbol().value();
                     shape_to_sym_shape[static_cast<size_t>(value)] = new_shape_symbol;
                     return new_shape_symbol;
                 }
             });
-        v->setType(tt.withSymbolicShapes(xsigma::SymbolicShape(new_sizes)));
+        v->setType(tt.withSymbolicShapes(quarisma::SymbolicShape(new_sizes)));
     }
     return input_striding;
 }
@@ -379,7 +379,7 @@ static void inlineFallbackGraphAndAddSRCopyOutOp(std::shared_ptr<Graph> graph)
     false_block->appendNode(copy_node);
     for (size_t i = 0; i < false_block_outputs.size(); ++i)
     {
-        false_block->replaceOutput(i, copy_node->outputs().xsigma(i));
+        false_block->replaceOutput(i, copy_node->outputs().quarisma(i));
     }
 }
 
@@ -397,9 +397,9 @@ void insertDynamicShapesGuard(
     // Fixup types of the subgraph inputs
     std::vector<Value*>  inputs_to_check;
     std::vector<TypePtr> guard_types;
-    for (const auto i : xsigma::irange(guarded_node->inputs().size()))
+    for (const auto i : quarisma::irange(guarded_node->inputs().size()))
     {
-        Value* node_input = guarded_node->inputs().xsigma(i);
+        Value* node_input = guarded_node->inputs().quarisma(i);
         // We only check inputs of the guarded nodes
         if (!node_input->type()->cast<TensorType>())
         {
@@ -407,8 +407,8 @@ void insertDynamicShapesGuard(
         }
         inputs_to_check.push_back(node_input);
         guard_types.emplace_back(
-            subgraph->inputs().xsigma(i)->type()->expect<TensorType>()->withStrides(
-                xsigma::VaryingShape<xsigma::Stride>()));
+            subgraph->inputs().quarisma(i)->type()->expect<TensorType>()->withStrides(
+                quarisma::VaryingShape<quarisma::Stride>()));
     }
     TORCH_INTERNAL_ASSERT(inputs_to_check.size());
 
@@ -495,14 +495,14 @@ void insertDynamicShapesGuard(
     {
         if (auto t = v->type()->cast<TensorType>())
         {
-            v->setType(t->withStrides(xsigma::VaryingShape<xsigma::Stride>()));
+            v->setType(t->withStrides(quarisma::VaryingShape<quarisma::Stride>()));
         }
     }
     for (Value* v : subgraph->outputs())
     {
         if (auto t = v->type()->cast<TensorType>())
         {
-            v->setType(t->withStrides(xsigma::VaryingShape<xsigma::Stride>()));
+            v->setType(t->withStrides(quarisma::VaryingShape<quarisma::Stride>()));
         }
     }
 
@@ -526,7 +526,7 @@ void insertDynamicShapesGuard(
     }
 }
 
-// This operator is inserted xsigma the end of the fallback block computing outputs
+// This operator is inserted quarisma the end of the fallback block computing outputs
 // for the fusion group. We convert block1():
 //   %14 : Tensor = aten::mul(%0, %1)
 //   %15 : Tensor = aten::mul(%0, %14)
@@ -563,11 +563,11 @@ static Operation StaticRuntimeCopyOuts(const Node* node)
         }
         else
         {
-            xsigma::ArrayRef<IValue> outputs = last(stack, num_ten_inputs);
+            quarisma::ArrayRef<IValue> outputs = last(stack, num_ten_inputs);
             for (size_t i = 0; i < inputs.size(); ++i)
             {
                 IValue          out   = outputs[i];
-                xsigma::Tensor& out_t = out.toTensor();
+                quarisma::Tensor& out_t = out.toTensor();
                 fastResizeToZero(out_t);
                 out_t.resize_as_(inputs[i].toTensor());
                 out_t.copy_(inputs[i].toTensor());
@@ -604,7 +604,7 @@ static RegisterOperators reg_guard({
             std::vector<int64_t> flattened_input_dims;
 
             // Each inputs expected scalar types
-            std::vector<xsigma::ScalarType> expected_scalar_types;
+            std::vector<quarisma::ScalarType> expected_scalar_types;
 
             // Map from symbolic dimension value to its set's index
             std::map<int64_t, size_t> sym_dim_flat_index;
@@ -679,7 +679,7 @@ static RegisterOperators reg_guard({
                     flattened_input_striding,
                     num_symbolic_dims](Stack& stack)
             {
-                xsigma::ArrayRef<IValue> inputs = last(stack, num_inputs);
+                quarisma::ArrayRef<IValue> inputs = last(stack, num_inputs);
                 drop(stack, num_inputs);
                 // each invocation we need to reset what value of each symbolic
                 // symbol is.
@@ -687,27 +687,27 @@ static RegisterOperators reg_guard({
                 // each invocation or would that mess up with multithreaded
                 // inference since we are writing to it?
                 // TODO - smallvector here ?
-                bool                 grad_mode_enabled = xsigma::GradMode::is_enabled();
+                bool                 grad_mode_enabled = quarisma::GradMode::is_enabled();
                 std::vector<int64_t> flattened_symbolic_dims(num_symbolic_dims, -1);
                 size_t               flattened_dim_offset    = 0;
                 size_t               flattened_stride_offset = 0;
-                for (const auto i : xsigma::irange(num_inputs))
+                for (const auto i : quarisma::irange(num_inputs))
                 {
-                    xsigma::Tensor tensor = inputs[i].toTensor();
-                    if XSIGMA_UNLIKELY (
+                    quarisma::Tensor tensor = inputs[i].toTensor();
+                    if QUARISMA_UNLIKELY (
                         tensor.device() != device || tensor.dtype() != expected_scalar_types[i]))
                         {
                             push(stack, false);
                             return;
                         }
-                    if XSIGMA_UNLIKELY (grad_mode_enabled && tensor.requires_grad())
+                    if QUARISMA_UNLIKELY (grad_mode_enabled && tensor.requires_grad())
                     {
                         push(stack, false);
                         return;
                     }
                     const auto& sizes    = tensor.sizes();
                     const auto  num_dims = sizes.size();
-                    if XSIGMA_UNLIKELY (num_dims != expected_dims[i])
+                    if QUARISMA_UNLIKELY (num_dims != expected_dims[i])
                     {
                         push(stack, false);
                         return;
@@ -719,7 +719,7 @@ static RegisterOperators reg_guard({
                     // property than iterating over dimensions and checking yourself
                     if (striding == StrideInput::TENSOR_CONT)
                     {
-                        if XSIGMA_UNLIKELY (!tensor.is_contiguous(xsigma::MemoryFormat::Contiguous)))
+                        if QUARISMA_UNLIKELY (!tensor.is_contiguous(quarisma::MemoryFormat::Contiguous)))
                             {
                                 push(stack, false);
                                 return;
@@ -729,8 +729,8 @@ static RegisterOperators reg_guard({
                     else if (striding == StrideInput::TENSOR_CONT_CHANNELS_LAST)
                     {
                         // TODO: 5D channels last
-                        if XSIGMA_UNLIKELY (!tensor.is_contiguous(
-                                                xsigma::MemoryFormat::ChannelsLast)))
+                        if QUARISMA_UNLIKELY (!tensor.is_contiguous(
+                                                quarisma::MemoryFormat::ChannelsLast)))
                             {
                                 push(stack, false);
                                 return;
@@ -748,7 +748,7 @@ static RegisterOperators reg_guard({
                                 dim,
                                 flattened_input_striding,
                                 flattened_stride_offset);
-                            if XSIGMA_UNLIKELY (
+                            if QUARISMA_UNLIKELY (
                                 summarized_dim !=
                                 flattened_input_striding[dim + flattened_stride_offset]))
                                 {
@@ -758,14 +758,14 @@ static RegisterOperators reg_guard({
                         }
                         flattened_stride_offset += num_dims;
                     }
-                    for (const auto dim_index : xsigma::irange(num_dims))
+                    for (const auto dim_index : quarisma::irange(num_dims))
                     {
                         const auto dim_value =
                             flattened_input_dims[dim_index + flattened_dim_offset];
                         const int64_t tensor_dim = sizes[dim_index];
                         if (dim_value >= 0)
                         {
-                            if XSIGMA_UNLIKELY (dim_value != tensor_dim)
+                            if QUARISMA_UNLIKELY (dim_value != tensor_dim)
                             {
                                 push(stack, false);
                                 return;
@@ -773,7 +773,7 @@ static RegisterOperators reg_guard({
                         }
                         else
                         {
-                            // flattened sym indices start xsigma -1,
+                            // flattened sym indices start quarisma -1,
                             // so -1 -> index 0, -2 -> index 1
                             const auto flattened_sym_index = (-dim_value) - 1;
                             const auto flattened_sym_value =
@@ -781,7 +781,7 @@ static RegisterOperators reg_guard({
                             // sym symbol already seen, check value
                             if (flattened_symbolic_dims[flattened_sym_index] >= 0)
                             {
-                                if XSIGMA_UNLIKELY (flattened_sym_value != tensor_dim)
+                                if QUARISMA_UNLIKELY (flattened_sym_value != tensor_dim)
                                 {
                                     push(stack, false);
                                     return;

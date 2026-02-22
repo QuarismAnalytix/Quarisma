@@ -1,6 +1,6 @@
-# OpenSSF Best Practices Badge Update Guide for XSigma
+# OpenSSF Best Practices Badge Update Guide for Quarisma
 
-This document provides step-by-step instructions for updating the XSigma project's OpenSSF Best Practices Badge entry to improve completion from 18% to 60-65%.
+This document provides step-by-step instructions for updating the Quarisma project's OpenSSF Best Practices Badge entry to improve completion from 18% to 60-65%.
 
 ## Overview
 
@@ -11,7 +11,7 @@ This document provides step-by-step instructions for updating the XSigma project
 ## Prerequisites
 
 1. Log into the OpenSSF Best Practices Badge system at https://www.bestpractices.dev/
-2. Navigate to the XSigma project: https://www.bestpractices.dev/en/projects/11420/edit
+2. Navigate to the Quarisma project: https://www.bestpractices.dev/en/projects/11420/edit
 3. You must have edit permissions for the project (project owner or authorized editor)
 
 ---
@@ -26,7 +26,7 @@ This document provides step-by-step instructions for updating the XSigma project
 
 **URL to enter:**
 ```
-https://github.com/XSigmaAnalyitix/XSigma/blob/main/CONTRIBUTING.md
+https://github.com/QuarismaAnalyitix/Quarisma/blob/main/CONTRIBUTING.md
 ```
 
 **Justification text:**
@@ -42,12 +42,12 @@ The CONTRIBUTING.md file explains the contribution process, including how to for
 
 **URL to enter:**
 ```
-https://github.com/XSigmaAnalyitix/XSigma/blob/main/CONTRIBUTING.md#coding-standards
+https://github.com/QuarismaAnalyitix/Quarisma/blob/main/CONTRIBUTING.md#coding-standards
 ```
 
 **Justification text:**
 ```
-CONTRIBUTING.md documents coding standards (snake_case naming, RAII, no exceptions, smart pointers), testing requirements (98% coverage, XSIGMATEST macro), and formatting requirements (clang-format, clang-tidy). See sections "Coding Standards" (lines 393-478) and "Testing Requirements" (lines 480-546).
+CONTRIBUTING.md documents coding standards (snake_case naming, RAII, no exceptions, smart pointers), testing requirements (98% coverage, QUARISMATEST macro), and formatting requirements (clang-format, clang-tidy). See sections "Coding Standards" (lines 393-478) and "Testing Requirements" (lines 480-546).
 ```
 
 ---
@@ -60,7 +60,7 @@ CONTRIBUTING.md documents coding standards (snake_case naming, RAII, no exceptio
 
 **Justification text:**
 ```
-XSigma follows Semantic Versioning (SemVer) as documented in CONTRIBUTING.md lines 640-646. Current version is 1.0.0 (MAJOR.MINOR.PATCH format). See CMakeLists.txt lines 18-21 for version definition.
+Quarisma follows Semantic Versioning (SemVer) as documented in CONTRIBUTING.md lines 640-646. Current version is 1.0.0 (MAJOR.MINOR.PATCH format). See CMakeLists.txt lines 18-21 for version definition.
 ```
 
 ---
@@ -73,12 +73,12 @@ XSigma follows Semantic Versioning (SemVer) as documented in CONTRIBUTING.md lin
 
 **URL to enter:**
 ```
-https://github.com/XSigmaAnalyitix/XSigma/blob/main/CONTRIBUTING.md#testing-requirements
+https://github.com/QuarismaAnalyitix/Quarisma/blob/main/CONTRIBUTING.md#testing-requirements
 ```
 
 **Justification text:**
 ```
-XSigma has a formal policy requiring 98% code coverage for all code. Tests must be added for all new functionality using the XSIGMATEST macro. See CONTRIBUTING.md lines 480-546 for complete testing requirements.
+Quarisma has a formal policy requiring 98% code coverage for all code. Tests must be added for all new functionality using the QUARISMATEST macro. See CONTRIBUTING.md lines 480-546 for complete testing requirements.
 ```
 
 ---
@@ -100,7 +100,7 @@ The 98% coverage requirement is enforced in practice. All pull requests must inc
 
 **URL to enter:**
 ```
-https://github.com/XSigmaAnalyitix/XSigma/blob/main/CONTRIBUTING.md#pull-request-process
+https://github.com/QuarismaAnalyitix/Quarisma/blob/main/CONTRIBUTING.md#pull-request-process
 ```
 
 **Justification text:**
@@ -116,7 +116,7 @@ The testing policy is documented in the pull request checklist (CONTRIBUTING.md 
 
 **Justification text:**
 ```
-XSigma enables compiler warnings:
+Quarisma enables compiler warnings:
 - MSVC: /W4 (highest warning level) - see Cmake/flags/platform.cmake lines 166-172
 - GCC/Clang: Warnings enabled via compiler defaults and clang-tidy
 - Static analysis with clang-tidy, cppcheck, and IWYU documented in CONTRIBUTING.md lines 431-445
@@ -143,12 +143,12 @@ All warnings must be addressed before code is merged. The pull request checklist
 
 **URL to enter:**
 ```
-https://github.com/XSigmaAnalyitix/XSigma/blob/main/CONTRIBUTING.md#static-analysis
+https://github.com/QuarismaAnalyitix/Quarisma/blob/main/CONTRIBUTING.md#static-analysis
 ```
 
 **Justification text:**
 ```
-XSigma uses multiple static analysis tools before every release:
+Quarisma uses multiple static analysis tools before every release:
 - clang-tidy: C++ linter and static analyzer
 - cppcheck: Static analysis for C/C++
 - IWYU (Include-What-You-Use): Include file analyzer
@@ -189,7 +189,7 @@ All issues found by static analysis tools must be fixed before merge. The pull r
 
 **Justification text:**
 ```
-XSigma's primary developers understand secure design principles as evidenced by the coding standards (.augment/rules/coding.md and CONTRIBUTING.md):
+Quarisma's primary developers understand secure design principles as evidenced by the coding standards (.augment/rules/coding.md and CONTRIBUTING.md):
 - Economy of mechanism: Prefer small, focused functions and classes
 - Fail-safe defaults: RAII ensures resources are released, no exceptions means errors must be explicitly handled
 - Complete mediation: Input validation required for all external data (SECURITY.md lines 40-48)
@@ -208,7 +208,7 @@ XSigma's primary developers understand secure design principles as evidenced by 
 
 **Justification text:**
 ```
-XSigma developers understand common C++ vulnerabilities and mitigations:
+Quarisma developers understand common C++ vulnerabilities and mitigations:
 - Buffer overflows: Prevented by using std::vector, std::array, std::string instead of raw arrays (coding standards)
 - Use-after-free: Prevented by RAII and smart pointers (std::unique_ptr, std::shared_ptr) - mandatory per coding standards
 - Null pointer dereferences: Prevented by using std::optional and explicit null checks in tests
@@ -227,7 +227,7 @@ The coding standards (.augment/rules/coding.md) mandate these practices.
 
 **Justification text:**
 ```
-XSigma is delivered via GitHub, which uses HTTPS for all downloads. Repository URL: https://github.com/XSigmaAnalyitix/XSigma (HTTPS). GitHub Releases use HTTPS. All project URLs use HTTPS.
+Quarisma is delivered via GitHub, which uses HTTPS for all downloads. Repository URL: https://github.com/QuarismaAnalyitix/Quarisma (HTTPS). GitHub Releases use HTTPS. All project URLs use HTTPS.
 ```
 
 ---
@@ -238,7 +238,7 @@ XSigma is delivered via GitHub, which uses HTTPS for all downloads. Repository U
 
 **Justification text:**
 ```
-XSigma does not retrieve cryptographic hashes over HTTP. All dependencies are managed through package managers (CMake, pip) which use HTTPS. See CONTRIBUTING.md dependency management sections.
+Quarisma does not retrieve cryptographic hashes over HTTP. All dependencies are managed through package managers (CMake, pip) which use HTTPS. See CONTRIBUTING.md dependency management sections.
 ```
 
 ---
@@ -249,7 +249,7 @@ XSigma does not retrieve cryptographic hashes over HTTP. All dependencies are ma
 
 **Justification text:**
 ```
-XSigma commits to fixing medium and higher severity vulnerabilities within 60 days of public disclosure:
+Quarisma commits to fixing medium and higher severity vulnerabilities within 60 days of public disclosure:
 - Critical (CVSS ≥ 9.0): 14 days
 - High (CVSS 7.0-8.9): 30 days
 - Medium (CVSS 4.0-6.9): 60 days
@@ -264,7 +264,7 @@ See SECURITY.md lines 35-42 for complete response timeline. No unpatched medium+
 
 **Justification text:**
 ```
-XSigma commits to fixing critical vulnerabilities (CVSS ≥ 9.0) within 14 days of confirmation. See SECURITY.md lines 38-39.
+Quarisma commits to fixing critical vulnerabilities (CVSS ≥ 9.0) within 14 days of confirmation. See SECURITY.md lines 38-39.
 ```
 
 ---
@@ -282,7 +282,7 @@ The public repository does not contain any valid credentials. CONTRIBUTING.md an
 
 ## Phase 3: Cryptographic Criteria (Target: 60-65%)
 
-XSigma includes a Security library with cryptographic utilities. Mark the following criteria:
+Quarisma includes a Security library with cryptographic utilities. Mark the following criteria:
 
 #### ✅ Criterion: `crypto_published`
 **Status:** Currently unmet  
@@ -290,7 +290,7 @@ XSigma includes a Security library with cryptographic utilities. Mark the follow
 
 **Justification text:**
 ```
-XSigma uses only publicly published and reviewed cryptographic algorithms:
+Quarisma uses only publicly published and reviewed cryptographic algorithms:
 - SHA-256 for hashing (Library/Security/crypto.cpp)
 - Platform-specific secure random: BCryptGenRandom (Windows), SecRandomCopyBytes (macOS), getrandom (Linux)
 All algorithms are industry-standard and publicly documented. See Library/Security/README.md lines 75-101.
@@ -304,7 +304,7 @@ All algorithms are industry-standard and publicly documented. See Library/Securi
 
 **Justification text:**
 ```
-XSigma's Security library calls platform-specific cryptographic APIs rather than implementing its own:
+Quarisma's Security library calls platform-specific cryptographic APIs rather than implementing its own:
 - Windows: BCryptGenRandom for secure random
 - macOS: SecRandomCopyBytes for secure random
 - Linux: getrandom() for secure random
@@ -319,7 +319,7 @@ SHA-256 implementation follows FIPS 180-4 specification. See Library/Security/cr
 
 **Justification text:**
 ```
-All cryptographic functionality in XSigma is implementable using FLOSS. The Security library uses platform APIs available on all major operating systems without requiring proprietary software. Source code is available under GPL-3.0-or-later.
+All cryptographic functionality in Quarisma is implementable using FLOSS. The Security library uses platform APIs available on all major operating systems without requiring proprietary software. Source code is available under GPL-3.0-or-later.
 ```
 
 ---
@@ -330,7 +330,7 @@ All cryptographic functionality in XSigma is implementable using FLOSS. The Secu
 
 **Justification text:**
 ```
-XSigma's cryptographic utilities use SHA-256 (256-bit hash, exceeds NIST 224-bit minimum through 2030). Secure random generation uses platform APIs that meet NIST requirements. XSigma does not implement key agreement protocols, so key length requirements for asymmetric crypto are N/A. If the project doesn't use encryption keys, select N/A.
+Quarisma's cryptographic utilities use SHA-256 (256-bit hash, exceeds NIST 224-bit minimum through 2030). Secure random generation uses platform APIs that meet NIST requirements. Quarisma does not implement key agreement protocols, so key length requirements for asymmetric crypto are N/A. If the project doesn't use encryption keys, select N/A.
 ```
 
 ---
@@ -341,7 +341,7 @@ XSigma's cryptographic utilities use SHA-256 (256-bit hash, exceeds NIST 224-bit
 
 **Justification text:**
 ```
-XSigma does not use broken cryptographic algorithms. SHA-256 is used for hashing (not MD4, MD5, SHA-1, or single DES). Platform-specific secure random generators are used (not weak PRNGs). See Library/Security/crypto.cpp.
+Quarisma does not use broken cryptographic algorithms. SHA-256 is used for hashing (not MD4, MD5, SHA-1, or single DES). Platform-specific secure random generators are used (not weak PRNGs). See Library/Security/crypto.cpp.
 ```
 
 ---
@@ -352,7 +352,7 @@ XSigma does not use broken cryptographic algorithms. SHA-256 is used for hashing
 
 **Justification text:**
 ```
-XSigma does not depend on cryptographic algorithms with known serious weaknesses. SHA-256 is used instead of SHA-1. Platform secure random APIs are used. No use of CBC mode in SSH or other weak modes.
+Quarisma does not depend on cryptographic algorithms with known serious weaknesses. SHA-256 is used instead of SHA-1. Platform secure random APIs are used. No use of CBC mode in SSH or other weak modes.
 ```
 
 ---
@@ -363,7 +363,7 @@ XSigma does not depend on cryptographic algorithms with known serious weaknesses
 
 **Justification text:**
 ```
-XSigma does not implement key agreement protocols. The Security library provides hashing and secure random generation, not key exchange. Select N/A.
+Quarisma does not implement key agreement protocols. The Security library provides hashing and secure random generation, not key exchange. Select N/A.
 ```
 
 ---
@@ -374,7 +374,7 @@ XSigma does not implement key agreement protocols. The Security library provides
 
 **Justification text:**
 ```
-XSigma does not store passwords for external user authentication. The library provides cryptographic utilities but does not implement authentication systems. Select N/A.
+Quarisma does not store passwords for external user authentication. The library provides cryptographic utilities but does not implement authentication systems. Select N/A.
 ```
 
 ---
@@ -385,7 +385,7 @@ XSigma does not store passwords for external user authentication. The library pr
 
 **Justification text:**
 ```
-XSigma uses cryptographically secure random number generators for all security-sensitive operations:
+Quarisma uses cryptographically secure random number generators for all security-sensitive operations:
 - Windows: BCryptGenRandom (CSPRNG)
 - macOS: SecRandomCopyBytes (CSPRNG)
 - Linux: getrandom() (CSPRNG)

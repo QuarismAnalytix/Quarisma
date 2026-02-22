@@ -4,7 +4,7 @@
 #include <optional>
 #include <stdexcept>
 
-namespace xsigma::unwind
+namespace quarisma::unwind
 {
 
 struct UnwindError : public std::runtime_error
@@ -31,4 +31,4 @@ struct UnwindError : public std::runtime_error
 // #define PRINT_LINE_TABLE(...) LOG_INFO(__VA_ARGS__)
 #define PRINT_LINE_TABLE(...)
 
-}  // namespace xsigma::unwind
+}  // namespace quarisma::unwind

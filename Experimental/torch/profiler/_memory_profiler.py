@@ -7,10 +7,10 @@ import logging
 from collections.abc import Iterator
 from typing import Any, cast, Literal, Optional, Union
 
-import xsigma
-from xsigma._C import FunctionSchema
-from xsigma._C._autograd import _ProfilerResult
-from xsigma._C._profiler import (
+import quarisma
+from quarisma._C import FunctionSchema
+from quarisma._C._autograd import _ProfilerResult
+from quarisma._C._profiler import (
     _EventType,
     _ExtraFields_Allocation,
     _ExtraFields_TorchOp,
@@ -18,8 +18,8 @@ from xsigma._C._profiler import (
     _TensorMetadata,
     RecordScope,
 )
-from xsigma._utils import _element_size
-from xsigma.profiler import _utils
+from quarisma._utils import _element_size
+from quarisma.profiler import _utils
 
 
 KeyAndID = tuple["Key", int]
@@ -64,7 +64,7 @@ _ACTION_TO_INDEX = {i: i.value for i in Action}
 
 @dataclasses.dataclass(eq=True, unsafe_hash=False, frozen=True)
 class Key:
-    device: xsigma.device
+    device: quarisma.device
 
 
 @dataclasses.dataclass
@@ -93,7 +93,7 @@ class TensorKey(Key):
     """Hashable identifier for a storage which has been assigned an ID.
 
     A detailed description of Tensor IDs and why they are needed is given in
-    `xsigma/csrc/profiler/collection.h` when `TensorID` is declared. To
+    `quarisma/csrc/profiler/collection.h` when `TensorID` is declared. To
     summarize, multiple Storage buffers can map to the same logical Tensor.
     This dataclass is used to refer to a concrete in-memory StorageImpl of
     a Tensor.
@@ -113,7 +113,7 @@ class TensorKey(Key):
         tensor_id: Optional[int],
         storage_ptr: Optional[int],
         allocation_id: Optional[int],
-        device: xsigma.device,
+        device: quarisma.device,
     ) -> Optional["TensorKey"]:
         if (
             tensor_id is not None
@@ -155,7 +155,7 @@ def _extract_parameters_and_gradients(
         node.typed[0] == _EventType.TorchOp
         and node.typed[1].scope == RecordScope.BACKWARD_FUNCTION
         # TODO(robieta): Move away from load bearing names
-        and node.name == "xsigma::autograd::AccumulateGrad"
+        and node.name == "quarisma::autograd::AccumulateGrad"
         and children
         and children[0].typed[0] == _EventType.TorchOp
         and children[0].name in ("aten::detach", "aten::add_")
@@ -164,7 +164,7 @@ def _extract_parameters_and_gradients(
     ):
         yield None, TensorKey.from_tensor(children[0].typed[1].inputs[0])
 
-    # We directly instrument `xsigma.nn.Module` and `xsigma.optim.Optimizer`
+    # We directly instrument `quarisma.nn.Module` and `quarisma.optim.Optimizer`
     # NOTE: The values captured by the python tracer are cached; they can be
     #       used to build up labels but do not imply that a Tensor was live at
     #       a particular time.
@@ -263,26 +263,26 @@ class SchemaMatcher:
 
     @classmethod
     def _types_match(cls, observed, schema_type) -> bool:
-        if isinstance(schema_type, xsigma._C.OptionalType):
+        if isinstance(schema_type, quarisma._C.OptionalType):
             schema_type = schema_type.getElementType()
             return observed is None or cls._types_match(observed, schema_type)
 
-        if isinstance(schema_type, xsigma._C.AnyType):
+        if isinstance(schema_type, quarisma._C.AnyType):
             return True
 
-        if schema_type.isSubtypeOf(xsigma._C.ListType.ofTensors()):
+        if schema_type.isSubtypeOf(quarisma._C.ListType.ofTensors()):
             return isinstance(observed, list) and all(
                 isinstance(i, TensorKey) for i in observed
             )
 
         type_map: tuple[tuple[Any, Union[type, tuple[type, ...]]], ...] = (
-            (xsigma._C.TensorType, TensorKey),
-            (xsigma._C.NoneType, type(None)),
-            (xsigma._C.BoolType, bool),
-            (xsigma._C.IntType, int),
-            (xsigma._C.FloatType, float),
-            (xsigma._C.ComplexType, complex),
-            (xsigma._C.NumberType, (bool, int, float, complex)),
+            (quarisma._C.TensorType, TensorKey),
+            (quarisma._C.NoneType, type(None)),
+            (quarisma._C.BoolType, bool),
+            (quarisma._C.IntType, int),
+            (quarisma._C.FloatType, float),
+            (quarisma._C.ComplexType, complex),
+            (quarisma._C.NumberType, (bool, int, float, complex)),
         )
 
         for jit_type, py_types in type_map:
@@ -312,7 +312,7 @@ class SchemaMatcher:
             # operators.
             if "::" not in name:
                 return None
-            return tuple(xsigma._C._jit_get_schemas_for_operator(name))
+            return tuple(quarisma._C._jit_get_schemas_for_operator(name))
         except RuntimeError:
             return None
 
@@ -377,7 +377,7 @@ class SizeMap:
 
     def _update_values(self, t: Optional[_TensorMetadata]) -> None:
         key = TensorKey.from_tensor(t)
-        if key is not None and t is not None and t.layout == xsigma.strided:
+        if key is not None and t is not None and t.layout == quarisma.strided:
             # Scalars are represented as zero dim Tensors
             n = max(
                 i[0] * i[1] for i in zip(t.sizes or [1], t.strides or [1], strict=True)
@@ -572,7 +572,7 @@ class DataFlowGraph:
         create overly coarse bundles and lose critical semantics.
 
         To address this issue we walk over the graph and select the topmost
-        xsigma ops ** which match at least one operator schema **. These form
+        quarisma ops ** which match at least one operator schema **. These form
         the leaves of the first pass through the op tree. (As well as any
         allocations or frees which do are not part of a kernel.) These events
         form the logical nodes in our data flow graph.
@@ -675,7 +675,7 @@ class MemoryProfile:
     def timeline(self) -> tuple[tuple[int, Action, KeyAndID, int], ...]:
         output: list[tuple[int, Action, KeyAndID, int]] = []
         allocation_times: dict[tuple[TensorKey, bool], int] = {}
-        live_unknown: dict[tuple[int, xsigma.device], Literal[True]] = {}
+        live_unknown: dict[tuple[int, quarisma.device], Literal[True]] = {}
 
         for event in self._op_tree.dfs():
             if event.typed[0] == _EventType.Allocation:
@@ -1003,7 +1003,7 @@ class MemoryProfileTimeline:
         Input: device
         Output: [timestamps, sizes by category]
         """
-        device = xsigma.device(device_str)
+        device = quarisma.device(device_str)
         times: list[int] = []
         sizes: list[list[int]] = []
 
@@ -1071,7 +1071,7 @@ class MemoryProfileTimeline:
         form of (timestamp, action, numbytes, category)
         as a JSON formatted file to the given path for the given
         device."""
-        device = xsigma.device(device_str)
+        device = quarisma.device(device_str)
         raw_events: list[tuple[int, int, int, int]] = []
 
         def get_category_index(key, version):
@@ -1164,9 +1164,9 @@ class MemoryProfileTimeline:
         t_min = min(times)
         times -= t_min
         stacked = np.cumsum(sizes, axis=1) / 1024**3
-        device = xsigma.device(device_str)
-        max_memory_allocated = xsigma.cuda.max_memory_allocated(device)
-        max_memory_reserved = xsigma.cuda.max_memory_reserved(device)
+        device = quarisma.device(device_str)
+        max_memory_allocated = quarisma.cuda.max_memory_allocated(device)
+        max_memory_reserved = quarisma.cuda.max_memory_reserved(device)
 
         # Plot memory timeline as stacked data
         fig = plt.figure(figsize=figsize, dpi=80)

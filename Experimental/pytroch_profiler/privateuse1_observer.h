@@ -3,13 +3,13 @@
 #if 0
 #include "api.h"
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 using CallBackFnPtr =
-    void (*)(const ProfilerConfig& config, const std::unordered_set<xsigma::RecordScope>& scopes);
+    void (*)(const ProfilerConfig& config, const std::unordered_set<quarisma::RecordScope>& scopes);
 
-class XSIGMA_VISIBILITY PushPRIVATEUSE1CallbacksStub
+class QUARISMA_VISIBILITY PushPRIVATEUSE1CallbacksStub
 {
     PushPRIVATEUSE1CallbacksStub()                                               = default;
     PushPRIVATEUSE1CallbacksStub(const PushPRIVATEUSE1CallbacksStub&)            = delete;
@@ -33,9 +33,9 @@ private:
     CallBackFnPtr push_privateuse1_callbacks_fn = nullptr;
 };
 
-extern XSIGMA_API struct PushPRIVATEUSE1CallbacksStub pushPRIVATEUSE1CallbacksStub;
+extern QUARISMA_API struct PushPRIVATEUSE1CallbacksStub pushPRIVATEUSE1CallbacksStub;
 
-class XSIGMA_VISIBILITY RegisterPRIVATEUSE1Observer
+class QUARISMA_VISIBILITY RegisterPRIVATEUSE1Observer
 {
     RegisterPRIVATEUSE1Observer(PushPRIVATEUSE1CallbacksStub& stub, CallBackFnPtr value)
     {
@@ -45,5 +45,5 @@ class XSIGMA_VISIBILITY RegisterPRIVATEUSE1Observer
 
 #define REGISTER_PRIVATEUSE1_OBSERVER(name, fn) \
     static RegisterPRIVATEUSE1Observer name##__register(name, fn);
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl
 #endif

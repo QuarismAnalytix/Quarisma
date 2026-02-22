@@ -1,4 +1,4 @@
-#include <XSigma/core/jit_type.h>
+#include <Quarisma/core/jit_type.h>
 #include <torch/csrc/jit/ir/alias_analysis.h>
 #include <torch/csrc/jit/ir/ir_views.h>
 #include <torch/csrc/jit/jit_log.h>
@@ -10,7 +10,7 @@
 #include <torch/csrc/jit/passes/peephole_list_idioms.h>
 #include <torch/csrc/jit/passes/peephole_non_tensor.h>
 #include <torch/csrc/jit/runtime/graph_executor.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit
 {
@@ -90,8 +90,8 @@ struct PeepholeOptimizeImpl
                                 getHeader(node),
                                 " (x._grad_sum_to_size(y)._grad_sum_to_size(z) == "
                                 "x._grad_sum_to_size(z)) is replaced with ",
-                                node->inputs().xsigma(0)->debugName());
-                            u.user->replaceInput(0, node->inputs().xsigma(0));
+                                node->inputs().quarisma(0)->debugName());
+                            u.user->replaceInput(0, node->inputs().quarisma(0));
                             changed = true;
                         }
                     }
@@ -105,7 +105,7 @@ struct PeepholeOptimizeImpl
                 auto input_type = node->namedInput(attr::self)->type()->cast<TensorType>();
                 if (input_type && shape_peepholes_)
                 {
-                    auto expanded_sizes   = node->get<xsigma::List<int64_t>>(attr::size);
+                    auto expanded_sizes   = node->get<quarisma::List<int64_t>>(attr::size);
                     auto input_type_sizes = input_type->sizes().concrete_sizes();
                     if (expanded_sizes.has_value() && input_type_sizes &&
                         expanded_sizes->vec() == *input_type_sizes)
@@ -209,12 +209,12 @@ struct PeepholeOptimizeImpl
             }
             else if (node->matches("aten::size(Tensor self, int dim) -> int") && shape_peepholes_)
             {
-                if (auto ptt = node->inputs().xsigma(0)->type()->cast<TensorType>())
+                if (auto ptt = node->inputs().quarisma(0)->type()->cast<TensorType>())
                 {
                     if (auto maybe_ndim = ptt->sizes().size())
                     {
                         auto ndim        = static_cast<int64_t>(*maybe_ndim);
-                        auto maybe_index = toIValue(node->inputs().xsigma(1));
+                        auto maybe_index = toIValue(node->inputs().quarisma(1));
                         if (!maybe_index)
                         {
                             continue;
@@ -239,12 +239,12 @@ struct PeepholeOptimizeImpl
             else if (
                 node->matches("aten::is_floating_point(Tensor self) -> bool") && shape_peepholes_)
             {
-                auto ptt = node->inputs().xsigma(0)->type()->cast<TensorType>();
+                auto ptt = node->inputs().quarisma(0)->type()->cast<TensorType>();
                 if (auto maybe_dtype = ptt->scalarType())
                 {
-                    xsigma::ScalarType dtype = *maybe_dtype;
+                    quarisma::ScalarType dtype = *maybe_dtype;
                     WithInsertPoint    guard(node);
-                    IValue             ival(xsigma::isFloatingType(dtype));
+                    IValue             ival(quarisma::isFloatingType(dtype));
                     auto               new_constant = node->owningGraph()->insertConstant(ival);
                     node->output()->replaceAllUsesWith(new_constant);
                     GRAPH_UPDATE(
@@ -256,12 +256,12 @@ struct PeepholeOptimizeImpl
             }
             else if (node->matches("aten::is_complex(Tensor self) -> bool") && shape_peepholes_)
             {
-                auto ptt = node->inputs().xsigma(0)->type()->cast<TensorType>();
+                auto ptt = node->inputs().quarisma(0)->type()->cast<TensorType>();
                 if (auto maybe_dtype = ptt->scalarType())
                 {
-                    xsigma::ScalarType dtype = *maybe_dtype;
+                    quarisma::ScalarType dtype = *maybe_dtype;
                     WithInsertPoint    guard(node);
-                    IValue             ival(xsigma::isComplexType(dtype));
+                    IValue             ival(quarisma::isComplexType(dtype));
                     auto               new_constant = node->owningGraph()->insertConstant(ival);
                     node->output()->replaceAllUsesWith(new_constant);
                     GRAPH_UPDATE(
@@ -307,18 +307,18 @@ struct PeepholeOptimizeImpl
             else if (
                 node->matches("aten::device(str type, int index) -> Device") && shape_peepholes_)
             {
-                auto string_type = node->inputs().xsigma(0)->type()->expect<StringType>();
+                auto string_type = node->inputs().quarisma(0)->type()->expect<StringType>();
                 if (string_type)
                 {
                     WithInsertPoint guard(node);
-                    std::string     type_str    = node->inputs().xsigma(0)->node()->s(attr::value);
-                    auto            maybe_index = toIValue(node->inputs().xsigma(1));
+                    std::string     type_str    = node->inputs().quarisma(0)->node()->s(attr::value);
+                    auto            maybe_index = toIValue(node->inputs().quarisma(1));
                     int64_t         index       = 0;
                     if (maybe_index)
                     {
                         index = maybe_index->toInt();
                     }
-                    auto device = xsigma::Device(type_str + ":" + std::to_string(index));
+                    auto device = quarisma::Device(type_str + ":" + std::to_string(index));
                     auto output = node->owningGraph()->insertConstant(device);
                     GRAPH_UPDATE(
                         "Replacing ",
@@ -383,10 +383,10 @@ static bool FuseAddMM(Block* block)
                 /*const_inputs=*/attr::alpha))
         {
             // z + x.mm(y) == z.addmm(x, y) == x.mm(y) + z
-            if (node->get<xsigma::Scalar>(attr::alpha).value().toDouble() == 1.)
+            if (node->get<quarisma::Scalar>(attr::alpha).value().toDouble() == 1.)
             {
                 // Look for mm from both sides of the add
-                for (const auto mm_side : xsigma::irange(2))
+                for (const auto mm_side : quarisma::irange(2))
                 {
                     // Add will accept tensors of mismatched scalar types, as long as
                     // one of them is a scalar, but addmm will throw in that case, so we
@@ -483,11 +483,11 @@ static bool FuseAddMM(Block* block)
 
 // FuseAddMM is a separate pass from peephole optimize because it is currently
 // used for exporting to ONNX.
-// Today, fusing add + MM has no benefit within PyTorch running XSigma
+// Today, fusing add + MM has no benefit within PyTorch running Quarisma
 // ops. However, we rely on seeing the fused version of AddMM for ONNX export,
 // since otherwise after ONNX translation we would see redundant Gemm ops with
 // sub-optimal inputs.
-// It won't be helpful for XSigma until we're able to represent
+// It won't be helpful for Quarisma until we're able to represent
 //   torch.addmm(a, b, c, out=a).
 // That's because addmm dispatches internally to gemm, which computes:
 //   C = beta * C + alpha * A @ B

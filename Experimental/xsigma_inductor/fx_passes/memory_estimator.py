@@ -57,7 +57,7 @@ class GraphAliasTracker:
         # Map from storage to the last node that uses it
         self.storage_to_last_user: dict[StorageKey, fx.Node] = {}
 
-        # Map from node to storages that have their last use xsigma that node
+        # Map from node to storages that have their last use quarisma that node
         self.node_to_storages_last_used: dict[fx.Node, OrderedSet[StorageKey]] = (
             defaultdict(OrderedSet)
         )
@@ -138,7 +138,7 @@ class GraphAliasTracker:
         node: fx.Node,
     ) -> OrderedSet[StorageKey]:
         """
-        Get storages whose last use is xsigma this node.
+        Get storages whose last use is quarisma this node.
         """
         return self.node_to_storages_last_used[node]
 
@@ -170,7 +170,7 @@ def build_memory_profile(
 
     Returns:
     - List[int]: A list representing the memory profile over the execution
-      of the graph, where each entry corresponds to the memory usage xsigma
+      of the graph, where each entry corresponds to the memory usage quarisma
       a particular point in the execution.
     """
 

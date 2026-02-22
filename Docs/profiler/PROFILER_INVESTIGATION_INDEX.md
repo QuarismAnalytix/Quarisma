@@ -1,8 +1,8 @@
-# XSigma Profiler Investigation - Complete Documentation Index
+# Quarisma Profiler Investigation - Complete Documentation Index
 
 ## 📋 Investigation Overview
 
-This investigation analyzed the XSigma profiler infrastructure to identify missing components needed for code instrumentation and `record_function` API functionality.
+This investigation analyzed the Quarisma profiler infrastructure to identify missing components needed for code instrumentation and `record_function` API functionality.
 
 **Status**: ✅ COMPLETE
 **Scope**: `Library/Core/profiler/` (excluding `native/` subfolder)

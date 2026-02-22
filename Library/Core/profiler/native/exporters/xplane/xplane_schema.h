@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -46,7 +46,7 @@ limitations under the License.
 
 //#include "tsl/profiler/lib/context_types.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 inline void HashCombine(std::size_t& seed, std::size_t hash)
@@ -529,7 +529,7 @@ inline std::string GpuPlaneName(int32_t device_ordinal)
     return strings::str_cat(kGpuPlanePrefix, device_ordinal);
 }
 
-XSIGMA_API std::string_view GetHostEventTypeStr(HostEventType event_type);
+QUARISMA_API std::string_view GetHostEventTypeStr(HostEventType event_type);
 
 bool IsHostEventType(HostEventType event_type, std::string_view event_name);
 
@@ -538,44 +538,44 @@ inline bool IsHostEventType(HostEventType event_type, std::string_view event_nam
     return GetHostEventTypeStr(event_type) == event_name;
 }
 
-XSIGMA_API std::optional<int64_t> FindHostEventType(std::string_view event_name);
+QUARISMA_API std::optional<int64_t> FindHostEventType(std::string_view event_name);
 
-XSIGMA_API std::optional<int64_t> FindTfOpEventType(std::string_view event_name);
+QUARISMA_API std::optional<int64_t> FindTfOpEventType(std::string_view event_name);
 
-XSIGMA_API std::string_view GetStatTypeStr(StatType stat_type);
+QUARISMA_API std::string_view GetStatTypeStr(StatType stat_type);
 
-XSIGMA_API bool IsStatType(StatType stat_type, std::string_view stat_name);
+QUARISMA_API bool IsStatType(StatType stat_type, std::string_view stat_name);
 
 inline bool IsStatType(StatType stat_type, std::string_view stat_name)
 {
     return GetStatTypeStr(stat_type) == stat_name;
 }
 
-XSIGMA_API std::optional<int64_t> FindStatType(std::string_view stat_name);
+QUARISMA_API std::optional<int64_t> FindStatType(std::string_view stat_name);
 
-XSIGMA_API std::string_view GetMegaScaleStatTypeStr(MegaScaleStatType stat_type);
+QUARISMA_API std::string_view GetMegaScaleStatTypeStr(MegaScaleStatType stat_type);
 
 inline bool IsMegaScaleStatType(MegaScaleStatType stat_type, std::string_view stat_name)
 {
     return GetMegaScaleStatTypeStr(stat_type) == stat_name;
 }
 
-XSIGMA_API std::optional<int64_t> FindMegaScaleStatType(std::string_view stat_name);
+QUARISMA_API std::optional<int64_t> FindMegaScaleStatType(std::string_view stat_name);
 
 // Returns true if the given event shouldn't be shown in the trace viewer.
-XSIGMA_API bool IsInternalEvent(std::optional<int64_t> event_type);
+QUARISMA_API bool IsInternalEvent(std::optional<int64_t> event_type);
 
 // Returns true if the given stat shouldn't be shown in the trace viewer.
-XSIGMA_API bool IsInternalStat(std::optional<int64_t> stat_type);
+QUARISMA_API bool IsInternalStat(std::optional<int64_t> stat_type);
 
-XSIGMA_API std::string_view GetTaskEnvStatTypeStr(TaskEnvStatType stat_type);
+QUARISMA_API std::string_view GetTaskEnvStatTypeStr(TaskEnvStatType stat_type);
 
-XSIGMA_API std::optional<int64_t> FindTaskEnvStatType(std::string_view stat_name);
+QUARISMA_API std::optional<int64_t> FindTaskEnvStatType(std::string_view stat_name);
 
 // Support for flow events:
 // This class enables encoding/decoding the flow id and direction, stored as
 // XStat value. The flow id are limited to 56 bits.
-class XSIGMA_VISIBILITY XFlow
+class QUARISMA_VISIBILITY XFlow
 {
 public:
     enum FlowDirection
@@ -588,7 +588,7 @@ public:
 
     XFlow(uint64_t flow_id, FlowDirection direction, ContextType category = ContextType::kGeneric)
     {
-        XSIGMA_CHECK_DEBUG(direction != kFlowUnspecified);
+        QUARISMA_CHECK_DEBUG(direction != kFlowUnspecified);
         encoded_.parts.direction = direction;
         encoded_.parts.flow_id   = flow_id;
         encoded_.parts.category  = static_cast<uint64_t>(category);
@@ -627,7 +627,7 @@ public:
 private:
     explicit XFlow(uint64_t encoded) { encoded_.whole = encoded; }
     static constexpr uint64_t               kFlowMask = (1ULL << 56) - 1;
-    XSIGMA_API static std::atomic<uint64_t> next_flow_id_;
+    QUARISMA_API static std::atomic<uint64_t> next_flow_id_;
 
     union
     {
@@ -644,32 +644,32 @@ private:
     static_assert(sizeof(encoded_) == sizeof(uint64_t), "Must be 64 bits.");
 };
 // String constants for XProf TraceMes for DCN Messages.
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleDcnReceive;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleDcnSend;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleDcnSendFinished;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleDcnMemAllocate;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleDcnMemCopy;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleTopologyDiscovery;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleBarrier;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleHostCommand;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleD2HTransferStart;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleD2HTransferFinished;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleH2DTransferStart;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleH2DTransferFinished;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleReductionStart;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleReductionFinished;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleCompressionStart;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleCompressionFinished;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleDecompressionStart;
-XSIGMA_CONST_INIT extern const std::string_view kMegaScaleDecompressionFinished;
-XSIGMA_CONST_INIT extern const char             kXProfMetadataKey[];
-XSIGMA_CONST_INIT extern const char             kXProfMetadataFlow[];
-XSIGMA_CONST_INIT extern const char             kXProfMetadataTransfers[];
-XSIGMA_CONST_INIT extern const char             kXProfMetadataBufferSize[];
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleDcnReceive;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleDcnSend;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleDcnSendFinished;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleDcnMemAllocate;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleDcnMemCopy;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleTopologyDiscovery;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleBarrier;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleHostCommand;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleD2HTransferStart;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleD2HTransferFinished;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleH2DTransferStart;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleH2DTransferFinished;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleReductionStart;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleReductionFinished;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleCompressionStart;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleCompressionFinished;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleDecompressionStart;
+QUARISMA_CONST_INIT extern const std::string_view kMegaScaleDecompressionFinished;
+QUARISMA_CONST_INIT extern const char             kXProfMetadataKey[];
+QUARISMA_CONST_INIT extern const char             kXProfMetadataFlow[];
+QUARISMA_CONST_INIT extern const char             kXProfMetadataTransfers[];
+QUARISMA_CONST_INIT extern const char             kXProfMetadataBufferSize[];
 
 // String constants for threadpool_listener events
-XSIGMA_CONST_INIT extern const std::string_view kThreadpoolListenerRecord;
-XSIGMA_CONST_INIT extern const std::string_view kThreadpoolListenerStartRegion;
-XSIGMA_CONST_INIT extern const std::string_view kThreadpoolListenerStopRegion;
-XSIGMA_CONST_INIT extern const std::string_view kThreadpoolListenerRegion;
-}  // namespace xsigma
+QUARISMA_CONST_INIT extern const std::string_view kThreadpoolListenerRecord;
+QUARISMA_CONST_INIT extern const std::string_view kThreadpoolListenerStartRegion;
+QUARISMA_CONST_INIT extern const std::string_view kThreadpoolListenerStopRegion;
+QUARISMA_CONST_INIT extern const std::string_view kThreadpoolListenerRegion;
+}  // namespace quarisma

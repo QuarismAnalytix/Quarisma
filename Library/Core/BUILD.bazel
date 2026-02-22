@@ -1,12 +1,12 @@
 # =============================================================================
-# XSigma Core Library BUILD Configuration
+# Quarisma Core Library BUILD Configuration
 # =============================================================================
 # Core library containing parallel computing, memory management, and profiling
 # Equivalent to Library/Core/CMakeLists.txt
 # =============================================================================
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
-load("//bazel:xsigma.bzl", "xsigma_copts", "xsigma_defines", "xsigma_linkopts")
+load("//bazel:quarisma.bzl", "quarisma_copts", "quarisma_defines", "quarisma_linkopts")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -14,7 +14,7 @@ package(default_visibility = ["//visibility:public"])
 # Generated Configuration Headers
 # =============================================================================
 
-# Note: xsigma_version_macros.h and xsigma_threads.h have been removed
+# Note: quarisma_version_macros.h and quarisma_threads.h have been removed
 # Version and threading configuration is now handled differently
 
 # =============================================================================
@@ -146,12 +146,12 @@ cc_library(
         "//bazel:enable_kineto": glob(["profiler/kineto_*.h", "profiler/native/**/*.h", "profiler/native/**/*.hxx"], allow_empty = True),
         "//conditions:default": [],
     }),
-    copts = xsigma_copts(),
-    defines = xsigma_defines() + select({
-        "//bazel:shared_libs": ["XSIGMA_SHARED_DEFINE", "XSIGMA_BUILDING_DLL"],
-        "//conditions:default": ["XSIGMA_STATIC_DEFINE"],
+    copts = quarisma_copts(),
+    defines = quarisma_defines() + select({
+        "//bazel:shared_libs": ["QUARISMA_SHARED_DEFINE", "QUARISMA_BUILDING_DLL"],
+        "//conditions:default": ["QUARISMA_STATIC_DEFINE"],
     }) + select({
-        "//bazel:enable_kineto": ["XSIGMA_HAS_KINETO=1"],
+        "//bazel:enable_kineto": ["QUARISMA_HAS_KINETO=1"],
         "//conditions:default": [],
     }),
     includes = [
@@ -161,7 +161,7 @@ cc_library(
         "//bazel:enable_kineto": ["profiler/kineto"],
         "//conditions:default": [],
     }),
-    linkopts = xsigma_linkopts() + select({
+    linkopts = quarisma_linkopts() + select({
         "@platforms//os:windows": [],
         "@platforms//os:macos": ["-framework Security"],
         "//conditions:default": ["-lpthread", "-ldl", "-lrt"],

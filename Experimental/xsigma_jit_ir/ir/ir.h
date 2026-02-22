@@ -1,13 +1,13 @@
 #pragma once
 
-#include <XSigma/Utils.h>
-#include <XSigma/core/Tensor.h>
-#include <XSigma/core/dynamic_type.h>
-#include <XSigma/core/enum_type.h>
-#include <XSigma/core/functional.h>
-#include <XSigma/core/interned_strings.h>
-#include <XSigma/core/ivalue.h>
-#include <XSigma/core/jit_type.h>
+#include <Quarisma/Utils.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/core/dynamic_type.h>
+#include <Quarisma/core/enum_type.h>
+#include <Quarisma/core/functional.h>
+#include <Quarisma/core/interned_strings.h>
+#include <Quarisma/core/ivalue.h>
+#include <Quarisma/core/jit_type.h>
 #include <torch/csrc/Export.h>
 #include <torch/csrc/jit/ir/attributes.h>
 #include <torch/csrc/jit/ir/graph_node_list.h>
@@ -16,7 +16,7 @@
 #include <torch/csrc/jit/runtime/operator.h>
 #include <torch/csrc/utils/python_stub.h>
 #include <torch/csrc/utils/schema_info.h>
-#include <xsigma/util/ArrayRef.h>
+#include <quarisma/util/ArrayRef.h>
 
 #include <functional>
 #include <iosfwd>
@@ -40,50 +40,50 @@ TORCH_API std::string getNodesModuleHierarchy(const Node& n);
 }  // namespace utils
 class AliasDb;
 
-using ::xsigma::Argument;
-using ::xsigma::FunctionSchema;
-using ::xsigma::Symbol;
+using ::quarisma::Argument;
+using ::quarisma::FunctionSchema;
+using ::quarisma::Symbol;
 
-using ::xsigma::ivalue::Shared;
+using ::quarisma::ivalue::Shared;
 
-using ::xsigma::IValue;
-using ::xsigma::ivalue::Future;
+using ::quarisma::IValue;
+using ::quarisma::ivalue::Future;
 
-using ::xsigma::ivalue::ConstantString;
+using ::quarisma::ivalue::ConstantString;
 
-#define XSIGMA_USING(T) using ::xsigma::T;
-XSIGMA_FORALL_TYPES(XSIGMA_USING)
-#undef XSIGMA_USING
+#define QUARISMA_USING(T) using ::quarisma::T;
+QUARISMA_FORALL_TYPES(QUARISMA_USING)
+#undef QUARISMA_USING
 
-#define XSIGMA_USING(T) using ::xsigma::T##Ptr;
-XSIGMA_FORALL_TYPES(XSIGMA_USING)
-#undef XSIGMA_USING
+#define QUARISMA_USING(T) using ::quarisma::T##Ptr;
+QUARISMA_FORALL_TYPES(QUARISMA_USING)
+#undef QUARISMA_USING
 
-using ::xsigma::Type;
-using ::xsigma::TypeEnv;
-using ::xsigma::TypePtr;
+using ::quarisma::Type;
+using ::quarisma::TypeEnv;
+using ::quarisma::TypePtr;
 
-using ::xsigma::getTypePtr;
-using ::xsigma::MatchTypeReturn;
-using ::xsigma::TypeKind;
+using ::quarisma::getTypePtr;
+using ::quarisma::MatchTypeReturn;
+using ::quarisma::TypeKind;
 
-using ::xsigma::fmap;
+using ::quarisma::fmap;
 
 namespace prim
 {
-using namespace ::xsigma::prim;
+using namespace ::quarisma::prim;
 }
 namespace attr
 {
-using namespace ::xsigma::attr;
+using namespace ::quarisma::attr;
 }
 namespace aten
 {
-using namespace ::xsigma::aten;
+using namespace ::quarisma::aten;
 }
 namespace cuda
 {
-using namespace ::xsigma::cuda;
+using namespace ::quarisma::cuda;
 }  // namespace cuda
 
 struct Function;
@@ -151,7 +151,7 @@ using node_list  = std::vector<Node*>;
 using value_list = std::vector<Value*>;
 using use_list   = std::vector<Use>;
 template <typename T>
-using ArrayRef        = xsigma::ArrayRef<T>;
+using ArrayRef        = quarisma::ArrayRef<T>;
 using NodeKind        = Symbol;
 using topo_position_t = int64_t;
 using ValueSet        = std::unordered_set<const Value*>;
@@ -199,8 +199,8 @@ private:
 
 public:
     Value*         setType(TypePtr type);
-    TORCH_API void inferTypeFrom(const xsigma::Tensor& output);
-    TORCH_API void inferTypeFrom(const xsigma::intrusive_ptr<xsigma::ivalue::Object>& output);
+    TORCH_API void inferTypeFrom(const quarisma::Tensor& output);
+    TORCH_API void inferTypeFrom(const quarisma::intrusive_ptr<quarisma::ivalue::Object>& output);
     const TypePtr& type() const
     {
         AT_ASSERT(type_ != nullptr);
@@ -426,8 +426,8 @@ public:
     // way to soundly cast to std::vector<const Node*> (an insane
     // implementation of std::vector could make this representationally
     // different.)
-    xsigma::ArrayRef<Value*>       inputs() { return inputs_; }
-    xsigma::ArrayRef<const Value*> inputs() const
+    quarisma::ArrayRef<Value*>       inputs() { return inputs_; }
+    quarisma::ArrayRef<const Value*> inputs() const
     {
         // Vectors are not convertible in const-ness of elements, but
         // raw pointers are.
@@ -439,14 +439,14 @@ public:
     // way to soundly cast to std::vector<const Node*> (an insane
     // implementation of std::vector could make this representationally
     // different.)
-    xsigma::ArrayRef<Value*>       outputs() { return outputs_; }
-    xsigma::ArrayRef<const Value*> outputs() const
+    quarisma::ArrayRef<Value*>       outputs() { return outputs_; }
+    quarisma::ArrayRef<const Value*> outputs() const
     {
         // Vectors are not convertible in const-ness of elements, but
         // raw pointers are.
         return {outputs_.data(), outputs_.size()};
     }
-    Value* output(size_t i) const { return outputs_.xsigma(i); }
+    Value* output(size_t i) const { return outputs_.quarisma(i); }
     bool   hasUses() const
     {
         for (auto o : outputs())
@@ -475,25 +475,25 @@ public:
     Value* input()
     {
         AT_ASSERT(inputs_.size() == 1);
-        return inputs_.xsigma(0);
+        return inputs_.quarisma(0);
     }
     Value* output()
     {
         AT_ASSERT(outputs_.size() == 1);
-        return outputs_.xsigma(0);
+        return outputs_.quarisma(0);
     }
     const Value* output() const
     {
         AT_ASSERT(outputs_.size() == 1);
-        return outputs_.xsigma(0);
+        return outputs_.quarisma(0);
     }
     const Value* input() const
     {
         AT_ASSERT(inputs_.size() == 1);
-        return inputs_.xsigma(0);
+        return inputs_.quarisma(0);
     }
     // Access a particular input.  This is a checked index.
-    Value* input(size_t i) const { return inputs_.xsigma(i); }
+    Value* input(size_t i) const { return inputs_.quarisma(i); }
 
     bool   hasNamedInput(const std::string& unqualName) const;
     Value* namedInput(const std::string& unqualName) const;
@@ -538,7 +538,7 @@ public:
     // impossible for them to refer to inputs that are not in the topsort.
     // If it is not obvious, please comment accordingly.
 
-    // Add 'node' as an input to 'this' xsigma the end of existing
+    // Add 'node' as an input to 'this' quarisma the end of existing
     // arguments.  Returns the added node for ease of chaining.
     //
     // Given:   %3 = f(%1, %2)
@@ -546,11 +546,11 @@ public:
     // Result:  %3 = f(%1, %2, %4)
     Value* addInput(Value* value);
 
-    // Add 'value' as an input to 'this' xsigma the specified position in the
+    // Add 'value' as an input to 'this' quarisma the specified position in the
     // arguments. Returns the added value for ease of chaining.
     Value* insertInput(size_t i, Value* value);
 
-    // Replace the input of 'this' xsigma position 'i' with
+    // Replace the input of 'this' quarisma position 'i' with
     // 'newValue', returning the old node.
     //
     // Given:   %3 = f(%1, %2)
@@ -593,8 +593,8 @@ public:
     // that would have different definitions depending on which way control
     // flowed.
 
-    xsigma::ArrayRef<Block*>       blocks() { return blocks_; }
-    xsigma::ArrayRef<const Block*> blocks() const
+    quarisma::ArrayRef<Block*>       blocks() { return blocks_; }
+    quarisma::ArrayRef<const Block*> blocks() const
     {
         // Vectors are not convertible in const-ness of elements, but
         // raw pointers are.
@@ -657,7 +657,7 @@ public:
     //         %2 = f(%1)
     void moveBefore(Node* n);
 
-    // Remove the input xsigma 'i' from this node.
+    // Remove the input quarisma 'i' from this node.
     //
     // WARNING: This is O(n) in the number of inputs, so avoid repeatedly calling
     // removeInput.
@@ -689,8 +689,8 @@ public:
     void permuteInputs(const std::vector<size_t>& new_inputs);
     void permuteOutputs(const std::vector<size_t>& new_inputs);
 
-    // iterators of the node list starting xsigma this node
-    // useful for resuming a search starting xsigma this node
+    // iterators of the node list starting quarisma this node
+    // useful for resuming a search starting quarisma this node
     inline graph_node_list_iterator       iterator() { return {this, 0}; }
     inline graph_node_list_iterator       reverseIterator() { return iterator().reverse(); }
     inline const_graph_node_list_iterator iterator() const { return {this, 0}; }
@@ -732,7 +732,7 @@ public:
     template <typename T>
     T* expect()
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             T::Kind == kind(),
             "expected a ",
             T::Kind.toDisplayString(),
@@ -744,7 +744,7 @@ public:
     bool matches(const FunctionSchema& schema) const;
 
     // XXX: this function is meant to be used with string literals only!
-    bool matches(const char* signature_literal, xsigma::ArrayRef<Symbol> const_inputs = {}) const;
+    bool matches(const char* signature_literal, quarisma::ArrayRef<Symbol> const_inputs = {}) const;
 
     bool isMemberOf(const OperatorSet& os) const;
     template <typename T>
@@ -1004,14 +1004,14 @@ struct Block
     AT_DISALLOW_COPY_AND_ASSIGN(Block);
     TORCH_API Block(Graph* graph_, Node* node_);
 
-    xsigma::ArrayRef<Value*>       inputs() { return input_->outputs(); }
-    xsigma::ArrayRef<const Value*> inputs() const
+    quarisma::ArrayRef<Value*>       inputs() { return input_->outputs(); }
+    quarisma::ArrayRef<const Value*> inputs() const
     {
         const auto& inputs = input_->outputs();
         return {inputs.data(), inputs.size()};
     }
-    xsigma::ArrayRef<Value*>       outputs() { return output_->inputs(); }
-    xsigma::ArrayRef<const Value*> outputs() const
+    quarisma::ArrayRef<Value*>       outputs() { return output_->inputs(); }
+    quarisma::ArrayRef<const Value*> outputs() const
     {
         return static_cast<const Node*>(output_)->inputs();
     }
@@ -1168,21 +1168,21 @@ private:
     std::optional<size_t> op_version_;
 
 public:
-    Graph(ScopePtr scope_root = xsigma::make_intrusive<Scope>())
+    Graph(ScopePtr scope_root = quarisma::make_intrusive<Scope>())
         : current_scope_(std::move(scope_root)),
           block_(new Block(this, nullptr)),
           insert_before_(return_node())
     {
     }
 
-    xsigma::ArrayRef<Value*>       inputs() { return block_->inputs(); }
-    xsigma::ArrayRef<const Value*> inputs() const
+    quarisma::ArrayRef<Value*>       inputs() { return block_->inputs(); }
+    quarisma::ArrayRef<const Value*> inputs() const
     {
         const Block& block = *block_;
         return block.inputs();
     }
-    xsigma::ArrayRef<Value*>       outputs() { return block_->outputs(); }
-    xsigma::ArrayRef<const Value*> outputs() const
+    quarisma::ArrayRef<Value*>       outputs() { return block_->outputs(); }
+    quarisma::ArrayRef<const Value*> outputs() const
     {
         const Block& block = *block_;
         return block.outputs();
@@ -1228,20 +1228,20 @@ public:
     TORCH_API Node* createWithSubgraph(Symbol kind);
     TORCH_API Node* createDifferentiableSubgraph();
     TORCH_API Node* createTuple(
-        xsigma::ArrayRef<Value*> values, TupleTypePtr optional_named_tuple = nullptr);
+        quarisma::ArrayRef<Value*> values, TupleTypePtr optional_named_tuple = nullptr);
     TORCH_API Node* createTupleUnpack(Value* v);
     TORCH_API Node* createTupleIndex(Value* tup, Value* idx, const TypePtr& output_type);
     TORCH_API Node* createTupleSlice(
         Value* tup, int64_t beg, int64_t step_size, int64_t num_values);
     TORCH_API Node* createEnumName(Value* e);
     TORCH_API Node* createEnumValue(Value* e);
-    TORCH_API Node* createList(const TypePtr& contained_type, xsigma::ArrayRef<Value*> values);
+    TORCH_API Node* createList(const TypePtr& contained_type, quarisma::ArrayRef<Value*> values);
     TORCH_API Node* createListUnpack(Value* v, size_t size);
     TORCH_API Node* createDict(
         const TypePtr&           key_type,
         const TypePtr&           value_type,
-        xsigma::ArrayRef<Value*> keys,
-        xsigma::ArrayRef<Value*> values);
+        quarisma::ArrayRef<Value*> keys,
+        quarisma::ArrayRef<Value*> values);
     TORCH_API Node* createNumToTensor(Value* value);
     TORCH_API Node* createObject(const ClassTypePtr& type);
     TORCH_API Node* createSetAttr(Value* obj, const std::string& field, Value* newValue);
@@ -1252,7 +1252,7 @@ public:
     }
     TORCH_API Node* createStore(const std::string& name, Value* v);
     TORCH_API Node* createLoad(const std::string& name, const TypePtr& type);
-    TORCH_API Node* createIsInstance(Value* v, xsigma::ArrayRef<TypePtr> types);
+    TORCH_API Node* createIsInstance(Value* v, quarisma::ArrayRef<TypePtr> types);
 
     TORCH_API Value* insertUncheckedCast(Value* v, TypePtr type);
 
@@ -1287,8 +1287,8 @@ public:
     // is a correctly-formed invocation of opname
     TORCH_API Value* insert(
         Symbol                            opname,
-        xsigma::ArrayRef<NamedValue>      args,
-        xsigma::ArrayRef<NamedValue>      kwargs = {},
+        quarisma::ArrayRef<NamedValue>      args,
+        quarisma::ArrayRef<NamedValue>      kwargs = {},
         const std::optional<SourceRange>& range  = {});
 
     Node* appendNode(Node* n) { return block_->appendNode(n); }
@@ -1296,7 +1296,7 @@ public:
     Node* prependNode(Node* n) { return block_->prependNode(n); }
 
     // insert before insert_before_ node
-    // initialized to insert xsigma the end of the top level block
+    // initialized to insert quarisma the end of the top level block
     // can be changed with setInsertPoint()
     Node* insertNode(Node* n)
     {
@@ -1400,7 +1400,7 @@ inline Value::Value(Node* node_, size_t offset_)
 inline Value* Value::setType(TypePtr type)
 {
     AT_ASSERT(type);
-    if (auto dyn = type->castRaw<xsigma::DynamicType>())
+    if (auto dyn = type->castRaw<quarisma::DynamicType>())
     {
         type = dyn->fallback();
     }
@@ -1427,7 +1427,7 @@ struct ProfileOp : public Node
 {
     static const Symbol Kind;
     ProfileOp(Graph* graph, std::function<void(std::vector<IValue>&)> callback)
-        : Node(graph, ::xsigma::prim::profile), callback_(std::move(callback))
+        : Node(graph, ::quarisma::prim::profile), callback_(std::move(callback))
     {
     }
 
@@ -1454,7 +1454,7 @@ struct TORCH_API ProfileIValueOp : public Node
 {
     static const Symbol Kind;
     ProfileIValueOp(Graph* graph, std::function<void(std::vector<IValue>&)> callback)
-        : Node(graph, ::xsigma::prim::profile_ivalue), callback_(std::move(callback))
+        : Node(graph, ::quarisma::prim::profile_ivalue), callback_(std::move(callback))
     {
     }
 
@@ -1497,10 +1497,10 @@ struct TORCH_API PythonOp : public Node
 
 TORCH_API void LintGraph(const std::shared_ptr<Graph>& graph);
 
-TORCH_API xsigma::ArrayRef<Value*> createTupleUnpack(Value* v);
+TORCH_API quarisma::ArrayRef<Value*> createTupleUnpack(Value* v);
 
 /** Insert graph \p CALLEE into graph \p G using \p INPUTS as input values.
- * The insertion happens xsigma the current insertion point.
+ * The insertion happens quarisma the current insertion point.
  * Optionally, one can also pass \p VALUE_MAP to get a map between \p CALLEE
  * values and their cloned copies in \p G.
  */
@@ -1529,7 +1529,7 @@ TORCH_API std::vector<Value*> unpackOutputs(const std::vector<Value*>& outputs);
 
 TORCH_API std::vector<Node*> findAllNodes(Graph& g, Symbol kind, bool recurse);
 TORCH_API std::vector<Node*> findAllNodes(Block& b, Symbol kind, bool recurse);
-TORCH_API std::vector<Node*> findAllNodes(xsigma::ArrayRef<Block*> a, Symbol kind, bool recurse);
+TORCH_API std::vector<Node*> findAllNodes(quarisma::ArrayRef<Block*> a, Symbol kind, bool recurse);
 
 struct TORCH_API OperatorSet
 {

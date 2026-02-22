@@ -12,7 +12,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "profiler/base/base.h"
 #include "profiler/common/orchestration/observer.h"
 #include "profiler/common/record_function.h"
@@ -27,27 +27,27 @@ void busy_wait_for(std::chrono::microseconds duration)
     const auto start = std::chrono::high_resolution_clock::now();
     while (std::chrono::high_resolution_clock::now() - start < duration)
     {
-        XSIGMA_UNUSED volatile int spin = 0;
+        QUARISMA_UNUSED volatile int spin = 0;
         ++spin;
     }
 }
 
-std::unordered_set<xsigma::RecordScope> user_scopes()
+std::unordered_set<quarisma::RecordScope> user_scopes()
 {
-    return {xsigma::RecordScope::USER_SCOPE};
+    return {quarisma::RecordScope::USER_SCOPE};
 }
 
 }  // namespace
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 
 namespace
 {
 
-xsigma::autograd::profiler::ProfilerConfig make_kineto_config(bool with_stack = false)
+quarisma::autograd::profiler::ProfilerConfig make_kineto_config(bool with_stack = false)
 {
-    return xsigma::autograd::profiler::ProfilerConfig(
-        xsigma::autograd::profiler::ProfilerState::KINETO,
+    return quarisma::autograd::profiler::ProfilerConfig(
+        quarisma::autograd::profiler::ProfilerState::KINETO,
         /*report_input_shapes=*/false,
         /*profile_memory=*/false,
         /*with_stack=*/with_stack,
@@ -63,15 +63,15 @@ namespace
 struct kineto_session_guard
 {
     kineto_session_guard(
-        xsigma::autograd::profiler::ProfilerConfig         cfg,
-        std::set<xsigma::autograd::profiler::ActivityType> activities,
-        std::unordered_set<xsigma::RecordScope>            scopes = user_scopes())
+        quarisma::autograd::profiler::ProfilerConfig         cfg,
+        std::set<quarisma::autograd::profiler::ActivityType> activities,
+        std::unordered_set<quarisma::RecordScope>            scopes = user_scopes())
         : config_{std::move(cfg)}, activities_{std::move(activities)}, scopes_{std::move(scopes)}
     {
         try
         {
-            xsigma::autograd::profiler::prepareProfiler(config_, activities_);
-            xsigma::autograd::profiler::enableProfiler(config_, activities_, scopes_);
+            quarisma::autograd::profiler::prepareProfiler(config_, activities_);
+            quarisma::autograd::profiler::enableProfiler(config_, activities_, scopes_);
             active_ = true;
         }
         catch (const std::exception& ex)
@@ -91,7 +91,7 @@ struct kineto_session_guard
         {
             try
             {
-                xsigma::autograd::profiler::disableProfiler();
+                quarisma::autograd::profiler::disableProfiler();
             }
             catch (...)
             {
@@ -104,26 +104,26 @@ struct kineto_session_guard
 
     const std::string& error() const { return error_message_; }
 
-    std::unique_ptr<xsigma::autograd::profiler::ProfilerResult> stop()
+    std::unique_ptr<quarisma::autograd::profiler::ProfilerResult> stop()
     {
         if (!active_)
         {
             return nullptr;
         }
         active_ = false;
-        return xsigma::autograd::profiler::disableProfiler();
+        return quarisma::autograd::profiler::disableProfiler();
     }
 
 private:
-    xsigma::autograd::profiler::ProfilerConfig         config_;
-    std::set<xsigma::autograd::profiler::ActivityType> activities_;
-    std::unordered_set<xsigma::RecordScope>            scopes_;
+    quarisma::autograd::profiler::ProfilerConfig         config_;
+    std::set<quarisma::autograd::profiler::ActivityType> activities_;
+    std::unordered_set<quarisma::RecordScope>            scopes_;
     bool                                               active_{false};
     std::string                                        error_message_;
 };
 
-const xsigma::autograd::profiler::KinetoEvent* find_event_by_name(
-    const std::vector<xsigma::autograd::profiler::KinetoEvent>& events, const std::string& name)
+const quarisma::autograd::profiler::KinetoEvent* find_event_by_name(
+    const std::vector<quarisma::autograd::profiler::KinetoEvent>& events, const std::string& name)
 {
     for (const auto& event : events)
     {
@@ -137,10 +137,10 @@ const xsigma::autograd::profiler::KinetoEvent* find_event_by_name(
 
 }  // namespace
 
-//XSIGMATEST(KinetoIntegration, captures_basic_scope_lifecycle)
+//QUARISMATEST(KinetoIntegration, captures_basic_scope_lifecycle)
 //{
 //    kineto_session_guard session(
-//        make_kineto_config(), {xsigma::autograd::profiler::ActivityType::CPU});
+//        make_kineto_config(), {quarisma::autograd::profiler::ActivityType::CPU});
 //    if (!session.active())
 //    {
 //        GTEST_SKIP() << "Kineto profiler unavailable: " << session.error();
@@ -165,10 +165,10 @@ const xsigma::autograd::profiler::KinetoEvent* find_event_by_name(
 //    EXPECT_FALSE(scope_event->isHiddenEvent());
 //}
 //
-//XSIGMATEST(KinetoIntegration, nested_scopes_preserve_parent_child_timing)
+//QUARISMATEST(KinetoIntegration, nested_scopes_preserve_parent_child_timing)
 //{
 //    kineto_session_guard session(
-//        make_kineto_config(/*with_stack=*/true), {xsigma::autograd::profiler::ActivityType::CPU});
+//        make_kineto_config(/*with_stack=*/true), {quarisma::autograd::profiler::ActivityType::CPU});
 //    if (!session.active())
 //    {
 //        GTEST_SKIP() << "Kineto profiler unavailable: " << session.error();
@@ -203,10 +203,10 @@ const xsigma::autograd::profiler::KinetoEvent* find_event_by_name(
 //    EXPECT_GE(parent_event->durationNs(), child_event->durationNs());
 //}
 //
-//XSIGMATEST(KinetoIntegration, thread_local_participation_requires_opt_in)
+//QUARISMATEST(KinetoIntegration, thread_local_participation_requires_opt_in)
 //{
 //    kineto_session_guard session(
-//        make_kineto_config(), {xsigma::autograd::profiler::ActivityType::CPU});
+//        make_kineto_config(), {quarisma::autograd::profiler::ActivityType::CPU});
 //    if (!session.active())
 //    {
 //        GTEST_SKIP() << "Kineto profiler unavailable: " << session.error();
@@ -225,10 +225,10 @@ const xsigma::autograd::profiler::KinetoEvent* find_event_by_name(
 //    std::thread attached_thread(
 //        [attached_scope_name]()
 //        {
-//            xsigma::autograd::profiler::enableProfilerInChildThread();
+//            quarisma::autograd::profiler::enableProfilerInChildThread();
 //            RECORD_USER_SCOPE(attached_scope_name);
 //            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-//            xsigma::autograd::profiler::disableProfilerInChildThread();
+//            quarisma::autograd::profiler::disableProfilerInChildThread();
 //        });
 //
 //    detached_thread.join();
@@ -260,48 +260,48 @@ const xsigma::autograd::profiler::KinetoEvent* find_event_by_name(
 //    EXPECT_FALSE(found_detached);
 //}
 
-//XSIGMATEST(KinetoIntegration, enable_disable_cycles_reset_global_state)
+//QUARISMATEST(KinetoIntegration, enable_disable_cycles_reset_global_state)
 //{
 //    kineto_session_guard first_session(
-//        make_kineto_config(), {xsigma::autograd::profiler::ActivityType::CPU});
+//        make_kineto_config(), {quarisma::autograd::profiler::ActivityType::CPU});
 //    if (!first_session.active())
 //    {
 //        GTEST_SKIP() << "Kineto profiler unavailable: " << first_session.error();
 //    }
 //
-//    EXPECT_TRUE(xsigma::autograd::profiler::isProfilerEnabledInMainThread());
+//    EXPECT_TRUE(quarisma::autograd::profiler::isProfilerEnabledInMainThread());
 //    first_session.stop();
-//    EXPECT_FALSE(xsigma::autograd::profiler::isProfilerEnabledInMainThread());
+//    EXPECT_FALSE(quarisma::autograd::profiler::isProfilerEnabledInMainThread());
 //
 //    kineto_session_guard second_session(
-//        make_kineto_config(), {xsigma::autograd::profiler::ActivityType::CPU});
+//        make_kineto_config(), {quarisma::autograd::profiler::ActivityType::CPU});
 //    ASSERT_TRUE(second_session.active());
-//    EXPECT_TRUE(xsigma::autograd::profiler::isProfilerEnabledInMainThread());
+//    EXPECT_TRUE(quarisma::autograd::profiler::isProfilerEnabledInMainThread());
 //    auto result = second_session.stop();
-//    EXPECT_FALSE(xsigma::autograd::profiler::isProfilerEnabledInMainThread());
+//    EXPECT_FALSE(quarisma::autograd::profiler::isProfilerEnabledInMainThread());
 //    EXPECT_NE(result, nullptr);
 //}
 
-#endif  // XSIGMA_HAS_KINETO
+#endif  // QUARISMA_HAS_KINETO
 
-#if XSIGMA_HAS_ITT
+#if QUARISMA_HAS_ITT
 
 namespace
 {
 
-class recording_itt_stub : public xsigma::profiler::impl::ProfilerStubs
+class recording_itt_stub : public quarisma::profiler::impl::ProfilerStubs
 {
 public:
     void record(
-        xsigma::device_option::int_t*,
-        xsigma::profiler::impl::ProfilerVoidEventStub*,
+        quarisma::device_option::int_t*,
+        quarisma::profiler::impl::ProfilerVoidEventStub*,
         int64_t*) const override
     {
     }
 
     float elapsed(
-        const xsigma::profiler::impl::ProfilerVoidEventStub*,
-        const xsigma::profiler::impl::ProfilerVoidEventStub*) const override
+        const quarisma::profiler::impl::ProfilerVoidEventStub*,
+        const quarisma::profiler::impl::ProfilerVoidEventStub*) const override
     {
         return 0.0F;
     }
@@ -357,10 +357,10 @@ public:
     explicit scoped_itt_stub(recording_itt_stub& stub)
         : stub_(stub),
           previous_(
-              const_cast<xsigma::profiler::impl::ProfilerStubs*>(
-                  xsigma::profiler::impl::ittStubs()))
+              const_cast<quarisma::profiler::impl::ProfilerStubs*>(
+                  quarisma::profiler::impl::ittStubs()))
     {
-        xsigma::profiler::impl::registerITTMethods(&stub_);
+        quarisma::profiler::impl::registerITTMethods(&stub_);
     }
 
     scoped_itt_stub(const scoped_itt_stub&)            = delete;
@@ -368,26 +368,26 @@ public:
     scoped_itt_stub& operator=(const scoped_itt_stub&) = delete;
     scoped_itt_stub& operator=(scoped_itt_stub&&)      = delete;
 
-    ~scoped_itt_stub() { xsigma::profiler::impl::registerITTMethods(previous_); }
+    ~scoped_itt_stub() { quarisma::profiler::impl::registerITTMethods(previous_); }
 
 private:
     recording_itt_stub&                          stub_;
-    xsigma::profiler::impl::ProfilerStubs* const previous_;
+    quarisma::profiler::impl::ProfilerStubs* const previous_;
 };
 
 }  // namespace
 
-XSIGMATEST(ITTIntegration, records_basic_scope_sequence)
+QUARISMATEST(ITTIntegration, records_basic_scope_sequence)
 {
     recording_itt_stub stub;
     scoped_itt_stub    stub_guard(stub);
 
-    xsigma::autograd::profiler::ProfilerConfig config(
-        xsigma::autograd::profiler::ProfilerState::ITT);
+    quarisma::autograd::profiler::ProfilerConfig config(
+        quarisma::autograd::profiler::ProfilerState::ITT);
     try
     {
-        xsigma::autograd::profiler::enableProfiler(
-            config, {xsigma::autograd::profiler::ActivityType::CPU}, user_scopes());
+        quarisma::autograd::profiler::enableProfiler(
+            config, {quarisma::autograd::profiler::ActivityType::CPU}, user_scopes());
     }
     catch (const std::exception& ex)
     {
@@ -399,24 +399,24 @@ XSIGMATEST(ITTIntegration, records_basic_scope_sequence)
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    XSIGMA_UNUSED auto result = xsigma::autograd::profiler::disableProfiler();
+    QUARISMA_UNUSED auto result = quarisma::autograd::profiler::disableProfiler();
 
     ASSERT_FALSE(stub.pushes_.empty());
     EXPECT_EQ(stub.pushes_.front(), "itt_basic_scope");
     EXPECT_EQ(stub.pops_, stub.pushes_.size());
 }
 
-XSIGMATEST(ITTIntegration, nested_scopes_close_in_lifo_order)
+QUARISMATEST(ITTIntegration, nested_scopes_close_in_lifo_order)
 {
     recording_itt_stub stub;
     scoped_itt_stub    stub_guard(stub);
 
-    xsigma::autograd::profiler::ProfilerConfig config(
-        xsigma::autograd::profiler::ProfilerState::ITT);
+    quarisma::autograd::profiler::ProfilerConfig config(
+        quarisma::autograd::profiler::ProfilerState::ITT);
     try
     {
-        xsigma::autograd::profiler::enableProfiler(
-            config, {xsigma::autograd::profiler::ActivityType::CPU}, user_scopes());
+        quarisma::autograd::profiler::enableProfiler(
+            config, {quarisma::autograd::profiler::ActivityType::CPU}, user_scopes());
     }
     catch (const std::exception& ex)
     {
@@ -432,24 +432,24 @@ XSIGMATEST(ITTIntegration, nested_scopes_close_in_lifo_order)
         }
     }
 
-    XSIGMA_UNUSED auto result = xsigma::autograd::profiler::disableProfiler();
+    QUARISMA_UNUSED auto result = quarisma::autograd::profiler::disableProfiler();
 
     ASSERT_GE(stub.closed_.size(), 2U);
     EXPECT_EQ(stub.closed_.front(), "itt_child_scope");
     EXPECT_EQ(stub.closed_.back(), "itt_parent_scope");
 }
 
-//XSIGMATEST(ITTIntegration, callbacks_are_thread_local)
+//QUARISMATEST(ITTIntegration, callbacks_are_thread_local)
 //{
 //    recording_itt_stub stub;
 //    scoped_itt_stub    stub_guard(stub);
 //
-//    xsigma::autograd::profiler::ProfilerConfig config(
-//        xsigma::autograd::profiler::ProfilerState::ITT);
+//    quarisma::autograd::profiler::ProfilerConfig config(
+//        quarisma::autograd::profiler::ProfilerState::ITT);
 //    try
 //    {
-//        xsigma::autograd::profiler::enableProfiler(
-//            config, {xsigma::autograd::profiler::ActivityType::CPU}, user_scopes());
+//        quarisma::autograd::profiler::enableProfiler(
+//            config, {quarisma::autograd::profiler::ActivityType::CPU}, user_scopes());
 //    }
 //    catch (const std::exception& ex)
 //    {
@@ -473,7 +473,7 @@ XSIGMATEST(ITTIntegration, nested_scopes_close_in_lifo_order)
 //
 //    worker.join();
 //
-//    XSIGMA_UNUSED auto result = xsigma::autograd::profiler::disableProfiler();
+//    QUARISMA_UNUSED auto result = quarisma::autograd::profiler::disableProfiler();
 //
 //    bool saw_main_scope   = false;
 //    bool saw_worker_scope = false;
@@ -493,17 +493,17 @@ XSIGMATEST(ITTIntegration, nested_scopes_close_in_lifo_order)
 //    EXPECT_FALSE(saw_worker_scope);
 //}
 
-XSIGMATEST(ITTIntegration, handles_empty_and_null_range_names)
+QUARISMATEST(ITTIntegration, handles_empty_and_null_range_names)
 {
     recording_itt_stub stub;
     scoped_itt_stub    stub_guard(stub);
 
-    xsigma::autograd::profiler::ProfilerConfig config(
-        xsigma::autograd::profiler::ProfilerState::ITT);
+    quarisma::autograd::profiler::ProfilerConfig config(
+        quarisma::autograd::profiler::ProfilerState::ITT);
     try
     {
-        xsigma::autograd::profiler::enableProfiler(
-            config, {xsigma::autograd::profiler::ActivityType::CPU}, user_scopes());
+        quarisma::autograd::profiler::enableProfiler(
+            config, {quarisma::autograd::profiler::ActivityType::CPU}, user_scopes());
     }
     catch (const std::exception& ex)
     {
@@ -515,10 +515,10 @@ XSIGMATEST(ITTIntegration, handles_empty_and_null_range_names)
         busy_wait_for(std::chrono::milliseconds(1));
     }
 
-    xsigma::profiler::impl::ittStubs()->rangePush(nullptr);
-    xsigma::profiler::impl::ittStubs()->rangePop();
+    quarisma::profiler::impl::ittStubs()->rangePush(nullptr);
+    quarisma::profiler::impl::ittStubs()->rangePop();
 
-    XSIGMA_UNUSED auto result = xsigma::autograd::profiler::disableProfiler();
+    QUARISMA_UNUSED auto result = quarisma::autograd::profiler::disableProfiler();
 
     bool saw_empty_name = false;
     for (const auto& name : stub.pushes_)
@@ -534,7 +534,7 @@ XSIGMATEST(ITTIntegration, handles_empty_and_null_range_names)
     EXPECT_EQ(stub.null_pushes_, 1U);
 }
 
-#endif  // XSIGMA_HAS_ITT
+#endif  // QUARISMA_HAS_ITT
 
 namespace
 {
@@ -549,25 +549,25 @@ std::filesystem::path make_temp_trace_path(const std::string& name)
 
 }  // namespace
 
-XSIGMATEST(ProfilerChromeTrace, exports_nested_scope_metadata)
+QUARISMATEST(ProfilerChromeTrace, exports_nested_scope_metadata)
 {
-    xsigma::profiler_session_builder builder;
+    quarisma::profiler_session_builder builder;
     auto session = builder.with_hierarchical_profiling(true).with_memory_tracking(false).build();
     ASSERT_NE(session, nullptr);
     ASSERT_TRUE(session->start());
 
     {
-        xsigma::profiler_scope outer_scope("chrome_trace_parent", session.get());
+        quarisma::profiler_scope outer_scope("chrome_trace_parent", session.get());
         busy_wait_for(std::chrono::milliseconds(1));
         {
-            xsigma::profiler_scope inner_scope("chrome_trace_child", session.get());
+            quarisma::profiler_scope inner_scope("chrome_trace_child", session.get());
             busy_wait_for(std::chrono::milliseconds(1));
         }
     }
 
     ASSERT_TRUE(session->stop());
 
-    auto trace_path = make_temp_trace_path("xsigma_profiler_trace.json");
+    auto trace_path = make_temp_trace_path("quarisma_profiler_trace.json");
     ASSERT_TRUE(session->write_chrome_trace(trace_path.string()));
 
     std::ifstream trace_file(trace_path);
@@ -583,13 +583,13 @@ XSIGMATEST(ProfilerChromeTrace, exports_nested_scope_metadata)
     std::filesystem::remove(trace_path, ec);
 }
 
-XSIGMATEST(ProfilerChromeTrace, write_chrome_trace_rejects_empty_path)
+QUARISMATEST(ProfilerChromeTrace, write_chrome_trace_rejects_empty_path)
 {
-    xsigma::profiler_options opts;
-    auto                     session = std::make_unique<xsigma::profiler_session>(opts);
+    quarisma::profiler_options opts;
+    auto                     session = std::make_unique<quarisma::profiler_session>(opts);
     ASSERT_TRUE(session->start());
     {
-        xsigma::profiler_scope scope("chrome_trace_invalid_path", session.get());
+        quarisma::profiler_scope scope("chrome_trace_invalid_path", session.get());
         busy_wait_for(std::chrono::milliseconds(1));
     }
     ASSERT_TRUE(session->stop());

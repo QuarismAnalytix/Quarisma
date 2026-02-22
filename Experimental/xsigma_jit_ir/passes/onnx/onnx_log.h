@@ -19,7 +19,7 @@ TORCH_API std::ostream& _get_log_output_stream();
 #define ONNX_LOG(...)                                                                            \
     if (::torch::jit::onnx::is_log_enabled())                                                    \
     {                                                                                            \
-        ::torch::jit::onnx::_get_log_output_stream() << ::xsigma::str(__VA_ARGS__) << std::endl; \
+        ::torch::jit::onnx::_get_log_output_stream() << ::quarisma::str(__VA_ARGS__) << std::endl; \
     }
 
 }  // namespace torch::jit::onnx

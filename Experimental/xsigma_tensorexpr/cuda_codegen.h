@@ -1,8 +1,8 @@
 #pragma once
 
-#include <XSigma/XSigma.h>
-#include <XSigma/cuda/CUDAContext.h>
-#include <XSigma/cuda/nvrtc_stub/ATenNVRTC.h>
+#include <Quarisma/Quarisma.h>
+#include <Quarisma/cuda/CUDAContext.h>
+#include <Quarisma/cuda/nvrtc_stub/ATenNVRTC.h>
 #include <torch/csrc/jit/resource_guard.h>
 #include <torch/csrc/jit/tensorexpr/codegen.h>
 #include <torch/csrc/jit/tensorexpr/eval.h>
@@ -11,8 +11,8 @@
 #include <torch/csrc/jit/tensorexpr/ir_visitor.h>
 #include <torch/csrc/jit/tensorexpr/llvm_codegen.h>
 #include <torch/csrc/jit/tensorexpr/unique_name_manager.h>
-#include <xsigma/cuda/CUDACachingAllocator.h>
-#include <xsigma/cuda/CUDAGuard.h>
+#include <quarisma/cuda/CUDACachingAllocator.h>
+#include <quarisma/cuda/CUDAGuard.h>
 
 #include <unordered_set>
 
@@ -183,7 +183,7 @@ public:
         : CodeGen(
               stmt,
               std::vector<BufferArg>({BufferArg(ts)...}),
-              xsigma::Device(xsigma::kCUDA, xsigma::cuda::current_device()))
+              quarisma::Device(quarisma::kCUDA, quarisma::cuda::current_device()))
     {
         Initialize();
     }
@@ -191,7 +191,7 @@ public:
     CudaCodeGen(
         StmtPtr                       stmt,
         const std::vector<BufferArg>& buffer_args,
-        xsigma::Device     device = xsigma::Device(xsigma::kCUDA, xsigma::cuda::current_device()),
+        quarisma::Device     device = quarisma::Device(quarisma::kCUDA, quarisma::cuda::current_device()),
         const std::string& kernel_func_name = "func")
         : CodeGen(std::move(stmt), buffer_args, device, kernel_func_name)
     {
@@ -210,12 +210,12 @@ public:
         call(std::vector<CallArg>({CallArg(ts)...}));
     }
 
-    xsigma::Tensor empty_strided(
-        xsigma::IntArrayRef               size,
-        xsigma::IntArrayRef               stride,
-        std::optional<xsigma::ScalarType> dtype_opt,
-        std::optional<xsigma::Layout>     layout_opt,
-        std::optional<xsigma::Device>     device_opt,
+    quarisma::Tensor empty_strided(
+        quarisma::IntArrayRef               size,
+        quarisma::IntArrayRef               stride,
+        std::optional<quarisma::ScalarType> dtype_opt,
+        std::optional<quarisma::Layout>     layout_opt,
+        std::optional<quarisma::Device>     device_opt,
         std::optional<bool>               pin_memory_opt) override;
 
     const std::vector<ExprPtr>& gpu_block_extents() const

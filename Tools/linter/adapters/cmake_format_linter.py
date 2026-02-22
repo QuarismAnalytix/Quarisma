@@ -1,5 +1,5 @@
 """
-cmake-format linter adapter for XSigma lintrunner.
+cmake-format linter adapter for Quarisma lintrunner.
 
 This adapter runs cmake-format to check and format CMake files.
 It follows the same pattern as clangformat_linter.py for consistency.
@@ -126,7 +126,7 @@ def check_file(
                 replacement=None,
                 description=(
                     "cmake-format timed out while trying to process a file. "
-                    "Please report an issue in xsigma/xsigma with the "
+                    "Please report an issue in quarisma/quarisma with the "
                     "label 'module: lint'"
                 ),
             )

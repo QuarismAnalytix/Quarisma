@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-// XSigma: modified from llvm::array_ref.
+// Quarisma: modified from llvm::array_ref.
 // removed llvm-specific functionality
 // removed some implicit const -> non-const conversions that rely on
 // complicated std::enable_if meta-programming
@@ -28,7 +28,7 @@
 #include "util/exception.h"
 #include "util/small_vector.h"
 
-namespace xsigma
+namespace quarisma
 {
 /// array_ref - Represent a constant reference to an array (0 or more elements
 /// consecutively in memory), i.e. a start pointer and a length.  It allows
@@ -61,7 +61,7 @@ private:
 
     void debugCheckNullptrInvariant()
     {
-        XSIGMA_CHECK_DEBUG(
+        QUARISMA_CHECK_DEBUG(
             Data != nullptr || Length == 0,
             "created array_ref with nullptr and non-zero length! std::optional relies on this "
             "being illegal");
@@ -174,14 +174,14 @@ public:
     /// front - Get the first element.
     constexpr const T& front() const
     {
-        //XSIGMA_CHECK(!empty(), "array_ref: attempted to access front() of empty list");
+        //QUARISMA_CHECK(!empty(), "array_ref: attempted to access front() of empty list");
         return Data[0];
     }
 
     /// back - Get the last element.
     constexpr const T& back() const
     {
-        //XSIGMA_CHECK(!empty(), "array_ref: attempted to access back() of empty list");
+        //QUARISMA_CHECK(!empty(), "array_ref: attempted to access back() of empty list");
         return Data[Length - 1];
     }
 
@@ -194,7 +194,7 @@ public:
     /// slice(n, m) - Take M elements of the array starting at element N
     constexpr array_ref<T> slice(size_t N, size_t M) const
     {
-        //XSIGMA_CHECK(
+        //QUARISMA_CHECK(
         //   N + M <= size(), "array_ref: invalid slice, N = ", N, "; M = ", M, "; size = ", size());
         return array_ref<T>(data() + N, M);
     }
@@ -202,7 +202,7 @@ public:
     /// slice(n) - Chop off the first N elements of the array.
     constexpr array_ref<T> slice(size_t N) const
     {
-        //XSIGMA_CHECK(N <= size(), "array_ref: invalid slice, N = ", N, "; size = ", size());
+        //QUARISMA_CHECK(N <= size(), "array_ref: invalid slice, N = ", N, "; size = ", size());
         return slice(N, size() - N);
     }
 
@@ -214,7 +214,7 @@ public:
     /// Vector compatibility
     constexpr const T& at(size_t Index) const
     {
-        //XSIGMA_CHECK(
+        //QUARISMA_CHECK(
         //   Index < Length, "array_ref: invalid index Index = ", Index, "; Length = ", Length);
         return Data[Index];
     }
@@ -334,43 +334,43 @@ array_ref<T> makeArrayRef(const T (&Arr)[N])
 }
 
 // WARNING: Template instantiation will NOT be willing to do an implicit
-// conversions to get you to an xsigma::array_ref, which is why we need so
+// conversions to get you to an quarisma::array_ref, which is why we need so
 // many overloads.
 
 template <typename T>
-bool operator==(xsigma::array_ref<T> a1, xsigma::array_ref<T> a2)
+bool operator==(quarisma::array_ref<T> a1, quarisma::array_ref<T> a2)
 {
     return a1.equals(a2);
 }
 
 template <typename T>
-bool operator!=(xsigma::array_ref<T> a1, xsigma::array_ref<T> a2)
+bool operator!=(quarisma::array_ref<T> a1, quarisma::array_ref<T> a2)
 {
     return !a1.equals(a2);
 }
 
 template <typename T>
-bool operator==(const std::vector<T>& a1, xsigma::array_ref<T> a2)
+bool operator==(const std::vector<T>& a1, quarisma::array_ref<T> a2)
 {
-    return xsigma::array_ref<T>(a1).equals(a2);
+    return quarisma::array_ref<T>(a1).equals(a2);
 }
 
 template <typename T>
-bool operator!=(const std::vector<T>& a1, xsigma::array_ref<T> a2)
+bool operator!=(const std::vector<T>& a1, quarisma::array_ref<T> a2)
 {
-    return !xsigma::array_ref<T>(a1).equals(a2);
+    return !quarisma::array_ref<T>(a1).equals(a2);
 }
 
 template <typename T>
-bool operator==(xsigma::array_ref<T> a1, const std::vector<T>& a2)
+bool operator==(quarisma::array_ref<T> a1, const std::vector<T>& a2)
 {
-    return a1.equals(xsigma::array_ref<T>(a2));
+    return a1.equals(quarisma::array_ref<T>(a2));
 }
 
 template <typename T>
-bool operator!=(xsigma::array_ref<T> a1, const std::vector<T>& a2)
+bool operator!=(quarisma::array_ref<T> a1, const std::vector<T>& a2)
 {
-    return !a1.equals(xsigma::array_ref<T>(a2));
+    return !a1.equals(quarisma::array_ref<T>(a2));
 }
 
 using IntArrayRef = array_ref<int64_t>;
@@ -379,4 +379,4 @@ using IntList [[deprecated(
     "This alias is deprecated because it doesn't make ownership semantics obvious. Use IntArrayRef "
     "instead!")]] = array_ref<int64_t>;
 
-}  // namespace xsigma
+}  // namespace quarisma

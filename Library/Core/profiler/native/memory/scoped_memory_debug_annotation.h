@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
@@ -40,7 +40,7 @@ limitations under the License.
 
 #include "common/export.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 // Annotations for memory profiling and debugging purpose.
@@ -123,7 +123,7 @@ public:
 
 private:
     // Returns a pointer to the memory_debug_annotation for the current thread.
-    XSIGMA_API static memory_debug_annotation* thread_memory_debug_annotation();
+    QUARISMA_API static memory_debug_annotation* thread_memory_debug_annotation();
 
     // Stores the previous values in case the annotations are nested.
     memory_debug_annotation last_annotation_;
@@ -132,4 +132,4 @@ private:
     scoped_memory_debug_annotation& operator=(const scoped_memory_debug_annotation&) = delete;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

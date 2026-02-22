@@ -235,10 +235,10 @@ void RegisterizerAnalysis::visit(const ForPtr& v)
             std::shared_ptr<AccessInfo>& candidate = it->second;
 
             // If the access is open, but conditional, then we have a problem. It's
-            // possible that an access xsigma a higher scope could "unhide" the
+            // possible that an access quarisma a higher scope could "unhide" the
             // conditional access, in which case we need to hoist. If there is no
-            // access to this element xsigma a higher scope then we cannot safely hoist.
-            // We cannot know xsigma this level whether that will or won't occur.
+            // access to this element quarisma a higher scope then we cannot safely hoist.
+            // We cannot know quarisma this level whether that will or won't occur.
             //
             // The solution we take here is to split the space-time continuum, and
             // keep both versions of the access handy. If the hoisted access is not

@@ -868,7 +868,7 @@ class CKTileGemmTemplate(CKTileTemplate):
         Creates a list of `CKTileGemmOperation` instances that match the GEMM operation this template represents.
         The instances are guaranteed to have the correct layout, dtype and dimension padding for the GEMM input arguments.
 
-        An instance may invalidate the GEMM configuration xsigma runtime.
+        An instance may invalidate the GEMM configuration quarisma runtime.
         Such instances will be assigned +inf runtime by the autotune process.
         """
         instances = ops()

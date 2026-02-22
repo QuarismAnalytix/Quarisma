@@ -1,7 +1,7 @@
 #pragma once
-#include <XSigma/ThreadLocalState.h>
-#include <XSigma/core/ivalue.h>
-#include <XSigma/core/jit_type.h>
+#include <Quarisma/ThreadLocalState.h>
+#include <Quarisma/core/ivalue.h>
+#include <Quarisma/core/jit_type.h>
 #include <torch/csrc/Export.h>
 #include <torch/csrc/jit/frontend/source_range.h>
 
@@ -12,16 +12,16 @@
 TORCH_DECLARE_bool(torch_jit_disable_warning_prints);
 TORCH_DECLARE_bool(torch_jit_enable_rethrow_caught_exception);
 
-namespace xsigma
+namespace quarisma
 {
 class Tensor;
 TORCH_API void launch(std::function<void()> func);
-}  // namespace xsigma
-namespace xsigma
+}  // namespace quarisma
+namespace quarisma
 {
 struct IValue;
 struct OperatorName;
-}  // namespace xsigma
+}  // namespace quarisma
 
 namespace torch::jit
 {
@@ -40,8 +40,8 @@ struct InterpreterStateImpl;
 struct Graph;
 struct Node;
 struct Instruction;
-using Stack = std::vector<xsigma::IValue>;
-using xsigma::ivalue::Future;
+using Stack = std::vector<quarisma::IValue>;
+using quarisma::ivalue::Future;
 using TaskLauncher = std::function<void(std::function<void()>)>;
 
 bool TORCH_API in_torchscript_runtime();
@@ -65,8 +65,8 @@ struct TORCH_API Code
     size_t                              num_inputs() const;
     size_t                              num_outputs() const;
     size_t                              num_bailouts() const;
-    const std::vector<xsigma::IValue>&  constant_table() const;
-    const std::vector<xsigma::TypePtr>& type_table() const;
+    const std::vector<quarisma::IValue>&  constant_table() const;
+    const std::vector<quarisma::TypePtr>& type_table() const;
     const std::vector<Instruction>&     instructions() const;
     const std::unordered_map<std::string, size_t>& op_to_num_specified_args() const;
     const std::vector<Node*>&                      instructions_source() const;
@@ -93,17 +93,17 @@ struct TORCH_API MobileCode : Code
 
 struct InterpreterState
 {
-    TORCH_API      InterpreterState(const Code& code, TaskLauncher taskLauncher = xsigma::launch);
+    TORCH_API      InterpreterState(const Code& code, TaskLauncher taskLauncher = quarisma::launch);
     TORCH_API void run(Stack& stack);
-    TORCH_API xsigma::intrusive_ptr<Future> runAsync(Stack& stack);
-    xsigma::intrusive_ptr<Future>           getFuture();
+    TORCH_API quarisma::intrusive_ptr<Future> runAsync(Stack& stack);
+    quarisma::intrusive_ptr<Future>           getFuture();
 
 private:
-    InterpreterState(xsigma::intrusive_ptr<xsigma::intrusive_ptr_target> pImpl);
-    // Ideally we should use xsigma::intrusive_ptr<InterpreterStateImpl> for pImpl;
+    InterpreterState(quarisma::intrusive_ptr<quarisma::intrusive_ptr_target> pImpl);
+    // Ideally we should use quarisma::intrusive_ptr<InterpreterStateImpl> for pImpl;
     // but intrusive_ptr requires full definition of InterpreterStateImpl,
     // which we need to hide in the header.
-    xsigma::intrusive_ptr<xsigma::intrusive_ptr_target> pImpl;
+    quarisma::intrusive_ptr<quarisma::intrusive_ptr_target> pImpl;
     friend struct InterpreterStateImpl;
 };
 
@@ -112,9 +112,9 @@ struct Suspend : public std::exception
 {
     const char* what() const noexcept override { return "Suspend"; }
 
-    explicit Suspend(xsigma::intrusive_ptr<Future> future_) : future(std::move(future_)) {}
+    explicit Suspend(quarisma::intrusive_ptr<Future> future_) : future(std::move(future_)) {}
 
-    xsigma::intrusive_ptr<Future> future;
+    quarisma::intrusive_ptr<Future> future;
 };
 
 // InterpreterContinuation propagates dist_autograd_context_id
@@ -126,7 +126,7 @@ struct InterpreterContinuation
         InterpreterState                        state_,
         Stack                                   stack_,
         int64_t                                 dist_autograd_context_id = 0,
-        std::optional<xsigma::ThreadLocalState> tls_state                = std::nullopt)
+        std::optional<quarisma::ThreadLocalState> tls_state                = std::nullopt)
         : state(std::move(state_)),
           stack(std::move(stack_)),
           tls_state_(std::move(tls_state))
@@ -142,7 +142,7 @@ struct InterpreterContinuation
 private:
     InterpreterState                        state;
     Stack                                   stack;
-    std::optional<xsigma::ThreadLocalState> tls_state_ = std::nullopt;
+    std::optional<quarisma::ThreadLocalState> tls_state_ = std::nullopt;
 #ifdef USE_DISTRIBUTED
     int64_t dist_autograd_context_id_;
 #endif
@@ -151,7 +151,7 @@ private:
 // what is the tensors type, including state from the current execution context
 // that modifies how the tensor behaves. For instance if no_grad is enabled
 // this will cause the TensorType to have requires_grad=False.
-TORCH_API xsigma::TensorTypePtr tensorTypeInCurrentExecutionContext(const xsigma::Tensor& t);
+TORCH_API quarisma::TensorTypePtr tensorTypeInCurrentExecutionContext(const quarisma::Tensor& t);
 
 // current (TLS) TorchScript interpreter callstack
 TORCH_API std::vector<StackEntry> currentCallstack();

@@ -68,14 +68,14 @@
 
 **Change 1**: Added TBB include (3 lines)
 ```cpp
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 #include <tbb/enumerable_thread_specific.h>
 #endif
 ```
 
 **Change 2**: Added OpenMP threadprivate static (5 lines)
 ```cpp
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
 thread_local unsigned char parallel_tools_functor_initialized = 0;
 #pragma omp threadprivate(parallel_tools_functor_initialized)
 #endif
@@ -136,7 +136,7 @@ thread_local unsigned char parallel_tools_functor_initialized = 0;
 - Future-proof design
 
 ✅ **Code Quality**
-- Follows XSigma coding standards
+- Follows Quarisma coding standards
 - Uses value-based preprocessor checks
 - Proper conditional compilation
 - Clear comments for each backend
@@ -160,7 +160,7 @@ thread_local unsigned char parallel_tools_functor_initialized = 0;
 
 ## Code Review Checklist
 
-✅ Follows XSigma coding standards
+✅ Follows Quarisma coding standards
 ✅ Uses value-based preprocessor checks
 ✅ Proper conditional compilation
 ✅ Clear comments for each backend
@@ -240,7 +240,7 @@ The implementation successfully:
 - ✅ Implements backend-specific thread-local storage
 - ✅ Maintains backward compatibility
 - ✅ Passes all tests
-- ✅ Follows XSigma coding standards
+- ✅ Follows Quarisma coding standards
 - ✅ Provides native backend integration
 - ✅ Achieves excellent performance
 

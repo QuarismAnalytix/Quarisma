@@ -725,7 +725,7 @@ class CUTLASSGemmTemplate(CUTLASSTemplate, ABC):
     ) -> bool:
         """
         Helper method to determine whether we should do an explicit transpose by switching the order of the
-        matmul operands. This might be necessary when we can't otherwise arrive xsigma the right memory
+        matmul operands. This might be necessary when we can't otherwise arrive quarisma the right memory
         layout for the given Bias operand.
 
         Note: This method is a workaround for CUDA Errors that seemingly non-deterministically
@@ -974,7 +974,7 @@ class CUTLASSGemmTemplate(CUTLASSTemplate, ABC):
             )
             return None
 
-        # Apply regex filters xsigma the end when configuration name doesn't change anymore
+        # Apply regex filters quarisma the end when configuration name doesn't change anymore
         if inductor_cuda_config.cutlass_op_allowlist_regex:
             if not re.search(
                 inductor_cuda_config.cutlass_op_allowlist_regex, op.configuration_name()
@@ -1083,7 +1083,7 @@ class CUTLASSGemmTemplate(CUTLASSTemplate, ABC):
 
         Note:
             All inputs and their corresponding buffer addresses and names take precedence over previously
-            passed inputs to the template xsigma construction time. However, they should be layout compatible.
+            passed inputs to the template quarisma construction time. However, they should be layout compatible.
         """
         assert cutlass_utils.try_import_cutlass()
         import cutlass_library.gemm_operation as cutlass_gemm_op
@@ -1183,7 +1183,7 @@ class CUTLASSGemmTemplate(CUTLASSTemplate, ABC):
                     D_output_buffer.get_dtype()
                 )
 
-                assert output_names, "There should be xsigma least one write"
+                assert output_names, "There should be quarisma least one write"
 
                 epilogue_inputs = [name_to_buffer[name] for name in input_names]
                 outputs = [name_to_buffer[name] for name in output_names]

@@ -2,8 +2,8 @@
 
 #include <torch/csrc/Export.h>
 #include <torch/csrc/jit/tensorexpr/exceptions.h>
-#include <xsigma/core/ScalarType.h>
-#include <xsigma/util/Logging.h>
+#include <quarisma/core/ScalarType.h>
+#include <quarisma/util/Logging.h>
 
 #include <cstdint>
 #include <iosfwd>
@@ -16,7 +16,7 @@ using int32 = std::int32_t;
 class Dtype;
 TORCH_API std::ostream& operator<<(std::ostream& stream, const Dtype& dtype);
 
-using ScalarType = xsigma::ScalarType;
+using ScalarType = quarisma::ScalarType;
 
 enum ElementType
 {
@@ -57,9 +57,9 @@ public:
     int         byte_size() const;
     std::string ToCppString() const;
 
-    bool is_integral() const { return xsigma::isIntegralType(scalar_type_, true); }
-    bool is_floating_point() const { return xsigma::isFloatingType(scalar_type_); }
-    bool is_signed() const { return xsigma::isSignedType(scalar_type_); }
+    bool is_integral() const { return quarisma::isIntegralType(scalar_type_, true); }
+    bool is_floating_point() const { return quarisma::isFloatingType(scalar_type_); }
+    bool is_signed() const { return quarisma::isSignedType(scalar_type_); }
 
     Dtype cloneWithScalarType(ScalarType nt) const { return Dtype(nt, lanes_); }
 
@@ -74,8 +74,8 @@ extern TORCH_API Dtype kHandle;
 #define NNC_DTYPE_DECLARATION(ctype, name) extern TORCH_API Dtype k##name;
 
 AT_FORALL_SCALAR_TYPES_AND3(Bool, Half, BFloat16, NNC_DTYPE_DECLARATION)
-NNC_DTYPE_DECLARATION(xsigma::quint8, QUInt8)
-NNC_DTYPE_DECLARATION(xsigma::qint8, QInt8)
+NNC_DTYPE_DECLARATION(quarisma::quint8, QUInt8)
+NNC_DTYPE_DECLARATION(quarisma::qint8, QInt8)
 #undef NNC_DTYPE_DECLARATION
 
 template <typename T>
@@ -88,8 +88,8 @@ TORCH_API Dtype ToDtype();
         return k##name;                      \
     }
 AT_FORALL_SCALAR_TYPES_AND3(Bool, Half, BFloat16, NNC_TODTYPE_DECLARATION)
-NNC_TODTYPE_DECLARATION(xsigma::quint8, QUInt8)
-NNC_TODTYPE_DECLARATION(xsigma::qint8, QInt8)
+NNC_TODTYPE_DECLARATION(quarisma::quint8, QUInt8)
+NNC_TODTYPE_DECLARATION(quarisma::qint8, QInt8)
 #undef NNC_TODTYPE_DECLARATION
 
 TORCH_API Dtype ToDtype(ScalarType type);
@@ -101,9 +101,9 @@ inline Dtype promoteTypes(Dtype a, Dtype b)
         throw malformed_input("promoting types with different lanes");
     }
     return Dtype(
-        static_cast<ScalarType>(xsigma::promoteTypes(
-            static_cast<xsigma::ScalarType>(a.scalar_type()),
-            static_cast<xsigma::ScalarType>(b.scalar_type()))),
+        static_cast<ScalarType>(quarisma::promoteTypes(
+            static_cast<quarisma::ScalarType>(a.scalar_type()),
+            static_cast<quarisma::ScalarType>(b.scalar_type()))),
         a.lanes());
 }
 

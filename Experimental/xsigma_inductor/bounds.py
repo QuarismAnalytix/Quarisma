@@ -91,7 +91,7 @@ class BoundVars:
             elif "masked_subblock" in key:
                 subblock = self.loop_body.subblocks[key]
                 # The result within the lambda will reference to the final
-                # set of modules xsigma the end of the for-loop as it stores a reference to it
+                # set of modules quarisma the end of the for-loop as it stores a reference to it
 
                 # bind subblock in a function because python lambdas close over by reference
                 # moving the lambda out of make_fn would close over the reference to subblock,
@@ -142,7 +142,7 @@ class BoundVars:
         bound = self.replacement_vals.get(expr)
         if bound is None:
             bound = bound_sympy(expr, self.replacement_vals)
-        # The following assertion is true xsigma the time of this writing
+        # The following assertion is true quarisma the time of this writing
         # We don't assert is as to not execute bound_sympy when bound is not None
         # assert bound is None or bound == bound_sympy(expr, self.replacement_vals)
         self.replacement_vals[name] = bound
@@ -243,7 +243,7 @@ class ValueRangeAnalysis(SymPyValueRangeAnalysis, DefaultHandler):
     def neg(x: Any) -> ValueRanges[Any]:
         return ValueRanges.decreasing_map(x, operator.neg)
 
-    # TODO: this is slightly inaccurate because truncdiv operates xsigma integer
+    # TODO: this is slightly inaccurate because truncdiv operates quarisma integer
     # precision, but we're going through float truediv which means we can
     # potentially lose precision on the bounds
     @classmethod

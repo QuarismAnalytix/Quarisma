@@ -9,7 +9,7 @@
 
 struct CUevent_st;
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 // ----------------------------------------------------------------------------
@@ -18,10 +18,10 @@ namespace xsigma::profiler::impl
 using ProfilerEventStub     = std::shared_ptr<CUevent_st>;
 using ProfilerVoidEventStub = std::shared_ptr<void>;
 
-struct XSIGMA_VISIBILITY ProfilerStubs
+struct QUARISMA_VISIBILITY ProfilerStubs
 {
     virtual void record(
-        xsigma::device_option::int_t* device,
+        quarisma::device_option::int_t* device,
         ProfilerVoidEventStub*        event,
         int64_t*                      cpu_ns) const = 0;
     virtual float elapsed(
@@ -35,12 +35,12 @@ struct XSIGMA_VISIBILITY ProfilerStubs
     virtual ~ProfilerStubs()                                     = default;
 };
 
-XSIGMA_API void                 registerCUDAMethods(ProfilerStubs* stubs);
-XSIGMA_API const ProfilerStubs* cudaStubs();
-XSIGMA_API void                 registerITTMethods(ProfilerStubs* stubs);
-XSIGMA_API const ProfilerStubs* ittStubs();
-XSIGMA_API void                 registerPrivateUse1Methods(ProfilerStubs* stubs);
-XSIGMA_API const ProfilerStubs* privateuse1Stubs();
+QUARISMA_API void                 registerCUDAMethods(ProfilerStubs* stubs);
+QUARISMA_API const ProfilerStubs* cudaStubs();
+QUARISMA_API void                 registerITTMethods(ProfilerStubs* stubs);
+QUARISMA_API const ProfilerStubs* ittStubs();
+QUARISMA_API void                 registerPrivateUse1Methods(ProfilerStubs* stubs);
+QUARISMA_API const ProfilerStubs* privateuse1Stubs();
 
 using vulkan_id_t = strong::type<
     int64_t,
@@ -49,4 +49,4 @@ using vulkan_id_t = strong::type<
     strong::convertible_to<int64_t>,
     strong::hashable>;
 
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl

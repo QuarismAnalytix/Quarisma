@@ -4,7 +4,7 @@
 
 **Option 1 (Standard C++ `thread_local`) has been successfully implemented.**
 
-The `parallel_thread_local` abstraction has been completely removed from the XSigma codebase and replaced with standard C++ `thread_local`. All tests pass, no regressions detected, and the codebase is now simpler and more maintainable.
+The `parallel_thread_local` abstraction has been completely removed from the Quarisma codebase and replaced with standard C++ `thread_local`. All tests pass, no regressions detected, and the codebase is now simpler and more maintainable.
 
 ---
 

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -56,7 +56,7 @@ limitations under the License.
 #include "util/exception.h"
 #include "util/flat_hash.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace
 {
@@ -96,7 +96,7 @@ int Find(const std::vector<T>& array, const Pred& pred)
     std::vector<int> indices = FindAll(array, pred);
     if (indices.size() > 1)
     {
-        XSIGMA_LOG_WARNING("Found multiple when only one was expected.");
+        QUARISMA_LOG_WARNING("Found multiple when only one was expected.");
     }
     return indices.empty() ? -1 : indices.front();
 }
@@ -200,7 +200,7 @@ void CopyEventMetadata(
                 dst_stat.set_metadata_id(metadata.id());
             });
     }
-    XSIGMA_CHECK_DEBUG(src_event_metadata.stats_size() == dst_event_metadata.stats_size());
+    QUARISMA_CHECK_DEBUG(src_event_metadata.stats_size() == dst_event_metadata.stats_size());
 }
 
 // Copies src_event from source line to the destination line in the destination
@@ -355,7 +355,7 @@ xstat* find_or_add_mutable_stat(const x_stat_metadata& stat_metadata, xevent* ev
 
 //static void RemovePlane(x_space* space, const xplane* plane)
 //{
-//    XSIGMA_CHECK_DEBUG(plane != nullptr);
+//    QUARISMA_CHECK_DEBUG(plane != nullptr);
 //    Remove(space->mutable_planes(), plane);
 //}
 
@@ -461,7 +461,7 @@ void MergePlanes(const std::vector<const xplane*>& src_planes, xplane* dst_plane
 
 //static void RemoveLine(xplane* plane, const xline* line)
 //{
-//    XSIGMA_CHECK_DEBUG(line != nullptr);
+//    QUARISMA_CHECK_DEBUG(line != nullptr);
 //    Remove(plane->mutable_lines(), line);
 //}
 
@@ -584,28 +584,28 @@ void AddFlowsToXplane(int32_t host_id, bool is_host_plane, bool connect_traceme,
                                     stat->metadata_id() == producer_type_stats_metadata->id())
                                 {
                                     producer_type =
-                                        xstats_builder<xsigma::xplane>::IntOrUintValue(*stat);
+                                        xstats_builder<quarisma::xplane>::IntOrUintValue(*stat);
                                 }
                                 else if (
                                     (consumer_type_stats_metadata != nullptr) &&
                                     stat->metadata_id() == consumer_type_stats_metadata->id())
                                 {
                                     consumer_type =
-                                        xstats_builder<xsigma::xplane>::IntOrUintValue(*stat);
+                                        xstats_builder<quarisma::xplane>::IntOrUintValue(*stat);
                                 }
                                 else if (
                                     (producer_id_stats_metadata != nullptr) &&
                                     stat->metadata_id() == producer_id_stats_metadata->id())
                                 {
                                     producer_id =
-                                        xstats_builder<xsigma::xplane>::IntOrUintValue(*stat);
+                                        xstats_builder<quarisma::xplane>::IntOrUintValue(*stat);
                                 }
                                 else if (
                                     (consumer_id_stats_metadata != nullptr) &&
                                     stat->metadata_id() == consumer_id_stats_metadata->id())
                                 {
                                     consumer_id =
-                                        xstats_builder<xsigma::xplane>::IntOrUintValue(*stat);
+                                        xstats_builder<quarisma::xplane>::IntOrUintValue(*stat);
                                 }
                             }
                         });
@@ -653,14 +653,14 @@ uint64_t GetDevicePlaneFingerprint(const xplane& plane)
     xplane_visitor const xplane(&plane);
     xline_visitor const  xline(&xplane, xla_module_line);
     std::set<uint64_t>   ordered_module_fps;
-    xline.for_each_event([&](XSIGMA_UNUSED const xevent_visitor& xevent)
+    xline.for_each_event([&](QUARISMA_UNUSED const xevent_visitor& xevent)
                          { ordered_module_fps.insert(/*Fingerprint64(xevent.Name())*/ 0); });
     if (ordered_module_fps.empty())
     {
         return 0ULL;
     }
     uint64_t output = 0ULL;
-    for (XSIGMA_UNUSED const auto& fp : ordered_module_fps)
+    for (QUARISMA_UNUSED const auto& fp : ordered_module_fps)
     {
         output = 0;
         //FingerprintCat64(output, fp);
@@ -742,7 +742,7 @@ void AggregateXPlane(const xplane& full_trace, xplane& aggregated_trace)
 {
     struct EventStat
     {
-        xsigma::stat<int64_t> stat;
+        quarisma::stat<int64_t> stat;
         int64_t               children_duration;
     };
     using StatByEvent = flat_hash_map<int64_t /*event_id*/, EventStat>;
@@ -796,7 +796,7 @@ void AggregateXPlane(const xplane& full_trace, xplane& aggregated_trace)
 
                     StatByEvent& line_stats = stats[line.id()][group_id];
                     line_stats[event.id()].stat.update_stat(timespan.duration_ps());
-                    XSIGMA_CHECK_DEBUG(                                         //NOLINT
+                    QUARISMA_CHECK_DEBUG(                                         //NOLINT
                         event_stack.empty() || !(event < event_stack.back()));  //NOLINT
                     while (!event_stack.empty() &&
                            !GetEventTimespan(event_stack.back()).includes(timespan))
@@ -887,4 +887,4 @@ bool IsDevicePlane(const xplane& plane)
            StartsWith(plane.name(), kTpuNonCorePlaneNamePrefix) || IsCustomPlane(plane);
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

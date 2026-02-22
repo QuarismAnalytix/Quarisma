@@ -41,10 +41,10 @@ include(incredibuild)
 **Added**:
 ```cmake
 # Conflict detection: IncrediBuild and Icecream are mutually exclusive
-if(XSIGMA_ENABLE_ICECC AND XSIGMA_ENABLE_INCREDIBUILD)
+if(QUARISMA_ENABLE_ICECC AND QUARISMA_ENABLE_INCREDIBUILD)
   message(WARNING "Both IncrediBuild and Icecream are enabled. "
     "These tools are mutually exclusive. Disabling Icecream in favor of IncrediBuild.")
-  set(XSIGMA_ENABLE_ICECC OFF CACHE BOOL "Use Icecream distributed compilation" FORCE)
+  set(QUARISMA_ENABLE_ICECC OFF CACHE BOOL "Use Icecream distributed compilation" FORCE)
 endif()
 ```
 
@@ -67,7 +67,7 @@ endif()
 
 #### c. Added CMake mapping in __build_cmake_flag() (line 693)
 ```python
-"incredibuild": "XSIGMA_ENABLE_INCREDIBUILD",
+"incredibuild": "QUARISMA_ENABLE_INCREDIBUILD",
 ```
 
 #### d. Added validation in __validate_flags() (lines 890-908)
@@ -184,7 +184,7 @@ def get_incredibuild_info() -> Optional[str]:
 
 ## Code Quality
 
-✅ **Follows XSigma standards**:
+✅ **Follows Quarisma standards**:
 - snake_case naming
 - Proper error handling
 - Comprehensive documentation

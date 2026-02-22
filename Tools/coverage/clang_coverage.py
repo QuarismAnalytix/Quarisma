@@ -216,7 +216,7 @@ def _generate_summary_json_from_lcov(lcov_file: Path, coverage_dir: Path,
         summary = {
             "metadata": {
                 "format_version": "2.0",
-                "generator": "xsigma_coverage_tool",
+                "generator": "quarisma_coverage_tool",
                 "schema": "cobertura-compatible"
             },
             "summary": {

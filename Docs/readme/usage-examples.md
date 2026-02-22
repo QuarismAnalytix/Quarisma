@@ -1,6 +1,6 @@
 # Usage Examples
 
-This guide provides practical examples of different XSigma build configurations for various use cases. Each example demonstrates how to configure the build system for specific requirements.
+This guide provides practical examples of different Quarisma build configurations for various use cases. Each example demonstrates how to configure the build system for specific requirements.
 
 ## Table of Contents
 
@@ -24,9 +24,9 @@ This guide provides practical examples of different XSigma build configurations 
 # Disable all optional libraries for fastest build
 cmake -B build_minimal -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_MAGICENUM=OFF \
-    -DXSIGMA_ENABLE_LOGURU=OFF \
-    -DXSIGMA_VECTORIZATION_TYPE=no
+    -DQUARISMA_ENABLE_MAGICENUM=OFF \
+    -DQUARISMA_ENABLE_LOGURU=OFF \
+    -DQUARISMA_VECTORIZATION_TYPE=no
 
 cmake --build build_minimal -j
 ```
@@ -47,10 +47,10 @@ cmake --build build_minimal -j
 # Enable performance libraries with optimizations
 cmake -B build_performance -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_LTO=ON \
-    -DXSIGMA_ENABLE_TBB=ON \
-    -DXSIGMA_ENABLE_MIMALLOC=ON \
-    -DXSIGMA_VECTORIZATION_TYPE=avx2
+    -DQUARISMA_ENABLE_LTO=ON \
+    -DQUARISMA_ENABLE_TBB=ON \
+    -DQUARISMA_ENABLE_MIMALLOC=ON \
+    -DQUARISMA_VECTORIZATION_TYPE=avx2
 
 cmake --build build_performance -j
 ```
@@ -78,11 +78,11 @@ cmake --build build_performance -j
 # Enable testing and debugging tools
 cmake -B build_dev -S . \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DXSIGMA_BUILD_TESTING=ON \
-    -DXSIGMA_ENABLE_GTEST=ON \
-    -DXSIGMA_ENABLE_BENCHMARK=ON \
-    -DXSIGMA_ENABLE_SANITIZER=ON \
-    -DXSIGMA_SANITIZER_TYPE=address
+    -DQUARISMA_BUILD_TESTING=ON \
+    -DQUARISMA_ENABLE_GTEST=ON \
+    -DQUARISMA_ENABLE_BENCHMARK=ON \
+    -DQUARISMA_ENABLE_SANITIZER=ON \
+    -DQUARISMA_SANITIZER_TYPE=address
 
 cmake --build build_dev -j
 
@@ -107,9 +107,9 @@ ctest --test-dir build_dev --output-on-failure
 # Use system-installed libraries (faster build)
 cmake -B build_external -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_EXTERNAL=ON \
-    -DXSIGMA_ENABLE_TBB=ON \
-    -DXSIGMA_ENABLE_GTEST=ON
+    -DQUARISMA_ENABLE_EXTERNAL=ON \
+    -DQUARISMA_ENABLE_TBB=ON \
+    -DQUARISMA_ENABLE_GTEST=ON
 
 cmake --build build_external -j
 ```
@@ -141,10 +141,10 @@ sudo dnf install fmt-devel gtest-devel tbb-devel
 # Enable all testing and benchmarking features
 cmake -B build_test -S . \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DXSIGMA_BUILD_TESTING=ON \
-    -DXSIGMA_GOOGLE_TEST=ON \
-    -DXSIGMA_ENABLE_BENCHMARK=ON \
-    -DXSIGMA_ENABLE_COVERAGE=ON
+    -DQUARISMA_BUILD_TESTING=ON \
+    -DQUARISMA_GOOGLE_TEST=ON \
+    -DQUARISMA_ENABLE_BENCHMARK=ON \
+    -DQUARISMA_ENABLE_COVERAGE=ON
 
 cmake --build build_test -j
 
@@ -171,15 +171,15 @@ cmake --build build_test --target coverage-html
 # Production-ready build with all optimizations
 cmake -B build_production -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_LTO=ON \
-    -DXSIGMA_ENABLE_MIMALLOC=ON \
-    -DXSIGMA_VECTORIZATION_TYPE=avx2 \
-    -DXSIGMA_LOGGING_BACKEND=GLOG
+    -DQUARISMA_ENABLE_LTO=ON \
+    -DQUARISMA_ENABLE_MIMALLOC=ON \
+    -DQUARISMA_VECTORIZATION_TYPE=avx2 \
+    -DQUARISMA_LOGGING_BACKEND=GLOG
 
 cmake --build build_production -j
 
 # Optional: Strip debug symbols for smaller binary
-strip build_production/bin/xsigma
+strip build_production/bin/quarisma
 ```
 
 **Result**:
@@ -199,16 +199,16 @@ strip build_production/bin/xsigma
 # Debug build with multiple sanitizers and analysis tools
 cmake -B build_debug -S . \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DXSIGMA_ENABLE_SANITIZER=ON \
-    -DXSIGMA_SANITIZER_TYPE=address \
-    -DXSIGMA_ENABLE_IWYU=ON \
-    -DXSIGMA_ENABLE_CPPCHECK=ON \
-    -DXSIGMA_BUILD_TESTING=ON
+    -DQUARISMA_ENABLE_SANITIZER=ON \
+    -DQUARISMA_SANITIZER_TYPE=address \
+    -DQUARISMA_ENABLE_IWYU=ON \
+    -DQUARISMA_ENABLE_CPPCHECK=ON \
+    -DQUARISMA_BUILD_TESTING=ON
 
 cmake --build build_debug -j
 
 # Run with sanitizer
-./build_debug/bin/xsigma
+./build_debug/bin/quarisma
 
 # Check analysis results
 less build_debug/iwyu.log
@@ -232,10 +232,10 @@ less build_debug/cppcheckoutput.log
 # Fast CI build with external libraries and testing
 cmake -B build_ci -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_EXTERNAL=ON \
-    -DXSIGMA_BUILD_TESTING=ON \
-    -DXSIGMA_ENABLE_GTEST=ON \
-    -DXSIGMA_ENABLE_COVERAGE=ON
+    -DQUARISMA_ENABLE_EXTERNAL=ON \
+    -DQUARISMA_BUILD_TESTING=ON \
+    -DQUARISMA_ENABLE_GTEST=ON \
+    -DQUARISMA_ENABLE_COVERAGE=ON
 
 cmake --build build_ci -j
 
@@ -270,8 +270,8 @@ jobs:
           cmake -B build -S . \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
-            -DXSIGMA_ENABLE_EXTERNAL=ON \
-            -DXSIGMA_BUILD_TESTING=ON
+            -DQUARISMA_ENABLE_EXTERNAL=ON \
+            -DQUARISMA_BUILD_TESTING=ON
 
       - name: Build
         run: cmake --build build -j
@@ -313,16 +313,16 @@ The Enhanced Profiler is an experimental feature providing:
 
 void example_function() {
     // Profile entire function
-    XSIGMA_PROFILE_FUNCTION();
+    QUARISMA_PROFILE_FUNCTION();
 
     // Profile specific scope
     {
-        XSIGMA_PROFILE_SCOPE("DataProcessing");
+        QUARISMA_PROFILE_SCOPE("DataProcessing");
         // Your code here
     }
 
     // Generate report
-    xsigma::profiler::generate_report("profile_results.json");
+    quarisma::profiler::generate_report("profile_results.json");
 }
 ```
 
@@ -332,12 +332,12 @@ void example_function() {
 # Build with profiler enabled
 cmake -B build_profile -S . \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DXSIGMA_ENABLE_PROFILER=ON
+    -DQUARISMA_ENABLE_PROFILER=ON
 
 cmake --build build_profile -j
 
 # Run with profiling
-./build_profile/bin/xsigma
+./build_profile/bin/quarisma
 
 # View results
 cat profile_results.json
@@ -380,7 +380,7 @@ cmake -B build_dev -S . -DCMAKE_BUILD_TYPE=Debug
 cmake -B build_release -S . -DCMAKE_BUILD_TYPE=Release
 
 # Testing
-cmake -B build_test -S . -DXSIGMA_BUILD_TESTING=ON
+cmake -B build_test -S . -DQUARISMA_BUILD_TESTING=ON
 ```
 
 ### Switching Configurations

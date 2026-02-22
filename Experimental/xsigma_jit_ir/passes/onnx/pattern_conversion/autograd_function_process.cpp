@@ -20,7 +20,7 @@ static void convertSubgraphToSubBlock(Block* block)
             std::unordered_map<Value*, Value*> env;
             // Populate subblock with subgraph nodes
             auto subgraph = node->g(attr::Subgraph);
-            for (const auto i : xsigma::irange(subgraph->inputs().size()))
+            for (const auto i : quarisma::irange(subgraph->inputs().size()))
             {
                 subblock->addInput()->copyMetadata(subgraph->inputs()[i]);
                 env[subgraph->inputs()[i]] = subblock->inputs()[i];
@@ -31,7 +31,7 @@ static void convertSubgraphToSubBlock(Block* block)
                     n, [&](Value* v) { return env.find(v) != env.end() ? env[v] : v; }));
                 for (size_t i = 0; i < n->outputs().size(); ++i)
                 {
-                    env[n->outputs().xsigma(i)] = cloned_n->outputs().xsigma(i);
+                    env[n->outputs().quarisma(i)] = cloned_n->outputs().quarisma(i);
                     auto it                     = std::find(
                         subgraph->outputs().begin(), subgraph->outputs().end(), n->outputs()[i]);
                     if (it != subgraph->outputs().end())

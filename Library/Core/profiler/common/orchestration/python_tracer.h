@@ -10,7 +10,7 @@
 #include "util/approximate_clock.h"
 #include "util/strong_type.h"
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 class RecordQueue;
@@ -26,7 +26,7 @@ struct CompressedEvent
     TraceKey                  key_;
     uint64_t                  system_tid_{};
     kineto::DeviceAndResource kineto_info_{};
-    xsigma::time_t            enter_t_{};
+    quarisma::time_t            enter_t_{};
 };
 
 /*
@@ -36,11 +36,11 @@ to ingest the data that we collect from the Python tracer. (`PyEval_SetProfile`)
 
 In order to solve this dependency issue we define a virtual base and a function
 to register a getter. The python tracer then implements these functions and
-exposes itself by calling `registerTracer` from `xsigma/csrc/autograd/init.cpp`.
+exposes itself by calling `registerTracer` from `quarisma/csrc/autograd/init.cpp`.
 This pattern of registration for faux python dependencies in libtorch is common
-in the XSigma codebase.
+in the Quarisma codebase.
 */
-struct XSIGMA_VISIBILITY PythonTracerBase
+struct QUARISMA_VISIBILITY PythonTracerBase
 {
     static std::unique_ptr<PythonTracerBase> make(RecordQueue* queue);
     virtual ~PythonTracerBase() = default;
@@ -49,18 +49,18 @@ struct XSIGMA_VISIBILITY PythonTracerBase
     virtual void                                 restart()              = 0;
     virtual void                                 register_gc_callback() = 0;
     virtual std::vector<std::shared_ptr<Result>> getEvents(
-        std::function<xsigma::time_t(xsigma::approx_time_t)> time_converter,
+        std::function<quarisma::time_t(quarisma::approx_time_t)> time_converter,
         std::vector<CompressedEvent>&                        enters,
-        xsigma::time_t                                       end_time_ns) = 0;
+        quarisma::time_t                                       end_time_ns) = 0;
 };
 
 using MakeFn = std::unique_ptr<PythonTracerBase> (*)(RecordQueue*);
-XSIGMA_API void registerTracer(MakeFn make_tracer);
+QUARISMA_API void registerTracer(MakeFn make_tracer);
 
 /**
  * Memory Tracer Implementation
  */
-struct XSIGMA_VISIBILITY PythonMemoryTracerBase
+struct QUARISMA_VISIBILITY PythonMemoryTracerBase
 {
     static std::unique_ptr<PythonMemoryTracerBase> make();
     virtual ~PythonMemoryTracerBase() = default;
@@ -71,7 +71,7 @@ struct XSIGMA_VISIBILITY PythonMemoryTracerBase
 };
 
 using MakeMemoryFn = std::unique_ptr<PythonMemoryTracerBase> (*)();
-XSIGMA_API void registerMemoryTracer(MakeMemoryFn make_memory_tracer);
+QUARISMA_API void registerMemoryTracer(MakeMemoryFn make_memory_tracer);
 
 }  // namespace python_tracer
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl

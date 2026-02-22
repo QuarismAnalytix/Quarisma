@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include <benchmark/benchmark.h>
@@ -36,7 +36,7 @@
 #include <cstdlib>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace benchmarks
 {
@@ -58,14 +58,14 @@ class mimalloc_benchmark_allocator : public allocator_benchmark_interface
 {
 public:
     void* allocate(
-        XSIGMA_UNUSED std::size_t size, XSIGMA_UNUSED std::size_t alignment = 64) noexcept override
+        QUARISMA_UNUSED std::size_t size, QUARISMA_UNUSED std::size_t alignment = 64) noexcept override
     {
-        return xsigma::cpu::memory_allocator::allocate_mi(size, alignment);
+        return quarisma::cpu::memory_allocator::allocate_mi(size, alignment);
     }
 
-    void deallocate(XSIGMA_UNUSED void* ptr, XSIGMA_UNUSED std::size_t size = 0) noexcept override
+    void deallocate(QUARISMA_UNUSED void* ptr, QUARISMA_UNUSED std::size_t size = 0) noexcept override
     {
-        xsigma::cpu::memory_allocator::free_mi(ptr, size);
+        quarisma::cpu::memory_allocator::free_mi(ptr, size);
     }
 
     const char* name() const noexcept override { return "mimalloc"; }
@@ -75,14 +75,14 @@ class tbb_scalable_benchmark_allocator : public allocator_benchmark_interface
 {
 public:
     void* allocate(
-        XSIGMA_UNUSED std::size_t size, XSIGMA_UNUSED std::size_t alignment = 64) noexcept override
+        QUARISMA_UNUSED std::size_t size, QUARISMA_UNUSED std::size_t alignment = 64) noexcept override
     {
-        return xsigma::cpu::memory_allocator::allocate_tbb(size, alignment);
+        return quarisma::cpu::memory_allocator::allocate_tbb(size, alignment);
     }
 
-    void deallocate(XSIGMA_UNUSED void* ptr, XSIGMA_UNUSED std::size_t size = 0) noexcept override
+    void deallocate(QUARISMA_UNUSED void* ptr, QUARISMA_UNUSED std::size_t size = 0) noexcept override
     {
-        xsigma::cpu::memory_allocator::free_tbb(ptr, size);
+        quarisma::cpu::memory_allocator::free_tbb(ptr, size);
     }
 
     const char* name() const noexcept override { return "tbb_scalable"; }
@@ -105,7 +105,7 @@ public:
 #endif
     }
 
-    void deallocate(void* ptr, XSIGMA_UNUSED std::size_t size = 0) noexcept override
+    void deallocate(void* ptr, QUARISMA_UNUSED std::size_t size = 0) noexcept override
     {
         if (ptr != nullptr)
         {
@@ -123,12 +123,12 @@ public:
 class malloc_benchmark_allocator : public allocator_benchmark_interface
 {
 public:
-    void* allocate(std::size_t size, XSIGMA_UNUSED std::size_t alignment = 64) noexcept override
+    void* allocate(std::size_t size, QUARISMA_UNUSED std::size_t alignment = 64) noexcept override
     {
         return malloc(size);
     }
 
-    void deallocate(void* ptr, XSIGMA_UNUSED std::size_t size = 0) noexcept override { free(ptr); }
+    void deallocate(void* ptr, QUARISMA_UNUSED std::size_t size = 0) noexcept override { free(ptr); }
 
     const char* name() const noexcept override { return "standard_malloc"; }
 };
@@ -283,7 +283,7 @@ void benchmark_memory_access_pattern(benchmark::State& state)
 // Simple Allocation Benchmarks
 // =============================================================================
 
-// XSigma CPU allocator benchmarks
+// Quarisma CPU allocator benchmarks
 BENCHMARK_TEMPLATE(benchmark_simple_allocation, malloc_benchmark_allocator)
     ->Name("BM_Malloc_SimpleAllocation")
     ->Range(64, 64 << 10)
@@ -295,14 +295,14 @@ BENCHMARK_TEMPLATE(benchmark_simple_allocation, standard_aligned_benchmark_alloc
     ->Range(64, 64 << 10)
     ->Unit(benchmark::kMicrosecond);
 
-#if XSIGMA_HAS_MIMALLOC
+#if QUARISMA_HAS_MIMALLOC
 BENCHMARK_TEMPLATE(benchmark_simple_allocation, mimalloc_benchmark_allocator)
     ->Name("BM_Mimalloc_SimpleAllocation")
     ->Range(64, 64 << 10)
     ->Unit(benchmark::kMicrosecond);
 #endif
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 BENCHMARK_TEMPLATE(benchmark_simple_allocation, tbb_scalable_benchmark_allocator)
     ->Name("BM_TBBScalable_SimpleAllocation")
     ->Range(64, 64 << 10)
@@ -313,7 +313,7 @@ BENCHMARK_TEMPLATE(benchmark_simple_allocation, tbb_scalable_benchmark_allocator
 // Batch Allocation Benchmarks
 // =============================================================================
 
-// XSigma CPU allocator batch benchmarks
+// Quarisma CPU allocator batch benchmarks
 BENCHMARK_TEMPLATE(benchmark_batch_allocation, malloc_benchmark_allocator)
     ->Name("BM_Malloc_BatchAllocation")
     ->Args({100, 1024})
@@ -331,7 +331,7 @@ BENCHMARK_TEMPLATE(benchmark_batch_allocation, standard_aligned_benchmark_alloca
     ->Args({1000, 4096})
     ->Unit(benchmark::kMicrosecond);
 
-#if XSIGMA_HAS_MIMALLOC
+#if QUARISMA_HAS_MIMALLOC
 BENCHMARK_TEMPLATE(benchmark_batch_allocation, mimalloc_benchmark_allocator)
     ->Name("BM_Mimalloc_BatchAllocation")
     ->Args({100, 1024})
@@ -341,7 +341,7 @@ BENCHMARK_TEMPLATE(benchmark_batch_allocation, mimalloc_benchmark_allocator)
     ->Unit(benchmark::kMicrosecond);
 #endif
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 BENCHMARK_TEMPLATE(benchmark_batch_allocation, tbb_scalable_benchmark_allocator)
     ->Name("BM_TBBScalable_BatchAllocation")
     ->Args({100, 1024})
@@ -355,7 +355,7 @@ BENCHMARK_TEMPLATE(benchmark_batch_allocation, tbb_scalable_benchmark_allocator)
 // Mixed Size Allocation Benchmarks
 // =============================================================================
 
-// XSigma CPU allocator mixed size benchmarks
+// Quarisma CPU allocator mixed size benchmarks
 BENCHMARK_TEMPLATE(benchmark_mixed_sizes, malloc_benchmark_allocator)
     ->Name("BM_Malloc_MixedSizes")
     ->Arg(100)
@@ -371,7 +371,7 @@ BENCHMARK_TEMPLATE(benchmark_mixed_sizes, standard_aligned_benchmark_allocator)
     ->Arg(1000)
     ->Unit(benchmark::kMicrosecond);
 
-#if XSIGMA_HAS_MIMALLOC
+#if QUARISMA_HAS_MIMALLOC
 BENCHMARK_TEMPLATE(benchmark_mixed_sizes, mimalloc_benchmark_allocator)
     ->Name("BM_Mimalloc_MixedSizes")
     ->Arg(100)
@@ -380,7 +380,7 @@ BENCHMARK_TEMPLATE(benchmark_mixed_sizes, mimalloc_benchmark_allocator)
     ->Unit(benchmark::kMicrosecond);
 #endif
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 BENCHMARK_TEMPLATE(benchmark_mixed_sizes, tbb_scalable_benchmark_allocator)
     ->Name("BM_TBBScalable_MixedSizes")
     ->Arg(100)
@@ -393,7 +393,7 @@ BENCHMARK_TEMPLATE(benchmark_mixed_sizes, tbb_scalable_benchmark_allocator)
 // Memory Access Pattern Benchmarks
 // =============================================================================
 
-// XSigma CPU allocator memory access benchmarks
+// Quarisma CPU allocator memory access benchmarks
 BENCHMARK_TEMPLATE(benchmark_memory_access_pattern, malloc_benchmark_allocator)
     ->Name("BM_Malloc_MemoryAccess")
     ->Range(1024, 1024 << 10)
@@ -405,14 +405,14 @@ BENCHMARK_TEMPLATE(benchmark_memory_access_pattern, standard_aligned_benchmark_a
     ->Range(1024, 1024 << 10)
     ->Unit(benchmark::kMicrosecond);
 
-#if XSIGMA_HAS_MIMALLOC
+#if QUARISMA_HAS_MIMALLOC
 BENCHMARK_TEMPLATE(benchmark_memory_access_pattern, mimalloc_benchmark_allocator)
     ->Name("BM_Mimalloc_MemoryAccess")
     ->Range(1024, 1024 << 10)
     ->Unit(benchmark::kMicrosecond);
 #endif
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 BENCHMARK_TEMPLATE(benchmark_memory_access_pattern, tbb_scalable_benchmark_allocator)
     ->Name("BM_TBBScalable_MemoryAccess")
     ->Range(1024, 1024 << 10)
@@ -466,7 +466,7 @@ BENCHMARK_TEMPLATE(benchmark_aligned_allocation, standard_aligned_benchmark_allo
     ->Arg(512)
     ->Unit(benchmark::kMicrosecond);
 
-#if XSIGMA_HAS_MIMALLOC
+#if QUARISMA_HAS_MIMALLOC
 BENCHMARK_TEMPLATE(benchmark_aligned_allocation, mimalloc_benchmark_allocator)
     ->Name("BM_Mimalloc_AlignedAllocation")
     ->Arg(16)
@@ -478,7 +478,7 @@ BENCHMARK_TEMPLATE(benchmark_aligned_allocation, mimalloc_benchmark_allocator)
     ->Unit(benchmark::kMicrosecond);
 #endif
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 BENCHMARK_TEMPLATE(benchmark_aligned_allocation, tbb_scalable_benchmark_allocator)
     ->Name("BM_TBBScalable_AlignedAllocation")
     ->Arg(16)
@@ -568,7 +568,7 @@ BENCHMARK_TEMPLATE(benchmark_fragmentation_pattern, standard_aligned_benchmark_a
     ->Arg(5000)
     ->Unit(benchmark::kMicrosecond);
 
-#if XSIGMA_HAS_MIMALLOC
+#if QUARISMA_HAS_MIMALLOC
 BENCHMARK_TEMPLATE(benchmark_fragmentation_pattern, mimalloc_benchmark_allocator)
     ->Name("BM_Mimalloc_Fragmentation")
     ->Arg(1000)
@@ -576,7 +576,7 @@ BENCHMARK_TEMPLATE(benchmark_fragmentation_pattern, mimalloc_benchmark_allocator
     ->Unit(benchmark::kMicrosecond);
 #endif
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 BENCHMARK_TEMPLATE(benchmark_fragmentation_pattern, tbb_scalable_benchmark_allocator)
     ->Name("BM_TBBScalable_Fragmentation")
     ->Arg(1000)
@@ -585,4 +585,4 @@ BENCHMARK_TEMPLATE(benchmark_fragmentation_pattern, tbb_scalable_benchmark_alloc
 #endif
 
 }  // namespace benchmarks
-}  // namespace xsigma
+}  // namespace quarisma

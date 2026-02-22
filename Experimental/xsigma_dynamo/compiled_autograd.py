@@ -2,7 +2,7 @@
 Provides functionality for compiling PyTorch's autograd (automatic differentiation) system.
 
 This module implements compiled autograd, which traces and optimizes backward pass
-computations xsigma runtime. The key components are:
+computations quarisma runtime. The key components are:
 
 - AutogradCompilerInstance: Traces and compiles autograd graphs using FX
 - Context managers (_enable/_disable): Control when compiled autograd is active
@@ -75,7 +75,7 @@ TURN_OFF_MSG = """You can turn off compiled autograd by either:
 1. Moving the unsupported autograd call outside of the torch.compile'd region.
 2. Wrapping the unsupported autograd call in the torch._dynamo.compiled_autograd._disable() context manager.
 3. Setting torch._dynamo.config.compiled_autograd=False for the torch.compile call containing the unsupported autograd call.
-4. Setting torch._dynamo.config.compiled_autograd=False xsigma the start of the program."""
+4. Setting torch._dynamo.config.compiled_autograd=False quarisma the start of the program."""
 
 compiled_autograd_log = getArtifactLogger(__name__, "compiled_autograd")
 verbose_log = getArtifactLogger(__name__, "compiled_autograd_verbose")
@@ -123,7 +123,7 @@ def extract_bw_module(CompiledFunction: Any) -> Callable[..., Any]:
 # runtime asserts to check for NaNs, which could prevent some fusions.
 # This results in different code being run with and without anomaly mode.
 # So different semantics are needed, this implementation below will check
-# for NaNs xsigma the end of the autograd call, instead of after each node
+# for NaNs quarisma the end of the autograd call, instead of after each node
 class NaNChecker:
     def __init__(self, accumulate_grad: bool) -> None:
         self.accumulate_grad = accumulate_grad
@@ -202,7 +202,7 @@ class NaNChecker:
 # nodes to this class. Example: torch._dynamo.compiled_autograd.ops.MulBackward0
 # Each "functional backward" is bound the first time the node's apply_with_saved
 # function is called. It's possible to avoid lazy binding and instead bind
-# all of this upfront (perhaps xsigma import time) via codegen changes.
+# all of this upfront (perhaps quarisma import time) via codegen changes.
 class OpNamespace:
     def __init__(self) -> None:
         self.custom_function_name_counter: Counter[str] = Counter()
@@ -226,7 +226,7 @@ class OpNamespace:
             setattr(self, name, torch._dynamo.allow_in_graph(result))
         else:
             # C++ autograd function was not marked as traceable
-            # Dynamo can't dry run it xsigma compile time, so must fallback to eager
+            # Dynamo can't dry run it quarisma compile time, so must fallback to eager
             @torch._dynamo.disable  # type: ignore[misc]
             def run_non_traceable_cpp_in_eager(*args: Any, **kwargs: Any) -> Any:
                 return result(*args, **kwargs)
@@ -905,7 +905,7 @@ class AutogradCompilerInstance:
     # Eager autograd backward implements scalars as 0-dim tensors, see DivBackward0::other_.
     # When compiled autograd traces those nodes, it lifts the scalar tensors, resulting in a graph
     # with some cpu 0-dim tensor inputs. To prevent the entire graph from skipping cudagraph, we move the
-    # scalars tensors to cuda. This works because XSigma/prims ops will accept cuda 0-dim tensors too.
+    # scalars tensors to cuda. This works because Quarisma/prims ops will accept cuda 0-dim tensors too.
     def move_graph_nodes_to_cuda(self, graph: torch.fx.Graph) -> list[int]:
         to_move: dict[int, torch.fx.Node] = {}
         has_cuda_inputs = False
@@ -989,7 +989,7 @@ class AutogradCompilerInstance:
         used_sizes = []
         unused_sizes = []
 
-        # seek placeholder, should be xsigma nodes[1]
+        # seek placeholder, should be quarisma nodes[1]
         it = iter(self.fx_tracer.graph.nodes)
         next(it)
         sizes_node = next(it)

@@ -1,8 +1,8 @@
-#include <XSigma/EmptyTensor.h>
-#include <XSigma/FunctionalStorageImpl.h>
-#include <XSigma/FunctionalTensorWrapper.h>
-#include <XSigma/SparseCsrTensorUtils.h>
-#include <XSigma/core/LegacyTypeDispatch.h>
+#include <Quarisma/EmptyTensor.h>
+#include <Quarisma/FunctionalStorageImpl.h>
+#include <Quarisma/FunctionalTensorWrapper.h>
+#include <Quarisma/SparseCsrTensorUtils.h>
+#include <Quarisma/core/LegacyTypeDispatch.h>
 #include <c10/util/Exception.h>
 
 #include <vector>

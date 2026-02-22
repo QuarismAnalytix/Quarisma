@@ -2,14 +2,14 @@
  * @file TestEnzymeAD.cpp
  * @brief Test Enzyme Automatic Differentiation Integration
  *
- * This file demonstrates the integration of Enzyme AD with XSigma.
+ * This file demonstrates the integration of Enzyme AD with Quarisma.
  * Enzyme provides high-performance automatic differentiation for C/C++ code.
  *
  * Test Coverage:
  * - Forward-mode automatic differentiation
  * - Reverse-mode automatic differentiation (gradient computation)
  * - Simple mathematical functions
- * - Integration with XSigma test framework
+ * - Integration with Quarisma test framework
  */
 
 #include <gtest/gtest.h>
@@ -127,7 +127,7 @@ double rosenbrock_dy(double x, double y)
 // Google Test Suite for Enzyme AD
 // =============================================================================
 
-#if XSIGMA_HAS_ENZYME
+#if QUARISMA_HAS_ENZYME
 
 /**
  * @brief Test reverse-mode AD on square function
@@ -470,17 +470,17 @@ TEST(EnzymeAD, NumericalAccuracy)
     std::cout << "========================================\n";
 }
 
-#else  // !XSIGMA_HAS_ENZYME
+#else  // !QUARISMA_HAS_ENZYME
 
 /**
  * @brief Placeholder test when Enzyme is disabled
  */
 TEST(EnzymeAD, DISABLED_EnzymeNotEnabled)
 {
-    GTEST_SKIP() << "Enzyme AD is not enabled. Configure with -DXSIGMA_ENABLE_ENZYME=ON";
+    GTEST_SKIP() << "Enzyme AD is not enabled. Configure with -DQUARISMA_ENABLE_ENZYME=ON";
 }
 
-#endif  // XSIGMA_HAS_ENZYME
+#endif  // QUARISMA_HAS_ENZYME
 
 // =============================================================================
 // Integration Test
@@ -495,17 +495,17 @@ TEST(EnzymeAD, CompileDefinition)
     std::cout << "  Enzyme Configuration Check\n";
     std::cout << "========================================\n";
 
-#if XSIGMA_HAS_ENZYME
-    std::cout << "XSIGMA_HAS_ENZYME: ENABLED (1)\n";
+#if QUARISMA_HAS_ENZYME
+    std::cout << "QUARISMA_HAS_ENZYME: ENABLED (1)\n";
     std::cout << "Status: ✓ Enzyme is properly configured\n";
     std::cout << "Plugin: Linked via -fpass-plugin\n";
     std::cout << "========================================\n";
-    EXPECT_TRUE(true) << "XSIGMA_HAS_ENZYME is defined correctly";
+    EXPECT_TRUE(true) << "QUARISMA_HAS_ENZYME is defined correctly";
 #else
-    std::cout << "XSIGMA_HAS_ENZYME: DISABLED (0)\n";
+    std::cout << "QUARISMA_HAS_ENZYME: DISABLED (0)\n";
     std::cout << "Status: Enzyme is not enabled\n";
     std::cout << "========================================\n";
-    EXPECT_TRUE(true) << "XSIGMA_HAS_ENZYME is not defined (Enzyme disabled)";
+    EXPECT_TRUE(true) << "QUARISMA_HAS_ENZYME is not defined (Enzyme disabled)";
 #endif
 }
 

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
@@ -41,7 +41,7 @@ limitations under the License.
 
 #include "common/export.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 // Returns a boolean into "value" from the environmental variable
@@ -49,28 +49,28 @@ namespace xsigma
 // case insensitive "false" is interpreted as false. A string "1" or a case
 // insensitive "true" is interpreted as true. Otherwise, an error status is
 // returned.
-XSIGMA_API bool read_bool_from_env_var(
+QUARISMA_API bool read_bool_from_env_var(
     std::string_view env_var_name, bool default_val, bool* value);
 
 // Returns an int64 into "value" from the environmental variable "env_var_name".
 // If it is unset, the default value is used.
 // If the string cannot be parsed into int64, an error status is returned.
-XSIGMA_API bool read_int64_from_env_var(
+QUARISMA_API bool read_int64_from_env_var(
     std::string_view env_var_name, int64_t default_val, int64_t* value);
 // Returns a float into "value" from the environmental variable "env_var_name".
 // If it is unset, the default value is used.
 // If the string cannot be parsed into float, an error status is returned.
-XSIGMA_API bool read_float_from_env_var(
+QUARISMA_API bool read_float_from_env_var(
     std::string_view env_var_name, float default_val, float* value);
 
 // Returns a string into "value" from the environmental variable "env_var_name".
 // If it is unset, the default value is used.
-XSIGMA_API bool read_string_from_env_var(
+QUARISMA_API bool read_string_from_env_var(
     std::string_view env_var_name, std::string_view default_val, std::string& value);
 
 // Returns a comma separated string into "value" from the environmental variable
 // "env_var_name". If it is unset, the default value is comma split and used.
-XSIGMA_API bool read_strings_from_env_var(
+QUARISMA_API bool read_strings_from_env_var(
     std::string_view env_var_name, std::string_view default_val, std::vector<std::string>& value);
 
-}  // namespace xsigma
+}  // namespace quarisma

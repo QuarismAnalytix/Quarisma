@@ -92,7 +92,7 @@ class CuteDSLOpOverrides(OpOverrides):
 
         CuteDSL requires both operands to be TensorSSA objects for tensor operations.
         This helper automatically converts scalar arguments to TensorSSA using
-        cute.full_like when xsigma least one argument is a tensor (CSEVariable).
+        cute.full_like when quarisma least one argument is a tensor (CSEVariable).
 
         Args:
             a: First operand (CSEVariable for tensors, str for scalars)
@@ -100,7 +100,7 @@ class CuteDSLOpOverrides(OpOverrides):
             op_format: Format string with {a} and {b} placeholders for the operation
 
         Returns:
-            CSEVariable if xsigma least one operand is a CSEVariable, otherwise string
+            CSEVariable if quarisma least one operand is a CSEVariable, otherwise string
         """
         tensor_arg = (
             a

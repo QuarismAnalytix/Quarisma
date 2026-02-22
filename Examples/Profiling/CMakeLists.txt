@@ -1,19 +1,19 @@
 # =============================================================================
-# XSigma Profiling Examples
+# Quarisma Profiling Examples
 # CMakeLists.txt
 # =============================================================================
-# This CMakeLists.txt configures and builds the XSigma Profiling example
+# This CMakeLists.txt configures and builds the Quarisma Profiling example
 # programs that demonstrate the usage of profiling APIs.
 #
 # Examples included:
-# - example_profiling_basic: Comprehensive profiling example with XSigma, Kineto, and ITT
+# - example_profiling_basic: Comprehensive profiling example with Quarisma, Kineto, and ITT
 #
 # Build these examples with:
 #   python setup.py config.build.examples.ninja.clang
 #   python setup.py config.build.examples.vs22
 #
 # Or manually:
-#   cmake -DXSIGMA_ENABLE_EXAMPLES=ON ..
+#   cmake -DQUARISMA_ENABLE_EXAMPLES=ON ..
 #   cmake --build .
 # =============================================================================
 
@@ -40,17 +40,17 @@ foreach(example_source ${example_sources})
   set_target_properties(
     ${example_name}
     PROPERTIES
-      CXX_STANDARD ${XSIGMA_CXX_STANDARD}
+      CXX_STANDARD ${QUARISMA_CXX_STANDARD}
       CXX_STANDARD_REQUIRED ON
       CXX_EXTENSIONS OFF
   )
 
   # Link against Core library (which includes all profiling functionality)
-  target_link_libraries(${example_name} PRIVATE XSigma::Core)
+  target_link_libraries(${example_name} PRIVATE Quarisma::Core)
 
   # Set output directory
-  if(COMMAND xsigma_set_target_output_directories)
-    xsigma_set_target_output_directories(${example_name})
+  if(COMMAND quarisma_set_target_output_directories)
+    quarisma_set_target_output_directories(${example_name})
   else()
     set_target_properties(
       ${example_name}

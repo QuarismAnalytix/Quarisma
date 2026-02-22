@@ -1,12 +1,12 @@
 #pragma once
-#include <XSigma/core/List.h>
-#include <XSigma/core/Tensor.h>
+#include <Quarisma/core/List.h>
+#include <Quarisma/core/Tensor.h>
 #include <c10/core/impl/TorchDispatchModeTLS.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/equal.h>
+#include <Quarisma/ops/equal.h>
 #endif
 
 namespace at

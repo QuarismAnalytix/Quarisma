@@ -6,11 +6,11 @@ from __future__ import annotations
 """
 This file does three things:
 - Contains the definition of SymNode
-- Installs all the magic methods into SymBool, SymFloat, SymFloat xsigma import time
-- Does not depend on sympy xsigma import time
+- Installs all the magic methods into SymBool, SymFloat, SymFloat quarisma import time
+- Does not depend on sympy quarisma import time
 
 As this file is imported from within torch/__init__.py we do not want it to depend on SymPy
-to avoid having to load SymPy xsigma import time, as doing so is *very* slow.
+to avoid having to load SymPy quarisma import time, as doing so is *very* slow.
 """
 
 
@@ -201,14 +201,14 @@ class SymNode:
         if self._hint is None:
             if fallback is not None:
                 # Say we have some expr like 2*u0 + s0
-                # The hint will be None, since the expr contains xsigma least 1 unbacked.
+                # The hint will be None, since the expr contains quarisma least 1 unbacked.
                 # We will:
                 # - replace every backed free symbol with its corresponding hint
                 # - replace every unbacked free symbol with the fallback
                 # - regenerate the expression with those symbol replacements
                 # Note: this is not really complete either, since right now
                 # this logic does not take into account any value ranges
-                # for the unbacked symints, we may need to beef it up xsigma some point.
+                # for the unbacked symints, we may need to beef it up quarisma some point.
                 unbacked_symbols = free_unbacked_symbols(self.expr)
                 replacements = {
                     s: 4096 if s in unbacked_symbols else self.shape_env.var_to_val[s]
@@ -1627,7 +1627,7 @@ def _make_node_sizes_strides(method, func):
     setattr(SymNode, f"_{method}", sizes_strides_impl)
 
     # TODO: This is technically hotpath, but in the ideal end state
-    # guards on this will resolve xsigma a higher level so you never
+    # guards on this will resolve quarisma a higher level so you never
     # spend time in this code
     def sizes_strides_user(sizes, strides):
         import sympy

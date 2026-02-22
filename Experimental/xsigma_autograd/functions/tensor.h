@@ -1,7 +1,7 @@
 #pragma once
 
-#include <XSigma/TensorGeometry.h>
-#include <XSigma/core/DeprecatedTypeProperties.h>
+#include <Quarisma/TensorGeometry.h>
+#include <Quarisma/core/DeprecatedTypeProperties.h>
 #include <torch/csrc/Export.h>
 #include <torch/csrc/autograd/function.h>
 #include <torch/csrc/autograd/variable.h>
@@ -19,7 +19,7 @@ struct TORCH_API CopyBackwards : public Node
     void          compiled_args(CompiledNodeArgs& args) const override;
     variable_list apply_with_saved(const variable_list& inputs, SwapSavedVariables& saved) override;
 
-    xsigma::TensorOptions src_options;
+    quarisma::TensorOptions src_options;
 };
 
 // Note [View + Inplace update for base tensor]
@@ -117,7 +117,7 @@ struct TORCH_API CopyBackwards : public Node
 //     E.g. int[] sizes, int[] strides, and int storage_offset.
 //   - For XLA we use view_fn_, which captures all forward view op arguments
 //     by **value**.
-//     E.g for xsigma::narrow, int dim, int start, in length are saved.
+//     E.g for quarisma::narrow, int dim, int start, in length are saved.
 //
 // Theoretically we could also save Tensor `view` in CopySlices Node, but
 // it's far more expensive than what we currently save.
@@ -137,7 +137,7 @@ struct TORCH_API CopyBackwards : public Node
 //   x = b.select(0, 0)
 //   x *= y
 //
-// You can see the visualization xsigma
+// You can see the visualization quarisma
 // https://docs.google.com/drawings/d/1Bx-Hcz-zlIv7PabQqnPhUIVIs9F8WWi48svqMsAUMFs
 // which contains the wrapped MulBackward Node and show what it links to.
 // Since a backward can happen between any subset of the inputs (t and y) and
@@ -158,7 +158,7 @@ struct TORCH_API CopySlices : public Node
 {
     CopySlices(
         const Variable&           base_var,
-        xsigma::TensorGeometry    view_,
+        quarisma::TensorGeometry    view_,
         std::unique_ptr<ViewFunc> view_fn_,
         std::shared_ptr<Node>     fn_);
 
@@ -172,10 +172,10 @@ struct TORCH_API CopySlices : public Node
     variable_list apply_with_saved(const variable_list& inputs, SwapSavedVariables& saved) override;
     void          update_exec_info();
 
-    xsigma::TensorGeometry base;
+    quarisma::TensorGeometry base;
     // view and view_fn are redundant and view_fn will be used if available.
     // See Note [View + Inplace update for base tensor] for details.
-    xsigma::TensorGeometry    view;
+    quarisma::TensorGeometry    view;
     std::unique_ptr<ViewFunc> view_fn;
     std::shared_ptr<Node>     fn;
 };

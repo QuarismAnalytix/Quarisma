@@ -1,4 +1,4 @@
-#include <XSigma/EmptyTensor.h>
+#include <Quarisma/EmptyTensor.h>
 #include <torch/csrc/jit/frontend/lexer.h>
 #include <torch/csrc/jit/frontend/parse_string_literal.h>
 #include <torch/csrc/jit/frontend/schema_type_parser.h>
@@ -6,10 +6,10 @@
 #include <torch/csrc/jit/ir/irparser.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/empty.h>
-#include <XSigma/ops/empty_strided.h>
+#include <Quarisma/ops/empty.h>
+#include <Quarisma/ops/empty_strided.h>
 #endif
 
 #include <string>
@@ -90,12 +90,12 @@ struct ParsedLiteral
     int64_t                              i = 0;
     std::string                          s;
     double                               f = 0.0;
-    xsigma::complex<double>              c = xsigma::complex<double>(0, 0);
+    quarisma::complex<double>              c = quarisma::complex<double>(0, 0);
     TypePtr                              ty;
     std::vector<int64_t>                 is;
     std::vector<std::string>             ss;
     std::vector<double>                  fs;
-    std::vector<xsigma::complex<double>> cs;
+    std::vector<quarisma::complex<double>> cs;
     std::vector<TypePtr>                 tys;
 };
 
@@ -187,7 +187,7 @@ ParsedLiteral IRParser::parseScalarLiteral(Node* n)
 {
     auto                                                 token = L.cur();
     std::string                                          str;
-    std::pair<TypePtr, std::optional<xsigma::AliasInfo>> type_alias;
+    std::pair<TypePtr, std::optional<quarisma::AliasInfo>> type_alias;
     ParsedLiteral                                        r;
     switch (token.kind)
     {
@@ -225,7 +225,7 @@ ParsedLiteral IRParser::parseScalarLiteral(Node* n)
                     ErrorReport(token.range)
                     << "Number is too long to be represented in type double");
             }
-            r.c = xsigma::complex<double>(0, imag);
+            r.c = quarisma::complex<double>(0, imag);
         }
         else if (str.find('.') != std::string::npos || str.find('e') != std::string::npos)
         {
@@ -318,13 +318,13 @@ ParsedLiteral IRParser::parseScalarLiteral(Node* n)
         switch (number.k)
         {
         case AttributeKind::i:
-            n->ival_(attr::value, xsigma::Scalar(number.i));
+            n->ival_(attr::value, quarisma::Scalar(number.i));
             break;
         case AttributeKind::f:
-            n->ival_(attr::value, xsigma::Scalar(number.f));
+            n->ival_(attr::value, quarisma::Scalar(number.f));
             break;
         case AttributeKind::c:
-            n->ival_(attr::value, xsigma::Scalar(number.c));
+            n->ival_(attr::value, quarisma::Scalar(number.c));
             break;
         default:
             throw(
@@ -376,10 +376,10 @@ void IRParser::parseAttr(Node* n)
     {
         // list
         AttributeKind                         k = AttributeKind::ts;
-        xsigma::List<int64_t>                 is;
-        xsigma::List<std::string>             ss;
-        xsigma::List<double>                  fs;
-        xsigma::List<xsigma::complex<double>> cs;
+        quarisma::List<int64_t>                 is;
+        quarisma::List<std::string>             ss;
+        quarisma::List<double>                  fs;
+        quarisma::List<quarisma::complex<double>> cs;
         std::vector<TypePtr>                  tys;
         int                                   elem_num = 0;
         parseList(
@@ -503,7 +503,7 @@ void IRParser::parseAttr(Node* n)
                     {
                         throw(
                             ErrorReport(L.cur().range)
-                            << "Only cpu device is supported for Generator xsigma this time.");
+                            << "Only cpu device is supported for Generator quarisma this time.");
                     }
                     device = r.s;
                 }
@@ -536,11 +536,11 @@ void IRParser::parseAttr(Node* n)
             {
                 if (seed.has_value())
                 {
-                    n->ival_(Symbol::attr(attrname), xsigma::detail::createCPUGenerator(*seed));
+                    n->ival_(Symbol::attr(attrname), quarisma::detail::createCPUGenerator(*seed));
                 }
                 else
                 {
-                    n->ival_(Symbol::attr(attrname), xsigma::detail::createCPUGenerator());
+                    n->ival_(Symbol::attr(attrname), quarisma::detail::createCPUGenerator());
                 }
             }
         }
@@ -721,14 +721,14 @@ void IRParser::parseOperator(Block* b)
         vmap[v.name] = n->outputs()[idx];
         if (schema && !schema->is_varret())
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 schema->returns().size() > idx,
-                "Operator parsing error: out of bounds access xsigma ",
+                "Operator parsing error: out of bounds access quarisma ",
                 idx,
                 " to schema->returns() which size is ",
                 schema->returns().size(),
                 " in size");
-            auto schema_return_type = schema->returns().xsigma(idx).type();
+            auto schema_return_type = schema->returns().quarisma(idx).type();
             if (!v.type)
             {
                 vmap[v.name]->setType(schema_return_type);
@@ -847,9 +847,9 @@ void IRParser::parse()
         TORCH_INTERNAL_ASSERT(device);
         auto dtype = tt->scalarType();
         TORCH_INTERNAL_ASSERT(dtype);
-        auto options = xsigma::TensorOptions(*device).dtype(dtype);
+        auto options = quarisma::TensorOptions(*device).dtype(dtype);
 
-        auto e = xsigma::empty_strided(*sizes, *strides, options);
+        auto e = quarisma::empty_strided(*sizes, *strides, options);
         if (n->hasAttribute(attr::value))
         {
             auto value = n->ival(attr::value);
@@ -866,11 +866,11 @@ void IRParser::parse()
         IValue val;
         if (type->kind() == TypeKind::ListType)
         {
-            val = xsigma::impl::GenericList(type->containedType(0));
+            val = quarisma::impl::GenericList(type->containedType(0));
         }
         else if (type->kind() == TypeKind::DictType)
         {
-            val = xsigma::impl::GenericDict(type->containedType(0), type->containedType(1));
+            val = quarisma::impl::GenericDict(type->containedType(0), type->containedType(1));
         }
         n->ival_(attr::value, val);
     }
@@ -901,7 +901,7 @@ Value* IRParser::findValueInVMap(const std::string& name)
     {
         throw(ErrorReport(L.cur().range) << "Cannot find a variable with name '" << name << "'");
     }
-    return vmap.xsigma(name);
+    return vmap.quarisma(name);
 }
 
 }  // namespace torch::jit

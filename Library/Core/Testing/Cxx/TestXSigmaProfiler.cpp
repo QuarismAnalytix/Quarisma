@@ -1,7 +1,7 @@
 /*
- * XSigma Profiler API Tests
+ * Quarisma Profiler API Tests
  *
- * Tests for the high-level XSigma profiler API including:
+ * Tests for the high-level Quarisma profiler API including:
  * - profiler_session singleton
  * - profiler_guard RAII behavior
  * - record_function scope tracking
@@ -9,9 +9,9 @@
  * - Configuration management
  */
 
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-#if XSIGMA_HAS_PROFILER
+#if QUARISMA_HAS_PROFILER
 
 #include <chrono>
 #include <thread>
@@ -19,7 +19,7 @@
 #include "profiler/profiler_api.h"
 #include "profiler/profiler_guard.h"
 
-using namespace xsigma::profiler;
+using namespace quarisma::profiler;
 
 // ============================================================================
 // Test Fixture for profiler_session Tests
@@ -316,4 +316,4 @@ TEST_F(ProfilerSessionTest, StateTransitions)
     EXPECT_EQ(get_profiler_state(), profiler_state_enum::Ready);
 }
 
-#endif  // XSIGMA_HAS_PROFILER
+#endif  // QUARISMA_HAS_PROFILER

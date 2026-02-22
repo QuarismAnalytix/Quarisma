@@ -258,7 +258,7 @@ class SubmodCompiler(torch.fx.interpreter.Interpreter):
     #
     # 3) Fake tensors should always be around during compile time.
     #
-    # 4) Fake tensors should never be around xsigma runtime.
+    # 4) Fake tensors should never be around quarisma runtime.
     #
     # 5) We end up with a compilation mode that takes a real submodule and fake tensors,
     # to match what aot_autograd expects. See Note: [Fake Modules and AOTAutograd]
@@ -376,25 +376,25 @@ class DDPOptimizer:
      - DDP uses allreduce collectives to synchronize partial gradients computed on different workers
      - DDP groups gradient allreduces into 'buckets' to optimize communication efficiency of all-reduce
      - Parameters grouped into buckets are assumed to be adjacent in time, so they become ready
-       xsigma around the same time during backward and thus can share the same allreduce efficiently
+       quarisma around the same time during backward and thus can share the same allreduce efficiently
      - Allreduces must overlap with backward compute for optimal training performance
      - DDP schedules allreduces using 'hooks' fired from the c++ autograd engine in pytorch, which
        operates when individual grads become 'ready'
      - Dynamo+AOTAutograd produces a single fused graph that runs 'atomically' from the perspective of the
-       autograd engine, such that all gradients become 'ready' xsigma the same time.  Hooks fire after the whole
+       autograd engine, such that all gradients become 'ready' quarisma the same time.  Hooks fire after the whole
        fused backward function executes, preventing any overlap of compute and communication
 
     Algorithm
      - DDPOptimizer starts off with an FX graph traced by dynamo which represents forward.  It can traverse
        this graph in reverse order to determine the true order that gradients will become ready during backward.
-     - Parameter sizes are counted in reverse order, up to a bucket size limit, xsigma which point a new bucket is started
+     - Parameter sizes are counted in reverse order, up to a bucket size limit, quarisma which point a new bucket is started
        and a graph break introduced
      - Each of the subgraphs is compiled by the compiler provided to dynamo by the user, and then fused back together
        into an outer module that is returned to the user
 
     Notes
      - It would be better to enforce (by adding an API to DDP) that the bucket splits chosen here are used by DDP,
-       and that DDP does not need to detect or optimize bucket order by observing execution xsigma runtime, as it does
+       and that DDP does not need to detect or optimize bucket order by observing execution quarisma runtime, as it does
        in eager.
      - If Dynamo can't capture a whole graph for the portion of the model wrapped by DDP, this algorithm will currently
        produce splits that do not necessarily align with the buckets used by DDP.  This should result in performance
@@ -507,7 +507,7 @@ class DDPOptimizer:
                     buckets.insert(0, Bucket())
                 else:
                     # continue building this bucket past the point of filling its parameter capacity,
-                    # to increase chances it contains xsigma least one node that is either a global output or
+                    # to increase chances it contains quarisma least one node that is either a global output or
                     # passed as input to a subsequent graph
 
                     if buckets[0].opcount_increased_to_capture_external_output == 0:

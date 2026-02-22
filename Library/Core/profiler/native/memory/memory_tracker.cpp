@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "memory_tracker.h"
@@ -50,7 +50,7 @@
 #include <chrono>
 #include <iostream>
 #include <utility>
-namespace xsigma
+namespace quarisma
 {
 
 //=============================================================================
@@ -109,7 +109,7 @@ void memory_tracker::track_allocation(void* ptr, size_t size, const std::string&
         return;
     }
 
-    xsigma::memory_allocation allocation;
+    quarisma::memory_allocation allocation;
     allocation.address_   = ptr;
     allocation.size_      = size;
     allocation.timestamp_ = std::chrono::high_resolution_clock::now();
@@ -155,9 +155,9 @@ void memory_tracker::track_deallocation(void* ptr)
     }
 }
 
-xsigma::memory_stats memory_tracker::get_current_stats() const
+quarisma::memory_stats memory_tracker::get_current_stats() const
 {
-    xsigma::memory_stats stats;
+    quarisma::memory_stats stats;
     stats.current_usage_     = current_usage_.load();
     stats.peak_usage_        = peak_usage_.load();
     stats.total_allocated_   = total_allocated_.load();
@@ -252,10 +252,10 @@ void memory_tracker::reset()
     }
 }
 
-std::vector<xsigma::memory_allocation> memory_tracker::get_active_allocations() const
+std::vector<quarisma::memory_allocation> memory_tracker::get_active_allocations() const
 {
     std::scoped_lock const                 lock(allocations_mutex_);
-    std::vector<xsigma::memory_allocation> allocations;
+    std::vector<quarisma::memory_allocation> allocations;
     allocations.reserve(active_allocations_.size());
 
     // Use std::transform to extract allocation values
@@ -276,13 +276,13 @@ size_t memory_tracker::get_allocation_count() const
 
 void memory_tracker::take_snapshot(const std::string& label)
 {
-    xsigma::memory_stats const stats = get_current_stats();
+    quarisma::memory_stats const stats = get_current_stats();
 
     std::scoped_lock const lock(snapshots_mutex_);
     snapshots_.emplace_back(label, stats);
 }
 
-std::vector<std::pair<std::string, xsigma::memory_stats>> memory_tracker::get_snapshots() const
+std::vector<std::pair<std::string, quarisma::memory_stats>> memory_tracker::get_snapshots() const
 {
     std::scoped_lock const lock(snapshots_mutex_);
     return snapshots_;
@@ -387,7 +387,7 @@ void memory_tracker::update_peak_usage(size_t current)
 // memory_tracking_scope Implementation
 //=============================================================================
 
-memory_tracking_scope::memory_tracking_scope(xsigma::memory_tracker& tracker, std::string label)
+memory_tracking_scope::memory_tracking_scope(quarisma::memory_tracker& tracker, std::string label)
     : tracker_(tracker), label_(std::move(label))
 {
     start_stats_ = tracker_.get_current_stats();
@@ -402,10 +402,10 @@ memory_tracking_scope::~memory_tracking_scope()
     }
 }
 
-xsigma::memory_stats memory_tracking_scope::get_delta_stats() const
+quarisma::memory_stats memory_tracking_scope::get_delta_stats() const
 {
-    xsigma::memory_stats const current_stats = tracker_.get_current_stats();
-    xsigma::memory_stats       delta_stats;
+    quarisma::memory_stats const current_stats = tracker_.get_current_stats();
+    quarisma::memory_stats       delta_stats;
 
     delta_stats.current_usage_   = current_stats.current_usage_;
     delta_stats.peak_usage_      = (std::max)(current_stats.peak_usage_, start_stats_.peak_usage_);
@@ -418,4 +418,4 @@ xsigma::memory_stats memory_tracking_scope::get_delta_stats() const
     return delta_stats;
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

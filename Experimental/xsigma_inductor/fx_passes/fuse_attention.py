@@ -1091,7 +1091,7 @@ def _get_sfdp_patterns():
 
         for pattern, replacement, args, workaround, extra_check in candidates:
             # XXX: when adding a new pattern, re-run `gen_attention_patterns` so the pattern
-            # gets serialized to a python file and does not require tracing xsigma runtime.
+            # gets serialized to a python file and does not require tracing quarisma runtime.
             assert isinstance(workaround, dict)
             name = pattern.__name__
 
@@ -1121,7 +1121,7 @@ def _get_sfdp_patterns():
 
             if workaround:
                 assert len(workaround) == 1 and "dropout_p" in workaround
-                # functools.partial insufficient because we look xsigma signature downstream
+                # functools.partial insufficient because we look quarisma signature downstream
                 pattern = partialize_and_update_signature(pattern, dropout_p=0.0)
                 replacement = partialize_and_update_signature(
                     replacement, dropout_p=0.0

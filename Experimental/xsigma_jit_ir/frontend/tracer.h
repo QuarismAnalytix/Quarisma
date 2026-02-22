@@ -1,10 +1,10 @@
 #pragma once
 
-#include <XSigma/core/Dimname.h>
-#include <XSigma/core/class_type.h>
-#include <XSigma/core/jit_type.h>
-#include <XSigma/core/stack.h>
-#include <XSigma/core/symbol.h>
+#include <Quarisma/core/Dimname.h>
+#include <Quarisma/core/class_type.h>
+#include <Quarisma/core/jit_type.h>
+#include <Quarisma/core/stack.h>
+#include <Quarisma/core/symbol.h>
 #include <torch/csrc/Export.h>
 #include <torch/csrc/jit/frontend/source_range.h>
 #include <torch/csrc/utils/variadic.h>
@@ -26,15 +26,15 @@ struct Module;
 namespace tracer
 {
 
-using ::xsigma::ivalue::Shared;
+using ::quarisma::ivalue::Shared;
 
-using ::xsigma::IValue;
-using ::xsigma::ivalue::Future;
+using ::quarisma::IValue;
+using ::quarisma::ivalue::Future;
 
-using ::xsigma::ArrayRef;
-using ::xsigma::TupleType;
-using ::xsigma::TupleTypePtr;
-using ::xsigma::ivalue::ConstantString;
+using ::quarisma::ArrayRef;
+using ::quarisma::TupleType;
+using ::quarisma::TupleTypePtr;
+using ::quarisma::ivalue::ConstantString;
 
 using torch::autograd::Variable;
 using variable_list = std::vector<Variable>;
@@ -68,11 +68,11 @@ struct TORCH_API TracingState : public std::enable_shared_from_this<TracingState
     Value* getOutput(const IValue& var, size_t i);
     bool   hasValue(const IValue& var) const;
 
-    Node* createNode(xsigma::Symbol op_name, size_t num_outputs);
+    Node* createNode(quarisma::Symbol op_name, size_t num_outputs);
     void  insertNode(Node* node);
 
 private:
-    using WeakIValue = xsigma::WeakIValue;
+    using WeakIValue = quarisma::WeakIValue;
 
     struct WeakIValueHasher
     {
@@ -92,10 +92,10 @@ private:
 };
 
 // This is meant to be used as a thread local place, where we can store extra
-// info that gets lost when we call into XSigma from Python bindings. One example
+// info that gets lost when we call into Quarisma from Python bindings. One example
 // for when this happens is when we get an IntArrayRef argument with e.g. sizes
 // for view. When tracing, those might be tensors, which let us encode extra
-// data dependencies, but once they get to the XSigma call where we actually have
+// data dependencies, but once they get to the Quarisma call where we actually have
 // the tracing logic, they get converted into a raw IntArrayRef, and we loose
 // all information. To prevent this, we temporarily stash it in here.
 struct ArgumentStash
@@ -117,7 +117,7 @@ struct ArgumentStash
 
     static IntArrayRefTrace popIntArrayRef(const std::string& arg_name)
     {
-        auto info = std::move(stash.intlists.xsigma(arg_name));
+        auto info = std::move(stash.intlists.quarisma(arg_name));
         stash.intlists.erase(arg_name);
         return info;
     }
@@ -129,13 +129,13 @@ struct ArgumentStash
         const std::string&     arg_name,
         size_t                 idx,
         const Variable&        var,
-        const xsigma::TypePtr& type = nullptr);
+        const quarisma::TypePtr& type = nullptr);
 
     static bool hasValue(const std::string& arg_name) { return stash.values.count(arg_name) > 0; }
 
     static Value* popValue(const std::string& arg_name)
     {
-        auto info = stash.values.xsigma(arg_name);
+        auto info = stash.values.quarisma(arg_name);
         stash.values.erase(arg_name);
         return info;
     }
@@ -231,70 +231,70 @@ TORCH_API void abandon();
 // NB: those serve both as an intermediate steps in addInputs below,
 // as well as the overloads that terminate template recursion
 TORCH_API void addInputs(Node* n, const char* name, int64_t value);
-TORCH_API void addInputs(Node* n, const char* name, const xsigma::SymInt& value);
+TORCH_API void addInputs(Node* n, const char* name, const quarisma::SymInt& value);
 TORCH_API void addInputs(Node* n, const char* name, std::optional<int64_t> value);
 TORCH_API void addInputs(Node* n, const char* name, bool value);
 TORCH_API void addInputs(Node* n, const char* name, const std::optional<bool>& value);
 TORCH_API void addInputs(Node* n, const char* name, double value);
 TORCH_API void addInputs(Node* n, const char* name, const std::optional<double>& value);
-TORCH_API void addInputs(Node* n, const char* name, const xsigma::Scalar& value);
-TORCH_API void addInputs(Node* n, const char* name, const std::optional<xsigma::Scalar>& value);
-TORCH_API void addInputs(Node* n, const char* name, const xsigma::Tensor& value);
-TORCH_API void addInputs(Node* n, const char* name, const std::optional<xsigma::Tensor>& value);
+TORCH_API void addInputs(Node* n, const char* name, const quarisma::Scalar& value);
+TORCH_API void addInputs(Node* n, const char* name, const std::optional<quarisma::Scalar>& value);
+TORCH_API void addInputs(Node* n, const char* name, const quarisma::Tensor& value);
+TORCH_API void addInputs(Node* n, const char* name, const std::optional<quarisma::Tensor>& value);
 TORCH_API void addInputs(Node* n, const char* name, ArrayRef<int64_t> value);
-TORCH_API void addInputs(Node* n, const char* name, xsigma::SymIntArrayRef value);
-TORCH_API void addInputs(Node* n, const char* name, std::optional<xsigma::SymInt> value);
+TORCH_API void addInputs(Node* n, const char* name, quarisma::SymIntArrayRef value);
+TORCH_API void addInputs(Node* n, const char* name, std::optional<quarisma::SymInt> value);
 TORCH_API void addInputs(Node* n, const char* name, const std::optional<ArrayRef<int64_t>>& value);
-TORCH_API void addInputs(Node* n, const char* name, const xsigma::OptionalIntArrayRef& opt_value);
+TORCH_API void addInputs(Node* n, const char* name, const quarisma::OptionalIntArrayRef& opt_value);
 TORCH_API void addInputs(
-    Node* n, const char* name, const xsigma::OptionalSymIntArrayRef& opt_value);
+    Node* n, const char* name, const quarisma::OptionalSymIntArrayRef& opt_value);
 TORCH_API void addInputs(
-    Node* n, const char* name, ArrayRef<xsigma::Tensor> value, bool allow_undefined = false);
+    Node* n, const char* name, ArrayRef<quarisma::Tensor> value, bool allow_undefined = false);
 TORCH_API void addInputs(
     Node*                              n,
     const char*                        name,
-    const std::vector<xsigma::Tensor>& value,
+    const std::vector<quarisma::Tensor>& value,
     bool                               allow_undefined = false);
 TORCH_API void addInputs(
-    Node* n, const char* name, xsigma::ITensorListRef value, bool allow_undefined = false);
+    Node* n, const char* name, quarisma::ITensorListRef value, bool allow_undefined = false);
 TORCH_API void addInputs(
-    Node* n, const char* name, const List<std::optional<xsigma::Tensor>>& value);
+    Node* n, const char* name, const List<std::optional<quarisma::Tensor>>& value);
 TORCH_API void addInputs(
     Node*                                                   n,
     const char*                                             name,
-    ArrayRef<xsigma::intrusive_ptr<xsigma::ivalue::Object>> value,
-    const xsigma::ClassTypePtr&                             class_type);
+    ArrayRef<quarisma::intrusive_ptr<quarisma::ivalue::Object>> value,
+    const quarisma::ClassTypePtr&                             class_type);
 TORCH_API void addInputs(Node* n, const char* name, ArrayRef<double> value);
 TORCH_API void addInputs(Node* n, const char* name, const std::optional<ArrayRef<double>>& value);
 TORCH_API void addInputs(Node* n, const char* name, const std::string_view value);
 TORCH_API void addInputs(Node* n, const char* name, const std::optional<std::string_view>& value);
-TORCH_API void addInputs(Node* n, const char* name, xsigma::Device value);
-TORCH_API void addInputs(Node* n, const char* name, xsigma::Stream stream);
-TORCH_API void addInputs(Node* n, const char* name, xsigma::Layout value);
-TORCH_API void addInputs(Node* n, const char* name, xsigma::ScalarType value);
-TORCH_API void addInputs(Node* n, const char* name, const std::optional<xsigma::ScalarType>& value);
-TORCH_API void addInputs(Node* n, const char* name, const std::optional<xsigma::Device>& value);
-TORCH_API void addInputs(Node* n, const char* name, const std::optional<xsigma::Layout>& value);
-TORCH_API void addInputs(Node* n, const char* name, xsigma::MemoryFormat value);
-TORCH_API void addInputs(Node* n, const char* name, std::optional<xsigma::DimnameList> value);
+TORCH_API void addInputs(Node* n, const char* name, quarisma::Device value);
+TORCH_API void addInputs(Node* n, const char* name, quarisma::Stream stream);
+TORCH_API void addInputs(Node* n, const char* name, quarisma::Layout value);
+TORCH_API void addInputs(Node* n, const char* name, quarisma::ScalarType value);
+TORCH_API void addInputs(Node* n, const char* name, const std::optional<quarisma::ScalarType>& value);
+TORCH_API void addInputs(Node* n, const char* name, const std::optional<quarisma::Device>& value);
+TORCH_API void addInputs(Node* n, const char* name, const std::optional<quarisma::Layout>& value);
+TORCH_API void addInputs(Node* n, const char* name, quarisma::MemoryFormat value);
+TORCH_API void addInputs(Node* n, const char* name, std::optional<quarisma::DimnameList> value);
 TORCH_API void addInputs(
-    Node* n, const char* name, const std::optional<xsigma::MemoryFormat>& value);
-TORCH_API void addInputs(Node* n, const char* name, const std::optional<xsigma::Generator>& value);
+    Node* n, const char* name, const std::optional<quarisma::MemoryFormat>& value);
+TORCH_API void addInputs(Node* n, const char* name, const std::optional<quarisma::Generator>& value);
 
 inline void addInputs(Node* n, const char* name, const std::vector<bool>& value)
 {
-    XSIGMA_CHECK(false, "Tracing a list of bool type is currently not supported!");
+    QUARISMA_CHECK(false, "Tracing a list of bool type is currently not supported!");
 }
 
 template <typename T>
 void addInputs(Node* n, const char* name, ArrayRef<T> value)
 {
-    XSIGMA_CHECK(false, "Tracing a list of arbitrary type is currently not supported!");
+    QUARISMA_CHECK(false, "Tracing a list of arbitrary type is currently not supported!");
 }
 template <typename K, typename V>
 void addInputs(Node* n, const char* name, const std::unordered_map<K, V>& value)
 {
-    XSIGMA_CHECK(false, "Tracing a dict of arbitrary types is currently not supported!");
+    QUARISMA_CHECK(false, "Tracing a dict of arbitrary types is currently not supported!");
 }
 
 template <size_t N>
@@ -305,32 +305,32 @@ void addInputs(Node* n, const char* name, std::array<bool, N> value)
 }
 
 TORCH_API void addInputs(
-    Node* n, const char* name, const xsigma::intrusive_ptr<xsigma::ivalue::Object>& obj);
+    Node* n, const char* name, const quarisma::intrusive_ptr<quarisma::ivalue::Object>& obj);
 
-TORCH_API void ensureUniqueIfOutOfPlaced(const char* name, const xsigma::Tensor& tensor);
+TORCH_API void ensureUniqueIfOutOfPlaced(const char* name, const quarisma::Tensor& tensor);
 TORCH_API void ensureUniqueIfOutOfPlaced(
-    const char* name, const std::optional<xsigma::Tensor>& tensor);
+    const char* name, const std::optional<quarisma::Tensor>& tensor);
 
 template <
     typename T,
     typename = std::enable_if_t<
-        (!std::is_convertible_v<std::decay_t<T>, xsigma::TensorList> &&
-         !std::is_convertible_v<std::decay_t<T>, xsigma::List<xsigma::Tensor>> &&
-         !std::is_convertible_v<std::decay_t<T>, xsigma::Tensor> &&
-         !std::is_convertible_v<std::decay_t<T>, xsigma::intrusive_ptr<xsigma::ivalue::Object>>)>>
+        (!std::is_convertible_v<std::decay_t<T>, quarisma::TensorList> &&
+         !std::is_convertible_v<std::decay_t<T>, quarisma::List<quarisma::Tensor>> &&
+         !std::is_convertible_v<std::decay_t<T>, quarisma::Tensor> &&
+         !std::is_convertible_v<std::decay_t<T>, quarisma::intrusive_ptr<quarisma::ivalue::Object>>)>>
 void addOutput(Node* node, T&& /*unused*/)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         false,
         "Found an unsupported argument type ",
-        xsigma::demangle_type<T>(),
+        quarisma::demangle_type<T>(),
         " in the JIT tracer. File a bug report.");
 }
-TORCH_API void addOutput(Node* node, const xsigma::Tensor& tensor);
-TORCH_API void setOutput(Value* value, const xsigma::Tensor& output);
-TORCH_API void addOutput(Node* node, const std::vector<xsigma::Tensor>& list);
-TORCH_API void addOutput(Node* node, const xsigma::List<xsigma::Tensor>& list);
-TORCH_API void addOutput(Node* node, const xsigma::intrusive_ptr<xsigma::ivalue::Object>& output);
+TORCH_API void addOutput(Node* node, const quarisma::Tensor& tensor);
+TORCH_API void setOutput(Value* value, const quarisma::Tensor& output);
+TORCH_API void addOutput(Node* node, const std::vector<quarisma::Tensor>& list);
+TORCH_API void addOutput(Node* node, const quarisma::List<quarisma::Tensor>& list);
+TORCH_API void addOutput(Node* node, const quarisma::intrusive_ptr<quarisma::ivalue::Object>& output);
 
 TORCH_API autograd::Variable getSizeOf(const autograd::Variable& var, int64_t dim);
 

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include <cmath>
@@ -27,20 +27,20 @@
 #include "common/configure.h"
 #include "memory/cpu/allocator_device.h"
 #include "memory/unified_memory_stats.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
-namespace xsigma
+namespace quarisma
 {
 
 // Forward declarations of helper functions defined in TestCPUMemory.cpp
 struct TestStruct;
 bool IsAligned(void* ptr, size_t alignment);
 bool ValidateMemory(const void* ptr, size_t size, uint8_t pattern);
-}  // namespace xsigma
+}  // namespace quarisma
 
-XSIGMATEST(CPUMemoryStats, unified_resource_stats_basic_functionality)
+QUARISMATEST(CPUMemoryStats, unified_resource_stats_basic_functionality)
 {
     unified_resource_stats stats;
 
@@ -82,7 +82,7 @@ XSIGMATEST(CPUMemoryStats, unified_resource_stats_basic_functionality)
     END_TEST();
 }
 
-XSIGMATEST(CPUMemoryStats, atomic_timing_stats_functionality)
+QUARISMATEST(CPUMemoryStats, atomic_timing_stats_functionality)
 {
     atomic_timing_stats stats;
 
@@ -113,7 +113,7 @@ XSIGMATEST(CPUMemoryStats, atomic_timing_stats_functionality)
     END_TEST();
 }
 
-XSIGMATEST(CPUMemoryStats, timing_stats_snapshot)
+QUARISMATEST(CPUMemoryStats, timing_stats_snapshot)
 {
     // Create atomic version and populate it
     atomic_timing_stats atomic_stats;
@@ -142,7 +142,7 @@ XSIGMATEST(CPUMemoryStats, timing_stats_snapshot)
     END_TEST();
 }
 
-XSIGMATEST(CPUMemoryStats, unified_cache_stats_functionality)
+QUARISMATEST(CPUMemoryStats, unified_cache_stats_functionality)
 {
     unified_cache_stats stats;
 
@@ -175,15 +175,15 @@ XSIGMATEST(CPUMemoryStats, unified_cache_stats_functionality)
     EXPECT_EQ(stats.cache_misses.load(), 0);
     EXPECT_EQ(stats.bytes_cached.load(), 0);
 
-    XSIGMA_LOG_INFO("✓ unified_cache_stats functionality passed");
+    QUARISMA_LOG_INFO("✓ unified_cache_stats functionality passed");
 }
 
 /**
      * @brief Test memory fragmentation metrics calculation
      */
-XSIGMATEST(CPUMemoryStats, test_memory_fragmentation_metrics)
+QUARISMATEST(CPUMemoryStats, test_memory_fragmentation_metrics)
 {
-    XSIGMA_LOG_INFO("Testing memory_fragmentation_metrics calculation...");
+    QUARISMA_LOG_INFO("Testing memory_fragmentation_metrics calculation...");
 
     // Test with empty free blocks
     std::vector<size_t> empty_blocks;
@@ -216,19 +216,19 @@ XSIGMATEST(CPUMemoryStats, test_memory_fragmentation_metrics)
     EXPECT_LE(metrics.internal_fragmentation, 100.0);
     EXPECT_GT(metrics.internal_fragmentation, 0.0);
 
-    XSIGMA_LOG_INFO("  Fragmentation ratio: {}", metrics.fragmentation_ratio);
-    XSIGMA_LOG_INFO("  Internal fragmentation: {}%", metrics.internal_fragmentation);
-    XSIGMA_LOG_INFO("  External fragmentation: {}%", metrics.external_fragmentation);
+    QUARISMA_LOG_INFO("  Fragmentation ratio: {}", metrics.fragmentation_ratio);
+    QUARISMA_LOG_INFO("  Internal fragmentation: {}%", metrics.internal_fragmentation);
+    QUARISMA_LOG_INFO("  External fragmentation: {}%", metrics.external_fragmentation);
 
-    XSIGMA_LOG_INFO("✓ memory_fragmentation_metrics calculation passed");
+    QUARISMA_LOG_INFO("✓ memory_fragmentation_metrics calculation passed");
 }
 
 /**
      * @brief Test comprehensive memory statistics integration
      */
-XSIGMATEST(CPUMemoryStats, test_comprehensive_memory_stats)
+QUARISMATEST(CPUMemoryStats, test_comprehensive_memory_stats)
 {
-    XSIGMA_LOG_INFO("Testing comprehensive_memory_stats integration...");
+    QUARISMA_LOG_INFO("Testing comprehensive_memory_stats integration...");
 
     comprehensive_memory_stats stats("TestAllocator");
 
@@ -256,15 +256,15 @@ XSIGMATEST(CPUMemoryStats, test_comprehensive_memory_stats)
 
     // Test report generation
     const std::string report = stats.generate_report();
-    XSIGMA_LOG_INFO("{}", report);
+    QUARISMA_LOG_INFO("{}", report);
     EXPECT_FALSE(report.empty());
     //EXPECT_NE(report.find("CPU_Allocator"), std::string::npos);
     EXPECT_NE(report.find("Resource Stats"), std::string::npos);
     EXPECT_NE(report.find("Cache Performance"), std::string::npos);
     EXPECT_NE(report.find("Overall Efficiency"), std::string::npos);
 
-    XSIGMA_LOG_INFO("  Overall efficiency: {}%", (efficiency * 100.0));
-    XSIGMA_LOG_INFO("  Operations per second: {}", ops_per_sec);
+    QUARISMA_LOG_INFO("  Overall efficiency: {}%", (efficiency * 100.0));
+    QUARISMA_LOG_INFO("  Operations per second: {}", ops_per_sec);
 
     // Test individual reset functionality
     stats.resource_stats.reset();
@@ -274,22 +274,22 @@ XSIGMATEST(CPUMemoryStats, test_comprehensive_memory_stats)
     EXPECT_EQ(stats.cache_stats.cache_hits.load(), 0);
     EXPECT_EQ(stats.timing_stats.total_allocations.load(), 0);
 
-    XSIGMA_LOG_INFO("✓ comprehensive_memory_stats integration passed");
+    QUARISMA_LOG_INFO("✓ comprehensive_memory_stats integration passed");
 }
 
-XSIGMATEST(CPUMemoryStats, comprehensive_tests)
+QUARISMATEST(CPUMemoryStats, comprehensive_tests)
 {
     // Test unified resource statistics
-    XSIGMATEST_CALL(CPUMemoryStats, unified_resource_stats_basic_functionality);
+    QUARISMATEST_CALL(CPUMemoryStats, unified_resource_stats_basic_functionality);
 
     // Test atomic timing statistics
-    XSIGMATEST_CALL(CPUMemoryStats, atomic_timing_stats_functionality);
+    QUARISMATEST_CALL(CPUMemoryStats, atomic_timing_stats_functionality);
 
     // Test timing stats snapshot
-    XSIGMATEST_CALL(CPUMemoryStats, timing_stats_snapshot);
+    QUARISMATEST_CALL(CPUMemoryStats, timing_stats_snapshot);
 
     // Test unified cache statistics
-    XSIGMATEST_CALL(CPUMemoryStats, unified_cache_stats_functionality);
+    QUARISMATEST_CALL(CPUMemoryStats, unified_cache_stats_functionality);
 
     END_TEST();
 }

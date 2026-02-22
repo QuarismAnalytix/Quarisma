@@ -1,5 +1,5 @@
-#include <XSigma/core/jit_type.h>
-#include <XSigma/core/symbol.h>
+#include <Quarisma/core/jit_type.h>
+#include <Quarisma/core/symbol.h>
 #include <torch/csrc/jit/passes/remove_mutation.h>
 #include <torch/csrc/jit/passes/restore_mutation.h>
 
@@ -26,10 +26,10 @@ bool FunctionalToInplaceRewriter::CanBeInplace(Node* node)
     }
 
     // If type promotion is allowed, then perform dtype check
-    bool check_dtype = activation_type_promotion_mapping.xsigma(node->kind());
+    bool check_dtype = activation_type_promotion_mapping.quarisma(node->kind());
 
-    Value* input       = node->inputs().xsigma(0);
-    Value* output      = node->outputs().xsigma(0);
+    Value* input       = node->inputs().quarisma(0);
+    Value* output      = node->outputs().quarisma(0);
     auto   inputDtype  = input->type()->expect<TensorType>()->scalarType();
     auto   outputDtype = output->type()->expect<TensorType>()->scalarType();
 
@@ -74,7 +74,7 @@ bool FunctionalToInplaceRewriter::FunctionalToInplace(Block* block)
         changed = true;
         Node* inplace_node =
             node->replaceWithNewSymbol(Symbol::fromQualString(node->schema().name() + "_"));
-        inplace_node->output()->replaceAllUsesWith(node->inputs().xsigma(0));
+        inplace_node->output()->replaceAllUsesWith(node->inputs().quarisma(0));
         getOrCreateAliasDb()->replaceWithNewValue(node->output(), inplace_node->output());
 
         node->destroy();

@@ -33,7 +33,7 @@ init_command = [
     'mccabe==0.7.0',
     'pycodestyle==2.14.0',
     'pyflakes==3.4.0',
-    # Note: torchfix is a XSigma-compatible linting tool used for XSigma
+    # Note: torchfix is a Quarisma-compatible linting tool used for Quarisma
     'torchfix==0.4.0 ; python_version >= "3.10" and python_version < "3.13"',
 ]
 
@@ -312,11 +312,11 @@ command = [
 
 # [[linter]]
 # code = 'NATIVEFUNCTIONS'
-# include_patterns=['aten/src/XSigma/native/native_functions.yaml']
+# include_patterns=['aten/src/Quarisma/native/native_functions.yaml']
 # command = [
 #     'python3',
 #     'Tools/linter/adapters/nativefunctions_linter.py',
-#     '--native-functions-yml=aten/src/XSigma/native/native_functions.yaml',
+#     '--native-functions-yml=aten/src/Quarisma/native/native_functions.yaml',
 # ]
 # init_command = [
 #     'python3',
@@ -432,7 +432,7 @@ command = [
 ]
 
 # [[linter]]
-# code = 'XSIGMA_UNUSED'
+# code = 'QUARISMA_UNUSED'
 # include_patterns = [
 #     '**/*.hxx',
 #     '**/*.cpp',
@@ -449,10 +449,10 @@ command = [
 # command = [
 #     'python3',
 #     'Tools/linter/adapters/grep_linter.py',
-#     '--pattern=XSIGMA_UNUSED',
-#     '--linter-name=XSIGMA_UNUSED',
-#     '--error-name=deprecated XSIGMA_UNUSED macro',
-#     '--replace-pattern=s/XSIGMA_UNUSED/[[maybe_unused]]/',
+#     '--pattern=QUARISMA_UNUSED',
+#     '--linter-name=QUARISMA_UNUSED',
+#     '--error-name=deprecated QUARISMA_UNUSED macro',
+#     '--replace-pattern=s/QUARISMA_UNUSED/[[maybe_unused]]/',
 #     """--error-description=\
 #         Deprecated macro, use [[maybe_unused]] directly\
 #     """,
@@ -461,7 +461,7 @@ command = [
 # ]
 
 # [[linter]]
-# code = 'XSIGMA_NODISCARD'
+# code = 'QUARISMA_NODISCARD'
 # include_patterns = [
 #     '**/*.hxx',
 #     '**/*.cpp',
@@ -478,10 +478,10 @@ command = [
 # command = [
 #     'python3',
 #     'Tools/linter/adapters/grep_linter.py',
-#     '--pattern=XSIGMA_NODISCARD',
-#     '--linter-name=XSIGMA_NODISCARD',
-#     '--error-name=deprecated XSIGMA_NODISCARD macro',
-#     '--replace-pattern=s/XSIGMA_NODISCARD/[[nodiscard]]/',
+#     '--pattern=QUARISMA_NODISCARD',
+#     '--linter-name=QUARISMA_NODISCARD',
+#     '--error-name=deprecated QUARISMA_NODISCARD macro',
+#     '--replace-pattern=s/QUARISMA_NODISCARD/[[nodiscard]]/',
 #     """--error-description=\
 #         Deprecated macro, use [[nodiscard]] directly\
 #     """,
@@ -537,7 +537,7 @@ command = [
     'python3',
     'Tools/linter/adapters/grep_linter.py',
     '--pattern=#include <pybind11\/(^|[^(gil_simple\.h)])',
-    '--allowlist-pattern=#include <xsigma\/csrc\/utils\/pybind.h>',
+    '--allowlist-pattern=#include <quarisma\/csrc\/utils\/pybind.h>',
     '--linter-name=PYBIND11_INCLUDE',
     '--match-first-only',
     '--error-name=direct include of pybind11',
@@ -545,10 +545,10 @@ command = [
     # NB: this won't work if the pybind11 include is on the first line;
     # but that's fine because it will just mean the lint will still fail
     # after applying the change and you will have to fix it manually
-    '--replace-pattern=1,/(#include <pybind11\/)/ s/(#include <pybind11\/)/#include <xsigma\/csrc\/utils\/pybind.h>\n\1/',
+    '--replace-pattern=1,/(#include <pybind11\/)/ s/(#include <pybind11\/)/#include <quarisma\/csrc\/utils\/pybind.h>\n\1/',
     """--error-description=\
         This #include directly includes pybind11 without also including \
-        #include <xsigma/csrc/utils/pybind.h>;  this means some important \
+        #include <quarisma/csrc/utils/pybind.h>;  this means some important \
         specializations may not be included.\
     """,
     '--',
@@ -580,7 +580,7 @@ command = [
         int or float.  This is error-prone because you may also \
         have wanted to allow SymInt or SymFloat in your test.  \
         To suppress this lint, use an appropriate type alias defined \
-        in xsigma._prims_common; use IntLike/FloatLike when you would accept \
+        in quarisma._prims_common; use IntLike/FloatLike when you would accept \
         both regular and symbolic numbers, Dim for ints representing \
         dimensions, or IntWithoutSymInt/FloatWithoutSymFloat if you really \
         meant to exclude symbolic numbers.
@@ -613,7 +613,7 @@ command = [
     '--error-name=pybind11 specialization in non-standard location',
     """--error-description=\
         This pybind11 specialization (PYBIND11_DECLARE_HOLDER_TYPE) should \
-        be placed in xsigma/csrc/utils/pybind.h so that it is guaranteed to be \
+        be placed in quarisma/csrc/utils/pybind.h so that it is guaranteed to be \
         included at any site that may potentially make use of it via py::cast. \
         If your specialization is in the same header file as the definition \
         of the holder type, you can ignore this lint by adding your header to \
@@ -705,7 +705,7 @@ command = [
     '--error-name=direct cub include',
     """--error-description=\
         This line has a direct cub include; please include \
-        XSigma/cuda/cub.cuh instead and wrap your cub calls in \
+        Quarisma/cuda/cub.cuh instead and wrap your cub calls in \
         at::native namespace if necessary.
     """,
     '--',
@@ -776,11 +776,11 @@ command = [
     'python3',
     'Tools/linter/adapters/grep_linter.py',
     '--pattern=sys\.executable == .torch_deploy.',
-    '--replace-pattern=s/sys\.executable == .torch_deploy./xsigma._running_with_deploy\(\)/',
+    '--replace-pattern=s/sys\.executable == .torch_deploy./quarisma._running_with_deploy\(\)/',
     '--linter-name=DEPLOY_DETECTION',
     '--error-name=properly detect deploy runner',
     """--error-description=\
-        Do not use sys.executable to detect if running within deploy/multiply, use xsigma._running_with_deploy().
+        Do not use sys.executable to detect if running within deploy/multiply, use quarisma._running_with_deploy().
     """,
     '--',
     '@{{PATHSFILE}}'
@@ -969,9 +969,9 @@ command = [
 #    '--pattern=std::call_once',
 #    '--linter-name=CALL_ONCE',
 #    '--error-name=invalid call_once',
-#    '--replace-pattern=s/std::call_once/xsigma::call_once/',
+#    '--replace-pattern=s/std::call_once/quarisma::call_once/',
 #    """--error-description=\
-#        Use of std::call_once is forbidden and should be replaced with xsigma::call_once\
+#        Use of std::call_once is forbidden and should be replaced with quarisma::call_once\
 #    """,
 #    '--',
 #    '@{{PATHSFILE}}'
@@ -1201,7 +1201,7 @@ command = [
     '--error-name=Confidential Code',
     """--error-description=\
         Proprietary and confidential source code\
-        should not be contributed to XSigma codebase\
+        should not be contributed to Quarisma codebase\
     """,
     '--',
     '@{{PATHSFILE}}'
@@ -1292,8 +1292,8 @@ command = [
     '--error-name=no create_unbacked in meta registrations',
     """--error-description=\
         Data-dependent operators should have their meta \
-        registration in xsigma/_subclasses/fake_impls.py, \
-        not xsigma/_meta_registrations.py
+        registration in quarisma/_subclasses/fake_impls.py, \
+        not quarisma/_meta_registrations.py
     """,
     '--',
     '@{{PATHSFILE}}'
@@ -1326,7 +1326,7 @@ command = [
     '--error-name=aten-cpu should be gpu agnostic',
     """--error-description=\
         We strongly discourage the compile-time divergence \
-        on XSigma-CPU code for different GPU code. This \
+        on Quarisma-CPU code for different GPU code. This \
         disallows sharing the same aten-cpu shared object \
         between different GPU backends \
     """,

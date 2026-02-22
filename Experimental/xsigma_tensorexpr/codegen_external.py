@@ -56,7 +56,7 @@ def gen_external(native_functions_path, tags_path, external_path):
 
         tensor_decls = []
         for idx, arg in enumerate(tensor_args):
-            s = f"const xsigma::Tensor& {arg.name} = tensors[{idx + 1}];"
+            s = f"const quarisma::Tensor& {arg.name} = tensors[{idx + 1}];"
             tensor_decls.append(s)
             arg_names[idx] = arg.name
         nl = "\n"
@@ -72,12 +72,12 @@ void nnc_aten_{name}(
     int8_t* buf_dtypes,
     int64_t args_num,
     int64_t* extra_args) {{
-  std::vector<xsigma::Tensor> tensors =
+  std::vector<quarisma::Tensor> tensors =
       constructTensors(bufs_num, buf_data, buf_ranks, buf_dims, buf_strides, buf_dtypes);
-  xsigma::Tensor& r = tensors[0];
+  quarisma::Tensor& r = tensors[0];
   {nl.join(tensor_decls)}
   try {{
-    xsigma::{name}_out({", ".join(["r"] + arg_names)});
+    quarisma::{name}_out({", ".join(["r"] + arg_names)});
   }} catch (...) {{
   }}
 }}"""
@@ -104,12 +104,12 @@ def main() -> None:
         "--native-functions",
         "--native_functions",
         help="path to native_functions.yaml",
-        default="../../../../aten/src/XSigma/native/native_functions.yaml",
+        default="../../../../aten/src/Quarisma/native/native_functions.yaml",
     )
     parser.add_argument(
         "--tags",
         help="path to tags.yaml",
-        default="../../../../aten/src/XSigma/native/tags.yaml",
+        default="../../../../aten/src/Quarisma/native/tags.yaml",
     )
     parser.add_argument(
         "--template-path",

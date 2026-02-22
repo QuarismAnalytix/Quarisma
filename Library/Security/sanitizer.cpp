@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <sstream>
 
-namespace xsigma
+namespace quarisma
 {
 namespace security
 {
@@ -306,4 +306,4 @@ std::string sanitizer::sanitize_filename(std::string_view filename)
 }
 
 }  // namespace security
-}  // namespace xsigma
+}  // namespace quarisma

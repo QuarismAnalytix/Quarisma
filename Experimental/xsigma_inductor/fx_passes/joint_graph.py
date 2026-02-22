@@ -391,7 +391,7 @@ def constant_fold_uniform_value(gm: torch.fx.GraphModule):
 
         # note: [constant folding refining of symints]
         # constant folding will partially evaluate a graph such that values which have dependencies which
-        # are entirely known xsigma compile time may also become compile time constants. in some cases,
+        # are entirely known quarisma compile time may also become compile time constants. in some cases,
         # this will include symints which we had not yet previously deduced are guaranteed a
         # constant value and is then deduced in constant folding. an example is:
         # unbacked_symint_eq_11 = torch.full((), 11).item()
@@ -827,7 +827,7 @@ def bmm_to_mm(match: Match, mat1: torch.fx.Node, mat2: torch.fx.Node):
 #
 #   scale(x) - scale(x).amax(dim, keepdim=True)
 #
-# which is expected to be xsigma most zero, but we may end up with numerical
+# which is expected to be quarisma most zero, but we may end up with numerical
 # discrepancies # between the recomputed values of scale(x) inside and out
 # of the reduction, # depending on compiler optimizations, e.g. use of fma
 # instructions.

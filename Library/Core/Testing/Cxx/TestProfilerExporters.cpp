@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
@@ -15,16 +15,16 @@
 
 #include "profiler/native/exporters/chrome_trace_exporter.h"
 #include "profiler/native/exporters/xplane/xplane_builder.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-using namespace xsigma;
-using namespace xsigma::profiler;
+using namespace quarisma;
+using namespace quarisma::profiler;
 
 // ============================================================================
 // Chrome Trace Exporter Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, chrome_trace_export_empty_space)
+QUARISMATEST(Profiler, chrome_trace_export_empty_space)
 {
     x_space     space;
     std::string json = export_to_chrome_trace_json(space);
@@ -33,7 +33,7 @@ XSIGMATEST(Profiler, chrome_trace_export_empty_space)
     EXPECT_NE(json.find("traceEvents"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_with_single_plane)
+QUARISMATEST(Profiler, chrome_trace_export_with_single_plane)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -45,7 +45,7 @@ XSIGMATEST(Profiler, chrome_trace_export_with_single_plane)
     EXPECT_NE(json.find("CPU"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_with_events)
+QUARISMATEST(Profiler, chrome_trace_export_with_events)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -71,7 +71,7 @@ XSIGMATEST(Profiler, chrome_trace_export_with_events)
     EXPECT_NE(json.find("\"ph\":\"X\""), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_pretty_print)
+QUARISMATEST(Profiler, chrome_trace_export_pretty_print)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -85,7 +85,7 @@ XSIGMATEST(Profiler, chrome_trace_export_pretty_print)
     EXPECT_NE(json.find("\n"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_json_escaping)
+QUARISMATEST(Profiler, chrome_trace_export_json_escaping)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -110,7 +110,7 @@ XSIGMATEST(Profiler, chrome_trace_export_json_escaping)
     EXPECT_NE(json.find("\\\""), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_multiple_threads)
+QUARISMATEST(Profiler, chrome_trace_export_multiple_threads)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -131,7 +131,7 @@ XSIGMATEST(Profiler, chrome_trace_export_multiple_threads)
     EXPECT_NE(json.find("Thread-2"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_with_stats)
+QUARISMATEST(Profiler, chrome_trace_export_with_stats)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -158,7 +158,7 @@ XSIGMATEST(Profiler, chrome_trace_export_with_stats)
     EXPECT_NE(json.find("compute"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_multiple_planes)
+QUARISMATEST(Profiler, chrome_trace_export_multiple_planes)
 {
     x_space space;
 
@@ -175,7 +175,7 @@ XSIGMATEST(Profiler, chrome_trace_export_multiple_planes)
     EXPECT_NE(json.find("Plane-1"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_large_timestamps)
+QUARISMATEST(Profiler, chrome_trace_export_large_timestamps)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -201,7 +201,7 @@ XSIGMATEST(Profiler, chrome_trace_export_large_timestamps)
     EXPECT_NE(json.find("compute"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_special_characters_in_names)
+QUARISMATEST(Profiler, chrome_trace_export_special_characters_in_names)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -227,7 +227,7 @@ XSIGMATEST(Profiler, chrome_trace_export_special_characters_in_names)
     EXPECT_NE(json.find("\\\\"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_zero_duration_events)
+QUARISMATEST(Profiler, chrome_trace_export_zero_duration_events)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -252,7 +252,7 @@ XSIGMATEST(Profiler, chrome_trace_export_zero_duration_events)
     EXPECT_NE(json.find("\"dur\":0"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_many_events)
+QUARISMATEST(Profiler, chrome_trace_export_many_events)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -281,7 +281,7 @@ XSIGMATEST(Profiler, chrome_trace_export_many_events)
     EXPECT_NE(json.find("event"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_file_write)
+QUARISMATEST(Profiler, chrome_trace_export_file_write)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -305,7 +305,7 @@ XSIGMATEST(Profiler, chrome_trace_export_file_write)
     EXPECT_FALSE(result);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_display_time_unit)
+QUARISMATEST(Profiler, chrome_trace_export_display_time_unit)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -319,7 +319,7 @@ XSIGMATEST(Profiler, chrome_trace_export_display_time_unit)
     EXPECT_NE(json.find("\"ns\""), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_process_metadata)
+QUARISMATEST(Profiler, chrome_trace_export_process_metadata)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -333,7 +333,7 @@ XSIGMATEST(Profiler, chrome_trace_export_process_metadata)
     EXPECT_NE(json.find("CustomProcess"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_thread_metadata)
+QUARISMATEST(Profiler, chrome_trace_export_thread_metadata)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -351,7 +351,7 @@ XSIGMATEST(Profiler, chrome_trace_export_thread_metadata)
     EXPECT_NE(json.find("CustomThread"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_handles_all_stat_types)
+QUARISMATEST(Profiler, chrome_trace_export_handles_all_stat_types)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -437,7 +437,7 @@ XSIGMATEST(Profiler, chrome_trace_export_handles_all_stat_types)
     EXPECT_NE(json.find("\"empty_stat\":0.000000"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, chrome_trace_export_file_success_path)
+QUARISMATEST(Profiler, chrome_trace_export_file_success_path)
 {
     x_space space;
     auto*   plane = space.add_planes();
@@ -457,7 +457,7 @@ XSIGMATEST(Profiler, chrome_trace_export_file_success_path)
     (*metadata)[1].set_name("write_event");
 
     const auto temp_dir  = std::filesystem::temp_directory_path();
-    const auto file_path = temp_dir / "xsigma_chrome_trace_test.json";
+    const auto file_path = temp_dir / "quarisma_chrome_trace_test.json";
 
     std::error_code ec;
     std::filesystem::remove(file_path, ec);
@@ -476,4 +476,4 @@ XSIGMATEST(Profiler, chrome_trace_export_file_success_path)
     file.close();
     std::filesystem::remove(file_path, ec);
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

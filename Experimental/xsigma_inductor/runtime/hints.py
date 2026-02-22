@@ -182,14 +182,14 @@ class HalideInputSpec(typing.NamedTuple):
     alias_of: str | None = None
 
     def bindings_type(self) -> str:
-        if self.ctype in ("xsigma::Half*", "xsigma::BFloat16*"):
+        if self.ctype in ("quarisma::Half*", "quarisma::BFloat16*"):
             return "uint16_t*"  # half not defined
         return self.ctype
 
     def halide_type(self) -> str:
-        if self.ctype == "xsigma::Half*":
+        if self.ctype == "quarisma::Half*":
             return "halide_type_t(halide_type_float, 16)"  # half not defined
-        if self.ctype == "xsigma::BFloat16*":
+        if self.ctype == "quarisma::BFloat16*":
             return "halide_type_t(halide_type_bfloat, 16)"  # half not defined
         return f"halide_type_of<{self.ctype.replace('*', '')}>()"
 

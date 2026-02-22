@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/Tensor.h>
+#include <Quarisma/Tensor.h>
 
 namespace torch::autograd::utils
 {
@@ -9,7 +9,7 @@ namespace torch::autograd::utils
 // torch/csrc/autograd/functions/accumulate_grad.h.
 
 // Checks if grad obeys the contract with variable.
-inline bool obeys_layout_contract(const xsigma::Tensor& grad, const xsigma::Tensor& variable)
+inline bool obeys_layout_contract(const quarisma::Tensor& grad, const quarisma::Tensor& variable)
 {
     TORCH_INTERNAL_ASSERT(!grad.is_sparse());
     TORCH_INTERNAL_ASSERT(!grad.is_sparse_csr());
@@ -31,11 +31,11 @@ inline bool obeys_layout_contract(const xsigma::Tensor& grad, const xsigma::Tens
     }
     else if (variable.is_non_overlapping_and_dense())
     {
-        // Only look xsigma stride for dimensions that are not of size 1.
+        // Only look quarisma stride for dimensions that are not of size 1.
         const auto& grad_sizes       = grad.sym_sizes();
         const auto& grad_strides     = grad.sym_strides();
         const auto& variable_strides = variable.sym_strides();
-        for (const auto idx : xsigma::irange(grad_sizes.size()))
+        for (const auto idx : quarisma::irange(grad_sizes.size()))
         {
             if (grad_sizes[idx] != 1)
             {
@@ -50,7 +50,7 @@ inline bool obeys_layout_contract(const xsigma::Tensor& grad, const xsigma::Tens
                 // before stashing it. And 0-strided Tensors of size 1 are actually
                 // views for ops like cat.
                 // TODO: Actually detect views in the accumulateGrad function so that
-                // this Tensor is not considered xsigma all.
+                // this Tensor is not considered quarisma all.
                 if (grad_strides[idx] == 0)
                 {
                     return false;
@@ -61,14 +61,14 @@ inline bool obeys_layout_contract(const xsigma::Tensor& grad, const xsigma::Tens
     }
     else
     {
-        return grad.is_contiguous(xsigma::MemoryFormat::Contiguous);
+        return grad.is_contiguous(quarisma::MemoryFormat::Contiguous);
     }
 }
 
 // Creates a clone of new_grad that obeys the contract with variable.
 // The clone should attach to new_grad's history if GradMode::is_enabled().
-inline xsigma::Tensor clone_obey_contract(
-    const xsigma::Tensor& new_grad, const xsigma::Tensor& variable)
+inline quarisma::Tensor clone_obey_contract(
+    const quarisma::Tensor& new_grad, const quarisma::Tensor& variable)
 {
     if (variable.is_non_overlapping_and_dense())
     {
@@ -85,7 +85,7 @@ inline xsigma::Tensor clone_obey_contract(
     else
     {
         // (2)
-        return new_grad.clone(xsigma::MemoryFormat::Contiguous);
+        return new_grad.clone(quarisma::MemoryFormat::Contiguous);
     }
 }
 

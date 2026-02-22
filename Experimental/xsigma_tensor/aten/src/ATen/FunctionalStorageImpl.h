@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/Tensor.h>
+#include <Quarisma/Tensor.h>
 
 #include <utility>
 

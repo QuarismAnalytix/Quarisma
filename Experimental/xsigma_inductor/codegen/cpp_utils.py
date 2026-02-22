@@ -31,7 +31,7 @@ from .common import CSEVariable, Kernel, KernelArgs, OptimizationContext
 DTYPE_TO_CPP = {
     torch.float32: "float",
     torch.float64: "double",
-    torch.float16: "xsigma::Half",
+    torch.float16: "quarisma::Half",
     torch.int64: "int64_t",
     torch.int32: "int32_t",
     torch.int16: "int16_t",
@@ -41,55 +41,55 @@ DTYPE_TO_CPP = {
     torch.uint16: "uint16_t",
     torch.uint8: "uint8_t",
     torch.bool: "bool",
-    torch.bfloat16: "xsigma::BFloat16",
-    torch.complex32: "xsigma::complex<xsigma::Half>",
-    torch.complex64: "xsigma::complex<float>",
-    torch.complex128: "xsigma::complex<double>",
-    torch.float8_e4m3fn: "xsigma::Float8_e4m3fn",
-    torch.float8_e5m2: "xsigma::Float8_e5m2",
-    torch.float8_e4m3fnuz: "xsigma::Float8_e4m3fnuz",
-    torch.float8_e5m2fnuz: "xsigma::Float8_e5m2fnuz",
+    torch.bfloat16: "quarisma::BFloat16",
+    torch.complex32: "quarisma::complex<quarisma::Half>",
+    torch.complex64: "quarisma::complex<float>",
+    torch.complex128: "quarisma::complex<double>",
+    torch.float8_e4m3fn: "quarisma::Float8_e4m3fn",
+    torch.float8_e5m2: "quarisma::Float8_e5m2",
+    torch.float8_e4m3fnuz: "quarisma::Float8_e4m3fnuz",
+    torch.float8_e5m2fnuz: "quarisma::Float8_e5m2fnuz",
 }
 
 DTYPE_TO_ATEN = {
-    torch.float32: "xsigma::kFloat",
-    torch.float64: "xsigma::kDouble",
-    torch.float16: "xsigma::kHalf",
-    torch.int64: "xsigma::kLong",
-    torch.int32: "xsigma::kInt",
-    torch.int16: "xsigma::kShort",
-    torch.int8: "xsigma::kChar",
-    torch.uint64: "xsigma::kUInt64",
-    torch.uint32: "xsigma::kUInt32",
-    torch.uint16: "xsigma::kUInt16",
-    torch.uint8: "xsigma::kByte",
-    torch.uint32: "xsigma::kUInt32",
-    torch.uint64: "xsigma::kUInt64",
-    torch.bool: "xsigma::kBool",
-    torch.bfloat16: "xsigma::kBFloat16",
-    torch.complex32: "xsigma::kComplexHalf",
-    torch.complex64: "xsigma::kComplexFloat",
-    torch.complex128: "xsigma::kComplexDouble",
-    torch.float8_e4m3fn: "xsigma::kFloat8_e4m3fn",
-    torch.float8_e5m2: "xsigma::kFloat8_e5m2",
-    torch.float8_e4m3fnuz: "xsigma::kFloat8_e4m3fnuz",
-    torch.float8_e5m2fnuz: "xsigma::kFloat8_e5m2fnuz",
+    torch.float32: "quarisma::kFloat",
+    torch.float64: "quarisma::kDouble",
+    torch.float16: "quarisma::kHalf",
+    torch.int64: "quarisma::kLong",
+    torch.int32: "quarisma::kInt",
+    torch.int16: "quarisma::kShort",
+    torch.int8: "quarisma::kChar",
+    torch.uint64: "quarisma::kUInt64",
+    torch.uint32: "quarisma::kUInt32",
+    torch.uint16: "quarisma::kUInt16",
+    torch.uint8: "quarisma::kByte",
+    torch.uint32: "quarisma::kUInt32",
+    torch.uint64: "quarisma::kUInt64",
+    torch.bool: "quarisma::kBool",
+    torch.bfloat16: "quarisma::kBFloat16",
+    torch.complex32: "quarisma::kComplexHalf",
+    torch.complex64: "quarisma::kComplexFloat",
+    torch.complex128: "quarisma::kComplexDouble",
+    torch.float8_e4m3fn: "quarisma::kFloat8_e4m3fn",
+    torch.float8_e5m2: "quarisma::kFloat8_e5m2",
+    torch.float8_e4m3fnuz: "quarisma::kFloat8_e4m3fnuz",
+    torch.float8_e5m2fnuz: "quarisma::kFloat8_e5m2fnuz",
 }
 
 DEVICE_TO_ATEN = {
-    "meta": "xsigma::kMeta",
-    "cpu": "xsigma::kCPU",
-    "cuda": "xsigma::kCUDA",
-    "xpu": "xsigma::kXPU",
-    "mps": "xsigma::kMPS",
+    "meta": "quarisma::kMeta",
+    "cpu": "quarisma::kCPU",
+    "cuda": "quarisma::kCUDA",
+    "xpu": "quarisma::kXPU",
+    "mps": "quarisma::kMPS",
 }
 
 LAYOUT_TO_ATEN = {
-    torch.strided: "xsigma::kStrided",
-    torch._mkldnn: "xsigma::kMkldnn",  # type: ignore[attr-defined]
+    torch.strided: "quarisma::kStrided",
+    torch._mkldnn: "quarisma::kMkldnn",  # type: ignore[attr-defined]
 }
 
-# matches xsigma/core/DeviceType.h
+# matches quarisma/core/DeviceType.h
 DEVICE_TO_INT = {"cpu": 0, "cuda": 1}
 
 _IS_WINDOWS = sys.platform == "win32"
@@ -236,7 +236,7 @@ def rewrite_index_for_function(
     index: sympy.Expr,
     global_buf_name: str,
 ):
-    # Local buffer xsigma the inner dimensions
+    # Local buffer quarisma the inner dimensions
     snode = V.graph.scheduler.name_to_buf[global_buf_name].defining_op
     assert snode is not None
     local_buf = localize_buffer_handler.global_to_local[global_buf_name]
@@ -503,11 +503,11 @@ def codegen_rand(offset, code, rand_function, dst_dtype=torch.float32):
         num_vectors = V.kernel._get_num_vectors(dtype=dst_dtype)
         if num_vectors == 1:
             code.writeline(
-                f"return xsigma::vec::Vectorized<{DTYPE_TO_CPP[dst_dtype]}>::loadu(result);"
+                f"return quarisma::vec::Vectorized<{DTYPE_TO_CPP[dst_dtype]}>::loadu(result);"
             )
         else:
             code.writeline(
-                f"return xsigma::vec::VectorizedN<{DTYPE_TO_CPP[dst_dtype]}, {num_vectors}>::loadu(result);"
+                f"return quarisma::vec::VectorizedN<{DTYPE_TO_CPP[dst_dtype]}, {num_vectors}>::loadu(result);"
             )
     code.writeline("()")
     return code

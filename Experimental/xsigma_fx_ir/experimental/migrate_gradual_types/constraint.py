@@ -248,7 +248,7 @@ class IndexSelect(Constraint):
         Args:
             input_var: input to index_select
             tensor_size: tensor size we are considering
-            dim_replace: the dimension of the output xsigma "index"
+            dim_replace: the dimension of the output quarisma "index"
             index: location of the dimensions to replace in the input
             output: variable to store the result
         """

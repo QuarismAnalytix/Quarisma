@@ -1,7 +1,7 @@
-#include <XSigma/InitialTensorOptions.h>
-#include <XSigma/SparseTensorImpl.h>
-#include <XSigma/XSigma.h>
-#include <XSigma/core/LegacyTypeDispatch.h>
+#include <Quarisma/InitialTensorOptions.h>
+#include <Quarisma/SparseTensorImpl.h>
+#include <Quarisma/Quarisma.h>
+#include <Quarisma/core/LegacyTypeDispatch.h>
 
 namespace at
 {

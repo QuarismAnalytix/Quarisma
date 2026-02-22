@@ -1,4 +1,4 @@
-#include <XSigma/Tensor.h>
+#include <Quarisma/Tensor.h>
 #include <torch/csrc/autograd/anomaly_mode.h>
 #include <torch/csrc/autograd/edge.h>
 #include <torch/csrc/autograd/engine.h>
@@ -35,7 +35,7 @@ SavedVariable::SavedVariable(const Variable& variable, bool is_output, bool is_i
         // determined by derivative formula and thus varies op by op, so by saying
         // "no inference tensor in autograd" it's easier for users to understand and
         // follow.
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !variable.is_inference(),
             "Inference tensors cannot be saved for backward. Please do not use "
             "Tensors created in inference mode in computation tracked by autograd. "
@@ -55,7 +55,7 @@ SavedVariable::SavedVariable(const Variable& variable, bool is_output, bool is_i
             weak_grad_fn_ = variable.grad_fn();
         }
         std::unique_ptr<SavedVariableHooks> maybe_hooks =
-            xsigma::SavedTensorDefaultHooks::is_enabled() ? get_default_hooks() : nullptr;
+            quarisma::SavedTensorDefaultHooks::is_enabled() ? get_default_hooks() : nullptr;
 
         // Avoid wrapped numbers from being leaked to the user
         if (maybe_hooks && !variable.unsafeGetTensorImpl()->is_wrapped_number())
@@ -140,7 +140,7 @@ Variable SavedVariable::unpack(std::shared_ptr<Node> saved_for) const
 
     if (!data_.defined())
     {
-        XSIGMA_CHECK(hooks_, ERR_BACKWARD_TWICE);
+        QUARISMA_CHECK(hooks_, ERR_BACKWARD_TWICE);
     }
 
     // We want grad_fn here to provide the most helpful debug message to the user
@@ -168,7 +168,7 @@ Variable SavedVariable::unpack(std::shared_ptr<Node> saved_for) const
         // As a simple fix, we choose to disallow that behavior here even though
         // it makes behavior inconsistent depending on whether you are saving
         // input or output.
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             saved_for,
             "Trying to use a saved tensor that has been detached in-place, i.e. with .detach_()."
             "This is not supported, please use out-of-place `.detach()` instead");
@@ -199,7 +199,7 @@ Variable SavedVariable::unpack(std::shared_ptr<Node> saved_for) const
             {
                 message << ", which is output " << output_nr_ << " of " << grad_fn->name() << ",";
             }
-            message << " is xsigma version " << current_version << "; expected version "
+            message << " is quarisma version " << current_version << "; expected version "
                     << saved_version_ << " instead.";
             if (!AnomalyMode::is_enabled())
             {
@@ -213,7 +213,7 @@ Variable SavedVariable::unpack(std::shared_ptr<Node> saved_for) const
                            "that failed to compute its gradient. The variable in question "
                            "was changed in there or anywhere later. Good luck!";
             }
-            XSIGMA_CHECK(false, message.str());
+            QUARISMA_CHECK(false, message.str());
         }
     }
 
@@ -269,10 +269,10 @@ void SavedVariable::set_hooks_and_pack_data(
     std::unique_ptr<SavedVariableHooks>&& hooks, const Variable& data)
 {
     hooks_ = std::move(hooks);
-    xsigma::NoGradGuard guard;
+    quarisma::NoGradGuard guard;
     const auto          version = impl::version_counter(data).current_version();
     hooks_->call_pack_hook(saved_original_ ? data.detach() : data);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         version == impl::version_counter(data).current_version(),
         "A saved tensor pack hook is modifying its input in place. "
         "Tensors provided as input to pack hook can not be modified by "
@@ -284,15 +284,15 @@ void SavedVariable::set_hooks_and_pack_data(
 void SavedVariable::register_hooks(std::unique_ptr<SavedVariableHooks>&& hooks)
 {
     TORCH_INTERNAL_ASSERT(hooks);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         !hooks_,
         "Calling register_hooks on a saved tensor whose hooks have already been set. "
-        "Hint: only one pair of hooks is allowed xsigma a time.");
+        "Hint: only one pair of hooks is allowed quarisma a time.");
     if (!data_.defined())
     {
         if (!was_default_constructed_)
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 false,
                 "Calling register_hooks on a saved tensor after it has been freed. "
                 "Saved intermediate values of the graph are freed when you call "
@@ -302,7 +302,7 @@ void SavedVariable::register_hooks(std::unique_ptr<SavedVariableHooks>&& hooks)
         }
         else
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 false, "Calling register_hooks on a saved tensor with value None is forbidden");
         }
     }

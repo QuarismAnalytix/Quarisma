@@ -1,8 +1,8 @@
-# XSigma Logging System
+# Quarisma Logging System
 
 ## Overview
 
-XSigma provides a flexible logging system with multiple backend options to suit different use cases and performance requirements. The logging backend can be selected at compile time to optimize for your specific needs.
+Quarisma provides a flexible logging system with multiple backend options to suit different use cases and performance requirements. The logging backend can be selected at compile time to optimize for your specific needs.
 
 ## Logging Backends
 
@@ -68,7 +68,7 @@ python setup.py config.build.ninja.clang --logging.native
 
 ## Logging Levels
 
-XSigma supports standard logging levels:
+Quarisma supports standard logging levels:
 
 | Level | Description | Use Case |
 |-------|-------------|----------|
@@ -88,13 +88,13 @@ Control logging behavior through environment variables:
 
 ```bash
 # Set logging level
-export XSIGMA_LOG_LEVEL=DEBUG
+export QUARISMA_LOG_LEVEL=DEBUG
 
 # Set log file location
-export XSIGMA_LOG_FILE=/var/log/xsigma.log
+export QUARISMA_LOG_FILE=/var/log/quarisma.log
 
 # Enable verbose logging
-export XSIGMA_LOG_VERBOSE=1
+export QUARISMA_LOG_VERBOSE=1
 ```
 
 ### Programmatic Configuration
@@ -102,16 +102,16 @@ export XSIGMA_LOG_VERBOSE=1
 Configure logging in your code:
 
 ```cpp
-#include <xsigma/logging/logger.h>
+#include <quarisma/logging/logger.h>
 
 // Set logging level
-xsigma::logging::set_level(xsigma::logging::Level::DEBUG);
+quarisma::logging::set_level(quarisma::logging::Level::DEBUG);
 
 // Set log file
-xsigma::logging::set_file("/path/to/logfile.log");
+quarisma::logging::set_file("/path/to/logfile.log");
 
 // Enable/disable console output
-xsigma::logging::enable_console(true);
+quarisma::logging::enable_console(true);
 ```
 
 ### Configuration File
@@ -119,10 +119,10 @@ xsigma::logging::enable_console(true);
 Create a logging configuration file (optional):
 
 ```yaml
-# xsigma_logging.yaml
+# quarisma_logging.yaml
 logging:
   level: DEBUG
-  file: /var/log/xsigma.log
+  file: /var/log/quarisma.log
   console: true
   format: "[%Y-%m-%d %H:%M:%S] [%l] %v"
   max_file_size: 10485760  # 10MB
@@ -134,13 +134,13 @@ logging:
 ### Basic Logging
 
 ```cpp
-#include <xsigma/logging/logger.h>
+#include <quarisma/logging/logger.h>
 
 int main() {
-    XSIGMA_LOG_INFO("Application started");
-    XSIGMA_LOG_DEBUG("Debug information");
-    XSIGMA_LOG_WARN("Warning message");
-    XSIGMA_LOG_ERROR("Error occurred");
+    QUARISMA_LOG_INFO("Application started");
+    QUARISMA_LOG_DEBUG("Debug information");
+    QUARISMA_LOG_WARN("Warning message");
+    QUARISMA_LOG_ERROR("Error occurred");
     return 0;
 }
 ```
@@ -148,8 +148,8 @@ int main() {
 ### Conditional Logging
 
 ```cpp
-if (XSIGMA_LOG_ENABLED(DEBUG)) {
-    XSIGMA_LOG_DEBUG("Expensive debug operation: {}", expensive_function());
+if (QUARISMA_LOG_ENABLED(DEBUG)) {
+    QUARISMA_LOG_DEBUG("Expensive debug operation: {}", expensive_function());
 }
 ```
 
@@ -157,8 +157,8 @@ if (XSIGMA_LOG_ENABLED(DEBUG)) {
 
 ```cpp
 {
-    auto scope = XSIGMA_LOG_SCOPE("function_name");
-    XSIGMA_LOG_INFO("Inside function");
+    auto scope = QUARISMA_LOG_SCOPE("function_name");
+    QUARISMA_LOG_INFO("Inside function");
     // Scope automatically logs exit
 }
 ```
@@ -166,8 +166,8 @@ if (XSIGMA_LOG_ENABLED(DEBUG)) {
 ### Formatted Logging
 
 ```cpp
-XSIGMA_LOG_INFO("Processing item {} of {}", current, total);
-XSIGMA_LOG_ERROR("Failed to open file: {}", filename);
+QUARISMA_LOG_INFO("Processing item {} of {}", current, total);
+QUARISMA_LOG_ERROR("Failed to open file: {}", filename);
 ```
 
 ## Performance Considerations

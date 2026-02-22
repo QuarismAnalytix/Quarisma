@@ -6,12 +6,12 @@
 
 #include "common/macros.h"
 
-namespace xsigma
+namespace quarisma
 {
 /**
  * @brief Stack frame information for detailed backtrace analysis
  */
-struct XSIGMA_VISIBILITY stack_frame
+struct QUARISMA_VISIBILITY stack_frame
 {
     std::string function_name;         ///< Demangled function name
     std::string object_file;           ///< Executable or library name
@@ -27,7 +27,7 @@ struct XSIGMA_VISIBILITY stack_frame
 /**
  * @brief Configuration options for stack trace capture
  */
-struct XSIGMA_VISIBILITY backtrace_options
+struct QUARISMA_VISIBILITY backtrace_options
 {
     size_t frames_to_skip           = 0;      ///< Number of top frames to skip
     size_t maximum_number_of_frames = 64;     ///< Maximum frames to capture
@@ -61,10 +61,10 @@ struct XSIGMA_VISIBILITY backtrace_options
  *
  * **Thread Safety**: All methods are thread-safe
  */
-class XSIGMA_VISIBILITY back_trace
+class QUARISMA_VISIBILITY back_trace
 {
 public:
-    XSIGMA_DELETE_CLASS(back_trace);
+    QUARISMA_DELETE_CLASS(back_trace);
 
     /**
      * @brief Capture and format current stack trace as string
@@ -76,12 +76,12 @@ public:
      *
      * **Example Output**:
      * ```
-     * frame #0: xsigma::allocator_bfc::allocate_raw + 0x1a2b (0x7fff8a2b in libc.so)
-     * frame #1: xsigma::allocator::allocate + 0x45 (0x7fff8a45 in Core.dll)
+     * frame #0: quarisma::allocator_bfc::allocate_raw + 0x1a2b (0x7fff8a2b in libc.so)
+     * frame #1: quarisma::allocator::allocate + 0x45 (0x7fff8a45 in Core.dll)
      * frame #2: main + 0x12 (0x400512 in app.exe)
      * ```
      */
-    XSIGMA_API static std::string print(
+    QUARISMA_API static std::string print(
         size_t frames_to_skip           = 0,
         size_t maximum_number_of_frames = 64,
         bool   skip_python_frames       = true);
@@ -92,7 +92,7 @@ public:
      * @param options Configuration for trace capture and formatting
      * @return Formatted stack trace string
      */
-    XSIGMA_API static std::string print(const backtrace_options& options);
+    QUARISMA_API static std::string print(const backtrace_options& options);
 
     /**
      * @brief Capture raw stack frames without formatting
@@ -105,7 +105,7 @@ public:
      * - Programmatic analysis
      * - Caching for later formatting
      */
-    XSIGMA_API static std::vector<stack_frame> capture(
+    QUARISMA_API static std::vector<stack_frame> capture(
         const backtrace_options& options = backtrace_options());
 
     /**
@@ -115,7 +115,7 @@ public:
      * @param options Formatting options
      * @return Formatted stack trace string
      */
-    XSIGMA_API static std::string format(
+    QUARISMA_API static std::string format(
         const std::vector<stack_frame>& frames,
         const backtrace_options&        options = backtrace_options());
 
@@ -127,7 +127,7 @@ public:
      *
      * **Example**: `"main -> allocate_raw -> malloc -> __libc_start_main"`
      */
-    XSIGMA_API static std::string compact(size_t max_frames = 5);
+    QUARISMA_API static std::string compact(size_t max_frames = 5);
 
     /**
      * @brief Enable/disable automatic stack trace on errors
@@ -136,13 +136,13 @@ public:
      *
      * **Note**: Currently a no-op placeholder for future implementation
      */
-    XSIGMA_API static void set_stack_trace_on_error(int enable);
+    QUARISMA_API static void set_stack_trace_on_error(int enable);
 
     /**
      * @brief Check if stack trace capture is supported on this platform
      *
      * @return true if backtrace is available, false otherwise
      */
-    XSIGMA_API static bool is_supported();
+    QUARISMA_API static bool is_supported();
 };
-}  // namespace xsigma
+}  // namespace quarisma

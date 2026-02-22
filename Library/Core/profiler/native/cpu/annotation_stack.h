@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -32,8 +32,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef XSIGMA_PROFILER_CPU_ANNOTATION_STACK_H_
-#define XSIGMA_PROFILER_CPU_ANNOTATION_STACK_H_
+#ifndef QUARISMA_PROFILER_CPU_ANNOTATION_STACK_H_
+#define QUARISMA_PROFILER_CPU_ANNOTATION_STACK_H_
 
 #include <atomic>
 #include <cstdint>
@@ -43,7 +43,7 @@ limitations under the License.
 
 #include "common/macros.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace profiler
 {
@@ -81,7 +81,7 @@ public:
      *
      * @param name Annotation name to push
      */
-    XSIGMA_API static void push_annotation(std::string_view name);
+    QUARISMA_API static void push_annotation(std::string_view name);
 
     /**
      * @brief Pop the most recent annotation from the stack.
@@ -89,7 +89,7 @@ public:
      * Removes the last annotation that was pushed onto the stack for
      * the current thread.
      */
-    XSIGMA_API static void pop_annotation();
+    QUARISMA_API static void pop_annotation();
 
     /**
      * @brief Get the full annotation string for the current thread.
@@ -99,7 +99,7 @@ public:
      *
      * @return Reference to the annotation string
      */
-    XSIGMA_API static const std::string& get();
+    QUARISMA_API static const std::string& get();
 
     /**
      * @brief Get the scope range IDs for the current thread's stack.
@@ -109,7 +109,7 @@ public:
      *
      * @return Reference to scope range ID vector (one entry per stack level)
      */
-    XSIGMA_API static const std::vector<int64_t>& get_scope_range_ids();
+    QUARISMA_API static const std::vector<int64_t>& get_scope_range_ids();
 
     /**
      * @brief Enable or disable the annotation stack globally.
@@ -119,7 +119,7 @@ public:
      *
      * @param enable true to enable, false to disable
      */
-    XSIGMA_API static void enable(bool enable);
+    QUARISMA_API static void enable(bool enable);
 
     /**
      * @brief Check if the annotation stack is currently enabled.
@@ -138,10 +138,10 @@ private:
      * call to enable() that changes the enabled state. This allows thread-local
      * data to detect when the state has changed and clear itself.
      */
-    XSIGMA_API static std::atomic<int> generation_;
+    QUARISMA_API static std::atomic<int> generation_;
 };
 
 }  // namespace profiler
-}  // namespace xsigma
+}  // namespace quarisma
 
-#endif  // XSIGMA_PROFILER_CPU_ANNOTATION_STACK_H_
+#endif  // QUARISMA_PROFILER_CPU_ANNOTATION_STACK_H_

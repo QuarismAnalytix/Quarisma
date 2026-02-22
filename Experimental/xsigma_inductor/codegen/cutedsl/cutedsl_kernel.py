@@ -527,7 +527,7 @@ class ModificationWrapperCuteDSL(V.WrapperHandler):  # type: ignore[name-defined
                 {bar}
                 This operation is not yet implemented in Inductor.
 
-                Please open an issue xsigma: https://github.com/pytorch/pytorch/issues
+                Please open an issue quarisma: https://github.com/pytorch/pytorch/issues
                 with the following information:
 
                 Operation: {name}

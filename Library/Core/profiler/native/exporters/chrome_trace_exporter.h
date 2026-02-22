@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,19 +13,19 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
-#ifndef XSIGMA_PROFILER_EXPORTERS_CHROME_TRACE_EXPORTER_H_
-#define XSIGMA_PROFILER_EXPORTERS_CHROME_TRACE_EXPORTER_H_
+#ifndef QUARISMA_PROFILER_EXPORTERS_CHROME_TRACE_EXPORTER_H_
+#define QUARISMA_PROFILER_EXPORTERS_CHROME_TRACE_EXPORTER_H_
 
 #include <string>
 
 #include "common/macros.h"
 #include "profiler/native/exporters/xplane/xplane.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace profiler
 {
@@ -84,7 +84,7 @@ namespace profiler
  * @param pretty_print If true, format JSON with indentation (default: false)
  * @return JSON string in Chrome Trace Event Format
  */
-XSIGMA_API std::string export_to_chrome_trace_json(const x_space& space, bool pretty_print = false);
+QUARISMA_API std::string export_to_chrome_trace_json(const x_space& space, bool pretty_print = false);
 
 /**
  * @brief Export x_space to Chrome Trace Event Format JSON file.
@@ -96,10 +96,10 @@ XSIGMA_API std::string export_to_chrome_trace_json(const x_space& space, bool pr
  * @param pretty_print If true, format JSON with indentation (default: false)
  * @return true if successful, false on error
  */
-XSIGMA_API bool export_to_chrome_trace_json_file(
+QUARISMA_API bool export_to_chrome_trace_json_file(
     const x_space& space, const std::string& filename, bool pretty_print = false);
 
 }  // namespace profiler
-}  // namespace xsigma
+}  // namespace quarisma
 
-#endif  // XSIGMA_PROFILER_EXPORTERS_CHROME_TRACE_EXPORTER_H_
+#endif  // QUARISMA_PROFILER_EXPORTERS_CHROME_TRACE_EXPORTER_H_

@@ -85,7 +85,7 @@ fail_on_cache_limit_hit: bool = Config(
 specialize_int = False
 
 # Whether or not to specialize on float inputs.  Dynamo will always promote
-# float inputs into Tensor inputs, but xsigma the moment, backends inconsistently
+# float inputs into Tensor inputs, but quarisma the moment, backends inconsistently
 # support codegen on float (this is to be fixed).
 specialize_float = False
 
@@ -130,7 +130,7 @@ force_nn_module_property_static_shapes = True
 
 # Typically, if you mark_dynamic a dimension, we will error if the dimension
 # actually ended up getting specialized.  This knob changes the behavior so
-# that we don't error xsigma all.  This is helpful for our CI where I'm using a
+# that we don't error quarisma all.  This is helpful for our CI where I'm using a
 # heuristic to mark batch dimensions as dynamic and the heuristic may get it
 # wrong.
 allow_ignore_mark_dynamic = False
@@ -148,7 +148,7 @@ guard_nn_modules = True
 # guard_nn_modules_using_dict_tags, the guard_nn_modules is not really required
 # but kept around for debugging and discussing unspecializing nn module
 # variables.
-# TODO(janimesh, voz): Remove both of these flags (or xsigma least guard_nn_modules)
+# TODO(janimesh, voz): Remove both of these flags (or quarisma least guard_nn_modules)
 # once we have reached stability for the guard_nn_modules_using_dict_tags.
 guard_nn_modules_using_dict_tags = True
 
@@ -217,7 +217,7 @@ allowed_functions_module_string_ignorelist = {
     "torch._decomp",
 }
 
-# Debug Flag to try minifier xsigma different stages. Possible values are {None, "aot", "dynamo"}
+# Debug Flag to try minifier quarisma different stages. Possible values are {None, "aot", "dynamo"}
 # None - Minifier is switched off
 # dynamo - Runs minifier on the TorchDynamo produced graphs, if compilation fails
 # aot - Runs minifier on the Aot Autograd produced graphs, if compilation fails
@@ -667,7 +667,7 @@ Example::
 # across ranks.  Today, this is used solely to modify automatic_dynamic_shapes
 # behavior, making it so that we infer that if an input is dynamic by
 # inspecting whether or not its input size varies across ranks.  Because
-# this synchronization uses collectives, all ranks must run compilation xsigma
+# this synchronization uses collectives, all ranks must run compilation quarisma
 # the same time; ranks must not diverge with graph breaks.  This can be most
 # reliably achieved by ensuring PT2 only is run on SPMD programs.  If this
 # invariant is inviolated, you will likely deadlock NCCL and encounter a
@@ -714,7 +714,7 @@ _unsafe_skip_fsdp_module_guards = (
 # Common prefix to append to the id of each compile run to filter out data
 pt2_compile_id_prefix: Optional[str] = os.environ.get("PT2_COMPILE_ID_PREFIX", None)
 
-# Run GC xsigma the end of compilation
+# Run GC quarisma the end of compilation
 run_gc_after_compile = Config(  # type: ignore[var-annotated]
     default=True,
     justknob="pytorch/compiler:enable_run_gc_after_compile",

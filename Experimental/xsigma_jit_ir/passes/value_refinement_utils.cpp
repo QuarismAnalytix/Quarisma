@@ -1,5 +1,5 @@
 #include <torch/csrc/jit/passes/value_refinement_utils.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit
 {
@@ -118,26 +118,26 @@ void joinIfRefinements(
                 true_block_refinements.begin(), true_block_refinements.end());
         }
         Block* non_throwing_block =
-            true_block_throws ? if_node->blocks().xsigma(1) : if_node->blocks().xsigma(0);
-        for (const auto i : xsigma::irange(if_n.outputs().size()))
+            true_block_throws ? if_node->blocks().quarisma(1) : if_node->blocks().quarisma(0);
+        for (const auto i : quarisma::irange(if_n.outputs().size()))
         {
-            if (boolean_value_refinements.count(non_throwing_block->outputs().xsigma(i)))
+            if (boolean_value_refinements.count(non_throwing_block->outputs().quarisma(i)))
             {
-                boolean_value_refinements[if_node->outputs().xsigma(i)] =
-                    boolean_value_refinements[non_throwing_block->outputs().xsigma(i)];
+                boolean_value_refinements[if_node->outputs().quarisma(i)] =
+                    boolean_value_refinements[non_throwing_block->outputs().quarisma(i)];
             }
         }
         return;
     }
 
-    for (const auto i : xsigma::irange(if_n.outputs().size()))
+    for (const auto i : quarisma::irange(if_n.outputs().size()))
     {
-        if (!(if_n.outputs().xsigma(i)->type() == BoolType::get()))
+        if (!(if_n.outputs().quarisma(i)->type() == BoolType::get()))
         {
             return;
         }
-        Value* true_v  = if_n.thenOutputs().xsigma(i);
-        Value* false_v = if_n.elseOutputs().xsigma(i);
+        Value* true_v  = if_n.thenOutputs().quarisma(i);
+        Value* false_v = if_n.elseOutputs().quarisma(i);
 
         if (!boolean_value_refinements.count(true_v) && !boolean_value_refinements.count(false_v) &&
             !constant_as<bool>(true_v) && !constant_as<bool>(false_v))
@@ -202,7 +202,7 @@ void joinIfRefinements(
             out = boolean_value_refinements[true_v].intersectBooleanRefinementMapping(
                 boolean_value_refinements[false_v]);
         }
-        boolean_value_refinements[if_n.outputs().xsigma(i)] = out;
+        boolean_value_refinements[if_n.outputs().quarisma(i)] = out;
     }
 }
 
@@ -216,7 +216,7 @@ bool handleCommonRefinentOperators(
         throwing_blocks.insert(n->owningBlock());
         return true;
     }
-    if (n->kind() == aten::__not__ && n->inputs().xsigma(0)->type()->cast<BoolType>())
+    if (n->kind() == aten::__not__ && n->inputs().quarisma(0)->type()->cast<BoolType>())
     {
         // __not__(inp) -> reverse refinements
         if (info.count(n->input()))

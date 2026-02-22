@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -29,7 +29,7 @@
 
 #include "common/macros.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 // ============================================================================
@@ -39,7 +39,7 @@ namespace xsigma
 /**
  * @brief Atomic timing statistics for memory operations (thread-safe)
  */
-struct XSIGMA_VISIBILITY atomic_timing_stats
+struct QUARISMA_VISIBILITY atomic_timing_stats
 {
     std::atomic<uint64_t> total_allocations{0};
     std::atomic<uint64_t> total_deallocations{0};
@@ -56,27 +56,27 @@ struct XSIGMA_VISIBILITY atomic_timing_stats
     atomic_timing_stats() = default;
 
     // Copy constructor
-    XSIGMA_API atomic_timing_stats(const atomic_timing_stats& other) noexcept;
+    QUARISMA_API atomic_timing_stats(const atomic_timing_stats& other) noexcept;
 
     // Copy assignment operator
-    XSIGMA_API atomic_timing_stats& operator=(const atomic_timing_stats& other) noexcept;
+    QUARISMA_API atomic_timing_stats& operator=(const atomic_timing_stats& other) noexcept;
 
     /**
      * @brief Reset all timing statistics to zero
      */
-    XSIGMA_API void reset() noexcept;
+    QUARISMA_API void reset() noexcept;
 
     /**
      * @brief Calculate average allocation time in microseconds
      * @return Average allocation time, or 0.0 if no allocations
      */
-    XSIGMA_API double average_alloc_time_us() const noexcept;
+    QUARISMA_API double average_alloc_time_us() const noexcept;
 
     /**
      * @brief Calculate average deallocation time in microseconds
      * @return Average deallocation time, or 0.0 if no deallocations
      */
-    XSIGMA_API double average_dealloc_time_us() const noexcept;
+    QUARISMA_API double average_dealloc_time_us() const noexcept;
 };
 
 // ============================================================================
@@ -86,7 +86,7 @@ struct XSIGMA_VISIBILITY atomic_timing_stats
 /**
  * @brief Unified resource statistics for memory allocators
  */
-struct XSIGMA_VISIBILITY unified_resource_stats
+struct QUARISMA_VISIBILITY unified_resource_stats
 {
     std::atomic<int64_t> num_allocs{0};
     std::atomic<int64_t> num_deallocs{0};
@@ -113,39 +113,39 @@ struct XSIGMA_VISIBILITY unified_resource_stats
     unified_resource_stats() = default;
 
     // Copy constructor
-    XSIGMA_API unified_resource_stats(const unified_resource_stats& other) noexcept;
+    QUARISMA_API unified_resource_stats(const unified_resource_stats& other) noexcept;
 
     // Copy assignment operator
-    XSIGMA_API unified_resource_stats& operator=(const unified_resource_stats& other) noexcept;
+    QUARISMA_API unified_resource_stats& operator=(const unified_resource_stats& other) noexcept;
 
     /**
      * @brief Reset all resource statistics to zero
      */
-    XSIGMA_API void reset() noexcept;
+    QUARISMA_API void reset() noexcept;
 
     /**
      * @brief Calculate average allocation size in bytes
      * @return Average allocation size, or 0.0 if no allocations
      */
-    XSIGMA_API double average_allocation_size() const noexcept;
+    QUARISMA_API double average_allocation_size() const noexcept;
 
     /**
      * @brief Calculate memory efficiency ratio
      * @return Memory efficiency ratio (0.0 to 1.0+)
      */
-    XSIGMA_API double memory_efficiency() const noexcept;
+    QUARISMA_API double memory_efficiency() const noexcept;
 
     /**
      * @brief Calculate allocation success rate as percentage
      * @return Success rate percentage (0.0 to 100.0)
      */
-    XSIGMA_API double allocation_success_rate() const noexcept;
+    QUARISMA_API double allocation_success_rate() const noexcept;
 
     /**
      * @brief Generate debug string representation of statistics
      * @return Formatted debug string
      */
-    XSIGMA_API std::string debug_string() const;
+    QUARISMA_API std::string debug_string() const;
 };
 
 // ============================================================================
@@ -155,7 +155,7 @@ struct XSIGMA_VISIBILITY unified_resource_stats
 /**
  * @brief Unified cache statistics for caching allocators
  */
-struct XSIGMA_VISIBILITY unified_cache_stats
+struct QUARISMA_VISIBILITY unified_cache_stats
 {
     std::atomic<size_t> cache_hits{0};
     std::atomic<size_t> cache_misses{0};
@@ -173,33 +173,33 @@ struct XSIGMA_VISIBILITY unified_cache_stats
     unified_cache_stats() = default;
 
     // Copy constructor
-    XSIGMA_API unified_cache_stats(const unified_cache_stats& other) noexcept;
+    QUARISMA_API unified_cache_stats(const unified_cache_stats& other) noexcept;
 
     // Copy assignment operator
-    XSIGMA_API unified_cache_stats& operator=(const unified_cache_stats& other) noexcept;
+    QUARISMA_API unified_cache_stats& operator=(const unified_cache_stats& other) noexcept;
 
     /**
      * @brief Reset all cache statistics to zero
      */
-    XSIGMA_API void reset() noexcept;
+    QUARISMA_API void reset() noexcept;
 
     /**
      * @brief Calculate cache hit rate as ratio
      * @return Cache hit rate (0.0 to 1.0)
      */
-    XSIGMA_API double cache_hit_rate() const noexcept;
+    QUARISMA_API double cache_hit_rate() const noexcept;
 
     /**
      * @brief Calculate cache efficiency as percentage
      * @return Cache efficiency percentage (0.0 to 100.0)
      */
-    XSIGMA_API double cache_efficiency_percent() const noexcept;
+    QUARISMA_API double cache_efficiency_percent() const noexcept;
 
     /**
      * @brief Calculate driver call reduction factor
      * @return Driver call reduction factor (1.0+)
      */
-    XSIGMA_API double driver_call_reduction() const noexcept;
+    QUARISMA_API double driver_call_reduction() const noexcept;
 };
 
 // ============================================================================
@@ -209,32 +209,32 @@ struct XSIGMA_VISIBILITY unified_cache_stats
 /**
  * @brief Comprehensive memory statistics combining all aspects
  */
-struct XSIGMA_VISIBILITY comprehensive_memory_stats
+struct QUARISMA_VISIBILITY comprehensive_memory_stats
 {
     unified_resource_stats resource_stats;
     atomic_timing_stats    timing_stats;
     unified_cache_stats    cache_stats;
     std::string            allocator_name;
 
-    XSIGMA_API comprehensive_memory_stats(std::string name = "Unknown");
+    QUARISMA_API comprehensive_memory_stats(std::string name = "Unknown");
 
     /**
      * @brief Calculate overall efficiency combining resource and cache efficiency
      * @return Overall efficiency ratio (0.0 to 1.0+)
      */
-    XSIGMA_API double overall_efficiency() const noexcept;
+    QUARISMA_API double overall_efficiency() const noexcept;
 
     /**
      * @brief Calculate operations per second based on timing statistics
      * @return Operations per second, or 0.0 if no timing data
      */
-    XSIGMA_API double operations_per_second() const noexcept;
+    QUARISMA_API double operations_per_second() const noexcept;
 
     /**
      * @brief Generate comprehensive memory statistics report
      * @return Formatted report string
      */
-    XSIGMA_API std::string generate_report() const;
+    QUARISMA_API std::string generate_report() const;
 };
 
 // ============================================================================
@@ -250,7 +250,7 @@ struct XSIGMA_VISIBILITY comprehensive_memory_stats
  *
  * **Performance Impact**: O(1) for basic metrics, O(n) for detailed analysis
  */
-struct XSIGMA_VISIBILITY memory_fragmentation_metrics
+struct QUARISMA_VISIBILITY memory_fragmentation_metrics
 {
     size_t total_free_blocks{0};         ///< Number of free memory blocks
     size_t largest_free_block{0};        ///< Size of largest contiguous free block
@@ -269,18 +269,18 @@ struct XSIGMA_VISIBILITY memory_fragmentation_metrics
     /**
      * @brief Copy constructor
      */
-    XSIGMA_API memory_fragmentation_metrics(const memory_fragmentation_metrics& other) noexcept;
+    QUARISMA_API memory_fragmentation_metrics(const memory_fragmentation_metrics& other) noexcept;
 
     /**
      * @brief Copy assignment operator
      */
-    XSIGMA_API memory_fragmentation_metrics& operator=(
+    QUARISMA_API memory_fragmentation_metrics& operator=(
         const memory_fragmentation_metrics& other) noexcept;
 
     /**
      * @brief Reset all fragmentation metrics to zero
      */
-    XSIGMA_API void reset() noexcept;
+    QUARISMA_API void reset() noexcept;
 
     /**
      * @brief Calculates comprehensive fragmentation analysis.
@@ -293,7 +293,7 @@ struct XSIGMA_VISIBILITY memory_fragmentation_metrics
      * **Complexity**: O(n) where n is number of free blocks
      * **Thread Safety**: Thread-safe for read-only operations
      */
-    XSIGMA_API static memory_fragmentation_metrics calculate(
+    QUARISMA_API static memory_fragmentation_metrics calculate(
         size_t                     total_allocated,
         size_t                     total_requested,
         const std::vector<size_t>& free_blocks) noexcept;
@@ -302,7 +302,7 @@ struct XSIGMA_VISIBILITY memory_fragmentation_metrics
      * @brief Generate debug string representation of fragmentation metrics
      * @return Formatted debug string
      */
-    XSIGMA_API std::string debug_string() const;
+    QUARISMA_API std::string debug_string() const;
 };
 
 // ============================================================================
@@ -317,4 +317,4 @@ using gpu_timing_stats        = atomic_timing_stats;  ///< GPU timing statistics
 using gpu_resource_statistics = unified_resource_stats;    ///< GPU resource statistics
 using cuda_caching_allocator_stats = unified_cache_stats;  ///< CUDA cache statistics
 
-}  // namespace xsigma
+}  // namespace quarisma

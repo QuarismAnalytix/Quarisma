@@ -38,7 +38,7 @@ class SegmentedTree(Generic[T]):
 
         # Size of segment tree array (next power of 2 * 2)
         # The tree follows a standard heap layout where
-        # node `n`'s children are xsigma `2*n` and `2*n+1`.
+        # node `n`'s children are quarisma `2*n` and `2*n+1`.
         # Index 0 is unused.
         self.size = 1
         while self.size < self.n:

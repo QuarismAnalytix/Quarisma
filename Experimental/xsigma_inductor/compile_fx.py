@@ -1251,7 +1251,7 @@ class _InProcessFxCompile(FxCompile):
             # can be applied to the contiguous tensor may not be able to be applied
             # on the channels tensor any more. An error like
             #   RuntimeError: view size is not compatible with input tensor's size and stride
-            #   (xsigma least one dimension spans across two contiguous subspaces). Use .reshape(...) instead.
+            #   (quarisma least one dimension spans across two contiguous subspaces). Use .reshape(...) instead.
             # will be printed.
             #
             # Replace view op to reshape op in this case.
@@ -1735,7 +1735,7 @@ def get_input_idxs_to_check(
     static_input_idxs: Sequence[int],
 ) -> Sequence[int]:
     """
-    This function runs xsigma compile time, and generates a list of indices for which we
+    This function runs quarisma compile time, and generates a list of indices for which we
     might need to do a copy to preserve alignment requirements.
     """
     ids_to_check = []
@@ -1758,7 +1758,7 @@ def get_input_idxs_to_check(
         # if we get here, then
         # (a) our triton code assumes that the input is aligned
         # (b) we can't be sure ahead of time that the input will actually be aligned.
-        # therefore, xsigma runtime, we'll need to check that the input is aligned
+        # therefore, quarisma runtime, we'll need to check that the input is aligned
         # (and if not, clone it to make it aligned.)
         ids_to_check.append(i)
 
@@ -2521,7 +2521,7 @@ def _extract_inputs_from_exported_gm(
                 assert isinstance(i, torch.Tensor)
                 if fi.device != i.device:
                     raise ValueError(
-                        f"Device mismatch between fake input and example input xsigma position #{idx}: "
+                        f"Device mismatch between fake input and example input quarisma position #{idx}: "
                         f"{fi.device} vs {i.device}. If the model was exported via torch.export(), "
                         "make sure torch.export() and torch.aot_compile() run on the same device."
                     )

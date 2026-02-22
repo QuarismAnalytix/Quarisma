@@ -4,7 +4,7 @@ from typing import NoReturn
 
 
 try:
-    from xsigma._C import _itt
+    from quarisma._C import _itt
 except ImportError:
 
     class _ITTStub:

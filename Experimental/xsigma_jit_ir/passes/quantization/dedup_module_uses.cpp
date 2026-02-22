@@ -79,7 +79,7 @@ private:
     {
         for (Value* v : uses_to_rewrite_)
         {
-            const auto& path = value_to_path_map_.xsigma(v);
+            const auto& path = value_to_path_map_.quarisma(v);
             const auto& m    = findChildModule(module_, path);
             // add a clone of the child module to the parent of the duplicated module
             const auto& child_name = addChildModule(module_, m, path);
@@ -98,7 +98,7 @@ private:
     std::string addChildModule(
         Module& module, const Module& child_module, const std::vector<std::string>& path)
     {
-        TORCH_INTERNAL_ASSERT(!path.empty(), "path must have xsigma least one element.");
+        TORCH_INTERNAL_ASSERT(!path.empty(), "path must have quarisma least one element.");
         // Parent module of the leaf child module corresponding to
         // the path
         auto parent_of_leaf =

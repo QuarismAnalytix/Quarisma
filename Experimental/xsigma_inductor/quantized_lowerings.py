@@ -21,12 +21,12 @@ from .virtualized import V
 log = logging.getLogger(__name__)
 
 aten__weight_int8pack_mm = ExternKernelChoice(
-    torch._weight_int8pack_mm, "xsigma::_weight_int8pack_mm", has_out_variant=False
+    torch._weight_int8pack_mm, "quarisma::_weight_int8pack_mm", has_out_variant=False
 )
 
 aten__weight_int4pack_mm_cpu = ExternKernelChoice(
     torch.ops.quantized.int4mm_packed_weight_cpu,
-    "xsigma::native::_weight_int4pack_mm_cpu_tensor",
+    "quarisma::native::_weight_int4pack_mm_cpu_tensor",
     has_out_variant=False,
     kernel_creator=WeightInt4PackMatmul.create,
 )

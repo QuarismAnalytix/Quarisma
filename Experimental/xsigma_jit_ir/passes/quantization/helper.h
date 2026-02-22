@@ -89,7 +89,7 @@ TORCH_API bool isPropagateQuantOp(Node* n);
 // quantized::{op}_scalar
 TORCH_API bool isBinaryOpWithScalarInput(Node* n);
 
-TORCH_API std::optional<std::tuple<xsigma::QScheme, QParamVector>> getFixedQParams(Node* n);
+TORCH_API std::optional<std::tuple<quarisma::QScheme, QParamVector>> getFixedQParams(Node* n);
 
 // We don't want to analyze the graph for some `builtin` CallFunctions
 // like `linear` because we want to preserve the op boundary

@@ -1,4 +1,4 @@
-# XSigma Autograd: File Dependency Map
+# Quarisma Autograd: File Dependency Map
 
 **Visual representation of dependencies between autograd source files**
 
@@ -19,15 +19,15 @@ function.h (Node class)
     └── Key: Defines the fundamental Node class
 
 input_metadata.h (Tensor metadata)
-    ├── Depends on: XSigma/Tensor.h
+    ├── Depends on: Quarisma/Tensor.h
     └── Used by: function.h, input_buffer.h
 
 saved_variable.h (Saved tensor wrapper)
-    ├── Depends on: XSigma/Tensor.h
+    ├── Depends on: Quarisma/Tensor.h
     └── Used by: function.h, custom_function.h
 
 input_buffer.h (Gradient accumulation)
-    ├── Depends on: input_metadata.h, XSigma/Tensor.h
+    ├── Depends on: input_metadata.h, Quarisma/Tensor.h
     └── Used by: engine.h, graph_task.h
 
 graph_task.h (Execution metadata)
@@ -94,7 +94,7 @@ python_engine.h/cpp (Python engine wrapper)
     └── Used by: Python autograd API
 
 grad_mode.h (Gradient mode control)
-    ├── Depends on: XSigma/core/TensorBase.h
+    ├── Depends on: Quarisma/core/TensorBase.h
     └── Used by: engine.cpp, variable.h
 
 anomaly_mode.h/cpp (Anomaly detection)
@@ -164,7 +164,7 @@ python_variable_indexing.h/cpp (Python indexing)
 
 init.cpp (Module initialization)
     ├── Depends on: All autograd headers
-    └── Used by: XSigma initialization
+    └── Used by: Quarisma initialization
 
 python_autograd.h (Python autograd module)
     ├── Depends on: python_engine.h, python_function.h
@@ -172,7 +172,7 @@ python_autograd.h (Python autograd module)
 
 functions/init.cpp (Functions module init)
     ├── Depends on: All function headers
-    └── Used by: XSigma initialization
+    └── Used by: Quarisma initialization
 ```
 
 ---
@@ -184,33 +184,33 @@ functions/init.cpp (Functions module init)
 │                      PYTHON API LAYER                           │
 └─────────────────────────────────────────────────────────────────┘
 
-xsigma/autograd/__init__.py
+quarisma/autograd/__init__.py
     ├── Imports: function.py, grad_mode.py, graph.py
     │           anomaly_mode.py, gradcheck.py, forward_ad.py
     └── Exports: Public autograd API
 
-xsigma/autograd/function.py (Custom functions)
-    ├── Depends on: xsigma._C._functions (C++ backend)
+quarisma/autograd/function.py (Custom functions)
+    ├── Depends on: quarisma._C._functions (C++ backend)
     └── Used by: User custom autograd functions
 
-xsigma/autograd/graph.py (Graph inspection)
-    ├── Depends on: xsigma._C._autograd (C++ backend)
+quarisma/autograd/graph.py (Graph inspection)
+    ├── Depends on: quarisma._C._autograd (C++ backend)
     └── Used by: Graph inspection and hooks
 
-xsigma/autograd/grad_mode.py (Gradient modes)
-    ├── Depends on: xsigma._C (C++ backend)
+quarisma/autograd/grad_mode.py (Gradient modes)
+    ├── Depends on: quarisma._C (C++ backend)
     └── Used by: Controlling gradient computation
 
-xsigma/autograd/anomaly_mode.py (Anomaly detection)
-    ├── Depends on: xsigma._C (C++ backend)
+quarisma/autograd/anomaly_mode.py (Anomaly detection)
+    ├── Depends on: quarisma._C (C++ backend)
     └── Used by: Debugging autograd
 
-xsigma/autograd/gradcheck.py (Gradient checking)
-    ├── Depends on: xsigma.autograd.grad
+quarisma/autograd/gradcheck.py (Gradient checking)
+    ├── Depends on: quarisma.autograd.grad
     └── Used by: Testing gradients
 
-xsigma/autograd/forward_ad.py (Forward AD)
-    ├── Depends on: xsigma._C (C++ backend)
+quarisma/autograd/forward_ad.py (Forward AD)
+    ├── Depends on: quarisma._C (C++ backend)
     └── Used by: Forward mode differentiation
 ```
 
@@ -223,7 +223,7 @@ xsigma/autograd/forward_ad.py (Forward AD)
 │                    COMPLETE DEPENDENCY GRAPH                     │
 └──────────────────────────────────────────────────────────────────┘
 
-                        XSigma/Tensor.h
+                        Quarisma/Tensor.h
                               ↓
         ┌─────────────────────┼─────────────────────┐
         ↓                     ↓                     ↓
@@ -323,7 +323,7 @@ python_function.h ← python_hook.h
    - Headers remain acyclic
 
 4. **Namespace Isolation**
-   - All autograd code in `xsigma::autograd` namespace
+   - All autograd code in `quarisma::autograd` namespace
    - Prevents naming conflicts
 
 ---
@@ -332,7 +332,7 @@ python_function.h ← python_hook.h
 
 | File | Includes | Included By |
 |------|----------|------------|
-| `edge.h` | XSigma | function.h, graph_task.h, variable.h |
+| `edge.h` | Quarisma | function.h, graph_task.h, variable.h |
 | `function.h` | edge.h, saved_variable.h | engine.h, variable.h, all ops |
 | `graph_task.h` | function.h, input_buffer.h | engine.h, python_engine.h |
 | `variable.h` | edge.h, function.h | engine.h, functions/utils.h |

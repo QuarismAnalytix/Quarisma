@@ -1,5 +1,5 @@
 #pragma once
-#include <XSigma/core/ivalue.h>
+#include <Quarisma/core/ivalue.h>
 #include <torch/csrc/jit/frontend/source_range.h>
 #include <torch/csrc/jit/ir/constants.h>
 #include <torch/csrc/utils/variadic.h>
@@ -53,7 +53,7 @@ struct NamedValue
         return loc();
     }
 
-    // note: this will insert a constant node into the graph xsigma the current
+    // note: this will insert a constant node into the graph quarisma the current
     // insert point if this NamedValue is actually a constant
     Value* value(Graph& g) const
     {
@@ -75,7 +75,7 @@ struct NamedValue
         return *loc_;
     }
 
-    xsigma::TypePtr type() const;
+    quarisma::TypePtr type() const;
 
 private:
     std::optional<SourceRange> loc_;

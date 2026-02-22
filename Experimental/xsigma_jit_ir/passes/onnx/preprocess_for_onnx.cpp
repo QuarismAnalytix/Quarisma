@@ -1,15 +1,15 @@
-#include <XSigma/ScalarOps.h>
+#include <Quarisma/ScalarOps.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/onnx/helper.h>
 #include <torch/csrc/jit/passes/onnx/preprocess_for_onnx.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit
 {
 
 namespace onnx
 {
-using namespace ::xsigma::onnx;
+using namespace ::quarisma::onnx;
 }
 
 namespace
@@ -211,9 +211,9 @@ static void fuseListAndListUnpack(Block* b)
         }
         if (it->kind() == prim::ListUnpack)
         {
-            for (const auto i : xsigma::irange(it->outputs().size()))
+            for (const auto i : quarisma::irange(it->outputs().size()))
             {
-                auto output = it->outputs().xsigma(i);
+                auto output = it->outputs().quarisma(i);
                 if (it->inputs().size() == 1 &&
                     it->input()->node()->kind() != prim::ListConstruct &&
                     it->input()->type()->cast<ListType>() &&
@@ -222,7 +222,7 @@ static void fuseListAndListUnpack(Block* b)
                     Node* gather_indices = b->owningGraph()->create(onnx::Constant, 1);
                     gather_indices->insertBefore(*it);
                     gather_indices->t_(
-                        attr::value, xsigma::scalar_to_tensor(xsigma::Scalar(int(i))));
+                        attr::value, quarisma::scalar_to_tensor(quarisma::Scalar(int(i))));
                     Node* gather_node = b->owningGraph()->create(onnx::Gather, 1);
                     gather_node->insertBefore(*it);
                     gather_node->addInput(it->input());

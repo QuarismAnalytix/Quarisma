@@ -8,12 +8,12 @@
 #include <torch/csrc/jit/passes/remove_dropout.h>
 #include <torch/csrc/jit/passes/utils/optimization_utils.h>
 #include <torch/csrc/jit/runtime/graph_executor.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/cat.h>
+#include <Quarisma/ops/cat.h>
 #endif
 
 #include <unordered_set>
@@ -25,7 +25,7 @@ namespace torch::jit
 namespace
 {
 
-using Tensor = xsigma::Tensor;
+using Tensor = quarisma::Tensor;
 
 class ConcatLinearLayers
 {
@@ -81,7 +81,7 @@ public:
                 continue;
             }
 
-            Value* linear_input = n->inputs().xsigma(0);
+            Value* linear_input = n->inputs().quarisma(0);
             if (grouped_linear_layers.find(linear_input) == grouped_linear_layers.cend())
             {
                 grouped_linear_layers.insert({linear_input, std::vector<Node*>()});
@@ -102,19 +102,19 @@ public:
         Node* linear_node = nullptr;
         {
             WithInsertPoint guard(base_node);
-            auto            weight_list = xsigma::fmap(
+            auto            weight_list = quarisma::fmap(
                 compatible_layers,
                 [](Node* n) { return constant_as<Tensor>(n->namedInput("weight")).value(); });
-            Tensor cat_weight       = xsigma::cat(weight_list, /*dim=*/0);
+            Tensor cat_weight       = quarisma::cat(weight_list, /*dim=*/0);
             Value* cat_weight_value = graph_->insertConstant(std::move(cat_weight));
 
-            auto bias_list = xsigma::fmap(
+            auto bias_list = quarisma::fmap(
                 compatible_layers,
                 [](Node* n) { return constant_as<Tensor>(n->namedInput("bias")).value(); });
-            Tensor cat_bias       = xsigma::cat(bias_list, /*dim=*/0);
+            Tensor cat_bias       = quarisma::cat(bias_list, /*dim=*/0);
             Value* cat_bias_value = graph_->insertConstant(std::move(cat_bias));
 
-            auto                tensor_input = base_node->inputs().xsigma(0);
+            auto                tensor_input = base_node->inputs().quarisma(0);
             std::vector<Value*> linear_in    = {tensor_input, cat_weight_value, cat_bias_value};
             linear_node                      = graph_->create(aten::linear, linear_in);
             linear_node->insertBefore(base_node);
@@ -254,7 +254,7 @@ public:
              tensor_it != ordered_tensor_inputs.rend();
              ++tensor_it)
         {
-            collectAndMergeLinearLayers(grouped_linear_layers.xsigma(*tensor_it));
+            collectAndMergeLinearLayers(grouped_linear_layers.quarisma(*tensor_it));
         }
     }
 

@@ -1,4 +1,4 @@
-# ThreadSanitizer Suppressions for XSigma
+# ThreadSanitizer Suppressions for Quarisma
 # ========================================
 # This file contains suppressions for ThreadSanitizer to handle known false positives
 # and issues in third-party libraries that cannot be easily fixed.

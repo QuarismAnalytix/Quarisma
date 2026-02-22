@@ -1,9 +1,9 @@
 #pragma once
-#include <XSigma/NamedTensor.h>
-#include <XSigma/TensorNames.h>
-#include <XSigma/WrapDimUtilsMulti.h>
-#include <XSigma/core/DimVector.h>
-#include <XSigma/core/Tensor.h>
+#include <Quarisma/NamedTensor.h>
+#include <Quarisma/TensorNames.h>
+#include <Quarisma/WrapDimUtilsMulti.h>
+#include <Quarisma/core/DimVector.h>
+#include <Quarisma/core/Tensor.h>
 
 namespace at
 {

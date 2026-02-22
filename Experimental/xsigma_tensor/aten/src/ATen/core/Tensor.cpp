@@ -1,16 +1,16 @@
-#include <XSigma/FunctionalTensorWrapper.h>
-#include <XSigma/core/Formatting.h>
-#include <XSigma/core/LegacyTypeDispatch.h>
-#include <XSigma/core/Tensor.h>
-#include <XSigma/core/VariableHooksInterface.h>
+#include <Quarisma/FunctionalTensorWrapper.h>
+#include <Quarisma/core/Formatting.h>
+#include <Quarisma/core/LegacyTypeDispatch.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/core/VariableHooksInterface.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/MethodOperators.h>
+#include <Quarisma/MethodOperators.h>
 #else
-#include <XSigma/ops/contiguous_ops.h>
-#include <XSigma/ops/fill_ops.h>
-#include <XSigma/ops/to_ops.h>
-#include <XSigma/ops/zero_ops.h>
+#include <Quarisma/ops/contiguous_ops.h>
+#include <Quarisma/ops/fill_ops.h>
+#include <Quarisma/ops/to_ops.h>
+#include <Quarisma/ops/zero_ops.h>
 #endif
 
 #include <iostream>
@@ -65,7 +65,7 @@ void TensorBase::enforce_invariants()
 {
     TORCH_CHECK(impl_.get() != nullptr, "TensorImpl with nullptr is not supported");
     // Following line throws if the method is not a POD data type or is not
-    // supported by XSigma
+    // supported by Quarisma
     scalar_type();
     if (defined())
     {

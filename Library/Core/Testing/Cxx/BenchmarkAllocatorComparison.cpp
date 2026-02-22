@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include <benchmark/benchmark.h>
@@ -35,7 +35,7 @@
 #include "memory/cpu/allocator.h"
 #include "memory/cpu/allocator_cpu.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // =============================================================================
 // Benchmark Configuration
@@ -188,7 +188,7 @@ static void BM_BFCAllocator_BatchAllocation(benchmark::State& state)
 // Pool Allocator Benchmarks
 // =============================================================================
 
-static void BM_PoolAllocator_SmallAllocation(XSIGMA_UNUSED benchmark::State& state)
+static void BM_PoolAllocator_SmallAllocation(QUARISMA_UNUSED benchmark::State& state)
 {
     auto base_allocator = util::make_ptr_unique_mutable<basic_cpu_allocator>(
         0, std::vector<sub_allocator::Visitor>{}, std::vector<sub_allocator::Visitor>{});

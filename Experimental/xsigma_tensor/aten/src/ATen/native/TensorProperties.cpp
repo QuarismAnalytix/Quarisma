@@ -1,28 +1,28 @@
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
-#include <XSigma/Context.h>
-#include <XSigma/NamedTensorUtils.h>
-#include <XSigma/core/Tensor.h>
-#include <XSigma/detail/CUDAHooksInterface.h>
-#include <XSigma/native/TensorProperties.h>
+#include <Quarisma/Context.h>
+#include <Quarisma/NamedTensorUtils.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/detail/CUDAHooksInterface.h>
+#include <Quarisma/native/TensorProperties.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
-#include <XSigma/NativeFunctions.h>
+#include <Quarisma/Functions.h>
+#include <Quarisma/NativeFunctions.h>
 #else
-#include <XSigma/ops/_nested_tensor_size_native.h>
-#include <XSigma/ops/contiguous_native.h>
-#include <XSigma/ops/cudnn_is_acceptable_native.h>
-#include <XSigma/ops/detach_native.h>
-#include <XSigma/ops/equal.h>
-#include <XSigma/ops/is_same_size_native.h>
-#include <XSigma/ops/is_set_to_native.h>
-#include <XSigma/ops/size_native.h>
-#include <XSigma/ops/stride_native.h>
-#include <XSigma/ops/sym_is_contiguous_native.h>
-#include <XSigma/ops/sym_numel_native.h>
-#include <XSigma/ops/sym_size_native.h>
-#include <XSigma/ops/sym_storage_offset_native.h>
-#include <XSigma/ops/sym_stride_native.h>
+#include <Quarisma/ops/_nested_tensor_size_native.h>
+#include <Quarisma/ops/contiguous_native.h>
+#include <Quarisma/ops/cudnn_is_acceptable_native.h>
+#include <Quarisma/ops/detach_native.h>
+#include <Quarisma/ops/equal.h>
+#include <Quarisma/ops/is_same_size_native.h>
+#include <Quarisma/ops/is_set_to_native.h>
+#include <Quarisma/ops/size_native.h>
+#include <Quarisma/ops/stride_native.h>
+#include <Quarisma/ops/sym_is_contiguous_native.h>
+#include <Quarisma/ops/sym_numel_native.h>
+#include <Quarisma/ops/sym_size_native.h>
+#include <Quarisma/ops/sym_storage_offset_native.h>
+#include <Quarisma/ops/sym_stride_native.h>
 #endif
 
 #include <c10/util/irange.h>

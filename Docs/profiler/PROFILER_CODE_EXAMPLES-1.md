@@ -177,7 +177,7 @@ auto session = profiler_session_builder()
 session->start();
 
 {
-    XSIGMA_PROFILE_SCOPE("model_inference");
+    QUARISMA_PROFILE_SCOPE("model_inference");
     // ... model code ...
 }
 
@@ -190,7 +190,7 @@ std::cout << report->generate_pytorch_table();
 ## 8. Unit Test Example
 
 ```cpp
-XSIGMATEST(profiler_report_test, pytorch_table_format) {
+QUARISMATEST(profiler_report_test, pytorch_table_format) {
     // Create test data
     auto session = profiler_session_builder()
         .with_timing(true)
@@ -200,12 +200,12 @@ XSIGMATEST(profiler_report_test, pytorch_table_format) {
     session->start();
     
     {
-        XSIGMA_PROFILE_SCOPE("operation_a");
+        QUARISMA_PROFILE_SCOPE("operation_a");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     
     {
-        XSIGMA_PROFILE_SCOPE("operation_b");
+        QUARISMA_PROFILE_SCOPE("operation_b");
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
     

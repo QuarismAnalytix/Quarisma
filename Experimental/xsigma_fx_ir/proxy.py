@@ -611,7 +611,7 @@ class Proxy:
     def __len__(self):
         raise RuntimeError(
             "'len' is not supported in symbolic tracing by default. If you want "
-            "this call to be recorded, please call torch.fx.wrap('len') xsigma "
+            "this call to be recorded, please call torch.fx.wrap('len') quarisma "
             "module scope"
         )
 

@@ -2,7 +2,7 @@
 
 ## 📚 Documentation Suite
 
-This comprehensive documentation explains the Kineto Profiler architecture in XSigma.
+This comprehensive documentation explains the Kineto Profiler architecture in Quarisma.
 
 ### Main Documents
 
@@ -315,10 +315,10 @@ auto result = disableProfiler();
 
 ## 📞 Related Resources
 
-- **XSigma Kineto:** https://github.com/pytorch/kineto
+- **Quarisma Kineto:** https://github.com/pytorch/kineto
 - **Chrome Tracing:** https://www.chromium.org/developers/how-tos/trace-event-profiling-tool
 - **Perfetto:** https://ui.perfetto.dev
-- **XSigma Profiler API:** `Library/Core/profiler/profiler_api.h`
+- **Quarisma Profiler API:** `Library/Core/profiler/profiler_api.h`
 
 ---
 
@@ -382,5 +382,5 @@ auto result = disableProfiler();
 
 **Last Updated:** 2025-11-07  
 **Documentation Version:** 1.0  
-**Kineto Version:** XSigma Kineto (integrated in XSigma)
+**Kineto Version:** Quarisma Kineto (integrated in Quarisma)
 

@@ -6,7 +6,7 @@
 #include "profiler/common/collection.h"
 #include "util/overloaded.h"
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 namespace
@@ -18,7 +18,7 @@ struct RawTensorInfo
 {
     TensorImplAddress     impl_;
     StorageImplData       storage_;
-    xsigma::device_option device_;
+    quarisma::device_option device_;
     bool                  is_free_;
 
     // Used to assign back to the original structs.
@@ -89,7 +89,7 @@ void calculateUniqueTensorIDs(std::vector<std::shared_ptr<Result>>& sorted_resul
         for (auto& result : sorted_results)
         {
             result->visit(
-                xsigma::overloaded(
+                quarisma::overloaded(
                     [&](ExtraFields<EventType::TorchOp>& torch_op)
                     {
                         for (auto& i : torch_op.inputs_)
@@ -99,7 +99,7 @@ void calculateUniqueTensorIDs(std::vector<std::shared_ptr<Result>>& sorted_resul
                     },
                     [&](ExtraFields<EventType::PyCall>& py_call)
                     {
-                        // xsigma.nn.Module
+                        // quarisma.nn.Module
                         if (py_call.module_.has_value() &&
                             seen_modules.insert(py_call.module_->self_).second)
                         {
@@ -110,7 +110,7 @@ void calculateUniqueTensorIDs(std::vector<std::shared_ptr<Result>>& sorted_resul
                             }
                         }
 
-                        // xsigma.optim.Optimizer
+                        // quarisma.optim.Optimizer
                         if (py_call.optimizer_.has_value() &&
                             seen_optimizers.insert(py_call.optimizer_->self_).second)
                         {
@@ -132,7 +132,7 @@ void calculateUniqueTensorIDs(std::vector<std::shared_ptr<Result>>& sorted_resul
         for (auto& result : sorted_results)
         {
             result->visit(
-                xsigma::overloaded(
+                quarisma::overloaded(
                     [&](ExtraFields<EventType::TorchOp>& torch_op)
                     {
                         for (auto& i : torch_op.inputs_)
@@ -150,8 +150,8 @@ void calculateUniqueTensorIDs(std::vector<std::shared_ptr<Result>>& sorted_resul
     // --------------------------------------------------------------------------
     {
         size_t counter{1};
-        using key_t = std::pair<StorageImplData, xsigma::device_option>;
-        xsigma::flat_hash_map<key_t, size_t, HashCombine> versions;
+        using key_t = std::pair<StorageImplData, quarisma::device_option>;
+        quarisma::flat_hash_map<key_t, size_t, HashCombine> versions;
         for (auto& t : tensors)
         {
             auto inserted = versions.insert({{t.storage_, t.device_}, counter});
@@ -167,7 +167,7 @@ void calculateUniqueTensorIDs(std::vector<std::shared_ptr<Result>>& sorted_resul
     // Handle any allocation events which we cannot prove are for Tensor storage.
     // --------------------------------------------------------------------------
     {
-        xsigma::flat_hash_set<AllocationID> tensor_set;
+        quarisma::flat_hash_set<AllocationID> tensor_set;
         for (const auto& t : tensors)
         {
             if (t.impl_ != NoTensorImpl)
@@ -191,9 +191,9 @@ void calculateUniqueTensorIDs(std::vector<std::shared_ptr<Result>>& sorted_resul
     // Handle the case that the storage of a TensorImpl changed.
     // --------------------------------------------------------------------------
     using storage_id_pair_t = std::pair<AllocationID, AllocationID>;
-    xsigma::flat_hash_set<storage_id_pair_t, HashCombine> same_group_set;
+    quarisma::flat_hash_set<storage_id_pair_t, HashCombine> same_group_set;
     {
-        xsigma::flat_hash_map<TensorImplAddress, AllocationID> impl_map;
+        quarisma::flat_hash_map<TensorImplAddress, AllocationID> impl_map;
         for (const auto& t : tensors)
         {
             // Storage allocations / frees don't have an associated TensorImpl, so
@@ -215,7 +215,7 @@ void calculateUniqueTensorIDs(std::vector<std::shared_ptr<Result>>& sorted_resul
 
     // Coalesce groups and assign final IDs.
     // --------------------------------------------------------------------------
-    xsigma::flat_hash_map<AllocationID, size_t> id_map;
+    quarisma::flat_hash_map<AllocationID, size_t> id_map;
     {
         std::vector<storage_id_pair_t> unique_pairs;
         unique_pairs.reserve(same_group_set.size());
@@ -241,4 +241,4 @@ void calculateUniqueTensorIDs(std::vector<std::shared_ptr<Result>>& sorted_resul
     }
 }
 
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl

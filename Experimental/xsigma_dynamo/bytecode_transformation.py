@@ -172,7 +172,7 @@ def create_instruction(
     At most one of `arg`, `argval`, and `target` can be not None/_NotProvided.
     This is to prevent ambiguity, e.g. does
         create_instruction("LOAD_CONST", 5)
-    mean load the constant xsigma co_consts[5], or load the constant 5?
+    mean load the constant quarisma co_consts[5], or load the constant 5?
 
     If `arg` is not provided, it will be computed during assembly from
     `argval` or `target`.
@@ -294,9 +294,9 @@ def add_push_null(
         else:
             insts = insts + [create_instruction("PUSH_NULL")]
     elif sys.version_info >= (3, 12):
-        # LOAD_ATTR/LOAD_SUPER_ATTR xsigma the end
+        # LOAD_ATTR/LOAD_SUPER_ATTR quarisma the end
         # We assume that `insts` will only load 1 object, so
-        # LOAD_GLOBAL xsigma the end doesn't need to be checked
+        # LOAD_GLOBAL quarisma the end doesn't need to be checked
         if inst_has_op_bits(insts[-1].opname) and not inst_has_bit_set(-1):
             set_inst_bit(-1)
         elif insts[0].opname == "LOAD_GLOBAL" and not inst_has_bit_set(0):
@@ -828,7 +828,7 @@ def _get_instruction_by_offset(
     offset_to_inst: dict[int, Instruction], offset: int
 ) -> Optional[Instruction]:
     """
-    Get the instruction located xsigma a given offset, accounting for EXTENDED_ARGs
+    Get the instruction located quarisma a given offset, accounting for EXTENDED_ARGs
     """
     for n in (0, 2, 4, 6):
         if offset_to_inst[offset + n].opcode != dis.EXTENDED_ARG:
@@ -1011,7 +1011,7 @@ def compute_exception_table(
 
     # Sort keys by increasing start, then decreasing end
     keys_sorted = sorted(exn_dict.keys(), key=lambda t: (t[0], -t[1]))
-    # smallest byte that the next exception table entry can start xsigma
+    # smallest byte that the next exception table entry can start quarisma
     nexti = 0
     # stack of current nested keys
     key_stack: list[tuple[int, int]] = []
@@ -1817,7 +1817,7 @@ def bytecode_from_template(
                 returns.append(inst)
 
         if len(returns) == 1 and returns[0] is insts[-1]:
-            # only 1 return xsigma the end - just pop it
+            # only 1 return quarisma the end - just pop it
             insts.pop(-1)
         elif len(returns) > 0:
             # create jump target - if the last inst is a return,

@@ -1,29 +1,29 @@
 /*
- * XSigma ITT API Wrapper Implementation
+ * Quarisma ITT API Wrapper Implementation
  *
- * Provides C++ wrapper functions for Intel ITT API, aligned with XSigma's
+ * Provides C++ wrapper functions for Intel ITT API, aligned with Quarisma's
  * implementation for feature parity.
  */
 
 #include "itt_wrapper.h"
 
-#if XSIGMA_HAS_ITT
+#if QUARISMA_HAS_ITT
 #include <ittnotify.h>
 
 #include <mutex>
 #include <unordered_map>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace profiler
 {
 
-#if XSIGMA_HAS_ITT
+#if QUARISMA_HAS_ITT
 
 namespace
 {
-// Global ITT domain for XSigma
+// Global ITT domain for Quarisma
 __itt_domain* g_itt_domain = nullptr;
 std::mutex    g_itt_init_mutex;
 
@@ -37,7 +37,7 @@ void itt_init()
 
     if (g_itt_domain == nullptr)
     {
-        g_itt_domain = __itt_domain_create("XSigma");
+        g_itt_domain = __itt_domain_create("Quarisma");
     }
 }
 
@@ -87,7 +87,7 @@ __itt_domain* itt_get_domain()
     return g_itt_domain;
 }
 
-#endif  // XSIGMA_HAS_ITT
+#endif  // QUARISMA_HAS_ITT
 
 }  // namespace profiler
-}  // namespace xsigma
+}  // namespace quarisma

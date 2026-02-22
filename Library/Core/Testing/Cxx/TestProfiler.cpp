@@ -1,10 +1,10 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -14,8 +14,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include <functional>
@@ -31,7 +31,7 @@
 #include "profiler/native/core/profiler_lock.h"
 #include "profiler/native/core/profiler_options.h"
 #include "profiler/native/session/profiler.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
 // ============================================================================
 // ProfilerLock Tests (Skipped - requires profiler_lock.cpp linking)
@@ -42,9 +42,9 @@
 // Enhanced ProfilerOptions Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, enhanced_profiler_options_default_values)
+QUARISMATEST(Profiler, enhanced_profiler_options_default_values)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     EXPECT_TRUE(opts.enable_timing_);
     EXPECT_TRUE(opts.enable_memory_tracking_);
     EXPECT_TRUE(opts.enable_hierarchical_profiling_);
@@ -56,93 +56,93 @@ XSIGMATEST(Profiler, enhanced_profiler_options_default_values)
     EXPECT_TRUE(opts.track_memory_deltas_);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_disable_timing)
+QUARISMATEST(Profiler, enhanced_profiler_options_disable_timing)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.enable_timing_ = false;
     EXPECT_FALSE(opts.enable_timing_);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_disable_memory_tracking)
+QUARISMATEST(Profiler, enhanced_profiler_options_disable_memory_tracking)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.enable_memory_tracking_ = false;
     EXPECT_FALSE(opts.enable_memory_tracking_);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_disable_hierarchical_profiling)
+QUARISMATEST(Profiler, enhanced_profiler_options_disable_hierarchical_profiling)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.enable_hierarchical_profiling_ = false;
     EXPECT_FALSE(opts.enable_hierarchical_profiling_);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_disable_statistical_analysis)
+QUARISMATEST(Profiler, enhanced_profiler_options_disable_statistical_analysis)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.enable_statistical_analysis_ = false;
     EXPECT_FALSE(opts.enable_statistical_analysis_);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_disable_thread_safety)
+QUARISMATEST(Profiler, enhanced_profiler_options_disable_thread_safety)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.enable_thread_safety_ = false;
     EXPECT_FALSE(opts.enable_thread_safety_);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_set_output_format_json)
+QUARISMATEST(Profiler, enhanced_profiler_options_set_output_format_json)
 {
-    xsigma::profiler_options opts;
-    opts.output_format_ = xsigma::profiler_options::output_format_enum::JSON;
-    EXPECT_EQ(opts.output_format_, xsigma::profiler_options::output_format_enum::JSON);
+    quarisma::profiler_options opts;
+    opts.output_format_ = quarisma::profiler_options::output_format_enum::JSON;
+    EXPECT_EQ(opts.output_format_, quarisma::profiler_options::output_format_enum::JSON);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_set_output_format_csv)
+QUARISMATEST(Profiler, enhanced_profiler_options_set_output_format_csv)
 {
-    xsigma::profiler_options opts;
-    opts.output_format_ = xsigma::profiler_options::output_format_enum::CSV;
-    EXPECT_EQ(opts.output_format_, xsigma::profiler_options::output_format_enum::CSV);
+    quarisma::profiler_options opts;
+    opts.output_format_ = quarisma::profiler_options::output_format_enum::CSV;
+    EXPECT_EQ(opts.output_format_, quarisma::profiler_options::output_format_enum::CSV);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_set_output_file_path)
+QUARISMATEST(Profiler, enhanced_profiler_options_set_output_file_path)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.output_file_path_ = "/tmp/profile.json";
     EXPECT_EQ(opts.output_file_path_, "/tmp/profile.json");
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_set_max_samples)
+QUARISMATEST(Profiler, enhanced_profiler_options_set_max_samples)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.max_samples_ = 5000;
     EXPECT_EQ(opts.max_samples_, 5000);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_disable_percentiles)
+QUARISMATEST(Profiler, enhanced_profiler_options_disable_percentiles)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.calculate_percentiles_ = false;
     EXPECT_FALSE(opts.calculate_percentiles_);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_disable_peak_memory_tracking)
+QUARISMATEST(Profiler, enhanced_profiler_options_disable_peak_memory_tracking)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.track_peak_memory_ = false;
     EXPECT_FALSE(opts.track_peak_memory_);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_disable_memory_deltas)
+QUARISMATEST(Profiler, enhanced_profiler_options_disable_memory_deltas)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.track_memory_deltas_ = false;
     EXPECT_FALSE(opts.track_memory_deltas_);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_options_set_thread_pool_size)
+QUARISMATEST(Profiler, enhanced_profiler_options_set_thread_pool_size)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.thread_pool_size_ = 16;
     EXPECT_EQ(opts.thread_pool_size_, 16);
 }
@@ -151,48 +151,48 @@ XSIGMATEST(Profiler, enhanced_profiler_options_set_thread_pool_size)
 // Enhanced Profiler Session Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, enhanced_profiler_session_basic_creation)
+QUARISMATEST(Profiler, enhanced_profiler_session_basic_creation)
 {
-    xsigma::profiler_options opts;
-    auto                     session = std::make_unique<xsigma::profiler_session>(opts);
+    quarisma::profiler_options opts;
+    auto                     session = std::make_unique<quarisma::profiler_session>(opts);
     EXPECT_TRUE(session != nullptr);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_session_start_stop)
+QUARISMATEST(Profiler, enhanced_profiler_session_start_stop)
 {
-    xsigma::profiler_options opts;
-    auto                     session = std::make_unique<xsigma::profiler_session>(opts);
+    quarisma::profiler_options opts;
+    auto                     session = std::make_unique<quarisma::profiler_session>(opts);
     EXPECT_TRUE(session != nullptr);
     EXPECT_TRUE(session->start());
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_session_with_timing_enabled)
+QUARISMATEST(Profiler, enhanced_profiler_session_with_timing_enabled)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.enable_timing_ = true;
-    auto session        = std::make_unique<xsigma::profiler_session>(opts);
+    auto session        = std::make_unique<quarisma::profiler_session>(opts);
     EXPECT_TRUE(session != nullptr);
     EXPECT_TRUE(session->start());
 
     {
-        xsigma::profiler_scope scope("test_scope", session.get());
+        quarisma::profiler_scope scope("test_scope", session.get());
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_session_with_memory_tracking)
+QUARISMATEST(Profiler, enhanced_profiler_session_with_memory_tracking)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.enable_memory_tracking_ = true;
-    auto session                 = std::make_unique<xsigma::profiler_session>(opts);
+    auto session                 = std::make_unique<quarisma::profiler_session>(opts);
     EXPECT_TRUE(session != nullptr);
     EXPECT_TRUE(session->start());
 
     {
-        xsigma::profiler_scope scope("memory_scope", session.get());
+        quarisma::profiler_scope scope("memory_scope", session.get());
         std::vector<int>       data(1000);
         for (int i = 0; i < 1000; ++i)
         {
@@ -203,20 +203,20 @@ XSIGMATEST(Profiler, enhanced_profiler_session_with_memory_tracking)
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_session_with_hierarchical_profiling)
+QUARISMATEST(Profiler, enhanced_profiler_session_with_hierarchical_profiling)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.enable_hierarchical_profiling_ = true;
-    auto session                        = std::make_unique<xsigma::profiler_session>(opts);
+    auto session                        = std::make_unique<quarisma::profiler_session>(opts);
     EXPECT_TRUE(session != nullptr);
     EXPECT_TRUE(session->start());
 
     {
-        xsigma::profiler_scope outer("outer_scope", session.get());
+        quarisma::profiler_scope outer("outer_scope", session.get());
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
         {
-            xsigma::profiler_scope inner("inner_scope", session.get());
+            quarisma::profiler_scope inner("inner_scope", session.get());
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }
@@ -224,42 +224,42 @@ XSIGMATEST(Profiler, enhanced_profiler_session_with_hierarchical_profiling)
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_session_with_statistical_analysis)
+QUARISMATEST(Profiler, enhanced_profiler_session_with_statistical_analysis)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.enable_statistical_analysis_ = true;
-    auto session                      = std::make_unique<xsigma::profiler_session>(opts);
+    auto session                      = std::make_unique<quarisma::profiler_session>(opts);
     EXPECT_TRUE(session != nullptr);
     EXPECT_TRUE(session->start());
 
     for (int i = 0; i < 5; ++i)
     {
-        xsigma::profiler_scope scope("stat_scope_" + std::to_string(i), session.get());
+        quarisma::profiler_scope scope("stat_scope_" + std::to_string(i), session.get());
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_session_all_features_enabled)
+QUARISMATEST(Profiler, enhanced_profiler_session_all_features_enabled)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.enable_timing_                 = true;
     opts.enable_memory_tracking_        = true;
     opts.enable_hierarchical_profiling_ = true;
     opts.enable_statistical_analysis_   = true;
     opts.enable_thread_safety_          = true;
 
-    auto session = std::make_unique<xsigma::profiler_session>(opts);
+    auto session = std::make_unique<quarisma::profiler_session>(opts);
     EXPECT_TRUE(session != nullptr);
     EXPECT_TRUE(session->start());
 
     {
-        xsigma::profiler_scope outer("outer", session.get());
+        quarisma::profiler_scope outer("outer", session.get());
         std::vector<int>       data(1000);
 
         {
-            xsigma::profiler_scope inner("inner", session.get());
+            quarisma::profiler_scope inner("inner", session.get());
             for (int i = 0; i < 1000; ++i)
             {
                 data[i] = i * 2;
@@ -270,16 +270,16 @@ XSIGMATEST(Profiler, enhanced_profiler_session_all_features_enabled)
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_session_generate_chrome_trace_json)
+QUARISMATEST(Profiler, enhanced_profiler_session_generate_chrome_trace_json)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.enable_timing_ = true;
-    auto session        = std::make_unique<xsigma::profiler_session>(opts);
+    auto session        = std::make_unique<quarisma::profiler_session>(opts);
     EXPECT_TRUE(session != nullptr);
     EXPECT_TRUE(session->start());
 
     {
-        xsigma::profiler_scope scope("json_test_scope", session.get());
+        quarisma::profiler_scope scope("json_test_scope", session.get());
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
@@ -290,38 +290,38 @@ XSIGMATEST(Profiler, enhanced_profiler_session_generate_chrome_trace_json)
     EXPECT_NE(json.find("json_test_scope"), std::string::npos);
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_session_multiple_scopes)
+QUARISMATEST(Profiler, enhanced_profiler_session_multiple_scopes)
 {
-    xsigma::profiler_options opts;
-    auto                     session = std::make_unique<xsigma::profiler_session>(opts);
+    quarisma::profiler_options opts;
+    auto                     session = std::make_unique<quarisma::profiler_session>(opts);
     EXPECT_TRUE(session != nullptr);
     EXPECT_TRUE(session->start());
 
     for (int i = 0; i < 10; ++i)
     {
-        xsigma::profiler_scope scope("scope_" + std::to_string(i), session.get());
+        quarisma::profiler_scope scope("scope_" + std::to_string(i), session.get());
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     EXPECT_TRUE(session->stop());
 }
 
-XSIGMATEST(Profiler, enhanced_profiler_session_deeply_nested_scopes)
+QUARISMATEST(Profiler, enhanced_profiler_session_deeply_nested_scopes)
 {
-    xsigma::profiler_options opts;
+    quarisma::profiler_options opts;
     opts.enable_hierarchical_profiling_ = true;
-    auto session                        = std::make_unique<xsigma::profiler_session>(opts);
+    auto session                        = std::make_unique<quarisma::profiler_session>(opts);
     EXPECT_TRUE(session != nullptr);
     EXPECT_TRUE(session->start());
 
     {
-        xsigma::profiler_scope level1("level1", session.get());
+        quarisma::profiler_scope level1("level1", session.get());
         {
-            xsigma::profiler_scope level2("level2", session.get());
+            quarisma::profiler_scope level2("level2", session.get());
             {
-                xsigma::profiler_scope level3("level3", session.get());
+                quarisma::profiler_scope level3("level3", session.get());
                 {
-                    xsigma::profiler_scope level4("level4", session.get());
+                    quarisma::profiler_scope level4("level4", session.get());
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
             }
@@ -330,4 +330,4 @@ XSIGMATEST(Profiler, enhanced_profiler_session_deeply_nested_scopes)
 
     EXPECT_TRUE(session->stop());
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

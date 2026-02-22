@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * Portions of this code are based on VTK (Visualization Toolkit):
 
@@ -60,7 +60,7 @@
 
 #include "common/export.h"
 
-class XSIGMA_VISIBILITY threaded_callback_queue
+class QUARISMA_VISIBILITY threaded_callback_queue
 {
 private:
     /**
@@ -98,15 +98,15 @@ private:
     class return_value_wrapper;
 
 public:
-    XSIGMA_API virtual ~threaded_callback_queue();
+    QUARISMA_API virtual ~threaded_callback_queue();
 
-    XSIGMA_API threaded_callback_queue();
+    QUARISMA_API threaded_callback_queue();
 
   /**
    * `shared_future_base` is the base block to store, run, get the returned value of the tasks that
    * are pushed in the queue.
    */
-    class XSIGMA_VISIBILITY shared_future_base
+    class QUARISMA_VISIBILITY shared_future_base
     {
     public:
         shared_future_base()
@@ -119,7 +119,7 @@ public:
         /**
      * Blocks current thread until the task associated with this future has terminated.
      */
-        XSIGMA_API virtual void wait() const
+        QUARISMA_API virtual void wait() const
         {
             if (status_ == READY)
             {
@@ -241,12 +241,12 @@ public:
     /**
    * Sets the number of threads.
    */
-    XSIGMA_API void set_number_of_threads(int number_of_threads);
+    QUARISMA_API void set_number_of_threads(int number_of_threads);
 
     /**
    * Returns the number of allocated threads.
    */
-    XSIGMA_API int get_number_of_threads() const { return number_of_threads_; }
+    QUARISMA_API int get_number_of_threads() const { return number_of_threads_; }
 
 private:
     ///@{
@@ -279,16 +279,16 @@ private:
         READY        = 0x08
     };
 
-    XSIGMA_API void sync(int start_id = 0);
-    XSIGMA_API void pop_front_nullptr();
-    XSIGMA_API void signal_dependent_shared_futures(shared_future_base* invoker);
+    QUARISMA_API void sync(int start_id = 0);
+    QUARISMA_API void pop_front_nullptr();
+    QUARISMA_API void signal_dependent_shared_futures(shared_future_base* invoker);
 
     template <class SharedFutureContainerT, class InvokerT>
     void handle_dependent_invoker(
         SharedFutureContainerT&& prior_shared_futures, InvokerT&& invoker);
 
-    XSIGMA_API void invoke(shared_future_base* invoker);
-    XSIGMA_API bool try_invoke(shared_future_base* invoker);
+    QUARISMA_API void invoke(shared_future_base* invoker);
+    QUARISMA_API bool try_invoke(shared_future_base* invoker);
 
     template <class FT, class... ArgsT>
     void push_control(FT&& f, ArgsT&&... args);

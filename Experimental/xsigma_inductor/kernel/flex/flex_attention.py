@@ -122,7 +122,7 @@ def flex_attention(
     if small_dqk or small_dv:
         raise NotImplementedError(
             f"NYI: embedding dimension of the query, key, and value must be "
-            f"xsigma least 16 but got E={query.get_size()[-1]} and Ev={value.get_size()[-1]}"
+            f"quarisma least 16 but got E={query.get_size()[-1]} and Ev={value.get_size()[-1]}"
         )
 
     (

@@ -2,7 +2,7 @@
 #include <torch/csrc/jit/passes/onnx/eval_peephole.h>
 #include <torch/csrc/jit/passes/onnx/helper.h>
 #include <torch/torch.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <algorithm>
 
@@ -11,13 +11,13 @@ namespace torch::jit
 
 namespace onnx
 {
-using namespace ::xsigma::onnx;
+using namespace ::quarisma::onnx;
 }
 
-static std::vector<xsigma::Tensor> getValues(Node* node, const ValueToParamPairMap& valsToParamsMap)
+static std::vector<quarisma::Tensor> getValues(Node* node, const ValueToParamPairMap& valsToParamsMap)
 {
     size_t                      numInputs = node->inputs().size();
-    std::vector<xsigma::Tensor> inputTensorValues;
+    std::vector<quarisma::Tensor> inputTensorValues;
     inputTensorValues.reserve(numInputs);
     for (auto val : node->inputs())
     {
@@ -58,11 +58,11 @@ static void fuseConvBatchNorm(Block* b, ValueToParamPairMap& valsToParamsMap)
         if (it->kind() == onnx::Conv)
         {
             auto oldConv = *it;
-            if (oldConv->outputs().xsigma(0)->uses().size() != 1)
+            if (oldConv->outputs().quarisma(0)->uses().size() != 1)
             {
                 continue;
             }
-            auto bnNode = oldConv->outputs().xsigma(0)->uses()[0].user;
+            auto bnNode = oldConv->outputs().quarisma(0)->uses()[0].user;
             if (bnNode->kind() != onnx::BatchNormalization)
             {
                 continue;
@@ -95,7 +95,7 @@ static void fuseConvBatchNorm(Block* b, ValueToParamPairMap& valsToParamsMap)
             auto bnVar   = bnInputVals[3].clone();
             // See https://github.com/onnx/onnx/blob/master/docs/Operators.md#Conv
             auto           convW = convInputVals[0].clone();
-            xsigma::Tensor convB;
+            quarisma::Tensor convB;
 
             if (!bnScale.is_floating_point() || !bnB.is_floating_point() ||
                 !bnMean.is_floating_point() || !bnVar.is_floating_point() ||
@@ -112,7 +112,7 @@ static void fuseConvBatchNorm(Block* b, ValueToParamPairMap& valsToParamsMap)
             bnScale = bnScale.div(bnVar);
 
             // Calculate weight
-            for (const auto i : xsigma::irange(convW.size(0)))
+            for (const auto i : quarisma::irange(convW.size(0)))
             {
                 convW[i] = convW[i].mul(bnScale[i]);
             }
@@ -133,11 +133,11 @@ static void fuseConvBatchNorm(Block* b, ValueToParamPairMap& valsToParamsMap)
             }
 
             Node* newConv = b->owningGraph()->create(onnx::Conv, 1);
-            newConv->outputs().xsigma(0)->copyMetadata(bnNode->outputs().xsigma(0));
+            newConv->outputs().quarisma(0)->copyMetadata(bnNode->outputs().quarisma(0));
 
             newConv->copyAttributes(*oldConv);
             newConv->insertBefore(bnNode);
-            newConv->addInput(oldConv->inputs().xsigma(0));
+            newConv->addInput(oldConv->inputs().quarisma(0));
             newConv->copyMetadata(oldConv);
 
             auto newConvW = b->owningGraph()->addInput();
@@ -150,7 +150,7 @@ static void fuseConvBatchNorm(Block* b, ValueToParamPairMap& valsToParamsMap)
             newConvB->inferTypeFrom(convB);
             newConv->addInput(newConvB);
 
-            bnNode->outputs().xsigma(0)->replaceAllUsesWith(newConv->outputs().xsigma(0));
+            bnNode->outputs().quarisma(0)->replaceAllUsesWith(newConv->outputs().quarisma(0));
             bnNode->destroy();
             it.destroyCurrent();
         }

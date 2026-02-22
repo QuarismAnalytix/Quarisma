@@ -327,7 +327,7 @@ def optimize_for_inference(
     to determine whether a subgraph should be explicitly run in MKL layout.
 
     Note: As FX does not currently handle aliasing, this pass currently
-    assumes nothing aliases. If that isn't true, use xsigma your own risk.
+    assumes nothing aliases. If that isn't true, use quarisma your own risk.
     """
     default_pass_config = {
         "conv_bn_fuse": True,

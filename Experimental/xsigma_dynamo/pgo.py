@@ -80,7 +80,7 @@ LOCK_TIMEOUT = 10
 #
 # We choose to require job_id for PGO cache.  This is to prevent
 # situations where unrelated invocations of PyTorch unpredictably cause
-# changes to each other's behavior.  With a job_id, xsigma least you know there
+# changes to each other's behavior.  With a job_id, quarisma least you know there
 # is some "state" associated with it.  (State dict might be another way to
 # tell if a run is related or not.)  You can opt-in to YOLO everything
 # aliases everything by passing a shared job_id for all your invocations.

@@ -1,4 +1,4 @@
-#include <XSigma/core/jit_type.h>
+#include <Quarisma/core/jit_type.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/integer_value_refinement.h>
@@ -45,8 +45,8 @@ struct IntegerValueRefiner
                 for (size_t const_index : {0, 1})
                 {
                     auto non_const_index = 1 - const_index;
-                    if (n->inputs().xsigma(const_index)->node()->kind() == prim::Constant &&
-                        n->inputs().xsigma(non_const_index)->uses().size() > 1)
+                    if (n->inputs().quarisma(const_index)->node()->kind() == prim::Constant &&
+                        n->inputs().quarisma(non_const_index)->uses().size() > 1)
                     {
                         return true;
                     }
@@ -87,11 +87,11 @@ struct IntegerValueRefiner
         // this is an important case for symbolic shape analysis
         for (size_t block_index : {0, 1})
         {
-            Block* if_block       = if_node->blocks().xsigma(block_index);
-            Block* other_if_block = if_node->blocks().xsigma(1 - block_index);
+            Block* if_block       = if_node->blocks().quarisma(block_index);
+            Block* other_if_block = if_node->blocks().quarisma(1 - block_index);
             for (size_t i = 0; i < if_node->outputs().size(); ++i)
             {
-                Value* block_output = if_block->outputs().xsigma(i);
+                Value* block_output = if_block->outputs().quarisma(i);
                 if (!block_output->type()->cast<IntType>())
                 {
                     continue;
@@ -104,7 +104,7 @@ struct IntegerValueRefiner
                 }
                 // one constant value one not - we are looking for the pattern
                 // where y.1 is refined to the existing block output %one_constant
-                auto other_output      = other_if_block->outputs().xsigma(i);
+                auto other_output      = other_if_block->outputs().quarisma(i);
                 auto other_const_value = other_output->type()->cast<IntType>()
                                              ? constant_as<int64_t>(other_output)
                                              : std::nullopt;
@@ -122,9 +122,9 @@ struct IntegerValueRefiner
                 {
                     continue;
                 }
-                if (other_block_refinements.xsigma(block_output) == *other_const_value)
+                if (other_block_refinements.quarisma(block_output) == *other_const_value)
                 {
-                    if_node->outputs().xsigma(i)->replaceAllUsesWith(block_output);
+                    if_node->outputs().quarisma(i)->replaceAllUsesWith(block_output);
                     changed_ = true;
                 }
             }
@@ -132,7 +132,7 @@ struct IntegerValueRefiner
     }
 
     // iteratively look through the block `b` for refinements or Value uses that
-    // can be refined, `block_refinements` are the refinements present starting xsigma
+    // can be refined, `block_refinements` are the refinements present starting quarisma
     // this block (and for all blocks dominated by this block).
     IntegerRefinement RefineIntegerValues(Block* b, IntegerRefinement block_refinements)
     {
@@ -144,10 +144,10 @@ struct IntegerValueRefiner
             {
                 for (size_t const_index : {0, 1})
                 {
-                    if (auto ival = constant_as<int64_t>(n->inputs().xsigma(const_index)))
+                    if (auto ival = constant_as<int64_t>(n->inputs().quarisma(const_index)))
                     {
                         IntegerRefinement refine;
-                        refine[n->inputs().xsigma(1 - const_index)] = *ival;
+                        refine[n->inputs().quarisma(1 - const_index)] = *ival;
                         info_[n->output()] =
                             n->kind() == aten::eq
                                 ? BooleanRefinementMapping::TrueRefinements(std::move(refine))
@@ -157,7 +157,7 @@ struct IntegerValueRefiner
             }
             for (size_t input = 0; input < n->inputs().size(); ++input)
             {
-                Value* input_v = n->inputs().xsigma(input);
+                Value* input_v = n->inputs().quarisma(input);
                 if (!input_v->type()->cast<IntType>())
                 {
                     continue;
@@ -210,7 +210,7 @@ struct IntegerValueRefiner
 
         for (size_t i = 0; i < b->outputs().size(); ++i)
         {
-            Value* output_v = b->outputs().xsigma(i);
+            Value* output_v = b->outputs().quarisma(i);
             if (!output_v->type()->cast<IntType>())
             {
                 continue;

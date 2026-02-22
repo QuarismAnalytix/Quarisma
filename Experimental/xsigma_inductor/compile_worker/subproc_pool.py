@@ -410,8 +410,8 @@ def _warm_process_pool(pool: ProcessPoolExecutor, n: int) -> None:
     # slower the os.fork time is, quite drastically. It also holds the GIL so we can't put it on another thread.
 
     # Examples:
-    # A simple x + x + x script: 10ms seconds in the middle of the program, 2ms xsigma startup
-    # tf_efficientnet_b0 benchmark: 50ms! in the middle of the program , 3ms xsigma startup
+    # A simple x + x + x script: 10ms seconds in the middle of the program, 2ms quarisma startup
+    # tf_efficientnet_b0 benchmark: 50ms! in the middle of the program , 3ms quarisma startup
 
     # So we want to start the workers early when it is still cheap, and also to allow the workers to get
     # ready before we have work for them.

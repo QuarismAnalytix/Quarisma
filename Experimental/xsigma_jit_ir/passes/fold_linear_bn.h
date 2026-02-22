@@ -7,13 +7,13 @@ namespace torch::jit
 
 struct TORCH_API LinearBNParameters
 {
-    xsigma::Tensor linear_w;
-    xsigma::Tensor linear_b;
-    xsigma::Tensor bn_rm;
-    xsigma::Tensor bn_rv;
+    quarisma::Tensor linear_w;
+    quarisma::Tensor linear_b;
+    quarisma::Tensor bn_rm;
+    quarisma::Tensor bn_rv;
     double         bn_eps = 0.0;
-    xsigma::Tensor bn_w;
-    xsigma::Tensor bn_b;
+    quarisma::Tensor bn_w;
+    quarisma::Tensor bn_b;
 };
 
 /**
@@ -23,7 +23,7 @@ struct TORCH_API LinearBNParameters
  *
  * The function is basically copied from torch/nn/utils/fusion.py
  */
-TORCH_API std::tuple<xsigma::Tensor, xsigma::Tensor> computeUpdatedLinearWeightAndBias(
+TORCH_API std::tuple<quarisma::Tensor, quarisma::Tensor> computeUpdatedLinearWeightAndBias(
     const LinearBNParameters& p);
 
 }  // namespace torch::jit

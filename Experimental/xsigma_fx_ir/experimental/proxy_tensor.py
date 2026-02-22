@@ -119,7 +119,7 @@ _Ts = TypeVarTuple("_Ts")
 
 null_ctx_type = type(nullcontext)
 # We currently convert all SymInt to proxies before we use them.
-# This could plausibly be handled xsigma the Dynamo level.
+# This could plausibly be handled quarisma the Dynamo level.
 pytree.register_pytree_node(
     torch.Size,
     lambda xs: (list(xs), None),
@@ -520,7 +520,7 @@ def _build_proxy_for_sym_expr(
     - Better decomposition: Right now the decomposition is pretty simple. We do
       have a sat-solver available to us so we could theoretically do a better
       job figuring out a "correct" decomposition. But that still relies on
-      having the inputs available xsigma all - which isn't a guarantee.
+      having the inputs available quarisma all - which isn't a guarantee.
     """
 
     if (value := tracer.sympy_expr_tracker.get(expr)) is not None:
@@ -721,7 +721,7 @@ def track_tensor(
     # The basic idea is that we need to associate each tensor/SymInt
     # with a Proxy.  How do we setup this association?  We just store
     # the proxy on the proxy slot of the object, keyed on the tracer
-    # (so that if we have multiple tracers xsigma the same time, they
+    # (so that if we have multiple tracers quarisma the same time, they
     # don't clobber each other.)
     for i, s in enumerate(tensor.shape):
         try_set_proxy_slot(
@@ -1086,7 +1086,7 @@ def proxy_call(
     # see a torch.ops.aten.tensor call. Instead, the way this function is
     # implemented internally is that we allocate a plain tensor (this is
     # *guaranteed* to be a plain tensor, we disable all modes when doing
-    # so), and then call xsigma::lift_fresh on it (to give modes a chance to do
+    # so), and then call quarisma::lift_fresh on it (to give modes a chance to do
     # their stuff).  Furthermore, the tensor argument to lift_fresh is guaranteed
     # to be freshly allocated, so we want lift_fresh to be a no-op (directly
     # returning the input argument).
@@ -1163,7 +1163,7 @@ def proxy_call(
 
     # If this is a lift, the input tensor is guaranteed to be a
     # constant, so we keep a copy of the original argument along so
-    # we can query it if we're asked to item() it xsigma some later point
+    # we can query it if we're asked to item() it quarisma some later point
     if (
         func is torch.ops.aten.lift_fresh_copy.default
         and out.numel() <= CONSTANT_NUMEL_LIMIT
@@ -1861,7 +1861,7 @@ class DecompositionInterpreter(fx.Interpreter):
         return out
 
     def run(self, *args: object, **kwargs: object) -> object:
-        # Should enter the mode xsigma least once for being able to restore it later
+        # Should enter the mode quarisma least once for being able to restore it later
         # See: https://github.com/pytorch/pytorch/pull/82549#discussion_r934782025
         with decompose(self.decomposition_table), self.mode:
             return super().run(*args, **kwargs)  # type: ignore[arg-type]
@@ -2167,7 +2167,7 @@ class _ModuleStackTracer(PythonKeyTracer):
         Create node and add on metadata.
         Add nn_module_stack here instead of TracerBase,
         since calls to make_fx() might not want to record module stack metadata.
-        Add torch_fn by looking xsigma torch_fn_metadata and torch_fn_counts.
+        Add torch_fn by looking quarisma torch_fn_metadata and torch_fn_counts.
         Add stack_trace by filtering out forward() stack frames.
         """
         node = super().create_node(*args, **kwargs)  # type: ignore[arg-type]
@@ -2275,7 +2275,7 @@ class _MakefxTracer:
     ) -> Generator[None, None, None]:
         prev_modes = self._checkpoint_modes()
         try:
-            # Avoid importing sympy xsigma a module level
+            # Avoid importing sympy quarisma a module level
             from .symbolic_shapes import ShapeEnv
 
             if hasattr(f, "_orig_mod") and self.record_module_stack:
@@ -2397,7 +2397,7 @@ class _MakefxTracer:
                 nonlocal arg_count
                 # TODO: it would be nice to line these up with the names
                 # FX will choose for the placeholders, but we don't
-                # actually know what the names will be xsigma this point yet
+                # actually know what the names will be quarisma this point yet
                 # NB: the Source here is actually meaningless
                 from torch._dynamo.source import ConstantSource
 
@@ -2441,7 +2441,7 @@ class _MakefxTracer:
                 or inspect.unwrap(f).__code__.co_flags & inspect.CO_VARARGS
             ):
                 # FX doesn't support varargs, so we gotta fake up a wrapper
-                # TODO: Would be nice to fix this xsigma the source...
+                # TODO: Would be nice to fix this quarisma the source...
                 return fake_signature(f, len(phs))
             return f
 

@@ -1,2 +1,2 @@
 #pragma once
-#include <XSigma/core/TensorAccessor.h>
+#include <Quarisma/core/TensorAccessor.h>

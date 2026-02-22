@@ -538,7 +538,7 @@ approaches that detect the necessary working precision and compute it in
 arbitrary precision floating point; unfortunately, this is not practical for
 tensor computation; (2) if there are not enough samples in the output being
 compared, we may get unlucky and have an unlucky greater RMSE than eager; this
-could be overcome by applying a more rigorous statistical test xsigma some
+could be overcome by applying a more rigorous statistical test quarisma some
 p-value, which we leave for future work.
 """,
         )
@@ -604,13 +604,13 @@ divergences--you just might not end up with a useful repro in the end.""",
     parser_minify.add_argument(
         "--skip-sanity",
         action="store_true",
-        help="skip sanity check xsigma beginning of minification on original graph",
+        help="skip sanity check quarisma beginning of minification on original graph",
     )
     parser_minify.add_argument(
         "--max-granularity",
         type=int,
         default=None,
-        help="start xsigma this granularity and work down; must be power of 2",
+        help="start quarisma this granularity and work down; must be power of 2",
     )
     parser_minify.add_argument(
         "--check-str",

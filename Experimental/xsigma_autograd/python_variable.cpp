@@ -1,5 +1,5 @@
-#include <XSigma/NamedTensorUtils.h>
-#include <XSigma/XSigma.h>
+#include <Quarisma/NamedTensorUtils.h>
+#include <Quarisma/Quarisma.h>
 #include <pybind11/pytypes.h>
 #include <structmember.h>
 #include <torch/csrc/Device.h>
@@ -31,26 +31,26 @@
 #include <torch/csrc/utils/tensor_new.h>
 #include <torch/csrc/utils/tensor_numpy.h>
 #include <torch/csrc/utils/torch_dispatch_mode.h>
-#include <xsigma/core/DeviceType.h>
-#include <xsigma/core/SymIntArrayRef.h>
-#include <xsigma/core/impl/GPUTrace.h>
-#include <xsigma/core/impl/HermeticPyObjectTLS.h>
-#include <xsigma/core/impl/PythonDispatcherTLS.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/core/DeviceType.h>
+#include <quarisma/core/SymIntArrayRef.h>
+#include <quarisma/core/impl/GPUTrace.h>
+#include <quarisma/core/impl/HermeticPyObjectTLS.h>
+#include <quarisma/core/impl/PythonDispatcherTLS.h>
+#include <quarisma/util/irange.h>
 
 #include <cstdint>
 #include <memory>
 #include <utility>
 #include <vector>
 
-using namespace xsigma;
+using namespace quarisma;
 using namespace torch;
 using namespace torch::autograd;
 
 std::pair<py::object, py::dict> parseIValuesToPyArgsKwargs(
-    const xsigma::OperatorHandle& op, const std::vector<xsigma::IValue>& arguments)
+    const quarisma::OperatorHandle& op, const std::vector<quarisma::IValue>& arguments)
 {
-    XSIGMA_CHECK(PyGILState_Check(), "GIL must be held before you call parseIValuesToPyArgsKwargs");
+    QUARISMA_CHECK(PyGILState_Check(), "GIL must be held before you call parseIValuesToPyArgsKwargs");
     const auto& schema = op.schema();
     py::dict    kwargs;
     // About all the pointers:
@@ -107,12 +107,12 @@ std::pair<py::object, py::dict> parseIValuesToPyArgsKwargs(
     auto schemaAwareToPyObject = [&](size_t idx) -> py::object
     {
         const auto& arg   = schema.arguments()[idx];
-        auto        match = [&](xsigma::TypeKind kind)
+        auto        match = [&](quarisma::TypeKind kind)
         {
             const auto& t = arg.real_type();
             if (t->kind() == kind)
                 return true;
-            if (auto opt_t = t->cast<xsigma::OptionalType>())
+            if (auto opt_t = t->cast<quarisma::OptionalType>())
             {
                 if (opt_t->getElementType()->kind() == kind)
                     return true;
@@ -123,19 +123,19 @@ std::pair<py::object, py::dict> parseIValuesToPyArgsKwargs(
         {
             return py::none();
         }
-        else if (match(xsigma::ScalarTypeType::Kind))
+        else if (match(quarisma::ScalarTypeType::Kind))
         {
-            auto* obj = getTHPDtype(static_cast<xsigma::ScalarType>(arguments[idx].toInt()));
+            auto* obj = getTHPDtype(static_cast<quarisma::ScalarType>(arguments[idx].toInt()));
             return py::reinterpret_borrow<py::object>(reinterpret_cast<PyObject*>(obj));
         }
-        else if (match(xsigma::LayoutType::Kind))
+        else if (match(quarisma::LayoutType::Kind))
         {
-            auto* obj = getTHPLayout(static_cast<xsigma::Layout>(arguments[idx].toInt()));
+            auto* obj = getTHPLayout(static_cast<quarisma::Layout>(arguments[idx].toInt()));
             return py::reinterpret_borrow<py::object>(reinterpret_cast<PyObject*>(obj));
         }
-        else if (match(xsigma::MemoryFormatType::Kind))
+        else if (match(quarisma::MemoryFormatType::Kind))
         {
-            return py::cast(static_cast<xsigma::MemoryFormat>(arguments[idx].toInt()));
+            return py::cast(static_cast<quarisma::MemoryFormat>(arguments[idx].toInt()));
         }
         else
         {
@@ -144,13 +144,13 @@ std::pair<py::object, py::dict> parseIValuesToPyArgsKwargs(
     };
 
     // Populate positional arguments
-    for (const auto idx : xsigma::irange(positional_default_start))
+    for (const auto idx : quarisma::irange(positional_default_start))
     {
         PyTuple_SET_ITEM(args.ptr(), idx, schemaAwareToPyObject(idx).release().ptr());
     }
 
     // Populate keyword arguments
-    for (const auto idx : xsigma::irange(kwarg_only_start, arguments.size()))
+    for (const auto idx : quarisma::irange(kwarg_only_start, arguments.size()))
     {
         // But don't populate default keyword arguments
         if (is_default(idx))
@@ -162,15 +162,15 @@ std::pair<py::object, py::dict> parseIValuesToPyArgsKwargs(
 }
 
 void pushPyOutToStack(
-    const xsigma::OperatorHandle& op, torch::jit::Stack* stack, py::object out, const char* msg)
+    const quarisma::OperatorHandle& op, torch::jit::Stack* stack, py::object out, const char* msg)
 {
-    XSIGMA_CHECK(PyGILState_Check(), "GIL must be held before you call pushPyOutToStack");
+    QUARISMA_CHECK(PyGILState_Check(), "GIL must be held before you call pushPyOutToStack");
     const auto& schema_returns = op.schema().returns();
     const auto  num_returns    = schema_returns.size();
     if (num_returns == 0)
     {
         // Check that we got a None return from Python. Anything else is an error.
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             out.is_none(),
             "Expected ",
             msg,
@@ -185,7 +185,7 @@ void pushPyOutToStack(
     else
     {
         auto outs = py::cast<py::sequence>(out);
-        for (const auto idx : xsigma::irange(outs.size()))
+        for (const auto idx : quarisma::irange(outs.size()))
         {
             torch::jit::push(
                 stack, torch::jit::toIValue(outs[idx].ptr(), schema_returns[idx].real_type()));
@@ -196,16 +196,16 @@ void pushPyOutToStack(
 namespace
 {
 
-xsigma::TensorImpl::SizesStridesPolicy parseSizesStridesPolicyArgument(std::string_view arg)
+quarisma::TensorImpl::SizesStridesPolicy parseSizesStridesPolicyArgument(std::string_view arg)
 {
     if (arg == "strides")
     {
-        return xsigma::TensorImpl::SizesStridesPolicy::CustomStrides;
+        return quarisma::TensorImpl::SizesStridesPolicy::CustomStrides;
     }
 
     if (arg == "sizes")
     {
-        return xsigma::TensorImpl::SizesStridesPolicy::CustomSizes;
+        return quarisma::TensorImpl::SizesStridesPolicy::CustomSizes;
     }
 
     TORCH_CHECK_VALUE(
@@ -219,7 +219,7 @@ PyObject* ParameterClass = nullptr;
 
 static PyObject* THPVariable_NewWithVar(
     PyTypeObject*             type,
-    const xsigma::TensorBase& _var,
+    const quarisma::TensorBase& _var,
     bool                      allow_preexisting_pyobj     = false,
     std::optional<bool>       has_torch_dispatch_if_known = std::nullopt);
 
@@ -241,13 +241,13 @@ static bool check_has_torch_dispatch(PyObject* obj)
 
 // NOLINTNEXTLINE(*-c-arrays,cppcoreguidelines-avoid-non-const-global-variables)
 static PyObject*
-    device_to_py_class_[static_cast<size_t>(xsigma::DeviceType::COMPILE_TIME_MAX_DEVICE_TYPES)];
+    device_to_py_class_[static_cast<size_t>(quarisma::DeviceType::COMPILE_TIME_MAX_DEVICE_TYPES)];
 
 void registerPythonTensorClass(const std::string& device, PyObject* python_tensor_class)
 {
-    xsigma::Device dev(device);
+    quarisma::Device dev(device);
 
-    XSIGMA_CHECK(dev.type() == kXLA, "Only the python class for XLA can be overridden");
+    QUARISMA_CHECK(dev.type() == kXLA, "Only the python class for XLA can be overridden");
     if (device_to_py_class_[static_cast<size_t>(dev.type())] != nullptr)
     {
         TORCH_WARN("Overriding a previously registered python class for ", dev.str());
@@ -256,24 +256,24 @@ void registerPythonTensorClass(const std::string& device, PyObject* python_tenso
     device_to_py_class_[static_cast<size_t>(dev.type())] = python_tensor_class;
 }
 
-static PyObject* getPythonTensorClass(xsigma::Device d)
+static PyObject* getPythonTensorClass(quarisma::Device d)
 {
     return device_to_py_class_[static_cast<size_t>(d.type())];
 }
 
 void activateGPUTrace()
 {
-    xsigma::impl::GPUTrace::set_trace(getPyInterpreter());
+    quarisma::impl::GPUTrace::set_trace(getPyInterpreter());
 }
 
-PyObject* THPVariable_Wrap(const xsigma::TensorBase& var)
+PyObject* THPVariable_Wrap(const quarisma::TensorBase& var)
 {
     if (!var.defined())
     {
         Py_RETURN_NONE;
     }
 
-    if (xsigma::impl::HermeticPyObjectTLS::get_state())
+    if (quarisma::impl::HermeticPyObjectTLS::get_state())
     {
         return THPVariable_NewWithVar((PyTypeObject*)THPVariableClass, var);
     }
@@ -309,7 +309,7 @@ PyObject* THPVariable_Wrap(const xsigma::TensorBase& var)
         // to the Python object are removed.
     }
 
-    if XSIGMA_LIKELY (var.device().type() != xsigma::kXLA)
+    if QUARISMA_LIKELY (var.device().type() != quarisma::kXLA)
     {
         return THPVariable_NewWithVar((PyTypeObject*)THPVariableClass, var);
     }
@@ -377,7 +377,7 @@ static bool THPVariable_tryResurrect(THPVariable* self)
     // so that C++ owns this Python object, and cancel deallocation.
     TORCH_INTERNAL_ASSERT(!tensor.unsafeGetTensorImpl()->pyobj_slot()->owns_pyobj());
 
-    xsigma::TensorImpl* tensor_impl = tensor.unsafeGetTensorImpl();
+    quarisma::TensorImpl* tensor_impl = tensor.unsafeGetTensorImpl();
     auto                maybe_pyobj = tensor_impl->pyobj_slot()->check_pyobj(
         /*ignore_hermetic_tls=*/false);
 
@@ -404,7 +404,7 @@ static bool THPVariable_tryResurrect(THPVariable* self)
     // Flip THPVariable to be non-owning
     // (near use-after-free miss here: fresh MaybeOwned is created breaking
     // reference on Tensor in struct BEFORE we overwrite the old one)
-    TORCH_INTERNAL_ASSERT(!xsigma::impl::HermeticPyObjectTLS::get_state());
+    TORCH_INTERNAL_ASSERT(!quarisma::impl::HermeticPyObjectTLS::get_state());
     self->cdata = MaybeOwned<Variable>::borrowed(tensor);
 
     // NB: At this point, tensor *could* be dead (e.g., some other C++ thread
@@ -450,10 +450,10 @@ static std::vector<T> map_py_func(const py::function& func, const std::vector<T>
 }
 
 template <>
-std::vector<xsigma::Tensor> map_py_func(
-    const py::function& func, const std::vector<xsigma::Tensor>& items)
+std::vector<quarisma::Tensor> map_py_func(
+    const py::function& func, const std::vector<quarisma::Tensor>& items)
 {
-    std::vector<xsigma::Tensor> new_items;
+    std::vector<quarisma::Tensor> new_items;
     new_items.reserve(items.size());
     for (auto& item : items)
     {
@@ -465,7 +465,7 @@ std::vector<xsigma::Tensor> map_py_func(
         }
         else
         {
-            new_items.emplace_back(py::cast<xsigma::Tensor>(output));
+            new_items.emplace_back(py::cast<quarisma::Tensor>(output));
         }
     }
     return new_items;
@@ -490,7 +490,7 @@ static PyObject* view_func_impl(
     // Ensure that self is indeed a backward differentiable view
     // If not, we return an undefined Tensor (None) and let the user handle it.
     auto           diff_view_meta = torch::autograd::impl::get_view_autograd_meta(self);
-    xsigma::Tensor out;
+    quarisma::Tensor out;
     if (diff_view_meta && diff_view_meta->has_bw_view())
     {
         const auto& view_info = diff_view_meta->get_backward_view();
@@ -504,14 +504,14 @@ static PyObject* view_func_impl(
                 auto& view_func = view_info.view_fn();
 
                 // Determine new SymInt / tensor state as needed.
-                std::optional<std::vector<xsigma::SymInt>> new_symints = std::nullopt;
+                std::optional<std::vector<quarisma::SymInt>> new_symints = std::nullopt;
                 if (symint_visitor_fn != Py_None)
                 {
                     new_symints = map_py_func(
                         py::cast<py::function>(symint_visitor_fn), view_func.get_symints());
                 }
 
-                std::optional<std::vector<xsigma::Tensor>> new_tensors = std::nullopt;
+                std::optional<std::vector<quarisma::Tensor>> new_tensors = std::nullopt;
                 if (tensor_visitor_fn != Py_None)
                 {
                     new_tensors = map_py_func(
@@ -552,19 +552,19 @@ static PyObject* rev_view_func_impl(PyObject* self_, PyObject* arg)
 {
     HANDLE_TH_ERRORS
     const auto& self = THPVariable_Unpack(self_);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         THPVariable_Check(arg), "_rev_view_func expect a single argument that is a Tensor");
     const auto& new_view = THPVariable_Unpack(arg);
 
     // Ensure that self is indeed a backward differentiable view
     // If not, we return an undefined Tensor (None) and let the user handle it.
     auto           diff_view_meta = torch::autograd::impl::get_view_autograd_meta(self);
-    xsigma::Tensor out;
+    quarisma::Tensor out;
     if (diff_view_meta && diff_view_meta->has_bw_view())
     {
         const auto& view_info = diff_view_meta->get_backward_view();
         // Do the actual view replay
-        XSIGMA_CHECK(view_info.has_view_fn(), "No _rev_view_func() found");
+        QUARISMA_CHECK(view_info.has_view_fn(), "No _rev_view_func() found");
         out = view_info.rev_view_fn()(new_view);
     }
     return THPVariable_Wrap(out);
@@ -591,7 +591,7 @@ static PyObject* THPVariable_as_subclass(PyObject* _self, PyObject* args, PyObje
     // guard completely turns off torch dispatch modes, doesn't just pop off the
     // stack
     torch_dispatch_mode::StashTorchDispatchStackGuard td_g;
-    xsigma::impl::DisablePythonDispatcher             dpd_g;
+    quarisma::impl::DisablePythonDispatcher             dpd_g;
     return THPVariable_NewWithVar((PyTypeObject*)cls, self.alias());
     END_HANDLE_TH_ERRORS
 }
@@ -611,7 +611,7 @@ static PyObject* THPVariable_make_subclass(PyObject* _ignored, PyObject* args, P
     // guard completely turns off torch dispatch modes, doesn't just pop off the
     // stack
     torch_dispatch_mode::StashTorchDispatchStackGuard td_g;
-    xsigma::impl::DisablePythonDispatcher             dpd_g;
+    quarisma::impl::DisablePythonDispatcher             dpd_g;
     auto data = r.tensor(1).detach();  // creates a fresh Tensor (DEFINITELY_UNINITIALIZED)
     // We set `data`'s `allow_tensor_metadata_change` to true here, because we
     // want to allow the following use case for backward compatibility:
@@ -652,15 +652,15 @@ static PyObject* THPVariable_make_subclass(PyObject* _ignored, PyObject* args, P
 static Tensor make_tensor_for_subclass_helper(
     SymIntArrayRef                       sym_sizes,
     OptionalSymIntArrayRef               sym_strides,
-    const std::optional<xsigma::SymInt>& sym_storage_offset,
+    const std::optional<quarisma::SymInt>& sym_storage_offset,
     const TensorOptions&                 options,
-    const std::optional<xsigma::SymInt>& storage_size,
+    const std::optional<quarisma::SymInt>& storage_size,
     std::optional<DispatchKeySet>        extra_dispatch_keys)
 {
     AutoDispatchBelowADInplaceOrView   guard{};  // TODO: Remove.
     tracer::impl::NoTracerDispatchMode tracer_guard{};
 
-    xsigma::SymInt size_bytes;
+    quarisma::SymInt size_bytes;
     auto           dtype_itemsize = static_cast<int64_t>(options.dtype().itemsize());
 
     if (storage_size.has_value())
@@ -669,12 +669,12 @@ static Tensor make_tensor_for_subclass_helper(
     }
     else if (sym_strides.has_value())
     {
-        size_bytes = xsigma::detail::computeStorageNbytes(
+        size_bytes = quarisma::detail::computeStorageNbytes(
             sym_sizes, sym_strides.value(), dtype_itemsize, sym_storage_offset.value_or(0));
     }
     else
     {
-        size_bytes = xsigma::detail::computeStorageNbytesContiguous(
+        size_bytes = quarisma::detail::computeStorageNbytesContiguous(
             sym_sizes, dtype_itemsize, sym_storage_offset.value_or(0));
     }
 
@@ -683,17 +683,17 @@ static Tensor make_tensor_for_subclass_helper(
     Storage storage{
         Storage::use_byte_size_t{},
         size_bytes,
-        xsigma::DataPtr{nullptr, options.device()},
-        /*allocator=*/xsigma::GetAllocator(xsigma::kMeta),
+        quarisma::DataPtr{nullptr, options.device()},
+        /*allocator=*/quarisma::GetAllocator(quarisma::kMeta),
         /*resizable=*/true};
 
-    auto keys = xsigma::DispatchKeySet({options.computeDispatchKey()});
+    auto keys = quarisma::DispatchKeySet({options.computeDispatchKey()});
     if (extra_dispatch_keys.has_value())
     {
         keys = keys | *extra_dispatch_keys;
     }
     Tensor tensor =
-        xsigma::detail::make_tensor<TensorImpl>(std::move(storage), keys, options.dtype());
+        quarisma::detail::make_tensor<TensorImpl>(std::move(storage), keys, options.dtype());
 
     TensorImpl* tensor_impl = tensor.unsafeGetTensorImpl();
 
@@ -703,7 +703,7 @@ static Tensor make_tensor_for_subclass_helper(
     }
     else
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !sym_storage_offset.has_value(), "setting storage offset without stride not supported");
         tensor_impl->generic_set_sizes_contiguous(sym_sizes);
     }
@@ -887,7 +887,7 @@ static DTensorInternedStrings dtensor_interned_strings;
 static bool intern_dtensor_strings()
 {
 #define INTERN_DTENSOR_STRING(s)                                 \
-    XSIGMA_CHECK_DEBUG(dtensor_interned_strings.s == nullptr);   \
+    QUARISMA_CHECK_DEBUG(dtensor_interned_strings.s == nullptr);   \
     dtensor_interned_strings.s = PyUnicode_InternFromString(#s); \
     if (dtensor_interned_strings.s == nullptr)                   \
     {                                                            \
@@ -909,13 +909,13 @@ static bool checked_not(PyObject* obj)
     return result;
 }
 
-static xsigma::SymDimVector tuple_to_symintlist(PyObject* obj)
+static quarisma::SymDimVector tuple_to_symintlist(PyObject* obj)
 {
-    XSIGMA_CHECK_DEBUG(PyTuple_Check(obj));
-    xsigma::SymDimVector res;
+    QUARISMA_CHECK_DEBUG(PyTuple_Check(obj));
+    quarisma::SymDimVector res;
     const auto           size = PyTuple_GET_SIZE(obj);
     res.reserve(size);
-    for (const auto idx : xsigma::irange(size))
+    for (const auto idx : quarisma::irange(size))
     {
         PyObject* item = PyTuple_GET_ITEM(obj, idx);
         if (THPUtils_checkLongExact(item))
@@ -924,7 +924,7 @@ static xsigma::SymDimVector tuple_to_symintlist(PyObject* obj)
         }
         else if (torch::is_symint(py::handle(item)))
         {
-            res.push_back(py::handle(item).cast<xsigma::SymInt>());
+            res.push_back(py::handle(item).cast<quarisma::SymInt>());
         }
         else
         {
@@ -976,22 +976,22 @@ static PyObject* THPVariable_dtensor_new(PyObject* /*unused*/, PyObject* args, P
 
     DispatchKeySet extra_dispatch_keys;
     const auto     tensor_keys = local_tensor.key_set();
-    if (tensor_keys.has(xsigma::DispatchKey::Conjugate))
+    if (tensor_keys.has(quarisma::DispatchKey::Conjugate))
     {
-        extra_dispatch_keys = extra_dispatch_keys.add(xsigma::DispatchKey::Conjugate);
+        extra_dispatch_keys = extra_dispatch_keys.add(quarisma::DispatchKey::Conjugate);
     }
-    if (tensor_keys.has(xsigma::DispatchKey::Negative))
+    if (tensor_keys.has(quarisma::DispatchKey::Negative))
     {
-        extra_dispatch_keys = extra_dispatch_keys.add(xsigma::DispatchKey::Negative);
+        extra_dispatch_keys = extra_dispatch_keys.add(quarisma::DispatchKey::Negative);
     }
 
     py::handle spec        = py::handle(r.pyobject(2));
     const auto tensor_meta = spec.attr(dtensor_interned_strings.tensor_meta);
-    XSIGMA_CHECK(!tensor_meta.is_none());
+    QUARISMA_CHECK(!tensor_meta.is_none());
     const auto sizes = tensor_meta.attr(dtensor_interned_strings.shape);
-    XSIGMA_CHECK(PyTuple_Check(sizes.ptr()), "spec.tensor_meta.shape must be a tuple");
+    QUARISMA_CHECK(PyTuple_Check(sizes.ptr()), "spec.tensor_meta.shape must be a tuple");
     const auto stride = tensor_meta.attr(dtensor_interned_strings.stride);
-    XSIGMA_CHECK(PyTuple_Check(stride.ptr()), "spec.tensor_meta.stride must be a tuple");
+    QUARISMA_CHECK(PyTuple_Check(stride.ptr()), "spec.tensor_meta.stride must be a tuple");
 
     Tensor tensor = make_tensor_for_subclass_helper(
         /*sym_sizes=*/tuple_to_symintlist(sizes.ptr()),
@@ -1031,7 +1031,7 @@ static bool DTensor_OpSchema_recompute_comparison_key_impl(
         static_argnum = py::cast<size_t>(schema_info.attr(dtensor_interned_strings.static_argnum));
         static_kwargkey = schema_info.attr(dtensor_interned_strings.static_kwargkey);
     }
-    xsigma::SmallVector<py::object, 8> args_to_hash;
+    quarisma::SmallVector<py::object, 8> args_to_hash;
     size_t                             idx = 0;
     for (const auto& e : args_schema)
     {
@@ -1049,7 +1049,7 @@ static bool DTensor_OpSchema_recompute_comparison_key_impl(
         idx++;
     }
     py::tuple args_to_hash_tup(args_to_hash.size());
-    for (const auto idx : xsigma::irange(args_to_hash.size()))
+    for (const auto idx : quarisma::irange(args_to_hash.size()))
     {
         args_to_hash_tup[idx] = std::move(args_to_hash[idx]);
     }
@@ -1209,7 +1209,7 @@ static PyObject* THPVariable_get_python_dispatch(THPVariable* self, void* unused
 // - static constexpr const char* name;
 //   - This variable should hold the Python name of the property
 // - static Tensor fn(const Tensor&);
-//   - This function calls the relevant XSigma on the tensor
+//   - This function calls the relevant Quarisma on the tensor
 template <typename T>
 // NOLINTNEXTLINE(bugprone-crtp-constructor-accessibility)
 struct GetterBase
@@ -1265,13 +1265,13 @@ struct PropertyGrad : GetterBase<PropertyGrad>
 struct PropertyReal : GetterBase<PropertyReal>
 {
     static constexpr const char* name = "real";
-    static Tensor                fn(const Tensor& t) { return xsigma::real(t); }
+    static Tensor                fn(const Tensor& t) { return quarisma::real(t); }
 };
 
 struct PropertyImag : GetterBase<PropertyImag>
 {
     static constexpr const char* name = "imag";
-    static Tensor                fn(const Tensor& t) { return xsigma::imag(t); }
+    static Tensor                fn(const Tensor& t) { return quarisma::imag(t); }
 };
 
 static PyObject* THPVariable_get_cdata(THPVariable* self, void* unused)
@@ -1321,8 +1321,8 @@ static int THPVariable_set_grad_fn(THPVariable* self, PyObject* obj, void* unuse
     {
         return handle_torch_function_setter(self, "_grad_fn", obj);
     }
-    XSIGMA_CHECK(obj, "Deletion of _grad_fn not allowed. Detach tensor instead!");
-    XSIGMA_CHECK(obj == Py_None, "_grad_fn can be only set to None");
+    QUARISMA_CHECK(obj, "Deletion of _grad_fn not allowed. Detach tensor instead!");
+    QUARISMA_CHECK(obj == Py_None, "_grad_fn can be only set to None");
     THPVariable_Unpack(self).detach_();
     return 0;
     END_HANDLE_TH_ERRORS_RET(-1)
@@ -1346,7 +1346,7 @@ static int THPVariable_set_data(THPVariable* self, PyObject* data, void* unused)
     {
         return handle_torch_function_setter(self, "data", data);
     }
-    XSIGMA_CHECK(data, "Deleting tensor data is not allowed. Delete tensor instead!");
+    QUARISMA_CHECK(data, "Deleting tensor data is not allowed. Delete tensor instead!");
     TORCH_CHECK_TYPE(
         THPVariable_Check(data),
         "Variable data has to be a tensor, but got ",
@@ -1375,12 +1375,12 @@ static int THPVariable_set_grad(THPVariable* self, PyObject* py_grad, void* unus
         THPVariable_Check(py_grad),
         "assigned grad expected to be a Tensor or None but got grad of type ",
         THPUtils_typename(py_grad));
-    XSIGMA_CHECK(self != (THPVariable*)py_grad, "can't assign Variable as its own grad");
+    QUARISMA_CHECK(self != (THPVariable*)py_grad, "can't assign Variable as its own grad");
 
     const auto& grad = THPVariable_Unpack(py_grad);
     if (var.grad_dtype().has_value())
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             grad.dtype() == var.grad_dtype().value(),
             "attempting to assign a gradient with dtype '",
             grad.dtype(),
@@ -1391,7 +1391,7 @@ static int THPVariable_set_grad(THPVariable* self, PyObject* py_grad, void* unus
             "None to allow any dtype. Set grad_dtype with caution. Diverging the dtypes of "
             "a tensor and its gradient may break downstream systems that assume they match.");
     }
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         var.device().type() == grad.device().type(),
         "attempting to assign a gradient with device type '",
         grad.device().type(),
@@ -1402,18 +1402,18 @@ static int THPVariable_set_grad(THPVariable* self, PyObject* py_grad, void* unus
     {
         auto expected_options = var.options().dtype(
             var.grad_dtype().has_value() ? var.grad_dtype().value() : grad.scalar_type());
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             grad.options().type_equal(expected_options),
             "attempting to assign a gradient to a tensor that has data of a different type");
     }
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         grad.get_device() == var.get_device(),
         "attempting to assign a gradient located on device with index '",
         grad.get_device(),
         "' to a tensor located on device with index '",
         var.get_device(),
         "'. Please ensure that the gradient and the tensor are on the same device");
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         grad.sym_sizes().equals(var.sym_sizes()),
         "attempting to assign a gradient of size '",
         grad.sym_sizes(),
@@ -1530,10 +1530,10 @@ static PyObject* THPVariable_get_names(PyObject* self, void* unused)
         throw python_error();
 
     const auto dimnames = tensor.names();
-    for (const auto i : xsigma::irange(size))
+    for (const auto i : quarisma::irange(size))
     {
         PyObject* str = nullptr;
-        if (dimnames[i].type() == xsigma::NameType::WILDCARD)
+        if (dimnames[i].type() == quarisma::NameType::WILDCARD)
         {
             // PyTuple_SET_ITEM steals a reference to the object. When the tuple is
             // deallocated, it'll decrement the refcount on Py_None, which is bad.
@@ -1568,13 +1568,13 @@ static int THPVariable_set_names(PyObject* self, PyObject* names, void* unused)
     const auto& var = THPVariable_Unpack(self);
     if (names == Py_None)
     {
-        xsigma::internal_set_names_inplace(var, std::nullopt);
+        quarisma::internal_set_names_inplace(var, std::nullopt);
     }
     else
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             THPUtils_checkDimnameList(names), "names must either be None or a tuple of dim names");
-        xsigma::internal_set_names_inplace(var, torch::parseDimnameList(names));
+        quarisma::internal_set_names_inplace(var, torch::parseDimnameList(names));
     }
     return 0;
     END_HANDLE_TH_ERRORS_RET(-1)
@@ -1587,7 +1587,7 @@ static int THPVariable_set_requires_grad(THPVariable* self, PyObject* obj, void*
     {
         return handle_torch_function_setter(self, "requires_grad", obj);
     }
-    XSIGMA_CHECK(obj && PyBool_Check(obj), "requires_grad must be a bool");
+    QUARISMA_CHECK(obj && PyBool_Check(obj), "requires_grad must be a bool");
     const auto& var           = THPVariable_Unpack(self);
     auto        requires_grad = (obj == Py_True);
     if (!var.is_leaf())
@@ -1595,7 +1595,7 @@ static int THPVariable_set_requires_grad(THPVariable* self, PyObject* obj, void*
         THPUtils_setError(autograd::utils::requires_grad_leaf_error(obj == Py_True).c_str());
         return -1;
     }
-    if (requires_grad && !isDifferentiableType(xsigma::typeMetaToScalarType((var.dtype()))))
+    if (requires_grad && !isDifferentiableType(quarisma::typeMetaToScalarType((var.dtype()))))
     {
         THPUtils_setError("only Tensors of floating point and complex dtype can require gradients");
         return -1;
@@ -1642,7 +1642,7 @@ static int THPVariable_set_backwards_hooks(THPVariable* self, PyObject* obj, voi
     {
         return handle_torch_function_setter(self, "_backward_hooks", obj);
     }
-    XSIGMA_CHECK(obj, "Deletion of _backwards_hooks not allowed!");
+    QUARISMA_CHECK(obj, "Deletion of _backwards_hooks not allowed!");
     if (obj == Py_None)
     {
         obj = nullptr;
@@ -1684,7 +1684,7 @@ static int THPVariable_set_post_accumulate_grad_hooks(
     {
         return handle_torch_function_setter(self, "_post_accumulate_grad_hooks", obj);
     }
-    XSIGMA_CHECK(obj, "Deletion of _post_accumulate_grad_hooks not allowed!");
+    QUARISMA_CHECK(obj, "Deletion of _post_accumulate_grad_hooks not allowed!");
     if (obj == Py_None)
     {
         obj = nullptr;
@@ -1983,7 +1983,7 @@ static PyObject* THPVariable_get_grad_dtype(THPVariable* self, void* unused)
         return handle_torch_function_getter(self, "grad_dtype");
     }
     const auto& var = THPVariable_Unpack(self);
-    XSIGMA_CHECK(!var.grad_fn(), "grad_dtype can only be accessed on leaf tensors.");
+    QUARISMA_CHECK(!var.grad_fn(), "grad_dtype can only be accessed on leaf tensors.");
     if (!var.grad_dtype().has_value())
     {
         Py_RETURN_NONE;
@@ -2003,14 +2003,14 @@ static int THPVariable_set_grad_dtype(THPVariable* self, PyObject* obj, void* un
         return handle_torch_function_setter(self, "grad_dtype", obj);
     }
     const auto& var = THPVariable_Unpack(self);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         THPDtype_Check(obj) || obj == Py_None,
         "grad_dtype must be a torch.dtype or None, but got ",
         Py_TYPE(obj)->tp_name);
     if (var.grad().defined() && obj != Py_None)
     {
         auto new_dtype = reinterpret_cast<THPDtype*>(obj);
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             var.grad().dtype() == new_dtype->scalar_type,
             "Cannot set grad_dtype to '",
             new_dtype->scalar_type,
@@ -2019,7 +2019,7 @@ static int THPVariable_set_grad_dtype(THPVariable* self, PyObject* obj, void* un
             "'. Please clear the gradient (.grad = None) before changing grad_dtype, "
             "or ensure the new grad_dtype matches the existing gradient's dtype.");
     }
-    std::optional<xsigma::ScalarType> new_dtype;
+    std::optional<quarisma::ScalarType> new_dtype;
     if (obj != Py_None)
     {
         auto* dtype = reinterpret_cast<THPDtype*>(obj);
@@ -2045,7 +2045,7 @@ static int THPVariable_set_real(PyObject* self, PyObject* real, void* unused)
 {
     HANDLE_TH_ERRORS
     auto& self_     = THPVariable_Unpack(self);
-    auto  self_real = xsigma::real(self_);
+    auto  self_real = quarisma::real(self_);
     auto  real_     = valueToTensor(self_real.options(), real, self_real.device());
     {
         pybind11::gil_scoped_release no_gil;
@@ -2059,7 +2059,7 @@ static int THPVariable_set_imag(PyObject* self, PyObject* imag, void* unused)
 {
     HANDLE_TH_ERRORS
     auto& self_     = THPVariable_Unpack(self);
-    auto  self_imag = xsigma::imag(self_);
+    auto  self_imag = quarisma::imag(self_);
     auto  imag_     = valueToTensor(self_imag.options(), imag, self_imag.device());
     {
         pybind11::gil_scoped_release no_gil;
@@ -2308,14 +2308,14 @@ static PyTypeObject THPVariableType = {
 PyObject* THPVariable_pynew(PyTypeObject* type, PyObject* args, PyObject* kwargs)
 {
     HANDLE_TH_ERRORS
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         type != &THPVariableType,
         "Cannot directly construct TensorBase; subclass it and then construct that");
     jit::tracer::warn("torch.Tensor", jit::tracer::WARN_CONSTRUCTOR);
     auto tensor = torch::utils::base_tensor_ctor(args, kwargs);
     // WARNING: tensor is NOT guaranteed to be a fresh tensor; e.g., if it was
     // given a raw pointer that will refcount bump
-    // NB: base_tensor_ctor can call into dispatched XSigma functions (e.g.,
+    // NB: base_tensor_ctor can call into dispatched Quarisma functions (e.g.,
     // alias(), lift_fresh()) which can return Tensor subclasses.  We allow
     // these to be passed on directly.
     return THPVariable_NewWithVar(
@@ -2383,29 +2383,29 @@ static int THPVariable_subclass_clear(THPVariable* self)
             // distributed/rpc/test_process_group_agent.py
             //
             //  libc++abi.dylib: terminating with uncaught exception of type
-            //  xsigma::Error:
+            //  quarisma::Error:
             //  !tensor.unsafeGetTensorImpl()->pyobj_slot()->owns_pyobj()INTERNAL
-            //  ASSERT FAILED xsigma "../torch/csrc/autograd/python_variable.cpp":171,
+            //  ASSERT FAILED quarisma "../torch/csrc/autograd/python_variable.cpp":171,
             //  please report a bug to PyTorch. Exception raised from
-            //  THPVariable_subclass_clear xsigma
+            //  THPVariable_subclass_clear quarisma
             //  ../torch/csrc/autograd/python_variable.cpp:171 (most recent call
-            //  first): frame #0: xsigma::Error::Error(xsigma::SourceLocation,
+            //  first): frame #0: quarisma::Error::Error(quarisma::SourceLocation,
             //  std::__1::basic_string<char, std::__1::char_traits<char>,
             //  std::__1::allocator<char> >) + 98 (0x1158a0442 in libc10.dylib) frame
-            //  #1: xsigma::detail::torchCheckFail(char const*, char const*, unsigned
+            //  #1: quarisma::detail::torchCheckFail(char const*, char const*, unsigned
             //  int, char const*) + 205 (0x11589ed3d in libc10.dylib) frame #2:
-            //  xsigma::detail::torchInternalAssertFail(char const*, char const*,
-            //  unsigned int, char const*, xsigma::detail::CompileTimeEmptyString) + 9
+            //  quarisma::detail::torchInternalAssertFail(char const*, char const*,
+            //  unsigned int, char const*, quarisma::detail::CompileTimeEmptyString) + 9
             //  (0x1141e3f89 in libtorch_python.dylib) frame #3:
             //  THPVariable_subclass_clear(THPVariable*) + 412 (0x1148a547c in
             //  libtorch_python.dylib) frame #4:
             //  THPVariable_subclass_dealloc(_object*) + 453 (0x1148a5035 in
             //  libtorch_python.dylib) frame #5: (anonymous
-            //  namespace)::concrete_decref_fn(xsigma::impl::PyInterpreter const*,
+            //  namespace)::concrete_decref_fn(quarisma::impl::PyInterpreter const*,
             //  _object*) + 53 (0x1148a5ea5 in libtorch_python.dylib) frame #6:
-            //  xsigma::TensorImpl::release_resources() + 182 (0x11588c4a6 in
+            //  quarisma::TensorImpl::release_resources() + 182 (0x11588c4a6 in
             //  libc10.dylib) frame #7:
-            //  xsigma::MaybeOwned<xsigma::Tensor>::operator=(xsigma::MaybeOwned<xsigma::Tensor>&&)
+            //  quarisma::MaybeOwned<quarisma::Tensor>::operator=(quarisma::MaybeOwned<quarisma::Tensor>&&)
             //  + 91 (0x11488c11b in libtorch_python.dylib) frame #8:
             //  THPVariable_subclass_dealloc(_object*) + 607 (0x1148a50cf in
             //  libtorch_python.dylib) <omitting python frames> frame #47: start + 1
@@ -2442,7 +2442,7 @@ static int THPVariable_subclass_clear(THPVariable* self)
 
     // Assume we never have managed dict for Tensors as we don't set the flag on
     // the base class
-    if XSIGMA_LIKELY (type->tp_dictoffset)
+    if QUARISMA_LIKELY (type->tp_dictoffset)
     {
         PyObject** dictptr = _PyObject_GetDictPtr((PyObject*)self);
         if (dictptr && *dictptr)
@@ -2536,7 +2536,7 @@ static void THPVariable_subclass_dealloc(PyObject* self)
     }
 
     // All Python defined classes have __dict__
-    if XSIGMA_LIKELY (type->tp_dictoffset)
+    if QUARISMA_LIKELY (type->tp_dictoffset)
     {
         PyObject** dictptr = _PyObject_GetDictPtr(self);
         if (dictptr != nullptr)
@@ -2566,12 +2566,12 @@ static void THPVariable_subclass_dealloc(PyObject* self)
 // Creates a new Python object for a Variable.
 static PyObject* THPVariable_NewWithVar(
     PyTypeObject*             type,
-    const xsigma::TensorBase& _var,
+    const quarisma::TensorBase& _var,
     bool                      allow_preexisting_pyobj,
     std::optional<bool>       has_torch_dispatch_if_known)
 {
     // Make sure that the reinterpret into a THPVariable* will be valid
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         type == &THPVariableType || PyType_IsSubtype(type, &THPVariableType),
         "Creating a Tensor subclass from a class ",
         "that does not inherit from Tensor is not possible. Make sure your class inherits from "
@@ -2613,7 +2613,7 @@ static PyObject* THPVariable_NewWithVar(
 
     if (mb_obj.has_value() && mb_obj.value())
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             allow_preexisting_pyobj,
             "Creating a new Tensor subclass ",
             type->tp_name,
@@ -2629,7 +2629,7 @@ static PyObject* THPVariable_NewWithVar(
         // allocating a new variable.  We just check that the existing Python
         // object is a subclass of the requested type.
         PyTypeObject* obj_type = Py_TYPE(obj);
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             obj_type == type || PyType_IsSubtype(obj_type, type),
             "Creating a new Tensor subclass ",
             type->tp_name,
@@ -2648,7 +2648,7 @@ static PyObject* THPVariable_NewWithVar(
         auto v = (THPVariable*)obj;
         // TODO: named constructor to avoid default initialization
         new (&v->cdata) MaybeOwned<Variable>();
-        if (xsigma::impl::HermeticPyObjectTLS::get_state())
+        if (quarisma::impl::HermeticPyObjectTLS::get_state())
         {
             // Do NOT initialize pyobj field on the tensor, you own the C++
             v->cdata = MaybeOwned<Variable>::owned(Variable(_var));
@@ -2791,7 +2791,7 @@ static int THPVariable_subclass_traverse(PyObject* self, visitproc visit, void* 
     }
 
     // All Python defined classes have __dict__
-    if XSIGMA_LIKELY (type->tp_dictoffset)
+    if QUARISMA_LIKELY (type->tp_dictoffset)
     {
         PyObject** dictptr = _PyObject_GetDictPtr(self);
         if (dictptr && *dictptr)
@@ -2942,10 +2942,10 @@ static void initTensorImplConversion(PyObject* module)
         "_wrap_tensor_impl",
         [](void* ptr)
         {
-            auto p = xsigma::intrusive_ptr<xsigma::TensorImpl, xsigma::UndefinedTensorImpl>::
-                unsafe_reclaim_from_nonowning(static_cast<xsigma::TensorImpl*>(ptr));
-            XSIGMA_CHECK(p.defined(), "Can't wrap undefined tensor");
-            auto tensor = xsigma::Tensor::wrap_tensor_impl(std::move(p));
+            auto p = quarisma::intrusive_ptr<quarisma::TensorImpl, quarisma::UndefinedTensorImpl>::
+                unsafe_reclaim_from_nonowning(static_cast<quarisma::TensorImpl*>(ptr));
+            QUARISMA_CHECK(p.defined(), "Can't wrap undefined tensor");
+            auto tensor = quarisma::Tensor::wrap_tensor_impl(std::move(p));
             return py::cast(std::move(tensor));
         });
     // set on the module level to avoid mixing pybind and plain CPython extensions

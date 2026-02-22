@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -45,7 +45,7 @@ limitations under the License.
 #include "profiler/native/exporters/xplane/xplane.h"
 #include "util/flat_hash.h"
 
-namespace xsigma
+namespace quarisma
 {
 class xplane_visitor;
 
@@ -53,10 +53,10 @@ class x_stat_visitor
 {
 public:
     // REQUIRED: plane and stat cannot be nullptr.
-    XSIGMA_API x_stat_visitor(const xplane_visitor* plane, const xstat* stat);
+    QUARISMA_API x_stat_visitor(const xplane_visitor* plane, const xstat* stat);
 
     // REQUIRED: plane, stat and metadata cannot be nullptr.
-    XSIGMA_API x_stat_visitor(
+    QUARISMA_API x_stat_visitor(
         const xplane_visitor*  plane,
         const xstat*           stat,
         const x_stat_metadata* metadata,
@@ -91,12 +91,12 @@ public:
 
     // Returns a string view.
     // REQUIRED: the value type should be string type or reference type.
-    XSIGMA_API std::string_view str_or_ref_value() const;
+    QUARISMA_API std::string_view str_or_ref_value() const;
 
     const xstat& raw_stat() const { return *stat_; }
 
     // Return a string representation of all value type.
-    XSIGMA_API std::string to_string() const;
+    QUARISMA_API std::string to_string() const;
 
 private:
     const xstat*           stat_;
@@ -186,7 +186,7 @@ public:
     static constexpr int64_t nano_to_pico(int64_t ns) { return ns * 1000; }
 
     // REQUIRED: plane, line and event cannot be nullptr.
-    XSIGMA_API xevent_visitor(const xplane_visitor* plane, const xline* line, const xevent* event);
+    QUARISMA_API xevent_visitor(const xplane_visitor* plane, const xline* line, const xevent* event);
 
     const xplane_visitor& plane() const { return *plane_; }
 
@@ -294,11 +294,11 @@ private:
 using TypeGetter     = std::function<std::optional<int64_t>(std::string_view)>;
 using TypeGetterList = std::vector<TypeGetter>;
 
-class xplane_visitor : public xstats_owner<xsigma::xplane>
+class xplane_visitor : public xstats_owner<quarisma::xplane>
 {
 public:
     // REQUIRED: plane cannot be nullptr.
-    XSIGMA_API explicit xplane_visitor(
+    QUARISMA_API explicit xplane_visitor(
         const xplane*         plane,
         const TypeGetterList& event_type_getter_list = TypeGetterList(),
         const TypeGetterList& stat_type_getter_list  = TypeGetterList());
@@ -339,20 +339,20 @@ public:
     }
 
     // Returns event metadata given its id. Returns a default value if not found.
-    XSIGMA_API const xevent_metadata* get_event_metadata(int64_t event_metadata_id) const;
+    QUARISMA_API const xevent_metadata* get_event_metadata(int64_t event_metadata_id) const;
 
     // Returns the type of an event given its id.
-    XSIGMA_API std::optional<int64_t> get_event_type(int64_t event_metadata_id) const;
+    QUARISMA_API std::optional<int64_t> get_event_type(int64_t event_metadata_id) const;
 
     // Returns stat metadata given its id. Returns a default value if not found.
-    XSIGMA_API const x_stat_metadata* get_stat_metadata(int64_t stat_metadata_id) const;
+    QUARISMA_API const x_stat_metadata* get_stat_metadata(int64_t stat_metadata_id) const;
 
     // Returns stat metadata given its type. Returns nullptr if not found.
     // Use as an alternative to get_stat_metadata above.
-    XSIGMA_API const x_stat_metadata* get_stat_metadata_by_type(int64_t stat_type) const;
+    QUARISMA_API const x_stat_metadata* get_stat_metadata_by_type(int64_t stat_type) const;
 
     // Returns the type of an stat given its id.
-    XSIGMA_API std::optional<int64_t> get_stat_type(int64_t stat_metadata_id) const;
+    QUARISMA_API std::optional<int64_t> get_stat_type(int64_t stat_metadata_id) const;
 
 private:
     void build_event_type_map(const xplane* plane, const TypeGetterList& event_type_getter_list);
@@ -389,4 +389,4 @@ void xevent_metadata_visitor::for_each_child(ForEachChildFunc&& for_each_child) 
     }
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

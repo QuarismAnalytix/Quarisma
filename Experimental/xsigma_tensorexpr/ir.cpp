@@ -1,6 +1,6 @@
 #include <torch/csrc/jit/tensorexpr/ir.h>
 #include <torch/csrc/jit/tensorexpr/stmt.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <utility>
 
@@ -19,7 +19,7 @@ static Dtype dtypeOfIndices(const std::vector<ExprPtr>& indices)
         // Return something so we can handle scalar buffers.
         return kInt;
     }
-    return indices.xsigma(0)->dtype();
+    return indices.quarisma(0)->dtype();
 }
 
 static void castIndicesToInts(std::vector<ExprPtr>& indices)
@@ -39,7 +39,7 @@ static void castIndicesToInts(std::vector<ExprPtr>& indices)
     for (auto& index : indices)
     {
         const Dtype& dt = index->dtype();
-        if (xsigma::isIntegralType(dt.scalar_type(), true) && dt.scalar_type() != index_dtype)
+        if (quarisma::isIntegralType(dt.scalar_type(), true) && dt.scalar_type() != index_dtype)
         {
             index = alloc<Cast>(Dtype(index_dtype, dt.lanes()), index);
         }
@@ -109,7 +109,7 @@ ExprPtr flatten_index(
         return alloc<LongImm>(0);
     }
     ExprPtr total_index = immLike(indices[0], 0);
-    for (const auto i : xsigma::irange(ndim))
+    for (const auto i : quarisma::irange(ndim))
     {
         total_index = alloc<Add>(total_index, alloc<Mul>(indices[i], strides[i]));
     }
@@ -249,7 +249,7 @@ FreeExtPtr FreeExt::make(const std::vector<BufHandle>& bufs)
 std::vector<ExprPtr> ExprHandleVectorToExprVector(const std::vector<ExprHandle>& v)
 {
     std::vector<ExprPtr> result(v.size());
-    for (const auto i : xsigma::irange(v.size()))
+    for (const auto i : quarisma::irange(v.size()))
     {
         result[i] = v[i].node();
     }
@@ -259,7 +259,7 @@ std::vector<ExprPtr> ExprHandleVectorToExprVector(const std::vector<ExprHandle>&
 std::vector<ExprHandle> ExprVectorToExprHandleVector(const std::vector<ExprPtr>& v)
 {
     std::vector<ExprHandle> result(v.size());
-    for (const auto i : xsigma::irange(v.size()))
+    for (const auto i : quarisma::irange(v.size()))
     {
         result[i] = ExprHandle(v[i]);
     }
@@ -269,7 +269,7 @@ std::vector<ExprHandle> ExprVectorToExprHandleVector(const std::vector<ExprPtr>&
 std::vector<VarPtr> VarHandleVectorToVarVector(const std::vector<VarHandle>& v)
 {
     std::vector<VarPtr> result(v.size());
-    for (const auto i : xsigma::irange(v.size()))
+    for (const auto i : quarisma::irange(v.size()))
     {
         result[i] = v[i].node();
     }
@@ -279,7 +279,7 @@ std::vector<VarPtr> VarHandleVectorToVarVector(const std::vector<VarHandle>& v)
 std::vector<VarHandle> VarVectorToVarHandleVector(const std::vector<VarPtr>& v)
 {
     std::vector<VarHandle> result(v.size());
-    for (const auto i : xsigma::irange(v.size()))
+    for (const auto i : quarisma::irange(v.size()))
     {
         result[i] = VarHandle(v[i]);
     }

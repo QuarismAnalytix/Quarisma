@@ -3,14 +3,14 @@
  * @brief Comprehensive test suite for Web dashboard monitoring system
  */
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "memory/visualization/web_dashboard.h"
 #include "memory/cpu/allocator.h"
 
 #include <memory>
 #include <iostream>
 
-using namespace xsigma;
+using namespace quarisma;
 
 namespace {
 

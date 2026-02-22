@@ -1,6 +1,6 @@
 # OpenSSF Best Practices Compliance Report
 
-**Project**: XSigma
+**Project**: Quarisma
 **Report Date**: 2025-11-02
 **Status**: In Progress - Pending OpenSSF Registration
 **Target Level**: Passing Badge (with roadmap to Silver/Gold)
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-This document provides a comprehensive audit of the XSigma project against the [OpenSSF Best Practices criteria](https://www.bestpractices.dev/en/criteria). XSigma demonstrates **strong compliance** with most passing-level requirements, with particular strengths in:
+This document provides a comprehensive audit of the Quarisma project against the [OpenSSF Best Practices criteria](https://www.bestpractices.dev/en/criteria). Quarisma demonstrates **strong compliance** with most passing-level requirements, with particular strengths in:
 
 - ✅ **Security practices** (dedicated Security module, SECURITY.md policy)
 - ✅ **Quality assurance** (comprehensive testing, 98% coverage target, static analysis)
@@ -36,7 +36,7 @@ This document provides a comprehensive audit of the XSigma project against the [
 
 | Criterion | Status | Evidence | Notes |
 |-----------|--------|----------|-------|
-| **Project website** | ✅ PASS | https://www.xsigma.co.uk | Listed in LICENSE, SECURITY.md |
+| **Project website** | ✅ PASS | https://www.quarisma.co.uk | Listed in LICENSE, SECURITY.md |
 | **Project description** | ✅ PASS | README.md lines 9-19 | Clear, comprehensive description |
 | **FLOSS license** | ✅ PASS | LICENSE (GPL-3.0 + Commercial) | Dual-license model, SPDX identifier |
 | **License location** | ✅ PASS | LICENSE file in root | Clearly documented |
@@ -50,7 +50,7 @@ This document provides a comprehensive audit of the XSigma project against the [
 
 | Criterion | Status | Evidence | Notes |
 |-----------|--------|----------|-------|
-| **Project oversight** | ✅ PASS | XSigmaAnalyitix organization | GitHub organization ownership |
+| **Project oversight** | ✅ PASS | QuarismaAnalyitix organization | GitHub organization ownership |
 | **Contribution process** | ⚠️ PARTIAL | README.md lines 698-707 | Basic guidelines exist, needs CONTRIBUTING.md |
 | **Code of Conduct** | ❌ FAIL | Missing | **ACTION REQUIRED**: Create CODE_OF_CONDUCT.md |
 | **Governance documentation** | ⚠️ PARTIAL | Implicit in README | Needs explicit GOVERNANCE.md |
@@ -96,7 +96,7 @@ This document provides a comprehensive audit of the XSigma project against the [
 
 | Criterion | Status | Evidence | Notes |
 |-----------|--------|----------|-------|
-| **Version control** | ✅ PASS | GitHub (git) | https://github.com/XSigmaAnalyitix/XSigma |
+| **Version control** | ✅ PASS | GitHub (git) | https://github.com/QuarismaAnalyitix/Quarisma |
 | **Unique version numbering** | ✅ PASS | CMakeLists.txt lines 10-21 | Semantic versioning (1.0.0) |
 | **Version tags** | ⚠️ PARTIAL | Git tags exist | Needs consistent tagging strategy |
 | **Release notes** | ❌ FAIL | Missing CHANGELOG.md | **ACTION REQUIRED**: Create CHANGELOG.md |
@@ -366,7 +366,7 @@ and orientation.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement at
-conduct@xsigma.co.uk.
+conduct@quarisma.co.uk.
 
 All complaints will be reviewed and investigated promptly and fairly.
 ```
@@ -393,7 +393,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-11-02
 
 ### Added
-- Initial release of XSigma
+- Initial release of Quarisma
 - High-performance CPU and GPU computing support
 - Cross-platform compatibility (Windows, Linux, macOS)
 - Modern CMake build system with flexible configuration
@@ -410,8 +410,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Platform-specific secure random generation
 - Input validation and sanitization utilities
 
-[Unreleased]: https://github.com/XSigmaAnalyitix/XSigma/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/XSigmaAnalyitix/XSigma/releases/tag/v1.0.0
+[Unreleased]: https://github.com/QuarismaAnalyitix/Quarisma/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/QuarismaAnalyitix/Quarisma/releases/tag/v1.0.0
 ```
 
 **File location**: `CHANGELOG.md` (repository root)
@@ -421,9 +421,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 3. CONTRIBUTING.md Outline
 
 ```markdown
-# Contributing to XSigma
+# Contributing to Quarisma
 
-Thank you for your interest in contributing to XSigma!
+Thank you for your interest in contributing to Quarisma!
 
 ## Table of Contents
 - [Code of Conduct](#code-of-conduct)
@@ -442,7 +442,7 @@ By participating, you are expected to uphold this code.
 ## Getting Started
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/XSigma.git`
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/Quarisma.git`
 3. Install dependencies: `pip install -r requirements.txt`
 4. Initialize submodules: `git submodule update --init --recursive`
 5. Build the project: See [README.md](README.md#quick-start)
@@ -459,7 +459,7 @@ By participating, you are expected to uphold this code.
 
 ## Coding Standards
 
-XSigma follows strict coding standards documented in `.augment/rules/coding.md`:
+Quarisma follows strict coding standards documented in `.augment/rules/coding.md`:
 
 - **Naming**: snake_case for functions/variables, trailing underscore for members
 - **Error Handling**: No exceptions; use return values (bool, std::optional, std::expected)
@@ -473,7 +473,7 @@ See [.augment/rules/coding.md](.augment/rules/coding.md) for complete standards.
 
 - All new functionality must include tests
 - Minimum 98% code coverage
-- Use `XSIGMATEST` macro (not `TEST` or `TEST_F`)
+- Use `QUARISMATEST` macro (not `TEST` or `TEST_F`)
 - Test both success and failure cases
 - Test edge cases and boundary conditions
 
@@ -501,7 +501,7 @@ See [.augment/rules/coding.md](.augment/rules/coding.md) for complete standards.
 ## Questions?
 
 - Open an issue for bugs or feature requests
-- Email: licensing@xsigma.co.uk for general inquiries
+- Email: licensing@quarisma.co.uk for general inquiries
 ```
 
 **File location**: `CONTRIBUTING.md` (repository root)
@@ -548,4 +548,4 @@ See [.augment/rules/coding.md](.augment/rules/coding.md) for complete standards.
 
 **Document Version**: 1.0
 **Last Updated**: 2025-11-02
-**Maintained By**: XSigma Development Team
+**Maintained By**: Quarisma Development Team

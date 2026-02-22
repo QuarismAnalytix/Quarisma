@@ -522,7 +522,7 @@ class Node(_NodeBase):
         When traced with dynamo, this property will be populated by default by
         `OutputGraph.create_proxy`.
 
-        stack_trace would have the innermost frame xsigma the end of the string.
+        stack_trace would have the innermost frame quarisma the end of the string.
         """
         return self.meta.get("stack_trace", None)
 

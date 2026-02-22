@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/Config.h>
+#include <Quarisma/Config.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/passes/pass_manager.h>
 
@@ -21,11 +21,11 @@ TORCH_API void fuseGraph(std::shared_ptr<Graph>& g);
 
 }  // namespace fuser::onednn
 
-struct XSIGMA_EXPORT RegisterLlgaFuseGraph : public PassManager<RegisterLlgaFuseGraph>
+struct QUARISMA_EXPORT RegisterLlgaFuseGraph : public PassManager<RegisterLlgaFuseGraph>
 {
     static bool setEnabled(bool enabled)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             AT_MKLDNN_ENABLED(),
             "Running oneDNN Graph fuser is only supported with MKLDNN builds.");
         bool oldState                   = fuser::onednn::getLlgaEnabled();

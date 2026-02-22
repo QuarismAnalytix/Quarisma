@@ -10,11 +10,11 @@ namespace torch::jit
 namespace
 {
 
-std::vector<size_t> identifyListArgIndices(const xsigma::FunctionSchema& schema)
+std::vector<size_t> identifyListArgIndices(const quarisma::FunctionSchema& schema)
 {
     std::vector<size_t> list_indices;
     const auto&         args = schema.arguments();
-    for (const auto i : xsigma::irange(args.size()))
+    for (const auto i : quarisma::irange(args.size()))
     {
         auto list_type = args[i].type()->castRaw<ListType>();
         if (list_type && list_type->getElementType()->castRaw<TensorType>())
@@ -32,7 +32,7 @@ bool isTensorListConstruct(Node* node)
         return false;
     }
     const auto type = node->output()->type()->castRaw<ListType>();
-    XSIGMA_CHECK(type != nullptr);
+    QUARISMA_CHECK(type != nullptr);
     const auto& elem_type = type->getElementType();
     return elem_type->castRaw<TensorType>();
 }
@@ -71,7 +71,7 @@ private:
     {
         const auto& schema = op_node->schema();
         auto        it     = schema_to_list_indices_.find(schema.overload_name());
-        XSIGMA_CHECK(it != schema_to_list_indices_.end());
+        QUARISMA_CHECK(it != schema_to_list_indices_.end());
         return it->second;
     }
 
@@ -96,7 +96,7 @@ private:
         const size_t num_inputs = op_node->inputs().size();
         for (const auto list_idx : getListIndices(op_node))
         {
-            XSIGMA_CHECK(list_idx < num_inputs);
+            QUARISMA_CHECK(list_idx < num_inputs);
             const auto list = op_node->input(list_idx)->node();
             // We do not transform ops whose list input can not be moved to the
             // position before op. This in turn implies that there is some mutation
@@ -114,7 +114,7 @@ private:
         std::vector<Value*>& inputs, Node* node, size_t start_idx, size_t end_idx) const
     {
         const size_t num_inputs = node->inputs().size();
-        XSIGMA_CHECK(start_idx <= end_idx && end_idx <= num_inputs);
+        QUARISMA_CHECK(start_idx <= end_idx && end_idx <= num_inputs);
         inputs.insert(
             inputs.end(), node->inputs().begin() + start_idx, node->inputs().begin() + end_idx);
     }
@@ -122,7 +122,7 @@ private:
     void insertIntegerInput(std::vector<Value*>& inputs, size_t input)
     {
         auto constant = graph_->create(prim::Constant);
-        constant->output()->setType(xsigma::IntType::get());
+        constant->output()->setType(quarisma::IntType::get());
         constant->i_(attr::value, input);
         graph_->prependNode(constant);
         inputs.push_back(constant->output());
@@ -173,7 +173,7 @@ private:
         }
         insertAllInputsBetween(inputs, op_node, cur_idx, op_node->inputs().size());
 
-        // We insert these extra integers xsigma the end of the argument list only if we
+        // We insert these extra integers quarisma the end of the argument list only if we
         // have more than one variadic list (the information is redundant when there
         // is only one list because the interpreter knows how many arguments there
         // are).

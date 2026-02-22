@@ -1,10 +1,10 @@
-# XSigma Graph Construction and Execution: Detailed Code Examples
+# Quarisma Graph Construction and Execution: Detailed Code Examples
 
 ## 1. NODE CREATION AND EDGE SETUP
 
 ### 1.1 Node Constructor
 
-**File:** `xsigma/csrc/autograd/function.h` (lines 115-140)
+**File:** `quarisma/csrc/autograd/function.h` (lines 115-140)
 
 ```cpp
 // Node constructor with sequence number
@@ -32,12 +32,12 @@ explicit Node(edge_list&& next_edges = edge_list())
 
 ### 1.2 Adding Next Edges
 
-**File:** `xsigma/csrc/autograd/function.h` (lines 298-325)
+**File:** `quarisma/csrc/autograd/function.h` (lines 298-325)
 
 ```cpp
 // Update topological number when adding edge
 void update_topological_nr(const Edge& edge) {
-  XSIGMA_CHECK(!has_parent_,
+  QUARISMA_CHECK(!has_parent_,
       "Cannot update topological_nr after node has a parent");
   Node* node = edge.function.get();
   if (node) {
@@ -75,14 +75,14 @@ void set_next_edges(edge_list&& next_edges) {
 
 ### 2.1 Setting Tensor History
 
-**File:** `xsigma/csrc/autograd/functions/utils.h` (lines 66-91)
+**File:** `quarisma/csrc/autograd/functions/utils.h` (lines 66-91)
 
 ```cpp
 // Single tensor history
 inline void set_history(
     const at::Tensor& variable,
     const std::shared_ptr<Node>& grad_fn) {
-  XSIGMA_CHECK(grad_fn != nullptr);
+  QUARISMA_CHECK(grad_fn != nullptr);
   if (variable.defined()) {
     // Add input metadata to grad_fn
     auto output_nr = grad_fn->add_input_metadata(variable);
@@ -106,7 +106,7 @@ inline void set_history(
 
 ### 2.2 Input Metadata Management
 
-**File:** `xsigma/csrc/autograd/function.h` (lines 197-231)
+**File:** `quarisma/csrc/autograd/function.h` (lines 197-231)
 
 ```cpp
 // Add metadata for a tensor input
@@ -119,7 +119,7 @@ uint32_t add_input_metadata(const at::Tensor& t) noexcept {
 // Add metadata with explicit parameters
 uint32_t add_input_metadata(
     const at::TensorOptions& options,
-    xsigma::SymIntArrayRef shape,
+    quarisma::SymIntArrayRef shape,
     bool is_tensor_subclass,
     bool is_nested,
     std::optional<at::ScalarType> grad_dtype) noexcept {
@@ -144,7 +144,7 @@ uint32_t add_input_metadata(undefined_input u) noexcept {
 
 ### 3.1 Engine Execute Method
 
-**File:** `xsigma/csrc/autograd/engine.cpp` (lines 1288-1352)
+**File:** `quarisma/csrc/autograd/engine.cpp` (lines 1288-1352)
 
 ```cpp
 auto Engine::execute(
@@ -164,8 +164,8 @@ auto Engine::execute(
   bool not_reentrant_backward_call = worker_device == NO_DEVICE;
 
   // Extract root nodes
-  xsigma::small_vector<Node*, 4> temp_roots{root_edges.size()};
-  for (const auto i : xsigma::irange(root_edges.size())) {
+  quarisma::small_vector<Node*, 4> temp_roots{root_edges.size()};
+  for (const auto i : quarisma::irange(root_edges.size())) {
     temp_roots[i] = root_edges[i].function.get();
   }
 
@@ -194,7 +194,7 @@ auto Engine::execute(
 
 ### 3.2 Dependency Computation
 
-**File:** `xsigma/csrc/autograd/engine.cpp` (lines 1666-1760)
+**File:** `quarisma/csrc/autograd/engine.cpp` (lines 1666-1760)
 
 ```cpp
 void GraphTask::init_to_execute(
@@ -267,7 +267,7 @@ void GraphTask::init_to_execute(
 
 ## 4. READY QUEUE AND SCHEDULING
 
-**File:** `xsigma/csrc/autograd/engine.h` (lines 86-125)
+**File:** `quarisma/csrc/autograd/engine.h` (lines 86-125)
 
 ```cpp
 struct ReadyQueue {
@@ -304,11 +304,11 @@ struct ReadyQueue {
 
 ## 5. BASIC OPERATION NODES
 
-**File:** `xsigma/csrc/autograd/functions/basic_ops.h` (lines 85-113)
+**File:** `quarisma/csrc/autograd/functions/basic_ops.h` (lines 85-113)
 
 ```cpp
 // GraphRoot: Entry point for backward pass
-struct XSIGMA_VISIBILITY GraphRoot : public Node {
+struct QUARISMA_VISIBILITY GraphRoot : public Node {
   GraphRoot(edge_list functions, variable_list inputs)
       : Node(std::move(functions)), outputs(std::move(inputs)) {
     // Store metadata for all root gradients
@@ -325,7 +325,7 @@ struct XSIGMA_VISIBILITY GraphRoot : public Node {
 };
 
 // Error: Represents unsupported backward operation
-struct XSIGMA_VISIBILITY Error : public Node {
+struct QUARISMA_VISIBILITY Error : public Node {
   Error(std::string msg, edge_list&& next_edges)
       : Node(std::move(next_edges)), msg(std::move(msg)) {}
 
@@ -339,7 +339,7 @@ struct XSIGMA_VISIBILITY Error : public Node {
 
 ## 6. PYTHON CUSTOM FUNCTION EXAMPLE
 
-**File:** `xsigma/autograd/function.py` (lines 472-566)
+**File:** `quarisma/autograd/function.py` (lines 472-566)
 
 ```python
 class Function(_SingleLevelFunction):

@@ -9,13 +9,13 @@
 #include "profiler/common/record_function.h"
 #include "util/exception.h"
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 // ----------------------------------------------------------------------------
 // -- Profiler Config ---------------------------------------------------------
 // ----------------------------------------------------------------------------
-enum class XSIGMA_VISIBILITY_ENUM ActivityType
+enum class QUARISMA_VISIBILITY_ENUM ActivityType
 {
     CPU = 0,
     XPU,                    // XPU kernels, runtime
@@ -33,7 +33,7 @@ inline std::string actToString(ActivityType t)
     return ActivityTypeNames[static_cast<int>(t)];
 }
 
-enum class XSIGMA_VISIBILITY_ENUM ProfilerState
+enum class QUARISMA_VISIBILITY_ENUM ProfilerState
 {
     Disabled = 0,
     CPU,                          // CPU-only profiling
@@ -48,7 +48,7 @@ enum class XSIGMA_VISIBILITY_ENUM ProfilerState
     NUM_PROFILER_STATES,          // must be the last one
 };
 
-enum class XSIGMA_VISIBILITY_ENUM ActiveProfilerType
+enum class QUARISMA_VISIBILITY_ENUM ActiveProfilerType
 {
     NONE = 0,
     LEGACY,
@@ -58,9 +58,9 @@ enum class XSIGMA_VISIBILITY_ENUM ActiveProfilerType
     PRIVATEUSE1
 };
 
-struct XSIGMA_VISIBILITY ExperimentalConfig
+struct QUARISMA_VISIBILITY ExperimentalConfig
 {
-    XSIGMA_API ExperimentalConfig(
+    QUARISMA_API ExperimentalConfig(
         std::vector<std::string> profiler_metrics             = {},
         bool                     profiler_measure_per_kernel  = false,
         bool                     verbose                      = false,
@@ -74,7 +74,7 @@ struct XSIGMA_VISIBILITY ExperimentalConfig
         bool                     expose_kineto_event_metadata = false,
         std::string              custom_profiler_config       = "",
         bool                     adjust_timestamps            = false);
-    XSIGMA_API explicit operator bool() const;
+    QUARISMA_API explicit operator bool() const;
 
     std::vector<std::string> profiler_metrics;
     bool                     profiler_measure_per_kernel;
@@ -108,7 +108,7 @@ struct XSIGMA_VISIBILITY ExperimentalConfig
    * profiler was enabled, similar to on_demand mode */
     bool profile_all_threads;
 
-    /* controls whether overload names are queried from an XSigma
+    /* controls whether overload names are queried from an Quarisma
    * function schema and stored in the profile  */
     bool capture_overload_names;
 
@@ -119,7 +119,7 @@ struct XSIGMA_VISIBILITY ExperimentalConfig
     bool record_python_gc_info;
 
     /* controls whether KinetoEvent metadata is exposed to FunctionEvent
-   * in the XSigma Profiler as a JSON string */
+   * in the Quarisma Profiler as a JSON string */
     bool expose_kineto_event_metadata;
 
     /*
@@ -141,9 +141,9 @@ struct XSIGMA_VISIBILITY ExperimentalConfig
     bool adjust_timestamps;
 };
 
-struct XSIGMA_VISIBILITY ProfilerConfig
+struct QUARISMA_VISIBILITY ProfilerConfig
 {
-    XSIGMA_API explicit ProfilerConfig(
+    QUARISMA_API explicit ProfilerConfig(
         ProfilerState      state,
         bool               report_input_shapes = false,
         bool               profile_memory      = false,
@@ -153,9 +153,9 @@ struct XSIGMA_VISIBILITY ProfilerConfig
         ExperimentalConfig experimental_config = ExperimentalConfig(),
         std::string        trace_id            = "");
 
-    XSIGMA_API bool disabled() const;
-    XSIGMA_API bool global() const;
-    XSIGMA_API bool pushGlobalCallbacks() const;
+    QUARISMA_API bool disabled() const;
+    QUARISMA_API bool global() const;
+    QUARISMA_API bool pushGlobalCallbacks() const;
 
     ProfilerState      state;
     ExperimentalConfig experimental_config;
@@ -167,11 +167,11 @@ struct XSIGMA_VISIBILITY ProfilerConfig
     std::string        trace_id;
 
     // For serialization
-    static XSIGMA_API xsigma::IValue toIValue();
-    XSIGMA_API static ProfilerConfig fromIValue(const xsigma::IValue& profilerConfigIValue);
+    static QUARISMA_API quarisma::IValue toIValue();
+    QUARISMA_API static ProfilerConfig fromIValue(const quarisma::IValue& profilerConfigIValue);
 };
 
-struct XSIGMA_VISIBILITY MemoryReportingInfoBase : public DebugInfoBase
+struct QUARISMA_VISIBILITY MemoryReportingInfoBase : public DebugInfoBase
 {
     /**
    * alloc_size corresponds to the size of the ptr.
@@ -186,7 +186,7 @@ struct XSIGMA_VISIBILITY MemoryReportingInfoBase : public DebugInfoBase
         int64_t               alloc_size,
         size_t                total_allocated,
         size_t                total_reserved,
-        xsigma::device_option device) = 0;
+        quarisma::device_option device) = 0;
 
     virtual void reportOutOfMemory(
         int64_t alloc_size, size_t total_allocated, size_t total_reserved, device_option device) {};
@@ -197,25 +197,25 @@ struct XSIGMA_VISIBILITY MemoryReportingInfoBase : public DebugInfoBase
 // ----------------------------------------------------------------------------
 // -- Profiler base class -----------------------------------------------------
 // ----------------------------------------------------------------------------
-struct XSIGMA_VISIBILITY ProfilerStateBase : public MemoryReportingInfoBase
+struct QUARISMA_VISIBILITY ProfilerStateBase : public MemoryReportingInfoBase
 {
-    XSIGMA_API explicit ProfilerStateBase(ProfilerConfig config);
+    QUARISMA_API explicit ProfilerStateBase(ProfilerConfig config);
     ProfilerStateBase(const ProfilerStateBase&)            = delete;
     ProfilerStateBase(ProfilerStateBase&&)                 = delete;
     ProfilerStateBase& operator=(const ProfilerStateBase&) = delete;
     ProfilerStateBase& operator=(ProfilerStateBase&&)      = delete;
-    XSIGMA_API ~ProfilerStateBase() override;
+    QUARISMA_API ~ProfilerStateBase() override;
 
-    XSIGMA_API static ProfilerStateBase* get(bool global);
+    QUARISMA_API static ProfilerStateBase* get(bool global);
     static ProfilerStateBase*            get()
     {
         auto* out = get(/*global=*/true);
         return out ? out : get(/*global=*/false);
     }
 
-    XSIGMA_API static void push(std::shared_ptr<ProfilerStateBase>&& state);
+    QUARISMA_API static void push(std::shared_ptr<ProfilerStateBase>&& state);
 
-    XSIGMA_API static std::shared_ptr<ProfilerStateBase> pop(bool global);
+    QUARISMA_API static std::shared_ptr<ProfilerStateBase> pop(bool global);
     static std::shared_ptr<ProfilerStateBase>            pop()
     {
         auto out = pop(/*global=*/true);
@@ -224,8 +224,8 @@ struct XSIGMA_VISIBILITY ProfilerStateBase : public MemoryReportingInfoBase
 
     const ProfilerConfig& config() const { return config_; }
 
-    XSIGMA_API void setCallbackHandle(xsigma::CallbackHandle handle);
-    XSIGMA_API void removeCallback();
+    QUARISMA_API void setCallbackHandle(quarisma::CallbackHandle handle);
+    QUARISMA_API void removeCallback();
 
     bool memoryProfilingEnabled() const override { return config_.profile_memory; }
 
@@ -237,12 +237,12 @@ protected:
     // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
     ProfilerConfig config_ = ProfilerConfig(ProfilerState::Disabled);
     // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
-    xsigma::CallbackHandle handle_ = 0;
+    quarisma::CallbackHandle handle_ = 0;
 };
 
 // Note: The following are only for the active *thread local* profiler.
-XSIGMA_API bool               profilerEnabled();
-XSIGMA_API ActiveProfilerType profilerType();
-XSIGMA_API ProfilerConfig     getProfilerConfig();
+QUARISMA_API bool               profilerEnabled();
+QUARISMA_API ActiveProfilerType profilerType();
+QUARISMA_API ProfilerConfig     getProfilerConfig();
 
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl

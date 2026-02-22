@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -8,14 +8,14 @@
  * Tests statistics calculation, aggregation, and output formatting
  */
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "profiler/native/analysis/stat_summarizer_options.h"
 #include "profiler/native/analysis/stats_calculator.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // Test stats_calculator initialization
-XSIGMATEST(Profiler, stats_calculator_default_initialization)
+QUARISMATEST(Profiler, stats_calculator_default_initialization)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -25,7 +25,7 @@ XSIGMATEST(Profiler, stats_calculator_default_initialization)
 }
 
 // Test stats_calculator with custom options
-XSIGMATEST(Profiler, stats_calculator_custom_options)
+QUARISMATEST(Profiler, stats_calculator_custom_options)
 {
     stat_summarizer_options options;
     options.show_time     = false;
@@ -37,7 +37,7 @@ XSIGMATEST(Profiler, stats_calculator_custom_options)
 }
 
 // Test update_run_total_us single update
-XSIGMATEST(Profiler, stats_calculator_update_run_total_single)
+QUARISMATEST(Profiler, stats_calculator_update_run_total_single)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -48,7 +48,7 @@ XSIGMATEST(Profiler, stats_calculator_update_run_total_single)
 }
 
 // Test update_run_total_us multiple updates
-XSIGMATEST(Profiler, stats_calculator_update_run_total_multiple)
+QUARISMATEST(Profiler, stats_calculator_update_run_total_multiple)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -64,7 +64,7 @@ XSIGMATEST(Profiler, stats_calculator_update_run_total_multiple)
 }
 
 // Test update_memory_used
-XSIGMATEST(Profiler, stats_calculator_update_memory_used)
+QUARISMATEST(Profiler, stats_calculator_update_memory_used)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -76,7 +76,7 @@ XSIGMATEST(Profiler, stats_calculator_update_memory_used)
 }
 
 // Test add_node_stats single node
-XSIGMATEST(Profiler, stats_calculator_add_node_stats_single)
+QUARISMATEST(Profiler, stats_calculator_add_node_stats_single)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -89,7 +89,7 @@ XSIGMATEST(Profiler, stats_calculator_add_node_stats_single)
 }
 
 // Test add_node_stats multiple nodes
-XSIGMATEST(Profiler, stats_calculator_add_node_stats_multiple)
+QUARISMATEST(Profiler, stats_calculator_add_node_stats_multiple)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -103,7 +103,7 @@ XSIGMATEST(Profiler, stats_calculator_add_node_stats_multiple)
 }
 
 // Test add_node_stats accumulation
-XSIGMATEST(Profiler, stats_calculator_add_node_stats_accumulation)
+QUARISMATEST(Profiler, stats_calculator_add_node_stats_accumulation)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -120,7 +120,7 @@ XSIGMATEST(Profiler, stats_calculator_add_node_stats_accumulation)
 }
 
 // Test get_output_string empty
-XSIGMATEST(Profiler, stats_calculator_get_output_string_empty)
+QUARISMATEST(Profiler, stats_calculator_get_output_string_empty)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -130,7 +130,7 @@ XSIGMATEST(Profiler, stats_calculator_get_output_string_empty)
 }
 
 // Test get_output_string with data
-XSIGMATEST(Profiler, stats_calculator_get_output_string_with_data)
+QUARISMATEST(Profiler, stats_calculator_get_output_string_with_data)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -145,7 +145,7 @@ XSIGMATEST(Profiler, stats_calculator_get_output_string_with_data)
 }
 
 // Test get_short_summary
-XSIGMATEST(Profiler, stats_calculator_get_short_summary)
+QUARISMATEST(Profiler, stats_calculator_get_short_summary)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -157,7 +157,7 @@ XSIGMATEST(Profiler, stats_calculator_get_short_summary)
 }
 
 // Test get_stats_by_node_type empty
-XSIGMATEST(Profiler, stats_calculator_get_stats_by_node_type_empty)
+QUARISMATEST(Profiler, stats_calculator_get_stats_by_node_type_empty)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -167,7 +167,7 @@ XSIGMATEST(Profiler, stats_calculator_get_stats_by_node_type_empty)
 }
 
 // Test get_stats_by_node_type with data
-XSIGMATEST(Profiler, stats_calculator_get_stats_by_node_type_with_data)
+QUARISMATEST(Profiler, stats_calculator_get_stats_by_node_type_with_data)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -182,7 +182,7 @@ XSIGMATEST(Profiler, stats_calculator_get_stats_by_node_type_with_data)
 }
 
 // Test compute_stats_by_type
-XSIGMATEST(Profiler, stats_calculator_compute_stats_by_type)
+QUARISMATEST(Profiler, stats_calculator_compute_stats_by_type)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -205,7 +205,7 @@ XSIGMATEST(Profiler, stats_calculator_compute_stats_by_type)
 }
 
 // Test get_stats_by_metric BY_NAME
-XSIGMATEST(Profiler, stats_calculator_get_stats_by_metric_by_name)
+QUARISMATEST(Profiler, stats_calculator_get_stats_by_metric_by_name)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -220,7 +220,7 @@ XSIGMATEST(Profiler, stats_calculator_get_stats_by_metric_by_name)
 }
 
 // Test get_stats_by_metric BY_TIME
-XSIGMATEST(Profiler, stats_calculator_get_stats_by_metric_by_time)
+QUARISMATEST(Profiler, stats_calculator_get_stats_by_metric_by_time)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -235,7 +235,7 @@ XSIGMATEST(Profiler, stats_calculator_get_stats_by_metric_by_time)
 }
 
 // Test get_stats_by_metric BY_MEMORY
-XSIGMATEST(Profiler, stats_calculator_get_stats_by_metric_by_memory)
+QUARISMATEST(Profiler, stats_calculator_get_stats_by_metric_by_memory)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -250,7 +250,7 @@ XSIGMATEST(Profiler, stats_calculator_get_stats_by_metric_by_memory)
 }
 
 // Test get_stats_by_metric BY_TYPE
-XSIGMATEST(Profiler, stats_calculator_get_stats_by_metric_by_type)
+QUARISMATEST(Profiler, stats_calculator_get_stats_by_metric_by_type)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -265,7 +265,7 @@ XSIGMATEST(Profiler, stats_calculator_get_stats_by_metric_by_type)
 }
 
 // Test large dataset
-XSIGMATEST(Profiler, stats_calculator_large_dataset)
+QUARISMATEST(Profiler, stats_calculator_large_dataset)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -284,7 +284,7 @@ XSIGMATEST(Profiler, stats_calculator_large_dataset)
 }
 
 // Test CSV format output
-XSIGMATEST(Profiler, stats_calculator_csv_format)
+QUARISMATEST(Profiler, stats_calculator_csv_format)
 {
     stat_summarizer_options options;
     options.format_as_csv = true;
@@ -299,7 +299,7 @@ XSIGMATEST(Profiler, stats_calculator_csv_format)
 }
 
 // Test run_total_us statistics
-XSIGMATEST(Profiler, stats_calculator_run_total_us_statistics)
+QUARISMATEST(Profiler, stats_calculator_run_total_us_statistics)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -316,7 +316,7 @@ XSIGMATEST(Profiler, stats_calculator_run_total_us_statistics)
 }
 
 // Test node detail access
-XSIGMATEST(Profiler, stats_calculator_node_detail_access)
+QUARISMATEST(Profiler, stats_calculator_node_detail_access)
 {
     stat_summarizer_options options;
     stats_calculator        calc(options);
@@ -331,4 +331,4 @@ XSIGMATEST(Profiler, stats_calculator_node_detail_access)
     EXPECT_EQ(detail.run_order, 5);
     EXPECT_EQ(detail.times_called, 1);
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

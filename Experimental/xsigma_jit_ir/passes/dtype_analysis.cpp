@@ -1,21 +1,21 @@
-#include <XSigma/core/function_schema.h>
-#include <XSigma/core/jit_type.h>
-#include <XSigma/core/symbol.h>
+#include <Quarisma/core/function_schema.h>
+#include <Quarisma/core/jit_type.h>
+#include <Quarisma/core/symbol.h>
 #include <torch/csrc/jit/ir/alias_analysis.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/dtype_analysis.h>
 #include <torch/csrc/jit/passes/utils/op_registry.h>
 #include <torch/library.h>
-#include <xsigma/core/ScalarType.h>
-#include <xsigma/util/ArrayRef.h>
+#include <quarisma/core/ScalarType.h>
+#include <quarisma/util/ArrayRef.h>
 
 #include <optional>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/empty.h>
+#include <Quarisma/ops/empty.h>
 #endif
 
 #include <algorithm>
@@ -28,8 +28,8 @@ namespace torch::jit
 namespace
 {
 
-using Tensor     = xsigma::Tensor;
-using ScalarType = xsigma::ScalarType;
+using Tensor     = quarisma::Tensor;
+using ScalarType = quarisma::ScalarType;
 
 // ----------------------------------------------------------------------------------
 // Metatensor Inference for Dtype
@@ -47,8 +47,8 @@ std::unique_ptr<Stack> MTensorArgumentCreator(Node* n)
             auto rank        = tp->symbolic_sizes().rank();  // Validity checked earlier
             auto tensor_size = std::vector<int64_t>(rank.value(), 1);
             stack->emplace_back(
-                xsigma::empty(
-                    tensor_size, xsigma::TensorOptions(xsigma::kMeta).dtype(*tp->scalarType())));
+                quarisma::empty(
+                    tensor_size, quarisma::TensorOptions(quarisma::kMeta).dtype(*tp->scalarType())));
             continue;
         }
         // Someday Todo: Fill in concrete values that we know.
@@ -189,7 +189,7 @@ bool setIfAllDtypeMatch(Node* n)
     // Sets all tensor outputs to the dtype of the first input
     // only if all inputs are the same dtype, otherwise do nothing
     TORCH_INTERNAL_ASSERT(!n->inputs().empty());
-    auto first_arg   = n->inputs().xsigma(0);
+    auto first_arg   = n->inputs().quarisma(0);
     auto tensor_type = first_arg->type()->cast<TensorType>();
     TORCH_INTERNAL_ASSERT(tensor_type, "Expecting a tensor type");
     auto scalar_type = tensor_type->scalarType();
@@ -238,11 +238,11 @@ struct DtypePropagationPass
         buildDtypeRuleRegistry();
     }
 
-    // returns true if xsigma least one node has its scalar type set on a tensor node
+    // returns true if quarisma least one node has its scalar type set on a tensor node
     bool run() { return processBlocks(graph_->block()); }
 
 private:
-    bool processBlocks(xsigma::ArrayRef<Block*> blocks)
+    bool processBlocks(quarisma::ArrayRef<Block*> blocks)
     {
         bool changed = false;
         for (auto block : blocks)
@@ -314,7 +314,7 @@ private:
     }
 
     bool mergeTensorProperties(
-        const xsigma::ArrayRef<Value*>& list1, const xsigma::ArrayRef<Value*>& list2)
+        const quarisma::ArrayRef<Value*>& list1, const quarisma::ArrayRef<Value*>& list2)
     {
         // This is currently a placeholder for MobileNet
         // After Month1: implement the merge function
@@ -327,8 +327,8 @@ private:
         GRAPH_DEBUG("processIf");
         bool changed     = false;
         auto blocks      = node->blocks();
-        auto true_block  = blocks.xsigma(0);
-        auto false_block = blocks.xsigma(1);
+        auto true_block  = blocks.quarisma(0);
+        auto false_block = blocks.quarisma(1);
 
         changed |= processBlock(true_block);
         changed |= processBlock(false_block);

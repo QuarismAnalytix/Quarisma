@@ -14,7 +14,7 @@
 #include "memory/cpu/allocator.h"
 #include "memory/unified_memory_stats.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -27,7 +27,7 @@ namespace xsigma
  * **Thread Safety**: Not thread-safe - external synchronization required
  * **Performance**: O(n) where n is the number of data points
  */
-class XSIGMA_VISIBILITY ascii_visualizer
+class QUARISMA_VISIBILITY ascii_visualizer
 {
 public:
     /**
@@ -109,7 +109,7 @@ public:
      * 1KB - 2KB           |        30 | ██████
      * ```
      */
-    XSIGMA_API std::string create_histogram(const std::vector<size_t>& allocation_sizes) const;
+    QUARISMA_API std::string create_histogram(const std::vector<size_t>& allocation_sizes) const;
 
     /**
      * @brief Create timeline visualization of memory usage
@@ -128,7 +128,7 @@ public:
      *     0.30 |        1.00 | FREE 512000 bytes
      * ```
      */
-    XSIGMA_API std::string create_timeline(const std::vector<timeline_point>& timeline_data) const;
+    QUARISMA_API std::string create_timeline(const std::vector<timeline_point>& timeline_data) const;
 
     /**
      * @brief Create fragmentation analysis visualization
@@ -149,7 +149,7 @@ public:
      * ████░░▓▓████░░░░████▓▓░░████
      * ```
      */
-    XSIGMA_API std::string create_fragmentation_map(
+    QUARISMA_API std::string create_fragmentation_map(
         const memory_fragmentation_metrics& metrics) const;
 
     /**
@@ -161,7 +161,7 @@ public:
      * 
      * Shows current vs peak vs limit memory usage as horizontal bars.
      */
-    XSIGMA_API std::string create_usage_bars(
+    QUARISMA_API std::string create_usage_bars(
         size_t current_usage, size_t peak_usage, size_t limit_usage = 0) const;
 
     /**
@@ -171,7 +171,7 @@ public:
      * 
      * Displays allocation performance metrics in tabular format.
      */
-    XSIGMA_API std::string create_performance_summary(
+    QUARISMA_API std::string create_performance_summary(
         const allocation_timing_stats& timing_stats) const;
 
     /**
@@ -182,7 +182,7 @@ public:
      * Helper function to convert allocator tracking records into
      * timeline visualization format.
      */
-    static XSIGMA_API std::vector<timeline_point> convert_records_to_timeline(
+    static QUARISMA_API std::vector<timeline_point> convert_records_to_timeline(
         const std::vector<alloc_record>& records);
 
     /**
@@ -193,7 +193,7 @@ public:
      * 
      * Creates logarithmic size buckets for histogram visualization.
      */
-    static XSIGMA_API std::vector<size_bucket> create_size_buckets(
+    static QUARISMA_API std::vector<size_bucket> create_size_buckets(
         const std::vector<size_t>& allocation_sizes, size_t num_buckets = 0);
 
     /**
@@ -253,4 +253,4 @@ private:
     std::string create_layout_visualization(const memory_layout& layout) const;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

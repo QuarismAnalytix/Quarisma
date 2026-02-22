@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -11,16 +11,16 @@
 #include <string>
 #include <thread>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "profiler/native/memory/scoped_memory_debug_annotation.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // ============================================================================
 // Basic Constructor Tests
 // ============================================================================
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, constructor_with_op_name)
+QUARISMATEST(ScopedMemoryDebugAnnotation, constructor_with_op_name)
 {
     {
         scoped_memory_debug_annotation annotation("test_op");
@@ -37,7 +37,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, constructor_with_op_name)
     EXPECT_EQ(current.pending_op_name, nullptr);
 }
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, constructor_with_op_name_and_step_id)
+QUARISMATEST(ScopedMemoryDebugAnnotation, constructor_with_op_name_and_step_id)
 {
     {
         scoped_memory_debug_annotation annotation("test_op", 42);
@@ -55,7 +55,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, constructor_with_op_name_and_step_id)
     EXPECT_EQ(current.pending_step_id, 0);
 }
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, constructor_with_region_and_shape)
+QUARISMATEST(ScopedMemoryDebugAnnotation, constructor_with_region_and_shape)
 {
     auto shape_func = []() { return "shape[10,20]"; };
 
@@ -76,7 +76,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, constructor_with_region_and_shape)
     EXPECT_EQ(current.pending_region_type, nullptr);
 }
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, constructor_with_all_parameters)
+QUARISMATEST(ScopedMemoryDebugAnnotation, constructor_with_all_parameters)
 {
     auto shape_func = []() { return "shape[5,10,15]"; };
 
@@ -102,7 +102,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, constructor_with_all_parameters)
 // Nested Annotation Tests
 // ============================================================================
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, nested_annotations_basic)
+QUARISMATEST(ScopedMemoryDebugAnnotation, nested_annotations_basic)
 {
     {
         scoped_memory_debug_annotation outer("outer_op");
@@ -125,7 +125,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, nested_annotations_basic)
     EXPECT_EQ(current.pending_op_name, nullptr);
 }
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, nested_annotations_with_step_id)
+QUARISMATEST(ScopedMemoryDebugAnnotation, nested_annotations_with_step_id)
 {
     {
         scoped_memory_debug_annotation outer("outer_op", 10);
@@ -147,7 +147,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, nested_annotations_with_step_id)
     }
 }
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, nested_annotations_preserve_parent_op_name)
+QUARISMATEST(ScopedMemoryDebugAnnotation, nested_annotations_preserve_parent_op_name)
 {
     auto shape_func = []() { return "shape[1,2,3]"; };
 
@@ -175,7 +175,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, nested_annotations_preserve_parent_op_na
     }
 }
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, nested_annotations_no_parent_op_name)
+QUARISMATEST(ScopedMemoryDebugAnnotation, nested_annotations_no_parent_op_name)
 {
     auto shape_func = []() { return "shape[4,5,6]"; };
 
@@ -195,7 +195,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, nested_annotations_no_parent_op_name)
 // Thread-Local Storage Tests
 // ============================================================================
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, thread_local_isolation)
+QUARISMATEST(ScopedMemoryDebugAnnotation, thread_local_isolation)
 {
     std::string thread1_op;
     std::string thread2_op;
@@ -229,7 +229,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, thread_local_isolation)
 // Shape Function Tests
 // ============================================================================
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, default_shape_function)
+QUARISMATEST(ScopedMemoryDebugAnnotation, default_shape_function)
 {
     {
         scoped_memory_debug_annotation annotation("test_op");
@@ -240,7 +240,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, default_shape_function)
     }
 }
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, custom_shape_function)
+QUARISMATEST(ScopedMemoryDebugAnnotation, custom_shape_function)
 {
     auto shape_func = []() { return "custom_shape[100,200,300]"; };
 
@@ -252,7 +252,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, custom_shape_function)
     }
 }
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, shape_function_with_capture)
+QUARISMATEST(ScopedMemoryDebugAnnotation, shape_function_with_capture)
 {
     int  dim1 = 10, dim2 = 20, dim3 = 30;
     auto shape_func = [dim1, dim2, dim3]()
@@ -273,7 +273,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, shape_function_with_capture)
 // Edge Cases and Boundary Tests
 // ============================================================================
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, zero_step_id)
+QUARISMATEST(ScopedMemoryDebugAnnotation, zero_step_id)
 {
     {
         scoped_memory_debug_annotation annotation("test_op", 0);
@@ -284,7 +284,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, zero_step_id)
     }
 }
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, negative_step_id)
+QUARISMATEST(ScopedMemoryDebugAnnotation, negative_step_id)
 {
     {
         scoped_memory_debug_annotation annotation("test_op", -1);
@@ -295,7 +295,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, negative_step_id)
     }
 }
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, large_step_id)
+QUARISMATEST(ScopedMemoryDebugAnnotation, large_step_id)
 {
     {
         scoped_memory_debug_annotation annotation("test_op", 9223372036854775807LL);
@@ -306,7 +306,7 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, large_step_id)
     }
 }
 
-XSIGMATEST(ScopedMemoryDebugAnnotation, zero_data_type)
+QUARISMATEST(ScopedMemoryDebugAnnotation, zero_data_type)
 {
     auto shape_func = []() { return ""; };
 
@@ -317,4 +317,4 @@ XSIGMATEST(ScopedMemoryDebugAnnotation, zero_data_type)
         EXPECT_EQ(current.pending_data_type, 0);
     }
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

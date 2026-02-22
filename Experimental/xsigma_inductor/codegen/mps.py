@@ -75,7 +75,7 @@ class MetalExprPrinter(ExprPrinter_):
         x = self.doprint(x)
         div = self.doprint(div)
         if expr.is_integer:
-            return f"xsigma::metal::floor_divide({x}, {div})"
+            return f"quarisma::metal::floor_divide({x}, {div})"
         return f"metal::floor({x}) / ({div})"
 
     def _print_ModularIndexing(self, expr: sympy.Expr) -> str:
@@ -211,19 +211,19 @@ class MetalOverrides(OpOverrides):
 
     @staticmethod
     def remainder(a: OpVarT, b: OpVarT) -> str:
-        return f"xsigma::metal::remainder({a}, {b})"
+        return f"quarisma::metal::remainder({a}, {b})"
 
     @staticmethod
     def maximum(a: CSEVariable, b: CSEVariable) -> str:
         typecast_a = f"static_cast<decltype({a}+{b})>({a})"
         typecast_b = f"static_cast<decltype({a}+{b})>({b})"
-        return f"xsigma::metal::max({typecast_a}, {typecast_b})"
+        return f"quarisma::metal::max({typecast_a}, {typecast_b})"
 
     @staticmethod
     def minimum(a: CSEVariable, b: CSEVariable) -> str:
         typecast_a = f"static_cast<decltype({a}+{b})>({a})"
         typecast_b = f"static_cast<decltype({a}+{b})>({b})"
-        return f"xsigma::metal::min({typecast_a}, {typecast_b})"
+        return f"quarisma::metal::min({typecast_a}, {typecast_b})"
 
     @staticmethod
     def logical_or(a: CSEVariable, b: CSEVariable) -> str:
@@ -263,7 +263,7 @@ class MetalOverrides(OpOverrides):
 
     @staticmethod
     def sinc(x: CSEVariable) -> str:
-        return f"xsigma::metal::sinc({x})"
+        return f"quarisma::metal::sinc({x})"
 
     @staticmethod
     def cos(x: CSEVariable) -> str:
@@ -314,7 +314,7 @@ class MetalOverrides(OpOverrides):
     @staticmethod
     def floordiv(a: CSEVariable, b: CSEVariable) -> str:
         # a and b must be of integer type
-        return f"xsigma::metal::floor_divide({a}, {b})"
+        return f"quarisma::metal::floor_divide({a}, {b})"
 
     @staticmethod
     def floor(x: CSEVariable) -> str:
@@ -350,19 +350,19 @@ class MetalOverrides(OpOverrides):
     @staticmethod
     def rand(seed: CSEVariable, offset: CSEVariable) -> str:
         V.kernel.headers.add("random")
-        return f"xsigma::metal::rand({seed}, {offset})"
+        return f"quarisma::metal::rand({seed}, {offset})"
 
     @staticmethod
     def randn(seed: CSEVariable, offset: CSEVariable) -> str:
         V.kernel.headers.add("random")
-        return f"xsigma::metal::randn({seed}, {offset})"
+        return f"quarisma::metal::randn({seed}, {offset})"
 
     @staticmethod
     def randint64(
         seed: CSEVariable, offset: CSEVariable, low: CSEVariable, high: CSEVariable
     ) -> str:
         V.kernel.headers.add("random")
-        return f"xsigma::metal::randint64({seed}, {offset}, {low}, {high})"
+        return f"quarisma::metal::randint64({seed}, {offset}, {low}, {high})"
 
     @staticmethod
     def round(x: CSEVariable) -> str:
@@ -376,11 +376,11 @@ class MetalOverrides(OpOverrides):
 
     def _special_unary(self, a: CSEVariable, name: str) -> str:
         V.kernel.headers.add("special_math")
-        return f"xsigma::metal::{name}({a})"
+        return f"quarisma::metal::{name}({a})"
 
     def _special_binary(self, a: CSEVariable, b: CSEVariable, name: str) -> str:
         V.kernel.headers.add("special_math")
-        return f"xsigma::metal::{name}({a}, {b})"
+        return f"quarisma::metal::{name}({a}, {b})"
 
     @classmethod
     def _initialize_special_ops(cls) -> None:
@@ -502,7 +502,7 @@ class MetalKernel(SIMDKernel):
             line = f"{var}[{self.index_to_str(index)}] = {cast_val};"
         elif mode == "atomic_add":
             self.headers.add("atomic")
-            atomic_type = f"xsigma::metal::AtomicType<{dtype_str}>"
+            atomic_type = f"quarisma::metal::AtomicType<{dtype_str}>"
             cast_var = f"reinterpret_cast<device {atomic_type}::type *>({var})"
             line = f"{atomic_type}::atomic_add({cast_var}, {self.index_to_str(index)}, {cast_val});"
         else:
@@ -641,7 +641,7 @@ class MetalKernel(SIMDKernel):
 
             return self.cse.generate(
                 self.stores,
-                f"xsigma::metal::threadgroup_{reduction_type}({acc_buf}, {val}, {reduction_idx}, {acc_buf_size_str})",
+                f"quarisma::metal::threadgroup_{reduction_type}({acc_buf}, {val}, {reduction_idx}, {acc_buf_size_str})",
                 dtype=DTYPE_TO_COMPUTATION_DTYPE[dtype],
             )
         if reduction_type in ["max", "min"]:
@@ -657,11 +657,11 @@ class MetalKernel(SIMDKernel):
                     src_dtype, default_value=limit_val, is_threadgroup=False
                 )
                 self.compute.splice(
-                    f"{val} = ::xsigma::metal::{reduction_type}({val}, {cast_value});"
+                    f"{val} = ::quarisma::metal::{reduction_type}({val}, {cast_value});"
                 )
             return self.cse.generate(
                 self.stores,
-                f"xsigma::metal::threadgroup_{reduction_type}({acc_buf}, {val}, {reduction_idx}, {acc_buf_size_str})",
+                f"quarisma::metal::threadgroup_{reduction_type}({acc_buf}, {val}, {reduction_idx}, {acc_buf_size_str})",
                 dtype=DTYPE_TO_COMPUTATION_DTYPE[dtype],
             )
         if reduction_type in ["argmin", "argmax"]:
@@ -700,7 +700,7 @@ class MetalKernel(SIMDKernel):
                 """)
             return self.cse.generate(
                 self.stores,
-                f"xsigma::metal::threadgroup_{reduction_type}({data_acc_buf}, {idx_acc_buf}, "
+                f"quarisma::metal::threadgroup_{reduction_type}({data_acc_buf}, {idx_acc_buf}, "
                 f"{val}, {idx_val}, {reduction_idx}, {acc_buf_size_str})",
                 dtype=dtype,
             )
@@ -710,7 +710,7 @@ class MetalKernel(SIMDKernel):
                 self.compute.splice(f"{acc_buf}[{reduction_idx}] = {value};")
                 wf_res = self.cse.generate(
                     self.compute,
-                    f"xsigma::metal::threadgroup_{reduction_type}({acc_buf}, {acc_buf_size_str})",
+                    f"quarisma::metal::threadgroup_{reduction_type}({acc_buf}, {acc_buf_size_str})",
                     dtype=torch.float32,
                 )
                 return _unwrap_helper(wf_res)
@@ -718,11 +718,11 @@ class MetalKernel(SIMDKernel):
             acc_thread_var = f"{acc_buf}[{reduction_idx}]"
             self.indexing_code.splice(f"{acc_thread_var} = 0.0;")
             self.compute.writeline(
-                f"{acc_thread_var} = ::xsigma::metal::welford_combine({acc_thread_var}, float3({value}, 0.0, 1.0));"
+                f"{acc_thread_var} = ::quarisma::metal::welford_combine({acc_thread_var}, float3({value}, 0.0, 1.0));"
             )
             wf_res = self.cse.generate(
                 self.stores,
-                f"xsigma::metal::threadgroup_welford_combine({acc_buf}, {acc_buf_size})",
+                f"quarisma::metal::threadgroup_welford_combine({acc_buf}, {acc_buf_size})",
                 dtype=torch.float32,
             )
             return _unwrap_helper(wf_res)
@@ -735,13 +735,13 @@ class MetalKernel(SIMDKernel):
             if self.multistage_reduction_entry:
                 self.indexing_code.splice(f"{acc_thread_var} = 0.0;")
                 self.compute.writeline(
-                    f"{acc_thread_var} = ::xsigma::metal::welford_combine({acc_thread_var}, {inp_value});"
+                    f"{acc_thread_var} = ::quarisma::metal::welford_combine({acc_thread_var}, {inp_value});"
                 )
             else:
                 self.compute.writeline(f"{acc_thread_var} = {inp_value};")
             wf_res = self.cse.generate(
                 self.stores if self.multistage_reduction_entry else self.compute,
-                f"xsigma::metal::threadgroup_{reduction_type}({acc_buf}, {acc_buf_size_str})",
+                f"quarisma::metal::threadgroup_{reduction_type}({acc_buf}, {acc_buf_size_str})",
                 dtype=torch.float32,
             )
             return _unwrap_helper(wf_res)
@@ -803,7 +803,7 @@ class MetalKernel(SIMDKernel):
         Concat output code from index_code, loads, compute, stores,
         suffix into self.body.
 
-        For pointwise kernels, this is called just once xsigma the end.
+        For pointwise kernels, this is called just once quarisma the end.
 
         For reduction kernels, this generates a loop over the reduction
         axis.
@@ -836,7 +836,7 @@ class MetalKernel(SIMDKernel):
         self.stores.clear()
 
     def codegen_kernel(self, name: Optional[str] = None) -> str:
-        """Called xsigma the end to generate a final kernel string"""
+        """Called quarisma the end to generate a final kernel string"""
         self.codegen_body()
         code = IndentedBuffer()
 
@@ -849,10 +849,10 @@ class MetalKernel(SIMDKernel):
         with code.indent():
             if not V.graph.cpp_wrapper:
                 for header in self.headers:
-                    code.writeline(f"#include <xsigma/metal/{header}.h>")
+                    code.writeline(f"#include <quarisma/metal/{header}.h>")
             else:
                 headers = [
-                    f"#include <xsigma/metal/{header}.h>" for header in self.headers
+                    f"#include <quarisma/metal/{header}.h>" for header in self.headers
                 ]
                 header_contents = _embed_headers(
                     headers,

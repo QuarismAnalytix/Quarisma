@@ -1,21 +1,21 @@
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
-#include <XSigma/Context.h>
-#include <XSigma/EmptyTensor.h>
-#include <XSigma/MemoryOverlap.h>
-#include <XSigma/core/Tensor.h>
+#include <Quarisma/Context.h>
+#include <Quarisma/EmptyTensor.h>
+#include <Quarisma/MemoryOverlap.h>
+#include <Quarisma/core/Tensor.h>
 #include <c10/core/Storage.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/CPUFunctions.h>
-#include <XSigma/Functions.h>
-#include <XSigma/NativeFunctions.h>
+#include <Quarisma/CPUFunctions.h>
+#include <Quarisma/Functions.h>
+#include <Quarisma/NativeFunctions.h>
 #else
-#include <XSigma/ops/_debug_has_internal_overlap_native.h>
-#include <XSigma/ops/_pin_memory.h>
-#include <XSigma/ops/_pin_memory_native.h>
-#include <XSigma/ops/empty_cpu_dispatch.h>
-#include <XSigma/ops/is_pinned_native.h>
-#include <XSigma/ops/pin_memory_native.h>
+#include <Quarisma/ops/_debug_has_internal_overlap_native.h>
+#include <Quarisma/ops/_pin_memory.h>
+#include <Quarisma/ops/_pin_memory_native.h>
+#include <Quarisma/ops/empty_cpu_dispatch.h>
+#include <Quarisma/ops/is_pinned_native.h>
+#include <Quarisma/ops/pin_memory_native.h>
 #endif
 
 namespace at::native

@@ -1,11 +1,11 @@
 # =============================================================================
-# XSigma Security Library BUILD Configuration
+# Quarisma Security Library BUILD Configuration
 # =============================================================================
 # Security library for cryptographic operations
 # Equivalent to Library/Security/CMakeLists.txt
 # =============================================================================
 
-load("//bazel:xsigma.bzl", "xsigma_copts", "xsigma_defines", "xsigma_linkopts")
+load("//bazel:quarisma.bzl", "quarisma_copts", "quarisma_defines", "quarisma_linkopts")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -39,16 +39,16 @@ cc_library(
     name = "Security",
     srcs = [":security_srcs"],
     hdrs = [":security_hdrs"],
-    copts = xsigma_copts() + select({
+    copts = quarisma_copts() + select({
         "@platforms//os:windows": ["/WX"],
         "//conditions:default": [],
     }),
-    defines = xsigma_defines() + select({
-        "//bazel:shared_libs": ["XSIGMA_SHARED_DEFINE", "XSIGMA_BUILDING_DLL"],
-        "//conditions:default": ["XSIGMA_STATIC_DEFINE"],
+    defines = quarisma_defines() + select({
+        "//bazel:shared_libs": ["QUARISMA_SHARED_DEFINE", "QUARISMA_BUILDING_DLL"],
+        "//conditions:default": ["QUARISMA_STATIC_DEFINE"],
     }),
     includes = ["."],
-    linkopts = xsigma_linkopts() + select({
+    linkopts = quarisma_linkopts() + select({
         "@platforms//os:windows": ["-DEFAULTLIB:bcrypt.lib"],
         "@platforms//os:macos": ["-framework Security"],
         "//conditions:default": [],

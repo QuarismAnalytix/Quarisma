@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,12 +18,12 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -44,7 +44,7 @@
 #include "memory/unified_memory_stats.h"
 #include "util/flat_hash.h"
 
-namespace xsigma
+namespace quarisma
 {
 /**
  * @brief Comprehensive memory allocation tracking and debugging wrapper.
@@ -67,7 +67,7 @@ namespace xsigma
  * - Minimal performance overhead when tracking disabled
  * - Comprehensive debugging information when enabled
  * - Safe lifecycle management with reference counting
- * - Integration with XSigma execution framework
+ * - Integration with Quarisma execution framework
  *
  * **Use Cases**:
  * - Operation-specific memory usage tracking
@@ -222,7 +222,7 @@ struct enhanced_alloc_record : public alloc_record
  * capabilities by wrapping any underlying Allocator implementation. Offers
  * detailed statistics, allocation records, and advanced debugging features.
  */
-class XSIGMA_VISIBILITY allocator_tracking : public Allocator
+class QUARISMA_VISIBILITY allocator_tracking : public Allocator
 {
 public:
     /**
@@ -240,7 +240,7 @@ public:
      * **Reference Counting**: Initializes with reference count of 1
      * **Performance Impact**: Enhanced tracking adds minimal overhead (~5-10%)
      */
-    XSIGMA_API explicit allocator_tracking(
+    QUARISMA_API explicit allocator_tracking(
         Allocator* allocator, bool track_sizes, bool enable_enhanced_tracking = true);
 
     /**
@@ -290,7 +290,7 @@ public:
      * **Statistics**: Updates all tracking metrics and records
      * **Reference Counting**: Increments reference count during allocation
      */
-    XSIGMA_API void* allocate_raw(
+    QUARISMA_API void* allocate_raw(
         size_t alignment, size_t num_bytes, const allocation_attributes& allocation_attr) override;
 
     /**
@@ -308,7 +308,7 @@ public:
      * **Reference Counting**: Decrements reference count, may trigger cleanup
      * **Statistics**: Updates bytes in use and allocation records
      */
-    XSIGMA_API void deallocate_raw(void* ptr) override;
+    QUARISMA_API void deallocate_raw(void* ptr) override;
 
     /**
      * @brief Indicates comprehensive allocation size tracking capability.
@@ -319,7 +319,7 @@ public:
      * **Local Tracking**: Provides tracking even for non-tracking allocators
      * **Thread Safety**: Thread-safe (returns constant)
      */
-    XSIGMA_API bool tracks_allocation_sizes() const noexcept override;
+    QUARISMA_API bool tracks_allocation_sizes() const noexcept override;
 
     /**
      * @brief Returns originally requested size for allocation.
@@ -331,7 +331,7 @@ public:
      * **Performance**: O(1) - hash table lookup or delegation
      * **Thread Safety**: Thread-safe with internal synchronization
      */
-    XSIGMA_API size_t RequestedSize(const void* ptr) const override;
+    QUARISMA_API size_t RequestedSize(const void* ptr) const override;
 
     /**
      * @brief Returns actual allocated size for allocation.
@@ -343,7 +343,7 @@ public:
      * **Performance**: O(1) - hash table lookup or delegation
      * **Thread Safety**: Thread-safe with internal synchronization
      */
-    XSIGMA_API size_t AllocatedSize(const void* ptr) const override;
+    QUARISMA_API size_t AllocatedSize(const void* ptr) const override;
 
     /**
      * @brief Returns unique allocation identifier.
@@ -355,7 +355,7 @@ public:
      * **Performance**: O(1) - hash table lookup or delegation
      * **Thread Safety**: Thread-safe with internal synchronization
      */
-    XSIGMA_API int64_t AllocationId(const void* ptr) const override;
+    QUARISMA_API int64_t AllocationId(const void* ptr) const override;
 
     /**
      * @brief Retrieves comprehensive tracking statistics.
@@ -366,7 +366,7 @@ public:
      * **Performance**: O(1) - returns cached statistics
      * **Thread Safety**: Thread-safe with internal synchronization
      */
-    XSIGMA_API std::optional<allocator_stats> GetStats() const override;
+    QUARISMA_API std::optional<allocator_stats> GetStats() const override;
 
     /**
      * @brief Resets tracking statistics while preserving allocations.
@@ -377,7 +377,7 @@ public:
      * **Performance**: O(1) - simple counter reset
      * **Thread Safety**: Thread-safe with internal synchronization
      */
-    XSIGMA_API bool ClearStats() override;
+    QUARISMA_API bool ClearStats() override;
 
     /**
      * @brief Returns memory type of underlying allocator.
@@ -415,7 +415,7 @@ public:
      * **Thread Safety**: Thread-safe with internal synchronization
      * **Use Cases**: Memory usage monitoring, performance analysis
      */
-    XSIGMA_API std::tuple<size_t, size_t, size_t> GetSizes() const;
+    QUARISMA_API std::tuple<size_t, size_t, size_t> GetSizes() const;
 
     /**
      * @brief Retrieves allocation records and releases reference.
@@ -436,7 +436,7 @@ public:
      * - Only deallocations of existing pointers are permitted
      * - Wrapper will self-destruct when reference count reaches zero
      */
-    XSIGMA_API std::vector<alloc_record> GetRecordsAndUnRef();
+    QUARISMA_API std::vector<alloc_record> GetRecordsAndUnRef();
 
     /**
      * @brief Returns copy of current allocation records.
@@ -451,7 +451,7 @@ public:
      * **Performance**: O(n) where n is number of allocation records
      * **Use Cases**: Intermediate monitoring, debugging, analysis
      */
-    XSIGMA_API std::vector<alloc_record> GetCurrentRecords();
+    QUARISMA_API std::vector<alloc_record> GetCurrentRecords();
 
     // ========== Enhanced Memory Analytics ==========
 
@@ -474,7 +474,7 @@ public:
      * - Performance debugging
      * - Resource planning
      */
-    XSIGMA_API memory_fragmentation_metrics GetFragmentationMetrics() const;
+    QUARISMA_API memory_fragmentation_metrics GetFragmentationMetrics() const;
 
     /**
      * @brief Retrieves detailed performance timing statistics.
@@ -495,7 +495,7 @@ public:
      * - Total operation counts
      * - Cumulative timing data
      */
-    XSIGMA_API atomic_timing_stats GetTimingStats() const noexcept;
+    QUARISMA_API atomic_timing_stats GetTimingStats() const noexcept;
 
     /**
      * @brief Retrieves enhanced allocation records with comprehensive metadata.
@@ -516,7 +516,7 @@ public:
      * - Memory alignment requirements
      * - Custom allocation tags
      */
-    XSIGMA_API std::vector<enhanced_alloc_record> GetEnhancedRecords() const;
+    QUARISMA_API std::vector<enhanced_alloc_record> GetEnhancedRecords() const;
 
     /**
      * @brief Configures logging verbosity for tracking operations.
@@ -539,7 +539,7 @@ public:
      * - DEBUG: Detailed debugging information
      * - TRACE: Maximum detail (performance impact)
      */
-    XSIGMA_API void SetLoggingLevel(tracking_log_level level) noexcept;
+    QUARISMA_API void SetLoggingLevel(tracking_log_level level) noexcept;
 
     /**
      * @brief Gets current logging verbosity level.
@@ -549,7 +549,7 @@ public:
      * **Performance**: O(1) atomic read
      * **Thread Safety**: Thread-safe atomic operation
      */
-    XSIGMA_API tracking_log_level GetLoggingLevel() const noexcept;
+    QUARISMA_API tracking_log_level GetLoggingLevel() const noexcept;
 
     /**
      * @brief Resets all performance timing statistics.
@@ -562,7 +562,7 @@ public:
      * **Performance**: O(1) - simple atomic resets
      * **Preservation**: Keeps allocation records and memory statistics
      */
-    XSIGMA_API void ResetTimingStats() noexcept;
+    QUARISMA_API void ResetTimingStats() noexcept;
 
     /**
      * @brief Calculates current allocation efficiency metrics.
@@ -581,7 +581,7 @@ public:
      * **Thread Safety**: Thread-safe with shared lock
      * **Performance**: O(1) for cached metrics, O(n) for detailed analysis
      */
-    XSIGMA_API std::tuple<double, double, double> GetEfficiencyMetrics() const;
+    QUARISMA_API std::tuple<double, double, double> GetEfficiencyMetrics() const;
 
     /**
      * @brief Generates comprehensive memory usage report.
@@ -603,7 +603,7 @@ public:
      * - Efficiency recommendations
      * - Optional allocation details
      */
-    XSIGMA_API std::string GenerateReport(bool include_allocations = false) const;
+    QUARISMA_API std::string GenerateReport(bool include_allocations = false) const;
 
 protected:
     /**
@@ -628,7 +628,7 @@ private:
      * **Thread Safety**: Requires mutex protection (caller must hold mu_)
      * **Self-Destruction**: May delete this object before returning
      */
-    bool UnRef() XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mu_);
+    bool UnRef() QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mu_);
 
     // ========== Core Components ==========
 
@@ -667,7 +667,7 @@ private:
      * **Decrement**: On each deallocation and GetRecordsAndUnRef()
      * **Self-Destruction**: Wrapper deletes itself when count reaches zero
      */
-    int ref_ XSIGMA_GUARDED_BY(mu_){1};
+    int ref_ QUARISMA_GUARDED_BY(mu_){1};
 
     // ========== Memory Usage Tracking ==========
 
@@ -681,7 +681,7 @@ private:
      * **Updates**: Incremented on allocation, decremented on deallocation
      * **Accuracy**: Reflects actual allocated sizes when available
      */
-    size_t allocated_ XSIGMA_GUARDED_BY(mu_){0};
+    size_t allocated_ QUARISMA_GUARDED_BY(mu_){0};
 
     /**
      * @brief High watermark of peak memory usage.
@@ -693,7 +693,7 @@ private:
      * **Updates**: Updated when allocated_ reaches new peak
      * **Use Cases**: Peak memory usage analysis, resource planning
      */
-    size_t high_watermark_ XSIGMA_GUARDED_BY(mu_){0};
+    size_t high_watermark_ QUARISMA_GUARDED_BY(mu_){0};
 
     /**
      * @brief Total bytes allocated through this wrapper.
@@ -705,7 +705,7 @@ private:
      * **Accumulation**: Never decreases, only increases with allocations
      * **Interpretation**: Actual vs requested bytes depends on underlying allocator
      */
-    size_t total_bytes_ XSIGMA_GUARDED_BY(mu_){0};
+    size_t total_bytes_ QUARISMA_GUARDED_BY(mu_){0};
 
     // ========== Allocation Records and History ==========
 
@@ -719,7 +719,7 @@ private:
      * **Memory**: May consume significant memory for long-running operations
      * **Use Cases**: Debugging, profiling, memory usage analysis
      */
-    std::vector<alloc_record> allocations_ XSIGMA_GUARDED_BY(mu_);
+    std::vector<alloc_record> allocations_ QUARISMA_GUARDED_BY(mu_);
 
     // ========== Local Size Tracking ==========
 
@@ -759,7 +759,7 @@ private:
      * **Value**: Chunk metadata with size and ID information
      * **Lifecycle**: Entries added on allocation, removed on deallocation
      */
-    xsigma_map<const void*, Chunk> in_use_ XSIGMA_GUARDED_BY(mu_);
+    quarisma_map<const void*, Chunk> in_use_ QUARISMA_GUARDED_BY(mu_);
 
     /**
      * @brief Counter for generating unique allocation IDs.
@@ -770,7 +770,7 @@ private:
      * **Uniqueness**: Each allocation gets a different positive ID
      * **Thread Safety**: Protected by mu_ mutex
      */
-    int64_t next_allocation_id_ XSIGMA_GUARDED_BY(mu_){1};
+    int64_t next_allocation_id_ QUARISMA_GUARDED_BY(mu_){1};
 
     // ========== Enhanced Analytics and Performance Tracking ==========
 
@@ -798,7 +798,7 @@ private:
      * **Memory**: May consume significant memory for long-running operations
      * **Thread Safety**: Protected by shared_mutex for concurrent read access
      */
-    mutable std::vector<enhanced_alloc_record> enhanced_records_ XSIGMA_GUARDED_BY(shared_mu_);
+    mutable std::vector<enhanced_alloc_record> enhanced_records_ QUARISMA_GUARDED_BY(shared_mu_);
 
     /**
      * @brief Current logging verbosity level.
@@ -851,7 +851,7 @@ private:
      * **Thread Safety**: Protected by shared_mu_
      * **Performance**: Avoids O(n) recalculation for frequent queries
      */
-    mutable memory_fragmentation_metrics cached_fragmentation_ XSIGMA_GUARDED_BY(shared_mu_);
+    mutable memory_fragmentation_metrics cached_fragmentation_ QUARISMA_GUARDED_BY(shared_mu_);
 
     /**
      * @brief Timestamp of last fragmentation metrics update.
@@ -866,4 +866,4 @@ private:
     mutable std::atomic<int64_t> last_fragmentation_update_{0};
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

@@ -2,20 +2,20 @@
 #include <torch/csrc/autograd/function.h>
 #include <torch/csrc/autograd/input_metadata.h>
 #include <torch/csrc/autograd/variable.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/_has_same_storage_numel.h>
-#include <XSigma/ops/_new_zeros_with_same_feature_meta.h>
-#include <XSigma/ops/zeros.h>
+#include <Quarisma/ops/_has_same_storage_numel.h>
+#include <Quarisma/ops/_new_zeros_with_same_feature_meta.h>
+#include <Quarisma/ops/zeros.h>
 #endif
 
 namespace torch::autograd
 {
 
-using xsigma::Tensor;
+using quarisma::Tensor;
 
 // [Forward Grad View/inplace]
 // It is important to us to allow view and inplace to work with dual Tensors.
@@ -105,7 +105,7 @@ bool has_same_meta(const Variable& base, const Variable& other)
         return false;
     }
     // 1) The storages have the same properties
-    if (!xsigma::_has_same_storage_numel(base, other))
+    if (!quarisma::_has_same_storage_numel(base, other))
     {
         return false;
     }
@@ -123,7 +123,7 @@ bool has_same_meta(const Variable& base, const Variable& other)
     {
         return false;
     }
-    for (const auto i : xsigma::irange(base.dim()))
+    for (const auto i : quarisma::irange(base.dim()))
     {
         if (base.sym_sizes()[i] != other.sym_sizes()[i])
         {
@@ -143,7 +143,7 @@ bool has_same_meta(const Variable& base, const Variable& other)
         return false;
     }
 
-    for (const auto i : xsigma::irange(base.dim()))
+    for (const auto i : quarisma::irange(base.dim()))
     {
         if (base.sym_strides()[i] != other.sym_strides()[i] && base.sym_sizes()[i] != 1 &&
             base.sym_sizes()[i] != 0)
@@ -159,15 +159,15 @@ bool has_same_meta(const Variable& base, const Variable& other)
 // This function is will ensure that the fw_grad_ is properly a view of the base
 // for inplace ops on Tensors that do not have forward grad originally.
 void AutogradMeta::set_fw_grad(
-    const xsigma::TensorBase& new_grad_base,
-    const xsigma::TensorBase& self_base,
+    const quarisma::TensorBase& new_grad_base,
+    const quarisma::TensorBase& self_base,
     uint64_t                  level,
     bool                      is_inplace_op)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         !new_grad_base._fw_grad(level).defined(),
         "Setting a forward grad that "
-        "itself has a forward gradient xsigma the same level",
+        "itself has a forward gradient quarisma the same level",
         level,
         " is not supported.");
     TORCH_INTERNAL_ASSERT(
@@ -205,10 +205,10 @@ void AutogradMeta::set_fw_grad(
     {
         // TODO(alband) remove this spurious version counter bump
         Tensor                    new_grad(new_grad_base);
-        xsigma::OptionalTensorRef self_ref(self_base);
+        quarisma::OptionalTensorRef self_ref(self_base);
         const Tensor&             self = *self_ref;
 
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             self.is_same_size(new_grad),
             "Trying to set a forward gradient that has a different size than that "
             "of the original Tensor, this is not supported. Tensor is of size ",
@@ -252,7 +252,7 @@ void AutogradMeta::set_fw_grad(
                     else
                     {
                         new_base_fw_grad =
-                            xsigma::_new_zeros_with_same_feature_meta(new_grad, base);
+                            quarisma::_new_zeros_with_same_feature_meta(new_grad, base);
                         new_base_fw_grad._set_conj(base.is_conj());
                         new_base_fw_grad._set_neg(base.is_neg());
 
@@ -288,7 +288,7 @@ void AutogradMeta::set_fw_grad(
                     "Expected the output of forward differentiable view operations to have the "
                     "tangent have the same layout as primal")
             }
-            auto res = xsigma::_new_zeros_with_same_feature_meta(new_grad, self);
+            auto res = quarisma::_new_zeros_with_same_feature_meta(new_grad, self);
             res._set_conj(self.is_conj());
             res._set_neg(self.is_neg());
             res.copy_(new_grad);
@@ -299,10 +299,10 @@ void AutogradMeta::set_fw_grad(
     }
 }
 
-const Variable& AutogradMeta::fw_grad(uint64_t level, const xsigma::TensorBase& self) const
+const Variable& AutogradMeta::fw_grad(uint64_t level, const quarisma::TensorBase& self) const
 {
     // TLS that disables forward AD.
-    if (!xsigma::AutogradState::get_tls_state().get_fw_grad_mode())
+    if (!quarisma::AutogradState::get_tls_state().get_fw_grad_mode())
     {
         return ForwardGrad::undef_grad();
     }

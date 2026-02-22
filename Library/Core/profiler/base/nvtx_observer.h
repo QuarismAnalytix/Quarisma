@@ -1,9 +1,9 @@
 #include "profiler/common/api.h"
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 void pushNVTXCallbacks(
-    const ProfilerConfig& config, const std::unordered_set<xsigma::RecordScope>& scopes);
+    const ProfilerConfig& config, const std::unordered_set<quarisma::RecordScope>& scopes);
 
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl

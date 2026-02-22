@@ -1,4 +1,4 @@
-#include <XSigma/core/TorchDispatchUtils.h>
+#include <Quarisma/core/TorchDispatchUtils.h>
 
 namespace at::impl
 {

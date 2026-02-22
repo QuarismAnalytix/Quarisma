@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,15 +13,15 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "common/configure.h"
 #include "common/macros.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 
 #include <chrono>
 #include <memory>
@@ -33,13 +33,13 @@
 #include "memory/gpu/gpu_allocator_tracking.h"
 #include "memory/gpu/gpu_device_manager.h"
 
-using namespace xsigma;
-using namespace xsigma::gpu;
+using namespace quarisma;
+using namespace quarisma::gpu;
 
 /**
  * @brief Test basic GPU allocator tracking construction
  */
-XSIGMATEST(GpuAllocatorTracking, constructs_with_valid_parameters)
+QUARISMATEST(GpuAllocatorTracking, constructs_with_valid_parameters)
 {
     // Check if CUDA is available
     auto& device_manager = gpu_device_manager::instance();
@@ -48,7 +48,7 @@ XSIGMATEST(GpuAllocatorTracking, constructs_with_valid_parameters)
 
     if (!runtime_info.cuda_available)
     {
-        XSIGMA_LOG_INFO("CUDA not available, skipping GPU allocator tracking construction test");
+        QUARISMA_LOG_INFO("CUDA not available, skipping GPU allocator tracking construction test");
         return;
     }
 
@@ -61,13 +61,13 @@ XSIGMATEST(GpuAllocatorTracking, constructs_with_valid_parameters)
     EXPECT_EQ(device_enum::CUDA, device_info.device_type);
     EXPECT_EQ(0, device_info.device_index);
 
-    XSIGMA_LOG_INFO("GPU allocator tracking construction test passed");
+    QUARISMA_LOG_INFO("GPU allocator tracking construction test passed");
 }
 
 /**
  * @brief Test basic allocation and deallocation tracking
  */
-XSIGMATEST(GpuAllocatorTracking, tracks_allocations_and_deallocations)
+QUARISMATEST(GpuAllocatorTracking, tracks_allocations_and_deallocations)
 {
     auto& device_manager = gpu_device_manager::instance();
     device_manager.initialize();
@@ -75,7 +75,7 @@ XSIGMATEST(GpuAllocatorTracking, tracks_allocations_and_deallocations)
 
     if (!runtime_info.cuda_available)
     {
-        XSIGMA_LOG_INFO("CUDA not available, skipping allocation tracking test");
+        QUARISMA_LOG_INFO("CUDA not available, skipping allocation tracking test");
         return;
     }
 
@@ -92,18 +92,18 @@ XSIGMATEST(GpuAllocatorTracking, tracks_allocations_and_deallocations)
         // Test deallocation
         gpu_tracker->deallocate_raw(gpu_ptr, 1024);
 
-        XSIGMA_LOG_INFO("GPU allocation tracking test passed");
+        QUARISMA_LOG_INFO("GPU allocation tracking test passed");
     }
     else
     {
-        XSIGMA_LOG_INFO("GPU allocation failed (expected if insufficient GPU memory)");
+        QUARISMA_LOG_INFO("GPU allocation failed (expected if insufficient GPU memory)");
     }
 }
 
 /**
  * @brief Test typed allocation tracking
  */
-XSIGMATEST(GpuAllocatorTracking, tracks_typed_allocations)
+QUARISMATEST(GpuAllocatorTracking, tracks_typed_allocations)
 {
     auto& device_manager = gpu_device_manager::instance();
     device_manager.initialize();
@@ -111,7 +111,7 @@ XSIGMATEST(GpuAllocatorTracking, tracks_typed_allocations)
 
     if (!runtime_info.cuda_available)
     {
-        XSIGMA_LOG_INFO("CUDA not available, skipping typed allocation tracking test");
+        QUARISMA_LOG_INFO("CUDA not available, skipping typed allocation tracking test");
         return;
     }
 
@@ -131,18 +131,18 @@ XSIGMATEST(GpuAllocatorTracking, tracks_typed_allocations)
         gpu_tracker->deallocate(float_ptr, 1000);
         gpu_tracker->deallocate(double_ptr, 500);
 
-        XSIGMA_LOG_INFO("GPU typed allocation tracking test passed");
+        QUARISMA_LOG_INFO("GPU typed allocation tracking test passed");
     }
     else
     {
-        XSIGMA_LOG_INFO("GPU typed allocation failed (expected if insufficient GPU memory)");
+        QUARISMA_LOG_INFO("GPU typed allocation failed (expected if insufficient GPU memory)");
     }
 }
 
 /**
  * @brief Test GPU timing statistics
  */
-XSIGMATEST(GpuAllocatorTracking, provides_timing_statistics)
+QUARISMATEST(GpuAllocatorTracking, provides_timing_statistics)
 {
     auto& device_manager = gpu_device_manager::instance();
     device_manager.initialize();
@@ -150,7 +150,7 @@ XSIGMATEST(GpuAllocatorTracking, provides_timing_statistics)
 
     if (!runtime_info.cuda_available)
     {
-        XSIGMA_LOG_INFO("CUDA not available, skipping timing statistics test");
+        QUARISMA_LOG_INFO("CUDA not available, skipping timing statistics test");
         return;
     }
 
@@ -190,13 +190,13 @@ XSIGMATEST(GpuAllocatorTracking, provides_timing_statistics)
         gpu_tracker->deallocate_raw(gpu_ptrs[i], alloc_size);
     }
 
-    XSIGMA_LOG_INFO("GPU timing statistics test passed");
+    QUARISMA_LOG_INFO("GPU timing statistics test passed");
 }
 
 /**
  * @brief Test GPU logging levels
  */
-XSIGMATEST(GpuAllocatorTracking, manages_logging_levels)
+QUARISMATEST(GpuAllocatorTracking, manages_logging_levels)
 {
     auto& device_manager = gpu_device_manager::instance();
     device_manager.initialize();
@@ -204,7 +204,7 @@ XSIGMATEST(GpuAllocatorTracking, manages_logging_levels)
 
     if (!runtime_info.cuda_available)
     {
-        XSIGMA_LOG_INFO("CUDA not available, skipping logging levels test");
+        QUARISMA_LOG_INFO("CUDA not available, skipping logging levels test");
         return;
     }
 
@@ -223,13 +223,13 @@ XSIGMATEST(GpuAllocatorTracking, manages_logging_levels)
     gpu_tracker->SetGPULoggingLevel(gpu_tracking_log_level::DEBUG_LEVEL);
     EXPECT_EQ(gpu_tracking_log_level::DEBUG_LEVEL, gpu_tracker->GetGPULoggingLevel());
 
-    XSIGMA_LOG_INFO("GPU logging levels test passed");
+    QUARISMA_LOG_INFO("GPU logging levels test passed");
 }
 
 /**
  * @brief Test GPU efficiency metrics calculation
  */
-XSIGMATEST(GpuAllocatorTracking, calculates_efficiency_metrics)
+QUARISMATEST(GpuAllocatorTracking, calculates_efficiency_metrics)
 {
     auto& device_manager = gpu_device_manager::instance();
     device_manager.initialize();
@@ -237,7 +237,7 @@ XSIGMATEST(GpuAllocatorTracking, calculates_efficiency_metrics)
 
     if (!runtime_info.cuda_available)
     {
-        XSIGMA_LOG_INFO("CUDA not available, skipping efficiency metrics test");
+        QUARISMA_LOG_INFO("CUDA not available, skipping efficiency metrics test");
         return;
     }
 
@@ -265,18 +265,18 @@ XSIGMATEST(GpuAllocatorTracking, calculates_efficiency_metrics)
         gpu_tracker->deallocate_raw(ptr1, 2048);
         gpu_tracker->deallocate_raw(ptr2, 4096);
 
-        XSIGMA_LOG_INFO("GPU efficiency metrics test passed");
+        QUARISMA_LOG_INFO("GPU efficiency metrics test passed");
     }
     else
     {
-        XSIGMA_LOG_INFO("GPU allocation failed for efficiency metrics test");
+        QUARISMA_LOG_INFO("GPU allocation failed for efficiency metrics test");
     }
 }
 
 /**
  * @brief Test GPU report generation
  */
-XSIGMATEST(GpuAllocatorTracking, generates_comprehensive_reports)
+QUARISMATEST(GpuAllocatorTracking, generates_comprehensive_reports)
 {
     auto& device_manager = gpu_device_manager::instance();
     device_manager.initialize();
@@ -284,7 +284,7 @@ XSIGMATEST(GpuAllocatorTracking, generates_comprehensive_reports)
 
     if (!runtime_info.cuda_available)
     {
-        XSIGMA_LOG_INFO("CUDA not available, skipping report generation test");
+        QUARISMA_LOG_INFO("CUDA not available, skipping report generation test");
         return;
     }
 
@@ -309,7 +309,7 @@ XSIGMATEST(GpuAllocatorTracking, generates_comprehensive_reports)
         gpu_tracker->deallocate_raw(ptr, 1024);
     }
 
-    XSIGMA_LOG_INFO("GPU report generation test passed");
+    QUARISMA_LOG_INFO("GPU report generation test passed");
 }
 
-#endif  // XSIGMA_HAS_CUDA
+#endif  // QUARISMA_HAS_CUDA

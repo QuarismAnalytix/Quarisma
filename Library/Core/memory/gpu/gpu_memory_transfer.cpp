@@ -19,20 +19,20 @@
 namespace std
 {
 template <>
-struct hash<std::pair<xsigma::device_enum, int>>
+struct hash<std::pair<quarisma::device_enum, int>>
 {
-    size_t operator()(const std::pair<xsigma::device_enum, int>& p) const
+    size_t operator()(const std::pair<quarisma::device_enum, int>& p) const
     {
         return std::hash<int>()(static_cast<int>(p.first)) ^ (std::hash<int>()(p.second) << 1);
     }
 };
 }  // namespace std
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -43,7 +43,7 @@ namespace
 /**
  * @brief CUDA stream implementation
  */
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 class cuda_stream_impl : public gpu_stream
 {
 private:
@@ -61,7 +61,7 @@ public:
             cudaError_t const result = cudaStreamCreate(&stream_);
             if (result != cudaSuccess)
             {
-                XSIGMA_THROW(
+                QUARISMA_THROW(
                     "Failed to create CUDA stream: {}", std::string(cudaGetErrorString(result)));
             }
         }
@@ -78,7 +78,7 @@ public:
                 cudaStreamCreateWithPriority(&stream_, cudaStreamDefault, actual_priority);
             if (result != cudaSuccess)
             {
-                XSIGMA_THROW(
+                QUARISMA_THROW(
                     "Failed to create CUDA stream with priority: {}",
                     std::string(cudaGetErrorString(result)));
             }
@@ -100,7 +100,7 @@ public:
         cudaError_t const result = cudaStreamSynchronize(stream_);
         if (result != cudaSuccess)
         {
-            XSIGMA_THROW(
+            QUARISMA_THROW(
                 "CUDA stream synchronization failed: {}", std::string(cudaGetErrorString(result)));
         }
     }
@@ -166,7 +166,7 @@ private:
     std::atomic<size_t> next_transfer_id_{1};
 
     /** @brief Active transfer operations */
-    xsigma_map<size_t, std::unique_ptr<transfer_operation>> active_transfers_;
+    quarisma_map<size_t, std::unique_ptr<transfer_operation>> active_transfers_;
 
     /** @brief Transfer statistics */
     std::atomic<size_t> total_transfers_{0};
@@ -175,7 +175,7 @@ private:
     std::atomic<size_t> failed_transfers_{0};
 
     /** @brief Default streams for each device */
-    xsigma_map<
+    quarisma_map<
         std::pair<device_enum, int>,
         std::unique_ptr<gpu_stream>,
         std::hash<std::pair<device_enum, int>>>
@@ -213,7 +213,7 @@ private:
         {
             switch (op.direction)
             {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
             case transfer_direction::HOST_TO_DEVICE:
             case transfer_direction::DEVICE_TO_HOST:
             case transfer_direction::DEVICE_TO_DEVICE:
@@ -329,7 +329,7 @@ public:
     {
         if ((src == nullptr) || (dst == nullptr) || size == 0)
         {
-            XSIGMA_THROW("Invalid transfer parameters");
+            QUARISMA_THROW("Invalid transfer parameters");
         }
 
         size_t const       transfer_id = next_transfer_id_.fetch_add(1);
@@ -350,7 +350,7 @@ public:
     {
         if ((src == nullptr) || (dst == nullptr) || size == 0)
         {
-            XSIGMA_THROW("Invalid transfer parameters");
+            QUARISMA_THROW("Invalid transfer parameters");
         }
 
         size_t const transfer_id = next_transfer_id_.fetch_add(1);
@@ -534,18 +534,18 @@ public:
 std::unique_ptr<gpu_stream> gpu_stream::create(
     device_enum device_type, int device_index, int priority)
 {
-#if !XSIGMA_HAS_CUDA
+#if !QUARISMA_HAS_CUDA
     (void)device_index;
     (void)priority;
 #endif
     switch (device_type)
     {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     case device_enum::CUDA:
         return std::make_unique<cuda_stream_impl>(device_type, device_index, priority);
 #endif
     default:
-        XSIGMA_THROW("Unsupported device type for stream creation");
+        QUARISMA_THROW("Unsupported device type for stream creation");
     }
 }
 
@@ -556,4 +556,4 @@ gpu_memory_transfer& gpu_memory_transfer::instance()
 }
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

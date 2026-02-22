@@ -3,20 +3,20 @@
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
-#include <xsigma/csrc/autograd/function.h>
+#include <quarisma/csrc/autograd/function.h>
 
 #include "collection.h"
 #include "util/array_ref.h"
 #include "util/irange.h"
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 #include <libkineto.h>
 #endif
 #ifdef USE_DISTRIBUTED
-#include <xsigma/csrc/distributed/xsigmad/ParamCommsUtils.hpp>
+#include <quarisma/csrc/distributed/quarismad/ParamCommsUtils.hpp>
 #endif  // USE_DISTRIBUTED
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 namespace
@@ -46,7 +46,7 @@ void logSoftAssert(
     // @lint-ignore CLANGTIDY
     const char* args)
 {
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
     std::string error;
     error = fmt::format(
         "{} SOFT ASSERT FAILED at {}:{}, func: {}, args: {}", cond, file, line, func, args);
@@ -67,7 +67,7 @@ void logSoftAssert(
     // @lint-ignore CLANGTIDY
     const std::string& args)
 {
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
     std::string error;
     error = fmt::format(
         "{} SOFT ASSERT FAILED at {}:{}, func: {}, args: {}", cond, file, line, func, args);
@@ -83,8 +83,8 @@ std::string getNvtxStr(
     const char*                                                name,
     int64_t                                                    sequence_nr,
     const std::vector<std::vector<int64_t>>&                   shapes,
-    xsigma::RecordFunctionHandle                                   op_id,
-    const std::list<std::pair<xsigma::RecordFunctionHandle, int>>& input_op_ids)
+    quarisma::RecordFunctionHandle                                   op_id,
+    const std::list<std::pair<quarisma::RecordFunctionHandle, int>>& input_op_ids)
 {
     if (sequence_nr >= -1 || !shapes.empty())
     {
@@ -183,14 +183,14 @@ std::string stacksToStr(const std::vector<std::string>& stacks, const char* deli
     return "\"" + rc + "\"";
 }
 
-static std::vector<std::vector<int64_t>> flattenList(const xsigma::List<xsigma::IValue>& list)
+static std::vector<std::vector<int64_t>> flattenList(const quarisma::List<quarisma::IValue>& list)
 {
     std::vector<std::vector<int64_t>> tensor_dims;
-    for (const xsigma::IValue& input : list)
+    for (const quarisma::IValue& input : list)
     {
         if (input.isTensor())
         {
-            const xsigma::Tensor& tensor = input.toTensor();
+            const quarisma::Tensor& tensor = input.toTensor();
             if (tensor.defined())
             {
                 tensor_dims.push_back(input.toTensor().sizes().vec());
@@ -201,15 +201,15 @@ static std::vector<std::vector<int64_t>> flattenList(const xsigma::List<xsigma::
 }
 
 std::vector<std::vector<int64_t>> inputSizes(
-    const xsigma::RecordFunction& fn, bool flatten_list_enabled)
+    const quarisma::RecordFunction& fn, bool flatten_list_enabled)
 {
     std::vector<std::vector<int64_t>> sizes;
     sizes.reserve(fn.inputs().size());
-    for (const xsigma::IValue& input : fn.inputs())
+    for (const quarisma::IValue& input : fn.inputs())
     {
         if (input.isTensor())
         {
-            const xsigma::Tensor& tensor = input.toTensor();
+            const quarisma::Tensor& tensor = input.toTensor();
             if (tensor.defined())
             {
                 sizes.push_back(input.toTensor().sizes().vec());
@@ -247,7 +247,7 @@ std::vector<std::vector<int64_t>> inputSizes(
 std::string shapesToStr(const std::vector<std::vector<int64_t>>& shapes)
 {
     std::string str("[");
-    for (const auto t_idx : xsigma::irange(shapes.size()))
+    for (const auto t_idx : quarisma::irange(shapes.size()))
     {
         if (t_idx > 0)
         {
@@ -262,7 +262,7 @@ std::string shapesToStr(const std::vector<std::vector<int64_t>>& shapes)
 std::string variantShapesToStr(const std::vector<shape>& shapes)
 {
     std::string str("[");
-    for (const auto t_idx : xsigma::irange(shapes.size()))
+    for (const auto t_idx : quarisma::irange(shapes.size()))
     {
         if (t_idx > 0)
         {
@@ -283,7 +283,7 @@ std::string variantShapesToStr(const std::vector<shape>& shapes)
                 continue;
             }
             str = fmt::format("{}[", str);
-            for (const auto s_idx : xsigma::irange(tensor_shape.size()))
+            for (const auto s_idx : quarisma::irange(tensor_shape.size()))
             {
                 if (s_idx > 0)
                 {
@@ -301,7 +301,7 @@ std::string variantShapesToStr(const std::vector<shape>& shapes)
 std::string shapeToStr(const std::vector<int64_t>& shape)
 {
     std::string str("[");
-    for (const auto s_idx : xsigma::irange(shape.size()))
+    for (const auto s_idx : quarisma::irange(shape.size()))
     {
         if (s_idx > 0)
         {
@@ -313,7 +313,7 @@ std::string shapeToStr(const std::vector<int64_t>& shape)
     return str;
 }
 
-std::string inputOpIdsToStr(const std::list<std::pair<xsigma::RecordFunctionHandle, int>>& input_op_ids)
+std::string inputOpIdsToStr(const std::list<std::pair<quarisma::RecordFunctionHandle, int>>& input_op_ids)
 {
     std::string str("[");
     int         idx = 0;
@@ -350,7 +350,7 @@ std::string strListToStr(const std::vector<std::string>& types)
         return "[" + rc + "]";
     }
 }
-std::string ivalueToStr(const xsigma::IValue& val, bool isString)
+std::string ivalueToStr(const quarisma::IValue& val, bool isString)
 {
     std::stringstream ss;
     if (val.isNone())
@@ -388,7 +388,7 @@ std::string ivalueToStr(const xsigma::IValue& val, bool isString)
     }
 }
 
-std::string ivalueListToStr(const std::vector<xsigma::IValue>& list)
+std::string ivalueListToStr(const std::vector<quarisma::IValue>& list)
 {
     std::vector<std::string> concrete_str_inputs;
     std::stringstream        ss;
@@ -408,15 +408,15 @@ std::string ivalueListToStr(const std::vector<xsigma::IValue>& list)
     return strListToStr(concrete_str_inputs);
 }
 
-std::vector<std::string> inputTypes(const xsigma::RecordFunction& fn)
+std::vector<std::string> inputTypes(const quarisma::RecordFunction& fn)
 {
     std::vector<std::string> types;
     types.reserve(fn.inputs().size());
-    for (const xsigma::IValue& input : fn.inputs())
+    for (const quarisma::IValue& input : fn.inputs())
     {
         if (input.isTensor())
         {
-            const xsigma::Tensor& tensor = input.toTensor();
+            const quarisma::Tensor& tensor = input.toTensor();
             if (tensor.defined())
             {
                 types.push_back(static_cast<std::string>(input.toTensor().dtype().name()));
@@ -480,7 +480,7 @@ static inline std::string format_list(
 }
 
 std::pair<bool, std::variant<int, std::vector<int>>> findStartAddrForTensors(
-    const xsigma::IValue& val)
+    const quarisma::IValue& val)
 {
     if (val.isTensor())
     {
@@ -496,7 +496,7 @@ std::pair<bool, std::variant<int, std::vector<int>>> findStartAddrForTensors(
         size_t           tuple_size = val_tuple.size();
         std::vector<int> responses;
         responses.reserve(tuple_size);
-        for (const auto j : xsigma::irange(tuple_size))
+        for (const auto j : quarisma::irange(tuple_size))
         {
             auto [is_list, res] = findStartAddrForTensors(val_tuple[j]);
             if (is_list)
@@ -517,7 +517,7 @@ std::pair<bool, std::variant<int, std::vector<int>>> findStartAddrForTensors(
         size_t           list_size = val_list.size();
         std::vector<int> responses;
         responses.reserve(list_size);
-        for (const auto j : xsigma::irange(list_size))
+        for (const auto j : quarisma::irange(list_size))
         {
             auto [is_list, res] = findStartAddrForTensors(val_list[j]);
             if (is_list)
@@ -541,14 +541,14 @@ std::pair<bool, std::variant<int, std::vector<int>>> findStartAddrForTensors(
 
 std::unordered_map<std::string, std::string> saveNcclMeta(
     // @lint-ignore CLANGTIDY
-    const xsigma::RecordFunction& fn,
+    const quarisma::RecordFunction& fn,
     // @lint-ignore CLANGTIDY
     const SaveNcclMetaConfig& config)
 {
     std::unordered_map<std::string, std::string> map;
 #ifdef USE_DISTRIBUTED
     auto debugInfo = dynamic_cast<ParamCommsDebugInfo*>(
-        xsigma::thread_local_debug_info::get(xsigma::DebugInfoKind::PARAM_COMMS_INFO));
+        quarisma::thread_local_debug_info::get(quarisma::DebugInfoKind::PARAM_COMMS_INFO));
 
     if (config.introspectMetadata)
     {
@@ -559,7 +559,7 @@ std::unordered_map<std::string, std::string> saveNcclMeta(
         }
         auto& collective_name = debugInfo->getCollectiveName();
         map.emplace(kCommsName, fmt::format("\"{}\"", collective_name));
-        map.emplace(kDtype, fmt::format("\"{}\"", xsigma::toString(debugInfo->getDType())));
+        map.emplace(kDtype, fmt::format("\"{}\"", quarisma::toString(debugInfo->getDType())));
         map.emplace(kInMsgNelems, std::to_string(debugInfo->getInMessageNelems()));
         map.emplace(kOutMsgNelems, std::to_string(debugInfo->getOutMessageNelems()));
 
@@ -623,9 +623,9 @@ std::unordered_map<std::string, std::string> saveNcclMeta(
             {
                 // need to account for Stack mode where the inputs are at the end.
                 size_t input_start = inputs.size() - num_inputs;
-                for (const auto i : xsigma::irange(input_start, inputs.size()))
+                for (const auto i : quarisma::irange(input_start, inputs.size()))
                 {
-                    const xsigma::IValue& val = inputs[i];
+                    const quarisma::IValue& val = inputs[i];
                     auto [is_list, result]    = findStartAddrForTensors(val);
                     if (is_list)
                     {
@@ -655,9 +655,9 @@ std::unordered_map<std::string, std::string> saveNcclMeta(
             {
                 // need to account for Stack mode where the outputs are at the end.
                 size_t output_start = outputs.size() - num_outputs;
-                for (const auto i : xsigma::irange(output_start, outputs.size()))
+                for (const auto i : quarisma::irange(output_start, outputs.size()))
                 {
-                    const xsigma::IValue& val = outputs[i];
+                    const quarisma::IValue& val = outputs[i];
                     auto [is_list, result]    = findStartAddrForTensors(val);
                     if (is_list)
                     {
@@ -688,13 +688,13 @@ static constexpr auto kConv2dDilation = 5;
 static constexpr auto kConv2dGroups   = 6;
 
 // List of supported operators
-static constexpr auto kConv2dOp  = "xsigma::conv2d";
-static constexpr auto kMMOp      = "xsigma::mm";
-static constexpr auto kAddMMOp   = "xsigma::addmm";
-static constexpr auto kMulOp     = "xsigma::mul";
-static constexpr auto kAddOp     = "xsigma::add";
-static constexpr auto kBMMOp     = "xsigma::bmm";
-static constexpr auto kBAddBMMOp = "xsigma::baddbmm";
+static constexpr auto kConv2dOp  = "quarisma::conv2d";
+static constexpr auto kMMOp      = "quarisma::mm";
+static constexpr auto kAddMMOp   = "quarisma::addmm";
+static constexpr auto kMulOp     = "quarisma::mul";
+static constexpr auto kAddOp     = "quarisma::add";
+static constexpr auto kBMMOp     = "quarisma::bmm";
+static constexpr auto kBAddBMMOp = "quarisma::baddbmm";
 
 static constexpr auto kInputSize  = "input_size";
 static constexpr auto kWeightSize = "weight_size";
@@ -706,36 +706,36 @@ static constexpr auto kMatSize    = "mat_size";
 static constexpr auto kMat1Size   = "mat1_size";
 static constexpr auto kMat2Size   = "mat2_size";
 
-static std::vector<xsigma::IntArrayRef> getInputSizes(
+static std::vector<quarisma::IntArrayRef> getInputSizes(
     const std::string&                      op_name,
     size_t                                  min_size,
-    xsigma::array_ref<const xsigma::IValue> inputs,
-    const xsigma::array_ref<int>&           should_be_tensor)
+    quarisma::array_ref<const quarisma::IValue> inputs,
+    const quarisma::array_ref<int>&           should_be_tensor)
 {
     std::stringstream ss;
     if (inputs.size() < min_size)
     {
         ss << "Failed to save extra arguments for flops computation of op " << op_name
            << ", min size: " << min_size << ", actual size: " << inputs.size();
-        XSIGMA_WARN(ss.str());
+        QUARISMA_WARN(ss.str());
         return {};
     }
-    std::vector<xsigma::IntArrayRef> inputSizes = {};
+    std::vector<quarisma::IntArrayRef> inputSizes = {};
     for (auto index : should_be_tensor)
     {
         if (!inputs[index].isTensor())
         {
             ss << "Failed to save extra arguments for flops computation of op " << op_name
                << ", input[" << index << "] must be a tensor.";
-            XSIGMA_WARN(ss.str());
+            QUARISMA_WARN(ss.str());
             return {};
         }
-        xsigma::Tensor t = inputs[index].toTensor();
+        quarisma::Tensor t = inputs[index].toTensor();
         if (t.is_nested())
         {
             ss << "Failed to save extra arguments for flops computation of op " << op_name
                << " with input[" << index << "] as nested tensor.";
-            XSIGMA_WARN(ss.str());
+            QUARISMA_WARN(ss.str());
             return {};
         }
         inputSizes.emplace_back(t.sizes());
@@ -743,10 +743,10 @@ static std::vector<xsigma::IntArrayRef> getInputSizes(
     return inputSizes;
 }
 
-std::unordered_map<std::string, xsigma::IValue> saveExtraArgs(const xsigma::RecordFunction& fn)
+std::unordered_map<std::string, quarisma::IValue> saveExtraArgs(const quarisma::RecordFunction& fn)
 {
     // for specific types of fn, return the saved extra args for computing flops
-    std::unordered_map<std::string, xsigma::IValue> map;
+    std::unordered_map<std::string, quarisma::IValue> map;
     auto                                            inputs = fn.inputs();
     std::string                                     fname(fn.name());
 
@@ -765,13 +765,13 @@ std::unordered_map<std::string, xsigma::IValue> saveExtraArgs(const xsigma::Reco
         }
         if (inputSizes[1].size() != 4)
         {
-            XSIGMA_WARN(
-                "Failed to compute flops for op xsigma::conv2d because it requires a 4D kernel "
+            QUARISMA_WARN(
+                "Failed to compute flops for op quarisma::conv2d because it requires a 4D kernel "
                 "tensor.");
             return map;
         }
-        map[kInputSize]  = xsigma::IValue(inputSizes[0]);
-        map[kWeightSize] = xsigma::IValue(inputSizes[1]);
+        map[kInputSize]  = quarisma::IValue(inputSizes[0]);
+        map[kWeightSize] = quarisma::IValue(inputSizes[1]);
         map[kStride]     = inputs[kConv2dStride];
         map[kPadding]    = inputs[kConv2dPadding];
         map[kDilation]   = inputs[kConv2dDilation];
@@ -785,8 +785,8 @@ std::unordered_map<std::string, xsigma::IValue> saveExtraArgs(const xsigma::Reco
             return map;
         }
 
-        map[kMat1Size] = xsigma::IValue(inputSizes[0]);
-        map[kMat2Size] = xsigma::IValue(inputSizes[1]);
+        map[kMat1Size] = quarisma::IValue(inputSizes[0]);
+        map[kMat2Size] = quarisma::IValue(inputSizes[1]);
     }
     else if (fname == kAddMMOp)
     {
@@ -799,8 +799,8 @@ std::unordered_map<std::string, xsigma::IValue> saveExtraArgs(const xsigma::Reco
         // just assume these are +=1.
         // (similar to http://www.netlib.org/lapack/lawnspdf/lawn41.pdf,
         // "Operations Count for the BLAS and LAPACK", Table 3, SGEMM)
-        map[kMat1Size] = xsigma::IValue(inputSizes[1]);
-        map[kMat2Size] = xsigma::IValue(inputSizes[2]);
+        map[kMat1Size] = quarisma::IValue(inputSizes[1]);
+        map[kMat2Size] = quarisma::IValue(inputSizes[2]);
     }
     else if (fname == kMulOp)
     {
@@ -809,7 +809,7 @@ std::unordered_map<std::string, xsigma::IValue> saveExtraArgs(const xsigma::Reco
         {
             return map;
         }
-        map[kMatSize] = xsigma::IValue(inputSizes[0]);
+        map[kMatSize] = quarisma::IValue(inputSizes[0]);
     }
     else if (fname == kAddOp)
     {
@@ -818,7 +818,7 @@ std::unordered_map<std::string, xsigma::IValue> saveExtraArgs(const xsigma::Reco
         {
             return map;
         }
-        map[kMatSize] = xsigma::IValue(inputSizes[0]);
+        map[kMatSize] = quarisma::IValue(inputSizes[0]);
     }
     else if (fname == kBMMOp)
     {
@@ -828,8 +828,8 @@ std::unordered_map<std::string, xsigma::IValue> saveExtraArgs(const xsigma::Reco
             return map;
         }
 
-        map[kMat1Size] = xsigma::IValue(inputSizes[0]);
-        map[kMat2Size] = xsigma::IValue(inputSizes[1]);
+        map[kMat1Size] = quarisma::IValue(inputSizes[0]);
+        map[kMat2Size] = quarisma::IValue(inputSizes[1]);
     }
     else if (fname == kBAddBMMOp)
     {
@@ -843,15 +843,15 @@ std::unordered_map<std::string, xsigma::IValue> saveExtraArgs(const xsigma::Reco
         // just assume these are +=1.
         // (similar to http://www.netlib.org/lapack/lawnspdf/lawn41.pdf,
         // "Operations Count for the BLAS and LAPACK", Table 3, SGEMM)
-        map[kMat1Size] = xsigma::IValue(inputSizes[1]);
-        map[kMat2Size] = xsigma::IValue(inputSizes[2]);
+        map[kMat1Size] = quarisma::IValue(inputSizes[1]);
+        map[kMat2Size] = quarisma::IValue(inputSizes[2]);
     }
 
     return map;
 }
 
 uint64_t computeFlops(
-    const std::string& op_name, const std::unordered_map<std::string, xsigma::IValue>& extra_args)
+    const std::string& op_name, const std::unordered_map<std::string, quarisma::IValue>& extra_args)
 {
     if (op_name == kConv2dOp)
     {
@@ -862,8 +862,8 @@ uint64_t computeFlops(
             extra_args.find(kStride) == extra_args.end() ||
             extra_args.find(kDilation) == extra_args.end())
         {
-            XSIGMA_WARN(
-                "Calculating flops for xsigma::conv2d requires groups, padding, stride, dilation, "
+            QUARISMA_WARN(
+                "Calculating flops for quarisma::conv2d requires groups, padding, stride, dilation, "
                 "input_size, and weight_size in saved arguments.");
             return 0;
         }
@@ -875,16 +875,16 @@ uint64_t computeFlops(
         auto dilation_ref     = extra_args.at(kDilation);
         if (!input_sizes_ref.isIntList() || !kernel_sizes_ref.isIntList())
         {
-            XSIGMA_WARN(
-                "Failed to compute flops for op xsigma::conv2d because it requires input and "
+            QUARISMA_WARN(
+                "Failed to compute flops for op quarisma::conv2d because it requires input and "
                 "weight "
                 "tensor sizes.");
             return 0;
         }
         if (!padding_ref.isIntList() || !stride_ref.isIntList() || !dilation_ref.isIntList())
         {
-            XSIGMA_WARN(
-                "Failed to compute flops for op xsigma::conv2d because it requires padding, "
+            QUARISMA_WARN(
+                "Failed to compute flops for op quarisma::conv2d because it requires padding, "
                 "stride, "
                 "and dilation values.");
             return 0;
@@ -898,34 +898,34 @@ uint64_t computeFlops(
         const std::vector<int64_t> dilation     = dilation_ref.toIntVector();
         if (input_sizes.size() != 4 || kernel_sizes.size() != 4)
         {
-            XSIGMA_WARN(
-                "Failed to compute flops for op xsigma::conv2d because both input and weight must "
+            QUARISMA_WARN(
+                "Failed to compute flops for op quarisma::conv2d because both input and weight must "
                 "be "
                 "size 4.");
             return 0;
         }
         if (!groups)
         {
-            XSIGMA_WARN(
-                "Failed to compute flops for op xsigma::conv2d because group size must not be 0.");
+            QUARISMA_WARN(
+                "Failed to compute flops for op quarisma::conv2d because group size must not be 0.");
             return 0;
         }
         if (padding.size() != 2 || dilation.size() != 2)
         {
-            XSIGMA_WARN(
-                "Failed to compute flops for op xsigma::conv2d because both padding and dilation "
+            QUARISMA_WARN(
+                "Failed to compute flops for op quarisma::conv2d because both padding and dilation "
                 "must be size 2.");
             return 0;
         }
         if (stride.size() != 2 || (stride[0] * stride[1] == 0))
         {
-            XSIGMA_WARN(
-                "Failed to compute flops for op xsigma::conv2d because stride must be size 2 and "
+            QUARISMA_WARN(
+                "Failed to compute flops for op quarisma::conv2d because stride must be size 2 and "
                 "cannot be 0.");
             return 0;
         }
         // format of the input is defined in
-        // xsigma.ao.nn.quantized.functional.conv2d()
+        // quarisma.ao.nn.quantized.functional.conv2d()
         const uint64_t conv2d_multiply_factor = 2;
         auto [minibatch, in_channels, input_h, input_w] =
             std::make_tuple(input_sizes[0], input_sizes[1], input_sizes[2], input_sizes[3]);
@@ -944,7 +944,7 @@ uint64_t computeFlops(
         if (extra_args.find(kMat1Size) == extra_args.end() ||
             extra_args.find(kMat2Size) == extra_args.end())
         {
-            XSIGMA_WARN(
+            QUARISMA_WARN(
                 "Calculating flops for ",
                 op_name,
                 " requires mat1_size and mat2_size in saved arguments.");
@@ -954,7 +954,7 @@ uint64_t computeFlops(
         auto mat2_sizes_ref = extra_args.at(kMat2Size);
         if (!mat1_sizes_ref.isIntList() || !mat2_sizes_ref.isIntList())
         {
-            XSIGMA_WARN(
+            QUARISMA_WARN(
                 "Failed to compute flops for op ",
                 op_name,
                 " because it requires mat1_size and mat2_size to be IntList.");
@@ -993,7 +993,7 @@ uint64_t computeFlops(
         if (extra_args.find(kMat1Size) == extra_args.end() ||
             extra_args.find(kMat2Size) == extra_args.end())
         {
-            XSIGMA_WARN(
+            QUARISMA_WARN(
                 "Calculating flops for ",
                 op_name,
                 " requires mat1_size and mat2_size in saved arguments.");
@@ -1003,7 +1003,7 @@ uint64_t computeFlops(
         auto mat2_sizes_ref = extra_args.at(kMat2Size);
         if (!mat1_sizes_ref.isIntList() || !mat2_sizes_ref.isIntList())
         {
-            XSIGMA_WARN(
+            QUARISMA_WARN(
                 "Failed to compute flops for op ",
                 op_name,
                 " because it requires mat1_size and mat2_size to be IntList.");
@@ -1048,15 +1048,15 @@ uint64_t computeFlops(
     {
         if (extra_args.find(kMatSize) == extra_args.end())
         {
-            XSIGMA_WARN(
-                "Calculating flops for xsigma::mul.Tensor requires mat_size in saved arguments.");
+            QUARISMA_WARN(
+                "Calculating flops for quarisma::mul.Tensor requires mat_size in saved arguments.");
             return 0;
         }
         auto mat_sizes = extra_args.at(kMatSize);
         if (!mat_sizes.isIntList())
         {
-            XSIGMA_WARN(
-                "Failed to compute flops for op xsigma::mul because it requires mat_size to be "
+            QUARISMA_WARN(
+                "Failed to compute flops for op quarisma::mul because it requires mat_size to be "
                 "IntList.");
             return 0;
         }
@@ -1073,15 +1073,15 @@ uint64_t computeFlops(
     {
         if (extra_args.find(kMatSize) == extra_args.end())
         {
-            XSIGMA_WARN(
-                "Calculating flops for xsigma::add.Tensor requires mat_size in saved arguments.");
+            QUARISMA_WARN(
+                "Calculating flops for quarisma::add.Tensor requires mat_size in saved arguments.");
             return 0;
         }
         auto mat_sizes = extra_args.at(kMatSize);
         if (!mat_sizes.isIntList())
         {
-            XSIGMA_WARN(
-                "Failed to compute flops for op xsigma::add because it requires mat_size to be "
+            QUARISMA_WARN(
+                "Failed to compute flops for op quarisma::add because it requires mat_size to be "
                 "IntList.");
             return 0;
         }
@@ -1101,7 +1101,7 @@ uint64_t computeFlops(
 // and returns a conventional string representation of the IValue
 // Currently it returns int representation of the last 20 bits of the address
 // value
-int getTensorStartHint(const xsigma::Tensor& t)
+int getTensorStartHint(const quarisma::Tensor& t)
 {
     const auto tensor_impl  = t.unsafeGetTensorImpl();
     uintptr_t  storage_addr = 0;
@@ -1110,7 +1110,7 @@ int getTensorStartHint(const xsigma::Tensor& t)
     return last_bits;
 }
 
-bool checkFunctionOutputsForLogging(const xsigma::RecordFunction& fn)
+bool checkFunctionOutputsForLogging(const quarisma::RecordFunction& fn)
 {
     const auto& outputs     = fn.outputs();
     auto        num_outputs = fn.num_outputs();
@@ -1118,7 +1118,7 @@ bool checkFunctionOutputsForLogging(const xsigma::RecordFunction& fn)
     // We have two cases: for unboxed kernel, we have num_outputs ==
     // outputs.size() for boxed kernel using stack, there could be more elements
     // on the stack from previous ops.
-    // XSIGMA_CHECK(num_outputs <= outputs.size());
+    // QUARISMA_CHECK(num_outputs <= outputs.size());
     if (num_outputs > outputs.size())
     {
         return false;
@@ -1126,7 +1126,7 @@ bool checkFunctionOutputsForLogging(const xsigma::RecordFunction& fn)
     return true;
 }
 
-bool checkFunctionInputsForLogging(const xsigma::RecordFunction& fn)
+bool checkFunctionInputsForLogging(const quarisma::RecordFunction& fn)
 {
     auto       num_inputs = fn.num_inputs();
     const auto inputs     = fn.inputs();
@@ -1134,12 +1134,12 @@ bool checkFunctionInputsForLogging(const xsigma::RecordFunction& fn)
     // We have two cases: for unboxed kernel, we have num_inputs ==
     // inputs.size() for boxed kernel using stack, there could be more elements
     // on the stack from previous ops.
-    // XSIGMA_CHECK(num_inputs <= inputs.size());
+    // QUARISMA_CHECK(num_inputs <= inputs.size());
     if (num_inputs > inputs.size())
     {
         return false;
     }
     return true;
 }
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl
 #endif

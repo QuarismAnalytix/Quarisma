@@ -2615,7 +2615,7 @@
     {
       "Gb_type": "missing args to functools.partial",
       "Context": "",
-      "Explanation": "functools.partial requires xsigma least one argument",
+      "Explanation": "functools.partial requires quarisma least one argument",
       "Hints": [
         "Fix the functools.partial call.",
         "Dynamo has detected that tracing the code will result in an error when running in eager. Please double check that your code doesn't contain a similar error when actually running eager/uncompiled."
@@ -2777,7 +2777,7 @@
       "Explanation": "traced torch._dynamo.step_unsupported(), but there is no checkpoint to step_graph_break from. This graph break is used for debugging only.",
       "Hints": [
         "Remove the torch._dynamo.step_unsupported() call.",
-        "Include xsigma least one checkpoint: (1) include xsigma least 2 ops and (2) make sure there is some ",
+        "Include quarisma least one checkpoint: (1) include quarisma least 2 ops and (2) make sure there is some ",
         "line of code that is not in a try/with block, and has an empty Python stack.",
         "This is likely to be a Dynamo bug. Please report an issue to PyTorch."
       ]

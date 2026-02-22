@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/core/TensorBody.h>
+#include <Quarisma/core/TensorBody.h>
 #include <c10/util/Exception.h>
 
 namespace at

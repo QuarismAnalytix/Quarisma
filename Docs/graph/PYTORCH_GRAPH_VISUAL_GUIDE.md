@@ -1,4 +1,4 @@
-# XSigma Graph Architecture: Visual Guide
+# Quarisma Graph Architecture: Visual Guide
 
 ## 1. COMPLETE GRAPH LIFECYCLE
 
@@ -7,7 +7,7 @@
 │                    FORWARD PASS (Graph Building)                │
 └─────────────────────────────────────────────────────────────────┘
 
-  x = xsigma.tensor([2.0], requires_grad=True)
+  x = quarisma.tensor([2.0], requires_grad=True)
   │
   ├─ Create leaf tensor
   │  └─ No grad_fn (leaf node)
@@ -122,7 +122,7 @@
 │                    FORWARD PASS (Graph Building)                │
 └─────────────────────────────────────────────────────────────────┘
 
-  x = xsigma.tensor([1.0], requires_grad=True)
+  x = quarisma.tensor([1.0], requires_grad=True)
   
   y = x * 2  ──→ MulBackward0(y)
   z = x * 3  ──→ MulBackward0(z)
@@ -338,7 +338,7 @@ ExecInfo filtering:
 Thread-local counter: next_sequence_nr = 0
 
 Forward Pass:
-  x = xsigma.tensor([2.0], requires_grad=True)
+  x = quarisma.tensor([2.0], requires_grad=True)
   │
   y = x * 3
   │
@@ -378,7 +378,7 @@ Backward Pass:
 Invariant: parent.topo_nr > all children.topo_nr
 
 Forward Pass:
-  x = xsigma.tensor([2.0], requires_grad=True)
+  x = quarisma.tensor([2.0], requires_grad=True)
   │
   y = x * 3
   │

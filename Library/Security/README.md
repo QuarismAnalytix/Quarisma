@@ -1,6 +1,6 @@
-# XSigma Security Module
+# Quarisma Security Module
 
-The XSigma Security Module provides comprehensive security utilities for the XSigma framework, implementing best practices from the [SECURITY.md](../../SECURITY.md) policy.
+The Quarisma Security Module provides comprehensive security utilities for the Quarisma framework, implementing best practices from the [SECURITY.md](../../SECURITY.md) policy.
 
 ## Overview
 
@@ -26,7 +26,7 @@ The `input_validator` class provides functions to validate:
 ```cpp
 #include "input_validator.h"
 
-using namespace xsigma::security;
+using namespace quarisma::security;
 
 // Validate string length
 if (!input_validator::validate_string_length(user_input, 1, 100)) {
@@ -58,7 +58,7 @@ The `sanitizer` class provides functions to:
 ```cpp
 #include "sanitizer.h"
 
-using namespace xsigma::security;
+using namespace quarisma::security;
 
 // Escape HTML to prevent XSS
 std::string safe_html = sanitizer::escape_html(user_input);
@@ -86,7 +86,7 @@ The `crypto` class provides:
 ```cpp
 #include "crypto.h"
 
-using namespace xsigma::security;
+using namespace quarisma::security;
 
 // Generate secure random bytes
 uint8_t buffer[32];
@@ -177,7 +177,7 @@ This module implements the security guidelines from [SECURITY.md](../../SECURITY
 
 ## Error Handling
 
-All security functions follow XSigma's no-exception policy:
+All security functions follow Quarisma's no-exception policy:
 
 - **Validation functions** return `bool` (true = valid, false = invalid)
 - **Conversion functions** return `std::optional<T>` (nullopt on failure)
@@ -198,7 +198,7 @@ The security module has minimal dependencies:
 
 - **Standard Library**: `<string>`, `<vector>`, `<optional>`, `<regex>`, etc.
 - **Platform APIs**: Windows (bcrypt.lib), macOS (Security framework), Linux (system calls)
-- **XSigma Core**: Common macros and export definitions
+- **Quarisma Core**: Common macros and export definitions
 
 ## Future Enhancements
 
@@ -217,8 +217,8 @@ Potential future additions:
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [CWE Top 25](https://cwe.mitre.org/top25/)
 - [NIST Cryptographic Standards](https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines)
-- [XSigma Security Policy](../../../SECURITY.md)
+- [Quarisma Security Policy](../../../SECURITY.md)
 
 ## License
 
-This module is part of the XSigma project and follows the same license.
+This module is part of the Quarisma project and follows the same license.

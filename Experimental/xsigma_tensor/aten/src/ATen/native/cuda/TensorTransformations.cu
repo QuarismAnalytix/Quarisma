@@ -1,18 +1,18 @@
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
-#include <XSigma/native/TensorTransformations.h>
+#include <Quarisma/native/TensorTransformations.h>
 
-#include <XSigma/Dispatch.h>
-#include <XSigma/cuda/detail/IndexUtils.cuh>
-#include <XSigma/cuda/CUDAApplyUtils.cuh>
-#include <XSigma/cuda/CUDAContext.h>
+#include <Quarisma/Dispatch.h>
+#include <Quarisma/cuda/detail/IndexUtils.cuh>
+#include <Quarisma/cuda/CUDAApplyUtils.cuh>
+#include <Quarisma/cuda/CUDAContext.h>
 #include <c10/macros/Macros.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
-#include <XSigma/NativeFunctions.h>
+#include <Quarisma/Functions.h>
+#include <Quarisma/NativeFunctions.h>
 #else
-#include <XSigma/ops/empty_like.h>
-#include <XSigma/ops/roll_native.h>
+#include <Quarisma/ops/empty_like.h>
+#include <Quarisma/ops/roll_native.h>
 #endif
 
 #include <cstddef>

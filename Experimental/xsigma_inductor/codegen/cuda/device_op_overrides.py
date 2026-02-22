@@ -29,25 +29,25 @@ class CUDADeviceOpOverrides(DeviceOpOverrides):
         return f"torch.cuda._DeviceGuard({device_idx})"
 
     def cpp_device_guard(self) -> str:
-        return "xsigma::cuda::CUDAGuard"
+        return "quarisma::cuda::CUDAGuard"
 
     def cpp_aoti_device_guard(self) -> str:
         return "AOTICudaGuard"
 
     def cpp_stream_guard(self) -> str:
-        return "xsigma::cuda::CUDAStreamGuard"
+        return "quarisma::cuda::CUDAStreamGuard"
 
     def cpp_aoti_stream_guard(self) -> str:
         return "AOTICudaStreamGuard"
 
     def cpp_getStreamFromExternal(self) -> str:
-        return "xsigma::cuda::getStreamFromExternal"
+        return "quarisma::cuda::getStreamFromExternal"
 
     def kernel_header(self) -> str:
         source_codes = """
-        #include <xsigma/cuda/CUDAGuard.h>
-        #include <xsigma/cuda/CUDAStream.h>
-        #include <XSigma/cuda/EmptyTensor.h>
+        #include <quarisma/cuda/CUDAGuard.h>
+        #include <quarisma/cuda/CUDAStream.h>
+        #include <Quarisma/cuda/EmptyTensor.h>
         """
         return source_codes
 

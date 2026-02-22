@@ -1,9 +1,9 @@
 #pragma once
 
-#include <XSigma/EmptyTensor.h>
-#include <XSigma/TensorUtils.h>
-#include <XSigma/core/Tensor.h>
-#include <XSigma/native/ResizeCommon.h>
+#include <Quarisma/EmptyTensor.h>
+#include <Quarisma/TensorUtils.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/native/ResizeCommon.h>
 #include <c10/core/CPUAllocator.h>
 #include <c10/core/SymBool.h>
 

@@ -69,9 +69,9 @@ struct parallel_tools_functor_internal<Functor, true> {
 ```cpp
 struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
     // OpenMP: threadprivate static
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
     // TBB: enumerable_thread_specific
     mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 #else
@@ -79,15 +79,15 @@ struct parallel_tools_functor_internal<Functor, true> {
 #endif
     
     parallel_tools_functor_internal(Functor& f) : f_(f)
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
         , initialized_(0)
 #endif
     {}
     
     void Execute(size_t first, size_t last) {
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
         // OpenMP implementation
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
         // TBB implementation
 #else
         // Native implementation
@@ -142,9 +142,9 @@ if (!initialized) {
 **Option 3**:
 ```cpp
 // Three implementations
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
     if (!parallel_tools_functor_initialized) { ... }
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
     unsigned char& inited = initialized_.local();
     if (!inited) { ... }
 #else

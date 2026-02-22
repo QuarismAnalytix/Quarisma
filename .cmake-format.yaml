@@ -1,4 +1,4 @@
-# cmake-format configuration for XSigma
+# cmake-format configuration for Quarisma
 # Aligns with .clang-format and project coding standards
 # See: https://cmake-format.readthedocs.io/
 #
@@ -127,7 +127,7 @@ markup:
 
 # Options affecting listfile parsing
 parse:
-  # Additional custom commands (none for XSigma currently)
+  # Additional custom commands (none for Quarisma currently)
   additional_commands: {}
 
   # Override configurations per-command where available

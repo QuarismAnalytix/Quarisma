@@ -32,7 +32,7 @@ translation_validation_no_bisect = (
 check_shape_env_recorded_events = False
 
 # TODO: Perhaps consider allowing unions for the configs below (so you can hit
-# multiple reps xsigma the same time)
+# multiple reps quarisma the same time)
 
 # Give extended debug information if the string representation of a guard
 # matches this.  For example, set this to "Ne(s0, 10)" and whenever we issue
@@ -79,7 +79,7 @@ validate_shape_env_version_key = False
 # get specialized and bail out if this many guards mention this particular
 # symbol.  This may be slightly more aggressive than the true number of guards
 # issued (as we test if we've hit the limit on-the-fly, whereas we may
-# do further simplifications xsigma final guard issuance time that make guards
+# do further simplifications quarisma final guard issuance time that make guards
 # irrelevant.)
 symbol_guard_limit_before_specialize: Optional[int] = None
 

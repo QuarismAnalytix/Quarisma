@@ -2,8 +2,8 @@
 
 // Wrap tensor operation outputs as PyObject*
 
-#include <XSigma/ScalarOps.h>
-#include <XSigma/core/Tensor.h>
+#include <Quarisma/ScalarOps.h>
+#include <Quarisma/core/Tensor.h>
 #include <torch/csrc/Dtype.h>
 #include <torch/csrc/DynamicTypes.h>
 #include <torch/csrc/Layout.h>
@@ -13,7 +13,7 @@
 #include <torch/csrc/python_headers.h>
 #include <torch/csrc/utils/python_numbers.h>
 #include <torch/csrc/utils/tensor_qschemes.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <initializer_list>
 #include <tuple>
@@ -33,7 +33,7 @@ inline PyObject* wrap(bool value)
     }
 }
 
-inline PyObject* wrap(xsigma::DeviceIndex value)
+inline PyObject* wrap(quarisma::DeviceIndex value)
 {
     return THPUtils_packDeviceIndex(value);
 }
@@ -48,7 +48,7 @@ inline PyObject* wrap(double value)
     return PyFloat_FromDouble(value);
 }
 
-inline PyObject* wrap(xsigma::complex<double> value)
+inline PyObject* wrap(quarisma::complex<double> value)
 {
     // I could probably also use FromComplex with a reinterpret cast,
     // but... eh.
@@ -65,7 +65,7 @@ inline PyObject* wrap(THPDtype* dtype)
     return Py_NewRef(dtype);
 }
 
-inline PyObject* wrap(xsigma::ScalarType scalarType)
+inline PyObject* wrap(quarisma::ScalarType scalarType)
 {
     return Py_NewRef(getTHPDtype(scalarType));
 }
@@ -75,53 +75,53 @@ inline PyObject* wrap(THPLayout* layout)
     return Py_NewRef(layout);
 }
 
-inline PyObject* wrap(xsigma::Layout layout)
+inline PyObject* wrap(quarisma::Layout layout)
 {
     return Py_NewRef(getTHPLayout(layout));
 }
 
-inline PyObject* wrap(const xsigma::Tensor& tensor)
+inline PyObject* wrap(const quarisma::Tensor& tensor)
 {
     return THPVariable_Wrap(tensor);
 }
 
-inline PyObject* wrap(const xsigma::Scalar& scalar)
+inline PyObject* wrap(const quarisma::Scalar& scalar)
 {
     return wrap(scalar_to_tensor(scalar));
 }
 
-inline PyObject* wrap(xsigma::QScheme qscheme)
+inline PyObject* wrap(quarisma::QScheme qscheme)
 {
     auto* thp_qscheme = torch::utils::getTHPQScheme(qscheme);
     Py_INCREF(thp_qscheme);
     return thp_qscheme;
 }
 
-inline PyObject* wrap(xsigma::TensorList tl)
+inline PyObject* wrap(quarisma::TensorList tl)
 {
     auto r = THPObjectPtr{PyTuple_New(static_cast<Py_ssize_t>(tl.size()))};
     if (!r)
         throw python_error();
-    for (const auto i : xsigma::irange(tl.size()))
+    for (const auto i : quarisma::irange(tl.size()))
     {
         PyTuple_SET_ITEM(r.get(), i, wrap(tl[i]));
     }
     return r.release();
 }
 
-inline PyObject* wrap(xsigma::IntArrayRef list)
+inline PyObject* wrap(quarisma::IntArrayRef list)
 {
     auto r = THPObjectPtr{PyTuple_New(static_cast<Py_ssize_t>(list.size()))};
     if (!r)
         throw python_error();
-    for (const auto i : xsigma::irange(list.size()))
+    for (const auto i : quarisma::irange(list.size()))
     {
         PyTuple_SET_ITEM(r.get(), i, wrap(list[i]));
     }
     return r.release();
 }
 
-inline PyObject* wrap(xsigma::Stream stream)
+inline PyObject* wrap(quarisma::Stream stream)
 {
     return THPStream_Wrap(stream);
 }

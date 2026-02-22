@@ -1,12 +1,12 @@
-#include <XSigma/ScalarOps.h>
+#include <Quarisma/ScalarOps.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/onnx/helper.h>
 #include <torch/csrc/onnx/back_compat.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/unsqueeze.h>
+#include <Quarisma/ops/unsqueeze.h>
 #endif
 
 #include <onnx/onnx_pb.h>
@@ -15,7 +15,7 @@ namespace torch::jit
 {
 namespace onnx
 {
-using namespace ::xsigma::onnx;
+using namespace ::quarisma::onnx;
 
 }  // namespace onnx
 
@@ -38,7 +38,7 @@ void eraseUnusedBlockInputs(Block* b)
     for (size_t i_1 = b->inputs().size(); i_1 > 0; --i_1)
     {
         size_t i = i_1 - 1;
-        if (!b->inputs().xsigma(i)->hasUses())
+        if (!b->inputs().quarisma(i)->hasUses())
         {
             b->eraseInput(i);
         }
@@ -71,48 +71,48 @@ void buildParamsMapFromValueToParamsMap(
     }
 }
 
-std::optional<xsigma::ScalarType> ONNXTypeToATenType(int32_t onnx_type)
+std::optional<quarisma::ScalarType> ONNXTypeToATenType(int32_t onnx_type)
 {
     switch (onnx_type)
     {
     case ::ONNX_NAMESPACE::TensorProto_DataType_UNDEFINED:
-        return xsigma::ScalarType::Undefined;
+        return quarisma::ScalarType::Undefined;
     case ::ONNX_NAMESPACE::TensorProto_DataType_FLOAT:
-        return xsigma::kFloat;
+        return quarisma::kFloat;
     case ::ONNX_NAMESPACE::TensorProto_DataType_UINT8:
-        return xsigma::kByte;
+        return quarisma::kByte;
     case ::ONNX_NAMESPACE::TensorProto_DataType_INT8:
-        return xsigma::kChar;
+        return quarisma::kChar;
     case ::ONNX_NAMESPACE::TensorProto_DataType_INT16:
-        return xsigma::kShort;
+        return quarisma::kShort;
     case ::ONNX_NAMESPACE::TensorProto_DataType_INT32:
-        return xsigma::kInt;
+        return quarisma::kInt;
     case ::ONNX_NAMESPACE::TensorProto_DataType_INT64:
-        return xsigma::kLong;
+        return quarisma::kLong;
     case ::ONNX_NAMESPACE::TensorProto_DataType_BOOL:
-        return xsigma::kBool;
+        return quarisma::kBool;
     case ::ONNX_NAMESPACE::TensorProto_DataType_FLOAT16:
-        return xsigma::kHalf;
+        return quarisma::kHalf;
     case ::ONNX_NAMESPACE::TensorProto_DataType_DOUBLE:
-        return xsigma::kDouble;
+        return quarisma::kDouble;
     case ::ONNX_NAMESPACE::TensorProto_DataType_COMPLEX64:
-        return xsigma::kComplexFloat;
+        return quarisma::kComplexFloat;
     case ::ONNX_NAMESPACE::TensorProto_DataType_COMPLEX128:
-        return xsigma::kComplexDouble;
+        return quarisma::kComplexDouble;
     case ::ONNX_NAMESPACE::TensorProto_DataType_BFLOAT16:
-        return xsigma::kBFloat16;
+        return quarisma::kBFloat16;
     case ::torch::onnx::TensorProto_DataType_FLOAT8E5M2:
-        return xsigma::kFloat8_e5m2;
+        return quarisma::kFloat8_e5m2;
     case ::torch::onnx::TensorProto_DataType_FLOAT8E5M2FNUZ:
-        return xsigma::kFloat8_e5m2fnuz;
+        return quarisma::kFloat8_e5m2fnuz;
     case ::torch::onnx::TensorProto_DataType_FLOAT8E4M3FN:
-        return xsigma::kFloat8_e4m3fn;
+        return quarisma::kFloat8_e4m3fn;
     case ::torch::onnx::TensorProto_DataType_FLOAT8E4M3FNUZ:
-        return xsigma::kFloat8_e4m3fnuz;
+        return quarisma::kFloat8_e4m3fnuz;
     default:
-        XSIGMA_CHECK(false, "ONNX type ", onnx_type, " is an unexpected tensor scalar type");
+        QUARISMA_CHECK(false, "ONNX type ", onnx_type, " is an unexpected tensor scalar type");
     }
-    return std::optional<xsigma::ScalarType>{};
+    return std::optional<quarisma::ScalarType>{};
 }
 
 Node* addNodeToBlock(Block* block, Symbol kind, ArrayRef<Value*> inputs)
@@ -132,42 +132,42 @@ Value* addInputToBlock(Block* block)
 
 namespace
 {
-::ONNX_NAMESPACE::TensorProto_DataType ATenTypeToOnnxType_aux(xsigma::ScalarType at_type)
+::ONNX_NAMESPACE::TensorProto_DataType ATenTypeToOnnxType_aux(quarisma::ScalarType at_type)
 {
     switch (at_type)
     {
-    case xsigma::kDouble:
+    case quarisma::kDouble:
         return ::ONNX_NAMESPACE::TensorProto_DataType_DOUBLE;
-    case xsigma::kFloat:
+    case quarisma::kFloat:
         return ::ONNX_NAMESPACE::TensorProto_DataType_FLOAT;
-    case xsigma::kHalf:
+    case quarisma::kHalf:
         return ::ONNX_NAMESPACE::TensorProto_DataType_FLOAT16;
-    case xsigma::kByte:
+    case quarisma::kByte:
         return ::ONNX_NAMESPACE::TensorProto_DataType_UINT8;
-    case xsigma::kChar:
+    case quarisma::kChar:
         return ::ONNX_NAMESPACE::TensorProto_DataType_INT8;
-    case xsigma::kShort:
+    case quarisma::kShort:
         return ::ONNX_NAMESPACE::TensorProto_DataType_INT16;
-    case xsigma::kInt:
+    case quarisma::kInt:
         return ::ONNX_NAMESPACE::TensorProto_DataType_INT32;
-    case xsigma::kLong:
+    case quarisma::kLong:
         return ::ONNX_NAMESPACE::TensorProto_DataType_INT64;
-    case xsigma::kBool:
+    case quarisma::kBool:
         return ::ONNX_NAMESPACE::TensorProto_DataType_BOOL;
-    case xsigma::kQInt8:
+    case quarisma::kQInt8:
         return ::ONNX_NAMESPACE::TensorProto_DataType_INT8;
-    case xsigma::kQUInt8:
+    case quarisma::kQUInt8:
         return ::ONNX_NAMESPACE::TensorProto_DataType_UINT8;
-    case xsigma::kQInt32:
+    case quarisma::kQInt32:
         return ::ONNX_NAMESPACE::TensorProto_DataType_INT32;
     default:
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false, "ScalarType ", toString(at_type), " is an unexpected tensor scalar type");
     }
 }
 }  // namespace
 
-int ATenTypeToOnnxType(xsigma::ScalarType at_type)
+int ATenTypeToOnnxType(quarisma::ScalarType at_type)
 {
     return static_cast<int>(ATenTypeToOnnxType_aux(at_type));
 }
@@ -184,7 +184,7 @@ Node* createONNXUnsqueeze(
         Node* unsqueeze_axes = graph->create(onnx::Constant, 1);
         unsqueeze_axes->insertBefore(unsqueeze_node);
         unsqueeze_axes->t_(
-            attr::value, xsigma::unsqueeze(xsigma::scalar_to_tensor(xsigma::Scalar(axis)), 0));
+            attr::value, quarisma::unsqueeze(quarisma::scalar_to_tensor(quarisma::Scalar(axis)), 0));
         unsqueeze_node->addInput(unsqueeze_axes->output());
     }
     else
@@ -195,7 +195,7 @@ Node* createONNXUnsqueeze(
     return unsqueeze_node;
 }
 
-Node* createONNXConstant(Graph* graph, Node* n_to_insert_before, xsigma::Tensor value)
+Node* createONNXConstant(Graph* graph, Node* n_to_insert_before, quarisma::Tensor value)
 {
     Node* constant_node = graph->create(onnx::Constant, 1);
     constant_node->insertBefore(n_to_insert_before);

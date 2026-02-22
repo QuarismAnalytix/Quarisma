@@ -323,7 +323,7 @@ public:
     std::vector<ExprPtr> indices() const { return indices_; }
     ExprPtr              flat_index() const
     {
-        XSIGMA_CHECK(indices_.size() == 1, "Indices haven't been flattened.");
+        QUARISMA_CHECK(indices_.size() == 1, "Indices haven't been flattened.");
         return indices_[0];
     }
     ExprPtr value() const { return value_; }
@@ -347,7 +347,7 @@ private:
 };
 
 // Allocate a buffer of given shapes and dtypes and bind it with the given
-// buffer var. The life span is xsigma most through the current program, until it is
+// buffer var. The life span is quarisma most through the current program, until it is
 // explicitly freed. An unfreed memory is likely considered an error.
 class TORCH_API Allocate : public StmtNode<Allocate>
 {
@@ -818,7 +818,7 @@ public:
 
     ExprPtr flat_index() const
     {
-        XSIGMA_CHECK(indices_.size() == 1, "Indices haven't been flattened.");
+        QUARISMA_CHECK(indices_.size() == 1, "Indices haven't been flattened.");
         return indices_[0];
     }
 

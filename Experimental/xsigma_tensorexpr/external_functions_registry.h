@@ -19,7 +19,7 @@ namespace torch::jit::tensorexpr
 // The first 5 parameters allow to pass any number of contiguous CPU tensors in
 // case we need to run aten ops (TODO: support different devices). The first
 // buffer in the array is assumed to be the output buffer. We couldn't use
-// `xsigma::Tensor` (or `xsigma::IValue`) type there directly as it would mean that
+// `quarisma::Tensor` (or `quarisma::IValue`) type there directly as it would mean that
 // we'd need to declare it in LLVM codegen in LLVM IR form, which would be very
 // cumbersome and hard to maintain. Note that the dimensions of all tensors are
 // concatenated into a single array buf_dims. We do not need to pass its length,

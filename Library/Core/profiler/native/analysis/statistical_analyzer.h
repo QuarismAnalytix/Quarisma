@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -37,7 +37,7 @@
 #include "profiler/native/session/profiler.h"
 #include "util/flat_hash.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 // Statistical metrics for a series of measurements
@@ -79,73 +79,73 @@ struct time_series_point
  * This component provides statistical analysis capabilities but is not required
  * for basic profiling functionality. Can be disabled to reduce binary size.
  */
-class XSIGMA_VISIBILITY statistical_analyzer
+class QUARISMA_VISIBILITY statistical_analyzer
 {
 public:
-    XSIGMA_API statistical_analyzer();
-    XSIGMA_API ~statistical_analyzer();
+    QUARISMA_API statistical_analyzer();
+    QUARISMA_API ~statistical_analyzer();
 
     // Core interface
-    XSIGMA_API void start_analysis();
-    XSIGMA_API void stop_analysis();
+    QUARISMA_API void start_analysis();
+    QUARISMA_API void stop_analysis();
     bool            is_analyzing() const { return analyzing_.load(); }
 
     // Data collection
-    XSIGMA_API void add_timing_sample(const std::string& name, double time_ms);
-    XSIGMA_API void add_memory_sample(const std::string& name, size_t memory_bytes);
-    XSIGMA_API void add_custom_sample(const std::string& name, double value);
+    QUARISMA_API void add_timing_sample(const std::string& name, double time_ms);
+    QUARISMA_API void add_memory_sample(const std::string& name, size_t memory_bytes);
+    QUARISMA_API void add_custom_sample(const std::string& name, double value);
 
     // Time series data
-    XSIGMA_API void add_time_series_point(
+    QUARISMA_API void add_time_series_point(
         const std::string& series_name, double value, const std::string& label = "");
 
     // Statistical analysis
-    XSIGMA_API xsigma::statistical_metrics calculate_timing_stats(const std::string& name) const;
-    XSIGMA_API xsigma::statistical_metrics calculate_memory_stats(const std::string& name) const;
-    XSIGMA_API xsigma::statistical_metrics calculate_custom_stats(const std::string& name) const;
+    QUARISMA_API quarisma::statistical_metrics calculate_timing_stats(const std::string& name) const;
+    QUARISMA_API quarisma::statistical_metrics calculate_memory_stats(const std::string& name) const;
+    QUARISMA_API quarisma::statistical_metrics calculate_custom_stats(const std::string& name) const;
 
     // Batch analysis
-    XSIGMA_API xsigma_map<std::string, xsigma::statistical_metrics> calculate_all_timing_stats()
+    QUARISMA_API quarisma_map<std::string, quarisma::statistical_metrics> calculate_all_timing_stats()
         const;
-    XSIGMA_API xsigma_map<std::string, xsigma::statistical_metrics> calculate_all_memory_stats()
+    QUARISMA_API quarisma_map<std::string, quarisma::statistical_metrics> calculate_all_memory_stats()
         const;
-    XSIGMA_API xsigma_map<std::string, xsigma::statistical_metrics> calculate_all_custom_stats()
+    QUARISMA_API quarisma_map<std::string, quarisma::statistical_metrics> calculate_all_custom_stats()
         const;
 
     // Time series analysis
-    XSIGMA_API std::vector<xsigma::time_series_point> get_time_series(
+    QUARISMA_API std::vector<quarisma::time_series_point> get_time_series(
         const std::string& series_name) const;
-    XSIGMA_API xsigma::statistical_metrics analyze_time_series(
+    QUARISMA_API quarisma::statistical_metrics analyze_time_series(
         const std::string& series_name) const;
 
     // Trend analysis
-    XSIGMA_API double calculate_trend_slope(const std::string& series_name) const;
-    XSIGMA_API bool   is_trending_up(const std::string& series_name, double threshold = 0.1) const;
-    XSIGMA_API bool is_trending_down(const std::string& series_name, double threshold = 0.1) const;
+    QUARISMA_API double calculate_trend_slope(const std::string& series_name) const;
+    QUARISMA_API bool   is_trending_up(const std::string& series_name, double threshold = 0.1) const;
+    QUARISMA_API bool is_trending_down(const std::string& series_name, double threshold = 0.1) const;
 
     // Correlation analysis
-    XSIGMA_API double calculate_correlation(
+    QUARISMA_API double calculate_correlation(
         const std::string& series1, const std::string& series2) const;
 
     // Performance regression detection
-    XSIGMA_API bool detect_performance_regression(
+    QUARISMA_API bool detect_performance_regression(
         const std::string& name, double baseline_mean, double threshold = 0.1) const;
 
     // Data management
-    XSIGMA_API void   clear_data();
-    XSIGMA_API void   clear_series(const std::string& name);
-    XSIGMA_API size_t get_sample_count(const std::string& name) const;
+    QUARISMA_API void   clear_data();
+    QUARISMA_API void   clear_series(const std::string& name);
+    QUARISMA_API size_t get_sample_count(const std::string& name) const;
 
     // Configuration
-    XSIGMA_API void set_max_samples_per_series(size_t max_samples);
-    XSIGMA_API void set_outlier_threshold(double threshold);
-    XSIGMA_API void set_percentiles(const std::vector<double>& percentiles);
+    QUARISMA_API void set_max_samples_per_series(size_t max_samples);
+    QUARISMA_API void set_outlier_threshold(double threshold);
+    QUARISMA_API void set_percentiles(const std::vector<double>& percentiles);
 
     // Optional threading hint (no-op placeholder for future parallel analysis)
-    XSIGMA_API void set_worker_threads_hint(size_t threads);
+    QUARISMA_API void set_worker_threads_hint(size_t threads);
 
     // Public helper for external use
-    XSIGMA_API xsigma::statistical_metrics calculate_metrics(const std::vector<double>& data) const;
+    QUARISMA_API quarisma::statistical_metrics calculate_metrics(const std::vector<double>& data) const;
 
 private:
     std::atomic<bool> analyzing_{false};
@@ -156,10 +156,10 @@ private:
     mutable std::mutex custom_mutex_;
     mutable std::mutex time_series_mutex_;
 
-    xsigma_map<std::string, std::vector<double>>                    timing_data_;
-    xsigma_map<std::string, std::vector<double>>                    memory_data_;
-    xsigma_map<std::string, std::vector<double>>                    custom_data_;
-    xsigma_map<std::string, std::vector<xsigma::time_series_point>> time_series_data_;
+    quarisma_map<std::string, std::vector<double>>                    timing_data_;
+    quarisma_map<std::string, std::vector<double>>                    memory_data_;
+    quarisma_map<std::string, std::vector<double>>                    custom_data_;
+    quarisma_map<std::string, std::vector<quarisma::time_series_point>> time_series_data_;
 
     // Configuration
     size_t              max_samples_per_series_ = 10000;
@@ -172,22 +172,22 @@ private:
         std::vector<double> data, const std::vector<double>& percentiles);
     static std::vector<double> detect_outliers(const std::vector<double>& data, double threshold);
     void                       trim_series_if_needed(std::vector<double>& series) const;
-    void trim_time_series_if_needed(std::vector<xsigma::time_series_point>& series) const;
+    void trim_time_series_if_needed(std::vector<quarisma::time_series_point>& series) const;
 };
 
 // RAII statistical analysis scope
-class XSIGMA_VISIBILITY statistical_analysis_scope
+class QUARISMA_VISIBILITY statistical_analysis_scope
 {
 public:
-    XSIGMA_API explicit statistical_analysis_scope(
-        xsigma::statistical_analyzer& analyzer, std::string name);
-    XSIGMA_API ~statistical_analysis_scope();
+    QUARISMA_API explicit statistical_analysis_scope(
+        quarisma::statistical_analyzer& analyzer, std::string name);
+    QUARISMA_API ~statistical_analysis_scope();
 
-    XSIGMA_API void add_checkpoint(const std::string& label);
-    XSIGMA_API xsigma::statistical_metrics get_checkpoint_stats() const;
+    QUARISMA_API void add_checkpoint(const std::string& label);
+    QUARISMA_API quarisma::statistical_metrics get_checkpoint_stats() const;
 
 private:
-    xsigma::statistical_analyzer&                  analyzer_;
+    quarisma::statistical_analyzer&                  analyzer_;
     std::string                                    name_;
     std::chrono::high_resolution_clock::time_point start_time_;
     std::vector<std::pair<std::string, std::chrono::high_resolution_clock::time_point>>
@@ -195,4 +195,4 @@ private:
     bool active_ = true;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

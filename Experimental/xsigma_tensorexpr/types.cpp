@@ -1,7 +1,7 @@
 #include <torch/csrc/Export.h>
 #include <torch/csrc/jit/tensorexpr/exceptions.h>
 #include <torch/csrc/jit/tensorexpr/types.h>
-#include <xsigma/util/Logging.h>
+#include <quarisma/util/Logging.h>
 
 namespace torch::jit::tensorexpr
 {
@@ -22,8 +22,8 @@ AT_FORALL_SCALAR_TYPES_AND7(
     Float8_e4m3fn,
     Float8_e4m3fnuz,
     DTYPE_DEFINE)
-DTYPE_DEFINE(xsigma::quint8, QUInt8)
-DTYPE_DEFINE(xsigma::qint8, QInt8)
+DTYPE_DEFINE(quarisma::quint8, QUInt8)
+DTYPE_DEFINE(quarisma::qint8, QInt8)
 
 #undef DTYPE_DEFINE
 
@@ -45,8 +45,8 @@ Dtype ToDtype(ScalarType type)
             Float8_e4m3fn,
             Float8_e4m3fnuz,
             TYPE_CASE)
-        TYPE_CASE(xsigma::quint8, QUInt8);
-        TYPE_CASE(xsigma::qint8, QInt8);
+        TYPE_CASE(quarisma::quint8, QUInt8);
+        TYPE_CASE(quarisma::qint8, QInt8);
 #undef TYPE_CASE
 
     case ScalarType::Undefined:
@@ -86,8 +86,8 @@ int Dtype::byte_size() const
             Float8_e5m2fnuz,
             Float8_e4m3fnuz,
             TYPE_CASE);
-        TYPE_CASE(xsigma::quint8, QUInt8);
-        TYPE_CASE(xsigma::qint8, QInt8);
+        TYPE_CASE(quarisma::quint8, QUInt8);
+        TYPE_CASE(quarisma::qint8, QInt8);
 #undef TYPE_CASE
     default:
         throw std::runtime_error("invalid scalar type; " + std::to_string(scalar_type_));

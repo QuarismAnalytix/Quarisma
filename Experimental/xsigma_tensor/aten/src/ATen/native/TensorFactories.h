@@ -1,16 +1,16 @@
 #pragma once
 
-#include <XSigma/Dispatch.h>
-#include <XSigma/Dispatch_v2.h>
-#include <XSigma/EmptyTensor.h>
-#include <XSigma/TensorIterator.h>
-#include <XSigma/core/Tensor.h>
-#include <XSigma/native/DispatchStub.h>
+#include <Quarisma/Dispatch.h>
+#include <Quarisma/Dispatch_v2.h>
+#include <Quarisma/EmptyTensor.h>
+#include <Quarisma/TensorIterator.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/native/DispatchStub.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/scalar_tensor.h>
+#include <Quarisma/ops/scalar_tensor.h>
 #endif
 
 namespace at::native

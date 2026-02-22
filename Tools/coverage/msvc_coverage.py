@@ -280,7 +280,7 @@ def _generate_json_summary(html_dir: Path, output_dir: Path, raw_dir: Path = Non
     summary = {
         "metadata": {
             "format_version": "2.0",
-            "generator": "xsigma_coverage_tool",
+            "generator": "quarisma_coverage_tool",
             "schema": "cobertura-compatible"
         },
         "summary": {

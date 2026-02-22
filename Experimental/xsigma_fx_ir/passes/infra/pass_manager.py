@@ -59,7 +59,7 @@ def _validate_pass_schedule_constraint(
                 continue
             raise RuntimeError(
                 f"pass schedule constraint violated. Expected {a} before {b}"
-                f" but found {a} xsigma index {i} and {b} xsigma index{j} in pass"
+                f" but found {a} quarisma index {i} and {b} quarisma index{j} in pass"
                 f" list."
             )
 

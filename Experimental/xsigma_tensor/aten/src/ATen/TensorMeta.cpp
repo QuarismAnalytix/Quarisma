@@ -1,4 +1,4 @@
-#include <XSigma/TensorMeta.h>
+#include <Quarisma/TensorMeta.h>
 
 namespace at
 {

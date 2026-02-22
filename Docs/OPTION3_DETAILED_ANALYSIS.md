@@ -11,9 +11,9 @@ Instead of using standard C++ `thread_local`, implement backend-specific thread-
 The codebase uses **function-level conditional compilation** with these flags:
 
 ```cpp
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
     // OpenMP backend (Priority: 1 - Highest)
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
     // TBB backend (Priority: 2)
 #else
     // Native std_thread backend (Priority: 3 - Fallback)
@@ -49,11 +49,11 @@ struct parallel_tools_functor_internal<Functor, true> {
 struct parallel_tools_functor_internal<Functor, true> {
     Functor& f_;
     
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
     // OpenMP backend: Use threadprivate directive
     // Note: threadprivate requires static storage duration
     static thread_local unsigned char initialized;
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
     // TBB backend: Use enumerable_thread_specific
     mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 #else
@@ -62,18 +62,18 @@ struct parallel_tools_functor_internal<Functor, true> {
 #endif
     
     parallel_tools_functor_internal(Functor& f) : f_(f)
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
         , initialized_(0)
 #endif
     {}
     
     void Execute(size_t first, size_t last) {
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
         if (!initialized) {
             this->f_.Initialize();
             initialized = 1;
         }
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
         unsigned char& inited = initialized_.local();
         if (!inited) {
             this->f_.Initialize();
@@ -100,7 +100,7 @@ struct parallel_tools_functor_internal<Functor, true> {
 #include "common/export.h"
 #include "parallel/common/parallel_tools_api.h"
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 #include <tbb/enumerable_thread_specific.h>
 #endif
 ```
@@ -111,8 +111,8 @@ For OpenMP's `threadprivate`, need to define static storage outside the struct:
 
 ```cpp
 // In parallel_tools.h or separate file
-#if XSIGMA_HAS_OPENMP
-namespace xsigma {
+#if QUARISMA_HAS_OPENMP
+namespace quarisma {
 namespace detail {
 namespace parallel {
     // Static storage for OpenMP threadprivate
@@ -128,7 +128,7 @@ namespace parallel {
 
 ## Detailed Changes by Backend
 
-### Backend 1: OpenMP (`XSIGMA_HAS_OPENMP=1`)
+### Backend 1: OpenMP (`QUARISMA_HAS_OPENMP=1`)
 
 **Mechanism**: `#pragma omp threadprivate` directive
 
@@ -159,7 +159,7 @@ if (!parallel_tools_functor_initialized) {
 
 ---
 
-### Backend 2: TBB (`XSIGMA_HAS_TBB=1`)
+### Backend 2: TBB (`QUARISMA_HAS_TBB=1`)
 
 **Mechanism**: `tbb::enumerable_thread_specific<T>`
 
@@ -197,7 +197,7 @@ struct parallel_tools_functor_internal<Functor, true> {
 
 ---
 
-### Backend 3: Native std_thread (`XSIGMA_HAS_OPENMP=0 && XSIGMA_HAS_TBB=0`)
+### Backend 3: Native std_thread (`QUARISMA_HAS_OPENMP=0 && QUARISMA_HAS_TBB=0`)
 
 **Mechanism**: Standard C++ `thread_local`
 

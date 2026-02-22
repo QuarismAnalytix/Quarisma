@@ -8,11 +8,11 @@
 #include "logging/logger.h"
 #include "memory/gpu/gpu_device_manager.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -120,7 +120,7 @@ bool gpu_allocator_factory::validate_device_support(
         return false;
     }
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     // Validate CUDA device exists
     int               device_count = 0;
     cudaError_t const result       = cudaGetDeviceCount(&device_count);
@@ -194,4 +194,4 @@ template std::unique_ptr<cuda_caching_allocator_template<int, 128>>
 gpu_allocator_factory::create_caching_allocator<int, 128>(const gpu_allocator_config&);
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

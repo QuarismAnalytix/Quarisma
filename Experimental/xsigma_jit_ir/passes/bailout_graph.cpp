@@ -1,4 +1,4 @@
-#include <XSigma/core/function.h>
+#include <Quarisma/core/function.h>
 #include <torch/csrc/jit/ir/alias_analysis.h>
 #include <torch/csrc/jit/ir/ir_views.h>
 #include <torch/csrc/jit/jit_log.h>
@@ -6,7 +6,7 @@
 #include <torch/csrc/jit/passes/clear_profiling.h>
 #include <torch/csrc/jit/passes/constant_pooling.h>
 #include <torch/csrc/jit/passes/liveness.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <memory>
 #include <unordered_set>
@@ -120,16 +120,16 @@ struct BailOutGraphBuilderForNode
             }
             else
             {
-                XSIGMA_CHECK(false, "Unexpected outer node");
+                QUARISMA_CHECK(false, "Unexpected outer node");
             }
         }
     }
 
     void mapValues(
-        const xsigma::ArrayRef<Value*> block_outputs, const xsigma::ArrayRef<Value*> carried_deps)
+        const quarisma::ArrayRef<Value*> block_outputs, const quarisma::ArrayRef<Value*> carried_deps)
     {
         TORCH_INTERNAL_ASSERT(block_outputs.size() == carried_deps.size());
-        for (const auto i : xsigma::irange(block_outputs.size()))
+        for (const auto i : quarisma::irange(block_outputs.size()))
         {
             auto nv                      = getOrAddInputForValue(block_outputs[i]);
             old_to_new_[carried_deps[i]] = nv;
@@ -205,7 +205,7 @@ struct BailOutGraphBuilderForNode
         }
     }
 
-    void buildBailOutIf(const xsigma::ArrayRef<Value*> block_outputs, Node* outer_node)
+    void buildBailOutIf(const quarisma::ArrayRef<Value*> block_outputs, Node* outer_node)
     {
         auto if_outputs = outer_node->outputs();
         mapValues(block_outputs, if_outputs);
@@ -310,7 +310,7 @@ struct BailOutInserter
 
     // Inserts prim::BailOut nodes for every prim::Guard
     // Each BailOut point takes the set of inputs live
-    // xsigma that particular execution point.
+    // quarisma that particular execution point.
     // An input is live if it's used beyond the guard/BailOut
     // point to compute graph's outputs
     void insertBailOuts(Block* b)
@@ -401,8 +401,8 @@ static void removeBailouts(Block* b)
         if (it->kind() == prim::BailOut || it->kind() == prim::Guard)
         {
             // clear profiling information
-            it->inputs().xsigma(0)->setType(TensorType::get());
-            it->output()->replaceAllUsesWith(it->inputs().xsigma(0));
+            it->inputs().quarisma(0)->setType(TensorType::get());
+            it->output()->replaceAllUsesWith(it->inputs().quarisma(0));
             it.destroyCurrent();
         }
         else
@@ -424,7 +424,7 @@ TORCH_API std::shared_ptr<Graph> BuildBailOutGraphFrom(
     GRAPH_DEBUG("bailout triggered for ", *orig_bailout_node);
     GRAPH_DUMP("original bailout graph ", orig);
     TORCH_INTERNAL_ASSERT(
-        orig_bailout_node->inputs().xsigma(0)->type()->cast<FunctionType>() == nullptr);
+        orig_bailout_node->inputs().quarisma(0)->type()->cast<FunctionType>() == nullptr);
     TORCH_INTERNAL_ASSERT(
         orig_bailout_node &&
         (orig_bailout_node->kind() == prim::BailOut || orig_bailout_node->kind() == prim::Guard) &&

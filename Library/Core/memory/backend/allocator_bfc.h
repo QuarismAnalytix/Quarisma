@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,12 +18,12 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -46,7 +46,7 @@
 #include "memory/cpu/allocator.h"
 #include "util/flat_hash.h"
 #include "util/string_util.h"
-namespace xsigma
+namespace quarisma
 {
 /**
  * @brief Computes floor(log2(x)) for 64-bit unsigned integers.
@@ -240,7 +240,7 @@ class memory_dump;
  * allocator->deallocate_raw(ptr);
  * ```
  */
-class XSIGMA_VISIBILITY allocator_bfc : public Allocator
+class QUARISMA_VISIBILITY allocator_bfc : public Allocator
 {
 public:
     /**
@@ -336,8 +336,8 @@ public:
      *     std::move(sub_alloc), 2ULL << 30, "GPU_Memory", opts);
      * ```
      */
-    XSIGMA_API allocator_bfc(
-        std::unique_ptr<xsigma::sub_allocator> sub_allocator,
+    QUARISMA_API allocator_bfc(
+        std::unique_ptr<quarisma::sub_allocator> sub_allocator,
         size_t                                 total_memory,
         std::string                            name,
         const Options&                         opts);
@@ -349,7 +349,7 @@ public:
      * **Resource Cleanup**: Returns all memory regions to sub_allocator
      * **Exception Safety**: noexcept - logs errors but doesn't throw
      */
-    XSIGMA_API ~allocator_bfc() override;
+    QUARISMA_API ~allocator_bfc() override;
 
     /**
      * @brief Returns the human-readable name of this allocator instance.
@@ -410,7 +410,7 @@ public:
      * 5. Extend memory pool if no suitable chunk found
      * 6. Retry with exponential backoff if enabled
      */
-    XSIGMA_API void* allocate_raw(
+    QUARISMA_API void* allocate_raw(
         size_t alignment, size_t num_bytes, const allocation_attributes& allocation_attr) override;
 
     /**
@@ -438,7 +438,7 @@ public:
      * 4. Insert final chunk into appropriate free bin
      * 5. Consider garbage collection if enabled
      */
-    XSIGMA_API void deallocate_raw(void* ptr) override;
+    QUARISMA_API void deallocate_raw(void* ptr) override;
 
     /**
      * @brief Indicates that this allocator tracks detailed allocation metadata.
@@ -449,7 +449,7 @@ public:
      * **Performance**: O(1) - simple constant return
      * **Capabilities**: Enables RequestedSize(), AllocatedSize(), AllocationId()
      */
-    XSIGMA_API bool tracks_allocation_sizes() const noexcept override;
+    QUARISMA_API bool tracks_allocation_sizes() const noexcept override;
 
     /**
      * @brief Returns the original size requested for an allocation.
@@ -462,7 +462,7 @@ public:
      * **Thread Safety**: Thread-safe with internal synchronization
      * **Exception Safety**: May throw if ptr is invalid
      */
-    XSIGMA_API size_t RequestedSize(const void* ptr) const override;
+    QUARISMA_API size_t RequestedSize(const void* ptr) const override;
 
     /**
      * @brief Returns the actual allocated size for a memory block.
@@ -475,7 +475,7 @@ public:
      * **Thread Safety**: Thread-safe with internal synchronization
      * **Guarantee**: AllocatedSize(ptr) >= RequestedSize(ptr)
      */
-    XSIGMA_API size_t AllocatedSize(const void* ptr) const override;
+    QUARISMA_API size_t AllocatedSize(const void* ptr) const override;
 
     /**
      * @brief Returns unique identifier for an allocation.
@@ -488,7 +488,7 @@ public:
      * **Thread Safety**: Thread-safe with internal synchronization
      * **Uniqueness**: Each allocation gets a different positive ID
      */
-    XSIGMA_API int64_t AllocationId(const void* ptr) const override;
+    QUARISMA_API int64_t AllocationId(const void* ptr) const override;
 
     /**
      * @brief Retrieves comprehensive allocator statistics.
@@ -500,7 +500,7 @@ public:
      * **Statistics**: Includes allocation counts, memory usage, fragmentation metrics
      * **Consistency**: Statistics represent atomic snapshot of allocator state
      */
-    XSIGMA_API std::optional<allocator_stats> GetStats() const override;
+    QUARISMA_API std::optional<allocator_stats> GetStats() const override;
 
     /**
      * @brief Resets statistics counters while preserving current memory state.
@@ -511,7 +511,7 @@ public:
      * **Thread Safety**: Thread-safe with internal synchronization
      * **Behavior**: Resets counters but preserves current memory allocations
      */
-    XSIGMA_API bool ClearStats() override;
+    QUARISMA_API bool ClearStats() override;
 
     /**
      * @brief Sets timing counter for temporal memory management.
@@ -533,7 +533,7 @@ public:
      * **Performance**: O(1) - atomic store operation
      * **Memory Safety**: Prevents reuse of memory freed after this timestamp
      */
-    XSIGMA_API void SetSafeFrontier(uint64_t count) noexcept override;
+    QUARISMA_API void SetSafeFrontier(uint64_t count) noexcept override;
 
     /**
      * @brief Returns memory type managed by underlying sub_allocator.
@@ -543,7 +543,7 @@ public:
      * **Thread Safety**: Thread-safe (delegates to sub_allocator)
      * **Performance**: O(1) - simple delegation
      */
-    XSIGMA_API allocator_memory_enum GetMemoryType() const noexcept override;
+    QUARISMA_API allocator_memory_enum GetMemoryType() const noexcept override;
 
     /**
      * @brief Indicates whether operation names should be recorded for debugging.
@@ -566,7 +566,7 @@ public:
      * **Use Cases**: Debugging, memory analysis, fragmentation visualization
      * **Memory**: Creates temporary copy of allocator state
      */
-    XSIGMA_API memory_dump RecordMemoryMap();
+    QUARISMA_API memory_dump RecordMemoryMap();
 
 private:
     struct Bin;  ///< Forward declaration of bin structure
@@ -590,7 +590,7 @@ private:
      */
     void* AllocateRawInternal(
         size_t alignment, size_t num_bytes, bool dump_log_on_failure, uint64_t freed_before_count)
-        XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+        QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Allocation with retry logic and exponential backoff.
@@ -625,7 +625,7 @@ private:
      * **Coalescing Strategy**: Immediate coalescing with adjacent free chunks
      * **Bin Management**: Places coalesced chunks in appropriate size bins
      */
-    void DeallocateRawInternal(void* ptr) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void DeallocateRawInternal(void* ptr) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Processes timestamped chunks for safe memory reuse.
@@ -652,7 +652,7 @@ private:
      * - Emergency memory reclamation during allocation pressure
      * - Maintaining temporal memory safety guarantees
      */
-    bool MergeTimestampedChunks(size_t required_bytes) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    bool MergeTimestampedChunks(size_t required_bytes) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Returns size of largest available free chunk.
@@ -668,7 +668,7 @@ private:
      * **Implementation**: Checks largest bin with free chunks
      * **Use Cases**: Fragmentation metrics, allocation planning, statistics
      */
-    int64_t LargestFreeChunk() XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    int64_t LargestFreeChunk() QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Adds profiling trace for memory operations.
@@ -683,9 +683,9 @@ private:
      * **Thread Safety**: Requires external mutex protection
      * **Integration**: Works with external profiling frameworks
      */
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
     void AddTraceMe(std::string_view traceme_name, const void* ptr)
-        XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+        QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Adds detailed profiling trace with size information.
@@ -706,7 +706,7 @@ private:
         std::string_view traceme_name,
         const void*      chunk_ptr,
         int64_t          req_bytes,
-        int64_t          alloc_bytes) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+        int64_t          alloc_bytes) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 #endif
 
     /**
@@ -920,7 +920,7 @@ private:
          */
         bool in_use() const noexcept { return allocation_id != -1; }
 
-#ifdef XSIGMA_MEM_DEBUG
+#ifdef QUARISMA_MEM_DEBUG
         /**
          * @brief Operation name for debugging (debug builds only).
          *
@@ -967,7 +967,7 @@ private:
          * ```
          */
         std::string debug_string(allocator_bfc* a, bool recurse) const
-            XSIGMA_NO_THREAD_SAFETY_ANALYSIS
+            QUARISMA_NO_THREAD_SAFETY_ANALYSIS
         {
             std::string result;
 
@@ -1041,7 +1041,7 @@ private:
                 }
             }
 
-#ifdef XSIGMA_MEM_DEBUG
+#ifdef QUARISMA_MEM_DEBUG
             // Add debug-specific information
             strings::str_append(
                 &result,
@@ -1138,7 +1138,7 @@ private:
              * return a.ptr < b.ptr;  // Address tie-breaker
              * ```
              */
-            bool operator()(ChunkHandle ha, ChunkHandle hb) const XSIGMA_NO_THREAD_SAFETY_ANALYSIS
+            bool operator()(ChunkHandle ha, ChunkHandle hb) const QUARISMA_NO_THREAD_SAFETY_ANALYSIS
             {
                 const Chunk* a = allocator_->ChunkFromHandle(ha);
                 const Chunk* b = allocator_->ChunkFromHandle(hb);
@@ -1271,7 +1271,7 @@ private:
               memory_size_(memory_size),
               end_ptr_(static_cast<void*>(static_cast<char*>(ptr_) + memory_size_))
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 memory_size % kMinAllocationSize == 0,
                 "Memory size must be multiple of kMinAllocationSize");
 
@@ -1370,7 +1370,7 @@ private:
         void extend(size_t size)
         {
             memory_size_ += size;
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 memory_size_ % kMinAllocationSize == 0,
                 "Extended memory size must be multiple of kMinAllocationSize");
 
@@ -1457,8 +1457,8 @@ private:
             const auto p_int    = reinterpret_cast<std::uintptr_t>(p);
             const auto base_int = reinterpret_cast<std::uintptr_t>(ptr_);
 
-            XSIGMA_CHECK(p_int >= base_int, "Pointer is before region start");
-            XSIGMA_CHECK(p_int <= base_int + memory_size_, "Pointer is beyond region end");
+            QUARISMA_CHECK(p_int >= base_int, "Pointer is before region start");
+            QUARISMA_CHECK(p_int <= base_int + memory_size_, "Pointer is beyond region end");
 
             return static_cast<size_t>((p_int - base_int) >> kMinAllocationBits);
         }
@@ -1626,7 +1626,7 @@ private:
                 if (preceding_region->end_ptr() == ptr)
                 {
                     // Adjacent memory - extend existing region
-                    XSIGMA_LOG_INFO(
+                    QUARISMA_LOG_INFO(
                         "Extending region {} ({}) by {} bytes",
                         preceding_region->ptr(),
                         format_bytes(preceding_region->memory_size()),
@@ -1638,7 +1638,7 @@ private:
             }
 
             // No coalescing possible - insert new region
-            XSIGMA_LOG_INFO("Adding new region {} ({})", ptr, format_bytes(memory_size));
+            QUARISMA_LOG_INFO("Adding new region {} ({})", ptr, format_bytes(memory_size));
 
             regions_.insert(entry, AllocationRegion(ptr, memory_size));
             return nullptr;
@@ -1772,7 +1772,7 @@ private:
                 return &(*entry);
             }
 
-            XSIGMA_LOG_ERROR("Could not find region for pointer {}", p);
+            QUARISMA_LOG_ERROR("Could not find region for pointer {}", p);
             return nullptr;
         }
 
@@ -1815,7 +1815,7 @@ private:
      * **Side Effects**: May add new AllocationRegion and create initial chunk
      * **Use Cases**: Pool growth, handling large allocations, OOM recovery
      */
-    bool Extend(size_t alignment, size_t rounded_bytes) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    bool Extend(size_t alignment, size_t rounded_bytes) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Deallocates entire free regions to reduce fragmentation.
@@ -1837,7 +1837,7 @@ private:
      * **Use Cases**: OOM recovery, fragmentation reduction, memory pressure
      * **Trade-off**: CPU time vs memory efficiency
      */
-    bool DeallocateFreeRegions(size_t rounded_bytes) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    bool DeallocateFreeRegions(size_t rounded_bytes) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Helper to deallocate specified regions back to sub_allocator.
@@ -1850,7 +1850,7 @@ private:
      * **Use Cases**: Garbage collection implementation, cleanup operations
      */
     void DeallocateRegions(const flat_hash_set<void*>& region_ptrs)
-        XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+        QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Finds suitable chunk in specified bin for allocation.
@@ -1872,7 +1872,7 @@ private:
      */
     void* FindChunkPtr(
         BinNum bin_num, size_t rounded_bytes, size_t num_bytes, uint64_t freed_before)
-        XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+        QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Splits chunk into two parts for allocation.
@@ -1890,7 +1890,7 @@ private:
      * **Invariants**: Maintains chunk linked list and region mapping
      * **Use Cases**: Reducing internal fragmentation, exact-size allocation
      */
-    void SplitChunk(ChunkHandle h, size_t num_bytes) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void SplitChunk(ChunkHandle h, size_t num_bytes) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Merges two adjacent chunks into single larger chunk.
@@ -1907,7 +1907,7 @@ private:
      * **Thread Safety**: Requires mutex protection
      * **Use Cases**: Coalescing during deallocation, fragmentation reduction
      */
-    void Merge(ChunkHandle h, ChunkHandle h2) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void Merge(ChunkHandle h, ChunkHandle h2) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Adds free chunk to appropriate size-based bin.
@@ -1923,7 +1923,7 @@ private:
      * **Bin Selection**: Based on chunk size using exponential bins
      * **Use Cases**: Making chunks available for allocation, coalescing
      */
-    void InsertFreeChunkIntoBin(ChunkHandle h) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void InsertFreeChunkIntoBin(ChunkHandle h) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Removes chunk from bin using iterator (optimized removal).
@@ -1937,7 +1937,7 @@ private:
      */
     void RemoveFreeChunkIterFromBin(
         Bin::FreeChunkSet* free_chunks, const Bin::FreeChunkSet::iterator& c)
-        XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+        QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Removes free chunk from its current bin.
@@ -1948,7 +1948,7 @@ private:
      * **Thread Safety**: Requires mutex protection
      * **Use Cases**: Chunk allocation, chunk merging, bin management
      */
-    void RemoveFreeChunkFromBin(ChunkHandle h) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void RemoveFreeChunkFromBin(ChunkHandle h) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Conditionally removes chunk from bin if it's actually in one.
@@ -1959,7 +1959,7 @@ private:
      * **Thread Safety**: Requires mutex protection
      * **Use Cases**: Safe removal when chunk state is uncertain
      */
-    void MaybeRemoveFreeChunkFromBin(ChunkHandle h) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void MaybeRemoveFreeChunkFromBin(ChunkHandle h) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Removes chunk metadata and deallocates chunk handle.
@@ -1971,7 +1971,7 @@ private:
      * **Side Effects**: Invalidates chunk handle, updates free handle list
      * **Use Cases**: Chunk merging, cleanup operations, memory reclamation
      */
-    void DeleteChunk(ChunkHandle h) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void DeleteChunk(ChunkHandle h) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Renders visual representation of memory occupancy.
@@ -1982,7 +1982,7 @@ private:
      * **Thread Safety**: Requires mutex protection
      * **Use Cases**: Debugging, fragmentation visualization, memory analysis
      */
-    std::string RenderOccupancy() XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    std::string RenderOccupancy() QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Dumps detailed memory allocation log for debugging.
@@ -1993,7 +1993,7 @@ private:
      * **Thread Safety**: Requires mutex protection
      * **Use Cases**: Allocation failure debugging, memory leak analysis
      */
-    void DumpMemoryLog(size_t num_bytes) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void DumpMemoryLog(size_t num_bytes) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Internal implementation of memory map recording.
@@ -2004,7 +2004,7 @@ private:
      * **Thread Safety**: Requires mutex protection
      * **Use Cases**: Debugging, profiling, memory analysis tools
      */
-    memory_dump RecordMemoryMapInternal() XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    memory_dump RecordMemoryMapInternal() QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Conditionally writes memory map to file for debugging.
@@ -2013,7 +2013,7 @@ private:
      * **Thread Safety**: Requires mutex protection
      * **Use Cases**: Automated debugging, memory leak detection
      */
-    void MaybeWriteMemoryMap() XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void MaybeWriteMemoryMap() QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Allocates new chunk handle from internal pool.
@@ -2024,7 +2024,7 @@ private:
      * **Thread Safety**: Requires mutex protection
      * **Use Cases**: Chunk creation, chunk splitting, region initialization
      */
-    ChunkHandle AllocateChunk() XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    ChunkHandle AllocateChunk() QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Returns chunk handle to internal pool for reuse.
@@ -2035,7 +2035,7 @@ private:
      * **Thread Safety**: Requires mutex protection
      * **Use Cases**: Chunk deletion, chunk merging, cleanup
      */
-    void DeallocateChunk(ChunkHandle h) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void DeallocateChunk(ChunkHandle h) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Converts chunk handle to mutable chunk pointer.
@@ -2047,7 +2047,7 @@ private:
      * **Thread Safety**: Requires mutex protection
      * **Use Cases**: Chunk modification, allocation operations
      */
-    Chunk* ChunkFromHandle(ChunkHandle h) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    Chunk* ChunkFromHandle(ChunkHandle h) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Converts chunk handle to const chunk pointer.
@@ -2059,7 +2059,7 @@ private:
      * **Thread Safety**: Requires mutex protection
      * **Use Cases**: Chunk inspection, statistics, debugging
      */
-    const Chunk* ChunkFromHandle(ChunkHandle h) const XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    const Chunk* ChunkFromHandle(ChunkHandle h) const QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Marks chunk as free and updates statistics.
@@ -2071,7 +2071,7 @@ private:
      * **Side Effects**: Updates allocation statistics, sets allocation_id to -1
      * **Use Cases**: Deallocation processing, chunk state management
      */
-    void MarkFree(ChunkHandle h) XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void MarkFree(ChunkHandle h) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Attempts to coalesce chunk with adjacent free chunks.
@@ -2087,7 +2087,7 @@ private:
      * **Use Cases**: Deallocation, fragmentation reduction, memory compaction
      */
     ChunkHandle TryToCoalesce(ChunkHandle h, bool ignore_freed_at)
-        XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+        QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Computes memory fragmentation metric.
@@ -2100,7 +2100,7 @@ private:
      * **Interpretation**: Higher values indicate more fragmentation
      * **Use Cases**: Performance monitoring, garbage collection triggers
      */
-    double GetFragmentation() XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    double GetFragmentation() QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     /**
      * @brief Debug information for a single bin.
@@ -2126,7 +2126,7 @@ private:
      * **Thread Safety**: Requires mutex protection
      * **Use Cases**: Performance analysis, memory usage debugging, optimization
      */
-    std::array<BinDebugInfo, kNumBins> get_bin_debug_info() XSIGMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    std::array<BinDebugInfo, kNumBins> get_bin_debug_info() QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     // ========== Immutable Configuration (Set During Construction) ==========
     /**
@@ -2239,7 +2239,7 @@ private:
      * Provides large contiguous memory regions that allocator_bfc
      * subdivides into smaller chunks for user allocations.
      */
-    std::unique_ptr<xsigma::sub_allocator> sub_allocator_;
+    std::unique_ptr<quarisma::sub_allocator> sub_allocator_;
 
     /**
      * @brief Human-readable name for debugging and profiling.
@@ -2290,7 +2290,7 @@ private:
      * Handles multiple discontiguous memory regions and provides
      * unified pointer-to-chunk mapping across all regions.
      */
-    RegionManager region_manager_ XSIGMA_GUARDED_BY(mutex_);
+    RegionManager region_manager_ QUARISMA_GUARDED_BY(mutex_);
 
     /**
      * @brief Vector storing all chunk metadata.
@@ -2298,7 +2298,7 @@ private:
      * Central repository for chunk information. ChunkHandles are
      * indices into this vector. May contain gaps for deallocated chunks.
      */
-    std::vector<Chunk> chunks_ XSIGMA_GUARDED_BY(mutex_);
+    std::vector<Chunk> chunks_ QUARISMA_GUARDED_BY(mutex_);
 
     /**
      * @brief Head of linked list of free chunk handles.
@@ -2307,7 +2307,7 @@ private:
      * avoiding vector growth when possible. kInvalidChunkHandle indicates
      * empty free list.
      */
-    ChunkHandle free_chunks_list_ XSIGMA_GUARDED_BY(mutex_){kInvalidChunkHandle};
+    ChunkHandle free_chunks_list_ QUARISMA_GUARDED_BY(mutex_){kInvalidChunkHandle};
 
     /**
      * @brief Counter for generating unique allocation identifiers.
@@ -2316,7 +2316,7 @@ private:
      * tracking, debugging, and correlation with external systems.
      * Incremented for each new allocation.
      */
-    int64_t next_allocation_id_ XSIGMA_GUARDED_BY(mutex_){1};
+    int64_t next_allocation_id_ QUARISMA_GUARDED_BY(mutex_){1};
 
     /**
      * @brief Comprehensive allocator statistics and metrics.
@@ -2324,16 +2324,16 @@ private:
      * Tracks memory usage, allocation counts, fragmentation metrics,
      * and performance statistics for monitoring and optimization.
      */
-    allocator_stats stats_ XSIGMA_GUARDED_BY(mutex_);
+    allocator_stats stats_ QUARISMA_GUARDED_BY(mutex_);
 
-#ifdef XSIGMA_MEM_DEBUG
+#ifdef QUARISMA_MEM_DEBUG
     /**
      * @brief Debug-only action counter for operation sequencing.
      *
      * Tracks the sequence number of allocator operations for
      * detailed debugging and analysis in debug builds.
      */
-    int64_t action_counter_ XSIGMA_GUARDED_BY(mutex_){0};
+    int64_t action_counter_ QUARISMA_GUARDED_BY(mutex_){0};
 
     /**
      * @brief Debug-only history of allocation sizes.
@@ -2342,7 +2342,7 @@ private:
      * for debugging allocation patterns and performance analysis.
      */
     static constexpr size_t kMemDebugSizeHistorySize = 4096;
-    int64_t                 size_history_[kMemDebugSizeHistorySize] XSIGMA_GUARDED_BY(mutex_){};
+    int64_t                 size_history_[kMemDebugSizeHistorySize] QUARISMA_GUARDED_BY(mutex_){};
 #endif
 
     // ========== Test Access and Copy Prevention ==========
@@ -2361,4 +2361,4 @@ private:
     allocator_bfc& operator=(const allocator_bfc&) = delete;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

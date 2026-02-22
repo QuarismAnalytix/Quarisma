@@ -11,7 +11,7 @@ struct hash<torch::jit::Module>
 {
     inline size_t operator()(const torch::jit::Module& arg) const
     {
-        return std::hash<xsigma::intrusive_ptr<xsigma::ivalue::Object>>()(arg._ivalue());
+        return std::hash<quarisma::intrusive_ptr<quarisma::ivalue::Object>>()(arg._ivalue());
     }
 };
 

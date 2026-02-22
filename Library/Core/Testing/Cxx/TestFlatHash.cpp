@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include <algorithm>
@@ -22,16 +22,16 @@
 #include <vector>
 
 #include "util/flat_hash.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // ============================================================================
 // Consolidated Test 1: Basic Map and Set Operations
 // ============================================================================
 // Tests: basic operations, value types, iteration, capacity, edge cases,
 //        copy/move semantics, emplace, aliases, insert operations
-XSIGMATEST(FlatHash, map_and_set_comprehensive)
+QUARISMATEST(FlatHash, map_and_set_comprehensive)
 {
     // ===== MAP BASIC OPERATIONS =====
     flat_hash_map<int, std::string> map;
@@ -225,14 +225,14 @@ XSIGMATEST(FlatHash, map_and_set_comprehensive)
     auto result4 = emplace_set.emplace(42);
     EXPECT_FALSE(result4.second);  // Duplicate
 
-    // ===== XSIGMA ALIASES =====
-    xsigma_map<int, std::string> alias_map;
+    // ===== QUARISMA ALIASES =====
+    quarisma_map<int, std::string> alias_map;
     alias_map[1] = "one";
     alias_map[2] = "two";
     EXPECT_EQ(alias_map.size(), 2);
     EXPECT_EQ(alias_map[1], "one");
 
-    xsigma_set<int> alias_set;
+    quarisma_set<int> alias_set;
     alias_set.insert(1);
     alias_set.insert(2);
     EXPECT_EQ(alias_set.size(), 2);
@@ -293,7 +293,7 @@ XSIGMATEST(FlatHash, map_and_set_comprehensive)
 // ============================================================================
 // Tests: default constructor, bucket count constructor, initializer list,
 //        move constructor, copy constructor, move assignments
-XSIGMATEST(FlatHash, constructors_and_move_semantics)
+QUARISMATEST(FlatHash, constructors_and_move_semantics)
 {
     // ===== DEFAULT CONSTRUCTOR =====
     flat_hash_map<int, int> default_map;
@@ -418,7 +418,7 @@ XSIGMATEST(FlatHash, constructors_and_move_semantics)
 // ============================================================================
 // Tests: iterator post-increment, const iterator, erase by iterator/range,
 //        rehash, reserve, equality, swap
-XSIGMATEST(FlatHash, iterators_and_advanced_operations)
+QUARISMATEST(FlatHash, iterators_and_advanced_operations)
 {
     // ===== ITERATOR POST-INCREMENT =====
     flat_hash_map<int, int> iter_map;
@@ -571,7 +571,7 @@ XSIGMATEST(FlatHash, iterators_and_advanced_operations)
 // ============================================================================
 // Tests: KeyOrValueEquality, custom hash and equal functions,
 //        power_of_two_hash_policy instantiation
-XSIGMATEST(FlatHash, custom_hash_and_equality)
+QUARISMATEST(FlatHash, custom_hash_and_equality)
 {
     // ===== KEY OR VALUE EQUALITY CONSTRUCTOR =====
     std::equal_to<int>                                                                 eq;
@@ -676,10 +676,10 @@ XSIGMATEST(FlatHash, custom_hash_and_equality)
 // ============================================================================
 // Tests: all prime_number_hash_policy methods including index_for_hash,
 //        next_size_over, reset, keep_in_range, commit, edge cases
-XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
+QUARISMATEST(FlatHash, prime_number_hash_policy_comprehensive)
 {
     // ===== INDEX FOR HASH =====
-    xsigma::prime_number_hash_policy policy1;
+    quarisma::prime_number_hash_policy policy1;
 
     uint64_t index1 = policy1.index_for_hash(12345, 0);
     EXPECT_GE(index1, 0);
@@ -688,7 +688,7 @@ XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
     EXPECT_GE(index2, 0);
 
     // ===== NEXT SIZE OVER =====
-    xsigma::prime_number_hash_policy policy2;
+    quarisma::prime_number_hash_policy policy2;
 
     uint64_t size          = 10;
     uint64_t original_size = size;
@@ -696,14 +696,14 @@ XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
     EXPECT_GT(size, original_size);
 
     // ===== NEXT SIZE OVER SMALL =====
-    xsigma::prime_number_hash_policy policy3;
+    quarisma::prime_number_hash_policy policy3;
     uint64_t                         small_size = 1;
     auto                             f          = policy3.next_size_over(small_size);
     EXPECT_GT(small_size, 1ULL);
     EXPECT_EQ(f(small_size), 0ULL);  // n % n == 0
 
     // ===== NEXT SIZE OVER BETWEEN PRIMES =====
-    xsigma::prime_number_hash_policy policy4;
+    quarisma::prime_number_hash_policy policy4;
     uint64_t                         between_size = 6;
     auto                             f2           = policy4.next_size_over(between_size);
     EXPECT_GE(between_size, 6ULL);
@@ -711,7 +711,7 @@ XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
     EXPECT_EQ(f2(between_size + 1), 1ULL);
 
     // ===== COMMIT AND INDEX FOR HASH =====
-    xsigma::prime_number_hash_policy policy5;
+    quarisma::prime_number_hash_policy policy5;
     uint64_t                         commit_size = 1000;
     auto                             f3          = policy5.next_size_over(commit_size);
     policy5.commit(f3);
@@ -725,7 +725,7 @@ XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
     EXPECT_EQ(policy5.keep_in_range(big, commit_size - 1), f3(big));
 
     // ===== RESET RESTORES MOD0 =====
-    xsigma::prime_number_hash_policy policy6;
+    quarisma::prime_number_hash_policy policy6;
     uint64_t                         reset_size = 50;
     auto                             f4         = policy6.next_size_over(reset_size);
     policy6.commit(f4);
@@ -737,7 +737,7 @@ XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
     EXPECT_EQ(policy6.keep_in_range(h2, 0ULL), 0ULL);
 
     // ===== NEXT SIZE OVER LARGE =====
-    xsigma::prime_number_hash_policy policy7;
+    quarisma::prime_number_hash_policy policy7;
     uint64_t                         requested  = std::numeric_limits<uint64_t>::max() - 12345ULL;
     uint64_t                         large_size = requested;
     auto                             f5         = policy7.next_size_over(large_size);
@@ -749,12 +749,12 @@ XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
     EXPECT_EQ(policy7.index_for_hash(h3, 0), f5(h3));
 
     // ===== KEEP IN RANGE =====
-    xsigma::prime_number_hash_policy policy8;
+    quarisma::prime_number_hash_policy policy8;
     uint64_t                         range_index = policy8.keep_in_range(12345, 100);
     EXPECT_LE(range_index, 100);
 
     // ===== SEQUENTIAL NEXT SIZE OVER =====
-    xsigma::prime_number_hash_policy policy9;
+    quarisma::prime_number_hash_policy policy9;
     uint64_t                         seq_size1 = 5;
     policy9.next_size_over(seq_size1);
     uint64_t first_prime = seq_size1;
@@ -765,7 +765,7 @@ XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
     EXPECT_GT(second_prime, first_prime);
 
     // ===== INDEX FOR HASH AFTER COMMIT =====
-    xsigma::prime_number_hash_policy policy10;
+    quarisma::prime_number_hash_policy policy10;
     uint64_t                         iah_size = 20;
     auto                             mod_func = policy10.next_size_over(iah_size);
     policy10.commit(mod_func);
@@ -776,7 +776,7 @@ XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
     EXPECT_GE(iah_index2, 0);
 
     // ===== KEEP IN RANGE AFTER COMMIT =====
-    xsigma::prime_number_hash_policy policy11;
+    quarisma::prime_number_hash_policy policy11;
     uint64_t                         kir_size     = 30;
     auto                             kir_mod_func = policy11.next_size_over(kir_size);
     policy11.commit(kir_mod_func);
@@ -788,7 +788,7 @@ XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
     EXPECT_LE(kir_index2, 50);
 
     // ===== EDGE CASES =====
-    xsigma::prime_number_hash_policy policy_edge;
+    quarisma::prime_number_hash_policy policy_edge;
 
     // Size zero
     uint64_t zero_size = 0;
@@ -811,7 +811,7 @@ XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
     EXPECT_GT(huge_size, 0);
 
     // ===== RESET AFTER OPERATIONS =====
-    xsigma::prime_number_hash_policy policy12;
+    quarisma::prime_number_hash_policy policy12;
     uint64_t                         rao_size     = 50;
     auto                             rao_mod_func = policy12.next_size_over(rao_size);
     policy12.commit(rao_mod_func);
@@ -828,10 +828,10 @@ XSIGMATEST(FlatHash, prime_number_hash_policy_comprehensive)
 // ============================================================================
 // Tests: all fibonacci_hash_policy methods including index_for_hash,
 //        next_size_over, reset, keep_in_range, commit
-XSIGMATEST(FlatHash, fibonacci_hash_policy_comprehensive)
+QUARISMATEST(FlatHash, fibonacci_hash_policy_comprehensive)
 {
     // ===== INDEX FOR HASH =====
-    xsigma::fibonacci_hash_policy policy1;
+    quarisma::fibonacci_hash_policy policy1;
 
     uint64_t index1 = policy1.index_for_hash(12345, 0);
     EXPECT_GE(index1, 0);
@@ -840,7 +840,7 @@ XSIGMATEST(FlatHash, fibonacci_hash_policy_comprehensive)
     EXPECT_GE(index2, 0);
 
     // ===== NEXT SIZE OVER =====
-    xsigma::fibonacci_hash_policy policy2;
+    quarisma::fibonacci_hash_policy policy2;
 
     uint64_t size  = 10;
     int8_t   shift = policy2.next_size_over(size);
@@ -848,14 +848,14 @@ XSIGMATEST(FlatHash, fibonacci_hash_policy_comprehensive)
     EXPECT_LE(shift, 63);
 
     // ===== NEXT SIZE OVER MINIMUM =====
-    xsigma::fibonacci_hash_policy policy3;
+    quarisma::fibonacci_hash_policy policy3;
 
     uint64_t min_size = 1;
     policy3.next_size_over(min_size);
     EXPECT_GE(min_size, 2);
 
     // ===== RESET =====
-    xsigma::fibonacci_hash_policy policy4;
+    quarisma::fibonacci_hash_policy policy4;
 
     uint64_t reset_size = 100;
     policy4.next_size_over(reset_size);
@@ -867,14 +867,14 @@ XSIGMATEST(FlatHash, fibonacci_hash_policy_comprehensive)
     EXPECT_GE(reset_size2, 2);
 
     // ===== KEEP IN RANGE =====
-    xsigma::fibonacci_hash_policy policy5;
+    quarisma::fibonacci_hash_policy policy5;
 
     uint64_t num_slots_minus_one = 127;  // 2^7 - 1
     uint64_t range_index         = policy5.keep_in_range(12345, num_slots_minus_one);
     EXPECT_LE(range_index, num_slots_minus_one);
 
     // ===== COMMIT =====
-    xsigma::fibonacci_hash_policy policy6;
+    quarisma::fibonacci_hash_policy policy6;
 
     uint64_t commit_size  = 16;
     int8_t   commit_shift = policy6.next_size_over(commit_size);
@@ -892,10 +892,10 @@ XSIGMATEST(FlatHash, fibonacci_hash_policy_comprehensive)
 // ============================================================================
 // Tests: all power_of_two_hash_policy methods including index_for_hash,
 //        keep_in_range, next_size_over (small/medium/large), commit, reset
-XSIGMATEST(FlatHash, power_of_two_hash_policy_comprehensive)
+QUARISMATEST(FlatHash, power_of_two_hash_policy_comprehensive)
 {
     // ===== INDEX FOR HASH =====
-    xsigma::power_of_two_hash_policy policy1;
+    quarisma::power_of_two_hash_policy policy1;
 
     uint64_t index1 = policy1.index_for_hash(12345, 15);  // 15 = 0xF (4 bits)
     EXPECT_LE(index1, 15);
@@ -907,7 +907,7 @@ XSIGMATEST(FlatHash, power_of_two_hash_policy_comprehensive)
     EXPECT_LE(index3, 255);
 
     // ===== INDEX FOR HASH BITWISE AND =====
-    xsigma::power_of_two_hash_policy policy2;
+    quarisma::power_of_two_hash_policy policy2;
 
     uint64_t hash                = 0x12345678;
     uint64_t num_slots_minus_one = 0xFF;  // 255
@@ -917,7 +917,7 @@ XSIGMATEST(FlatHash, power_of_two_hash_policy_comprehensive)
     EXPECT_EQ(index, expected);
 
     // ===== KEEP IN RANGE =====
-    xsigma::power_of_two_hash_policy policy3;
+    quarisma::power_of_two_hash_policy policy3;
 
     uint64_t nsmone = 127;  // 2^7 - 1
 
@@ -934,7 +934,7 @@ XSIGMATEST(FlatHash, power_of_two_hash_policy_comprehensive)
     EXPECT_LE(kir_index3, nsmone);
 
     // ===== NEXT SIZE OVER SMALL =====
-    xsigma::power_of_two_hash_policy policy4;
+    quarisma::power_of_two_hash_policy policy4;
 
     uint64_t small_size  = 1;
     int8_t   small_shift = policy4.next_size_over(small_size);
@@ -943,7 +943,7 @@ XSIGMATEST(FlatHash, power_of_two_hash_policy_comprehensive)
     EXPECT_EQ(small_shift, 0);
 
     // ===== NEXT SIZE OVER MEDIUM =====
-    xsigma::power_of_two_hash_policy policy5;
+    quarisma::power_of_two_hash_policy policy5;
 
     uint64_t medium_size     = 10;
     uint64_t original_medium = medium_size;
@@ -953,7 +953,7 @@ XSIGMATEST(FlatHash, power_of_two_hash_policy_comprehensive)
     EXPECT_EQ(medium_shift, 0);
 
     // ===== NEXT SIZE OVER LARGE =====
-    xsigma::power_of_two_hash_policy policy6;
+    quarisma::power_of_two_hash_policy policy6;
 
     uint64_t large_size     = 1000000;
     uint64_t original_large = large_size;
@@ -963,7 +963,7 @@ XSIGMATEST(FlatHash, power_of_two_hash_policy_comprehensive)
     EXPECT_EQ(large_shift, 0);
 
     // ===== NEXT SIZE OVER ALREADY POWER OF TWO =====
-    xsigma::power_of_two_hash_policy policy7;
+    quarisma::power_of_two_hash_policy policy7;
 
     uint64_t pow2_size  = 64;  // Already a power of two
     int8_t   pow2_shift = policy7.next_size_over(pow2_size);
@@ -972,7 +972,7 @@ XSIGMATEST(FlatHash, power_of_two_hash_policy_comprehensive)
     EXPECT_EQ(pow2_shift, 0);
 
     // ===== COMMIT IS NOOP =====
-    xsigma::power_of_two_hash_policy policy8;
+    quarisma::power_of_two_hash_policy policy8;
 
     uint64_t commit_index1 = policy8.index_for_hash(12345, 255);
     policy8.commit(5);  // Should have no effect
@@ -980,7 +980,7 @@ XSIGMATEST(FlatHash, power_of_two_hash_policy_comprehensive)
     EXPECT_EQ(commit_index1, commit_index2);
 
     // ===== RESET IS NOOP =====
-    xsigma::power_of_two_hash_policy policy9;
+    quarisma::power_of_two_hash_policy policy9;
 
     uint64_t reset_index1 = policy9.index_for_hash(12345, 255);
     policy9.reset();  // Should have no effect
@@ -988,7 +988,7 @@ XSIGMATEST(FlatHash, power_of_two_hash_policy_comprehensive)
     EXPECT_EQ(reset_index1, reset_index2);
 
     // ===== SEQUENTIAL OPERATIONS =====
-    xsigma::power_of_two_hash_policy policy10;
+    quarisma::power_of_two_hash_policy policy10;
 
     uint64_t seq_size1 = 5;
     policy10.next_size_over(seq_size1);

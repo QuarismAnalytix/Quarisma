@@ -1,6 +1,6 @@
 # `torch._inductor.runtime`
 
-This folder contains code needed xsigma runtime by the output code of
+This folder contains code needed quarisma runtime by the output code of
 Inductor.  The output code of Inductor will import `torch` and
 `torch._inductor.runtime`, but should not import from other files in
 `torch._inductor.*`.  Note that this code includes code that is

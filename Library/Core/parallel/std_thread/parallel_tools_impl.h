@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * Portions of this code are based on VTK (Visualization Toolkit):
 
@@ -31,14 +31,14 @@
 #include "parallel/common/parallel_tools_impl.h"
 #include "parallel/std_thread/parallel_thread_pool.h"  // For parallel_thread_pool
 
-namespace xsigma
+namespace quarisma
 {
 namespace detail
 {
 namespace parallel
 {
 
-int XSIGMA_API number_of_threads_stdthread();
+int QUARISMA_API number_of_threads_stdthread();
 
 //--------------------------------------------------------------------------------
 template <>
@@ -80,26 +80,26 @@ void parallel_tools_impl<backend_type::std_thread>::parallel_for(
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API void parallel_tools_impl<backend_type::std_thread>::initialize(int);
+QUARISMA_API void parallel_tools_impl<backend_type::std_thread>::initialize(int);
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int parallel_tools_impl<backend_type::std_thread>::estimated_number_of_threads();
+QUARISMA_API int parallel_tools_impl<backend_type::std_thread>::estimated_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int parallel_tools_impl<backend_type::std_thread>::estimated_default_number_of_threads();
+QUARISMA_API int parallel_tools_impl<backend_type::std_thread>::estimated_default_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API bool parallel_tools_impl<backend_type::std_thread>::single_thread();
+QUARISMA_API bool parallel_tools_impl<backend_type::std_thread>::single_thread();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API bool parallel_tools_impl<backend_type::std_thread>::is_parallel_scope();
+QUARISMA_API bool parallel_tools_impl<backend_type::std_thread>::is_parallel_scope();
 
 }  // namespace parallel
 }  // namespace detail
-}  // namespace xsigma
+}  // namespace quarisma
 
 #endif

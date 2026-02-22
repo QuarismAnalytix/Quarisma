@@ -1,5 +1,5 @@
-#include <XSigma/core/class_type.h>
-#include <XSigma/core/function.h>
+#include <Quarisma/core/class_type.h>
+#include <Quarisma/core/function.h>
 #include <torch/csrc/jit/ir/scope.h>
 
 #include "util/exception.h"
@@ -36,11 +36,11 @@ std::string get_module_info(const ModuleInstanceInfo& module_instance_info)
 }  // namespace utils
 ScopePtr Scope::intrusive_from_this()
 {
-    xsigma::raw::intrusive_ptr::incref(this);  // we are creating a new pointer
+    quarisma::raw::intrusive_ptr::incref(this);  // we are creating a new pointer
                                                // from a raw `this` pointer
                                                // so we need to bump the refcount
                                                // to account for this ownership
-    return xsigma::intrusive_ptr<Scope>::reclaim(this);
+    return quarisma::intrusive_ptr<Scope>::reclaim(this);
 }
 
 Scope::Scope() : name_(Symbol::scope("")) {}
@@ -49,12 +49,12 @@ Scope::Scope(ScopePtr parent, Symbol name) : parent_(std::move(parent)), name_(n
 
 ScopePtr Scope::push(Symbol name)
 {
-    return xsigma::make_intrusive<Scope>(intrusive_from_this(), name);
+    return quarisma::make_intrusive<Scope>(intrusive_from_this(), name);
 }
 
 ScopePtr Scope::parent()
 {
-    XSIGMA_CHECK(parent_, "Cannot get parent from Scope with no parent");
+    QUARISMA_CHECK(parent_, "Cannot get parent from Scope with no parent");
     return parent_;
 }
 
@@ -116,11 +116,11 @@ std::string Scope::namesFromRoot(const std::string& separator) const
 
 InlinedCallStackPtr InlinedCallStack::intrusive_from_this()
 {
-    xsigma::raw::intrusive_ptr::incref(this);  // we are creating a new pointer
+    quarisma::raw::intrusive_ptr::incref(this);  // we are creating a new pointer
                                                // from a raw `this` pointer
                                                // so we need to bump the refcount
                                                // to account for this ownership
-    return xsigma::intrusive_ptr<InlinedCallStack>::reclaim(this);
+    return quarisma::intrusive_ptr<InlinedCallStack>::reclaim(this);
 }
 
 InlinedCallStack::InlinedCallStack(Function* fn, SourceRange source_range)
@@ -228,7 +228,7 @@ std::vector<InlinedCallStackEntry> InlinedCallStack::vec()
     return r;
 }
 
-ModuleInstanceInfo::ModuleInstanceInfo(xsigma::ClassTypePtr module_type, std::string instance_name)
+ModuleInstanceInfo::ModuleInstanceInfo(quarisma::ClassTypePtr module_type, std::string instance_name)
     : module_type_(std::move(module_type)), instance_name_(std::move(instance_name))
 {
 }

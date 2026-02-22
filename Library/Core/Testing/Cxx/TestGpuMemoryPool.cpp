@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,15 +13,15 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "common/configure.h"
 #include "common/macros.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 
 #include <memory>
 #include <vector>
@@ -30,13 +30,13 @@
 #include "memory/device.h"
 #include "memory/gpu/gpu_memory_pool.h"
 
-using namespace xsigma;
-using namespace xsigma::gpu;
+using namespace quarisma;
+using namespace quarisma::gpu;
 
 /**
  * @brief Test GPU memory pool configuration validation
  */
-XSIGMATEST(GpuMemoryPool, validates_configuration_parameters)
+QUARISMATEST(GpuMemoryPool, validates_configuration_parameters)
 {
     // Test default configuration
     gpu_memory_pool_config default_config;
@@ -65,13 +65,13 @@ XSIGMATEST(GpuMemoryPool, validates_configuration_parameters)
     EXPECT_EQ(32 * 1024ULL, custom_config.max_block_size);
     EXPECT_EQ(1.5, custom_config.block_growth_factor);
 
-    XSIGMA_LOG_INFO("GPU memory pool configuration validation test passed");
+    QUARISMA_LOG_INFO("GPU memory pool configuration validation test passed");
 }
 
 /**
  * @brief Test GPU memory pool creation
  */
-XSIGMATEST(GpuMemoryPool, creates_pool_successfully)
+QUARISMATEST(GpuMemoryPool, creates_pool_successfully)
 {
     // Test pool creation with default configuration
     gpu_memory_pool_config config;
@@ -94,13 +94,13 @@ XSIGMATEST(GpuMemoryPool, creates_pool_successfully)
     EXPECT_EQ(0, pool->get_peak_allocated_bytes());
     EXPECT_EQ(0, pool->get_active_allocations());
 
-    XSIGMA_LOG_INFO("GPU memory pool creation test passed");
+    QUARISMA_LOG_INFO("GPU memory pool creation test passed");
 }
 
 /**
  * @brief Test GPU memory block structure and operations
  */
-XSIGMATEST(GpuMemoryBlock, manages_block_metadata_correctly)
+QUARISMATEST(GpuMemoryBlock, manages_block_metadata_correctly)
 {
     // Test default construction
     gpu_memory_block default_block;
@@ -132,13 +132,13 @@ XSIGMATEST(GpuMemoryBlock, manages_block_metadata_correctly)
     param_block.reuse_count.fetch_add(1);
     EXPECT_EQ(6, param_block.reuse_count.load());
 
-    XSIGMA_LOG_INFO("GPU memory block management test passed");
+    QUARISMA_LOG_INFO("GPU memory block management test passed");
 }
 
 /**
  * @brief Test basic memory allocation and deallocation
  */
-XSIGMATEST(GpuMemoryPool, allocates_and_deallocates_memory)
+QUARISMATEST(GpuMemoryPool, allocates_and_deallocates_memory)
 {
     gpu_memory_pool_config config;
     config.min_block_size = 1024;
@@ -163,18 +163,18 @@ XSIGMATEST(GpuMemoryPool, allocates_and_deallocates_memory)
         // Test deallocation
         pool->deallocate(block1);
 
-        XSIGMA_LOG_INFO("GPU memory pool allocation/deallocation test passed");
+        QUARISMA_LOG_INFO("GPU memory pool allocation/deallocation test passed");
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO("GPU memory pool allocation failed (expected if no GPU): {}", e.what());
+        QUARISMA_LOG_INFO("GPU memory pool allocation failed (expected if no GPU): {}", e.what());
     }
 }
 
 /**
  * @brief Test multiple allocations and memory reuse
  */
-XSIGMATEST(GpuMemoryPool, handles_multiple_allocations)
+QUARISMATEST(GpuMemoryPool, handles_multiple_allocations)
 {
     gpu_memory_pool_config config;
     config.min_block_size    = 512;
@@ -210,13 +210,13 @@ XSIGMATEST(GpuMemoryPool, handles_multiple_allocations)
         pool->deallocate(block);
     }
 
-    XSIGMA_LOG_INFO("GPU memory pool multiple allocations test passed");
+    QUARISMA_LOG_INFO("GPU memory pool multiple allocations test passed");
 }
 
 /**
  * @brief Test memory pool statistics and reporting
  */
-XSIGMATEST(GpuMemoryPool, provides_accurate_statistics)
+QUARISMATEST(GpuMemoryPool, provides_accurate_statistics)
 {
     gpu_memory_pool_config config;
     config.min_block_size  = 1024;
@@ -254,11 +254,11 @@ XSIGMATEST(GpuMemoryPool, provides_accurate_statistics)
             EXPECT_GT(after_dealloc_stats.total_deallocations, initial_stats.total_deallocations);
         }
 
-        XSIGMA_LOG_INFO("GPU memory pool statistics test passed");
+        QUARISMA_LOG_INFO("GPU memory pool statistics test passed");
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "GPU memory pool statistics test failed (expected if no GPU): {}", e.what());
     }
 }
@@ -266,7 +266,7 @@ XSIGMATEST(GpuMemoryPool, provides_accurate_statistics)
 /**
  * @brief Test cache management functionality
  */
-XSIGMATEST(GpuMemoryPool, manages_cache_effectively)
+QUARISMATEST(GpuMemoryPool, manages_cache_effectively)
 {
     gpu_memory_pool_config config;
     config.min_block_size    = 1024;
@@ -296,11 +296,11 @@ XSIGMATEST(GpuMemoryPool, manages_cache_effectively)
             EXPECT_LE(after_clear_stats.cached_memory, stats.cached_memory);
         }
 
-        XSIGMA_LOG_INFO("GPU memory pool cache management test passed");
+        QUARISMA_LOG_INFO("GPU memory pool cache management test passed");
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "GPU memory pool cache management failed (expected if no GPU): {}", e.what());
     }
 }
@@ -308,7 +308,7 @@ XSIGMATEST(GpuMemoryPool, manages_cache_effectively)
 /**
  * @brief Test memory pool with different device types
  */
-XSIGMATEST(GpuMemoryPool, supports_different_device_types)
+QUARISMATEST(GpuMemoryPool, supports_different_device_types)
 {
     gpu_memory_pool_config config;
     config.min_block_size = 1024;
@@ -337,11 +337,11 @@ XSIGMATEST(GpuMemoryPool, supports_different_device_types)
             pool->deallocate(cuda_block_1);
         }
 
-        XSIGMA_LOG_INFO("GPU memory pool device types test passed");
+        QUARISMA_LOG_INFO("GPU memory pool device types test passed");
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "GPU memory pool device types test failed (expected if no GPU): {}", e.what());
     }
 }
@@ -349,7 +349,7 @@ XSIGMATEST(GpuMemoryPool, supports_different_device_types)
 /**
  * @brief Test memory pool error handling
  */
-XSIGMATEST(GpuMemoryPool, handles_errors_gracefully)
+QUARISMATEST(GpuMemoryPool, handles_errors_gracefully)
 {
     gpu_memory_pool_config config;
     config.min_block_size = 1024;
@@ -368,13 +368,13 @@ XSIGMATEST(GpuMemoryPool, handles_errors_gracefully)
         auto invalid_block = pool->allocate(1024, device_enum::CUDA, 999);
         // Should handle gracefully (may return null or throw)
 
-        XSIGMA_LOG_INFO("GPU memory pool error handling test passed");
+        QUARISMA_LOG_INFO("GPU memory pool error handling test passed");
     }
     catch (const std::exception& e)
     {
         // Expected behavior for invalid operations
-        XSIGMA_LOG_INFO("Expected exception in error handling test: {}", e.what());
+        QUARISMA_LOG_INFO("Expected exception in error handling test: {}", e.what());
     }
 }
 
-#endif  // XSIGMA_HAS_CUDA
+#endif  // QUARISMA_HAS_CUDA

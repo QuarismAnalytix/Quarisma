@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,12 +18,12 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "memory/backend/allocator_pool.h"
@@ -47,17 +47,17 @@
 
 #include "logging/logger.h"
 #include "memory/helper/memory_allocator.h"
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 #include "profiler/native/tracing/traceme.h"
 #endif
 #include "util/exception.h"
 
-namespace xsigma
+namespace quarisma
 {
 allocator_pool::allocator_pool(
     size_t                                 pool_size_limit,
     bool                                   auto_resize,
-    std::unique_ptr<xsigma::sub_allocator> allocator,
+    std::unique_ptr<quarisma::sub_allocator> allocator,
     std::unique_ptr<round_up_interface>    size_rounder,
     std::string                            name)
     : name_(std::move(name)),
@@ -69,7 +69,7 @@ allocator_pool::allocator_pool(
 {
     if (auto_resize)
     {
-        XSIGMA_CHECK(pool_size_limit > 0, "size limit must be > 0 if auto_resize is true.");
+        QUARISMA_CHECK(pool_size_limit > 0, "size limit must be > 0 if auto_resize is true.");
     }
 }
 
@@ -119,7 +119,7 @@ void* PrepareChunk(void* chunk, size_t alignment, size_t num_bytes)
         (reinterpret_cast<ChunkPrefix*>(user_ptr) - 1)->chunk_ptr = chunk;
     }
     // Safety check that user_ptr is always past the ChunkPrefix.
-    XSIGMA_CHECK(user_ptr >= reinterpret_cast<ChunkPrefix*>(chunk) + 1);
+    QUARISMA_CHECK(user_ptr >= reinterpret_cast<ChunkPrefix*>(chunk) + 1);
     return user_ptr;
 }
 
@@ -132,7 +132,7 @@ ChunkPrefix* FindPrefix(void* user_ptr)
 
 void* allocator_pool::allocate_raw(size_t alignment, size_t num_bytes)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         static_cast<std::ptrdiff_t>(num_bytes) > 0, "Cannot allocate {} bytes.", num_bytes);
 
     // If alignment is larger than kPoolAlignment, increase num_bytes so that we
@@ -186,7 +186,7 @@ void allocator_pool::deallocate_raw(void* ptr)
         return;
     }
     ChunkPrefix* cp = FindPrefix(ptr);
-    XSIGMA_CHECK(static_cast<void*>(cp) <= static_cast<void*>(ptr));
+    QUARISMA_CHECK(static_cast<void*>(cp) <= static_cast<void*>(ptr));
     if (!has_size_limit_ && !auto_resize_)
     {
         allocator_->Free(cp, cp->num_bytes);
@@ -243,7 +243,7 @@ void allocator_pool::RemoveFromList(PtrRecord* pr)
 {
     if (pr->prev == nullptr)
     {
-        XSIGMA_CHECK(lru_head_ == pr);
+        QUARISMA_CHECK(lru_head_ == pr);
         lru_head_ = nullptr;
     }
     else
@@ -252,7 +252,7 @@ void allocator_pool::RemoveFromList(PtrRecord* pr)
     }
     if (pr->next == nullptr)
     {
-        XSIGMA_CHECK(lru_tail_ == pr);
+        QUARISMA_CHECK(lru_tail_ == pr);
         lru_tail_ = pr->prev;
     }
     else
@@ -270,7 +270,7 @@ void allocator_pool::AddToList(PtrRecord* pr)
     pr->prev = nullptr;
     if (lru_head_ == nullptr)
     {
-        XSIGMA_CHECK(lru_tail_ == nullptr);
+        QUARISMA_CHECK(lru_tail_ == nullptr);
         lru_tail_ = pr;
         pr->next  = nullptr;
     }
@@ -284,14 +284,14 @@ void allocator_pool::AddToList(PtrRecord* pr)
 
 void allocator_pool::EvictOne()
 {
-    XSIGMA_CHECK(lru_tail_ != nullptr);
+    QUARISMA_CHECK(lru_tail_ != nullptr);
     PtrRecord* prec = lru_tail_;
     RemoveFromList(prec);
     auto iter = pool_.find(prec->num_bytes);
     while (iter->second != prec)
     {
         ++iter;
-        XSIGMA_CHECK(iter != pool_.end());
+        QUARISMA_CHECK(iter != pool_.end());
     }
     pool_.erase(iter);
     allocator_->Free(prec->ptr, prec->num_bytes);
@@ -313,7 +313,7 @@ void allocator_pool::EvictOne()
         const bool kShouldLog = false;
         if (kShouldLog)
         {
-            XSIGMA_LOG_INFO(
+            QUARISMA_LOG_INFO(
                 "allocator_pool: After {} get requests, put_count={} evicted_count={} "
                 "eviction_rate={} and unsatisfied allocation rate={}",
                 alloc_request_count,
@@ -329,7 +329,7 @@ void allocator_pool::EvictOne()
                                         : (kIncreaseFactor * pool_size_limit_);
             if (kShouldLog)
             {
-                XSIGMA_LOG_INFO(
+                QUARISMA_LOG_INFO(
                     "Raising pool_size_limit_ from {} to {}", pool_size_limit_, new_size_limit);
             }
             pool_size_limit_ = new_size_limit;
@@ -347,15 +347,15 @@ basic_cpu_allocator::~basic_cpu_allocator() = default;
 
 void* basic_cpu_allocator::Alloc(size_t alignment, size_t num_bytes, size_t* bytes_received)
 {
-#if XSIGMA_HAS_NATIVE_PROFILER
-    xsigma::traceme const traceme("basic_cpu_allocator::Alloc");
+#if QUARISMA_HAS_NATIVE_PROFILER
+    quarisma::traceme const traceme("basic_cpu_allocator::Alloc");
 #endif
 
     void* ptr       = nullptr;
     *bytes_received = num_bytes;
     if (num_bytes > 0)
     {
-        ptr = xsigma::cpu::memory_allocator::allocate(num_bytes, static_cast<int>(alignment));
+        ptr = quarisma::cpu::memory_allocator::allocate(num_bytes, static_cast<int>(alignment));
 
         VisitAlloc(ptr, numa_node_, num_bytes);
     }
@@ -364,14 +364,14 @@ void* basic_cpu_allocator::Alloc(size_t alignment, size_t num_bytes, size_t* byt
 
 void basic_cpu_allocator::Free(void* ptr, size_t num_bytes)
 {
-#if XSIGMA_HAS_NATIVE_PROFILER
-    xsigma::traceme const traceme("basic_cpu_allocator::Free");
+#if QUARISMA_HAS_NATIVE_PROFILER
+    quarisma::traceme const traceme("basic_cpu_allocator::Free");
 #endif
 
     if (num_bytes > 0)
     {
         VisitFree(ptr, numa_node_, num_bytes);
-        xsigma::cpu::memory_allocator::free(ptr);
+        quarisma::cpu::memory_allocator::free(ptr);
     }
 }
-}  // namespace xsigma
+}  // namespace quarisma

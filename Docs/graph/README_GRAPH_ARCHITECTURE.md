@@ -1,12 +1,12 @@
-# XSigma Graph Architecture: Complete Documentation Index
+# Quarisma Graph Architecture: Complete Documentation Index
 
-This directory contains a comprehensive review of XSigma's graph construction and execution mechanisms. The documentation is organized into five complementary documents, each providing different perspectives and levels of detail.
+This directory contains a comprehensive review of Quarisma's graph construction and execution mechanisms. The documentation is organized into five complementary documents, each providing different perspectives and levels of detail.
 
 ---
 
 ## 📚 Documentation Files
 
-### 1. **PYXSIGMA_GRAPH_SUMMARY.md** ⭐ START HERE
+### 1. **PYQUARISMA_GRAPH_SUMMARY.md** ⭐ START HERE
 **Best for:** Quick overview and executive summary
 
 Contains:
@@ -23,7 +23,7 @@ Contains:
 
 ---
 
-### 2. **PYXSIGMA_GRAPH_ARCHITECTURE.md**
+### 2. **PYQUARISMA_GRAPH_ARCHITECTURE.md**
 **Best for:** Detailed technical understanding
 
 Contains:
@@ -44,7 +44,7 @@ Contains:
 
 ---
 
-### 3. **PYXSIGMA_GRAPH_DETAILED_EXAMPLES.md**
+### 3. **PYQUARISMA_GRAPH_DETAILED_EXAMPLES.md**
 **Best for:** Code-level implementation details
 
 Contains:
@@ -63,7 +63,7 @@ Contains:
 
 ---
 
-### 4. **PYXSIGMA_GRAPH_DATA_FLOW.md**
+### 4. **PYQUARISMA_GRAPH_DATA_FLOW.md**
 **Best for:** Practical examples and data flow
 
 Contains:
@@ -84,7 +84,7 @@ Contains:
 
 ---
 
-### 5. **PYXSIGMA_GRAPH_QUICK_REFERENCE.md**
+### 5. **PYQUARISMA_GRAPH_QUICK_REFERENCE.md**
 **Best for:** Quick lookup and reference
 
 Contains:
@@ -113,27 +113,27 @@ Contains:
 ## 🎯 Reading Paths
 
 ### Path 1: Quick Understanding (30 minutes)
-1. Read **PYXSIGMA_GRAPH_SUMMARY.md** (sections 1-7)
-2. Skim **PYXSIGMA_GRAPH_QUICK_REFERENCE.md** (sections 1-8)
-3. Look at examples in **PYXSIGMA_GRAPH_DATA_FLOW.md** (sections 1-2)
+1. Read **PYQUARISMA_GRAPH_SUMMARY.md** (sections 1-7)
+2. Skim **PYQUARISMA_GRAPH_QUICK_REFERENCE.md** (sections 1-8)
+3. Look at examples in **PYQUARISMA_GRAPH_DATA_FLOW.md** (sections 1-2)
 
 ### Path 2: Deep Technical Understanding (2-3 hours)
-1. Read **PYXSIGMA_GRAPH_SUMMARY.md** (all sections)
-2. Read **PYXSIGMA_GRAPH_ARCHITECTURE.md** (all sections)
-3. Study **PYXSIGMA_GRAPH_DETAILED_EXAMPLES.md** (all sections)
-4. Reference **PYXSIGMA_GRAPH_QUICK_REFERENCE.md** as needed
+1. Read **PYQUARISMA_GRAPH_SUMMARY.md** (all sections)
+2. Read **PYQUARISMA_GRAPH_ARCHITECTURE.md** (all sections)
+3. Study **PYQUARISMA_GRAPH_DETAILED_EXAMPLES.md** (all sections)
+4. Reference **PYQUARISMA_GRAPH_QUICK_REFERENCE.md** as needed
 
 ### Path 3: Implementation Study (4-5 hours)
-1. Start with **PYXSIGMA_GRAPH_SUMMARY.md**
-2. Read **PYXSIGMA_GRAPH_ARCHITECTURE.md** carefully
-3. Study **PYXSIGMA_GRAPH_DETAILED_EXAMPLES.md** with source code open
-4. Work through **PYXSIGMA_GRAPH_DATA_FLOW.md** examples
-5. Use **PYXSIGMA_GRAPH_QUICK_REFERENCE.md** for lookups
+1. Start with **PYQUARISMA_GRAPH_SUMMARY.md**
+2. Read **PYQUARISMA_GRAPH_ARCHITECTURE.md** carefully
+3. Study **PYQUARISMA_GRAPH_DETAILED_EXAMPLES.md** with source code open
+4. Work through **PYQUARISMA_GRAPH_DATA_FLOW.md** examples
+5. Use **PYQUARISMA_GRAPH_QUICK_REFERENCE.md** for lookups
 
 ### Path 4: Practical Examples (1-2 hours)
-1. Read **PYXSIGMA_GRAPH_DATA_FLOW.md** (all sections)
-2. Reference **PYXSIGMA_GRAPH_QUICK_REFERENCE.md** (sections 11-17)
-3. Try examples from **PYXSIGMA_GRAPH_SUMMARY.md** (sections 6-7)
+1. Read **PYQUARISMA_GRAPH_DATA_FLOW.md** (all sections)
+2. Reference **PYQUARISMA_GRAPH_QUICK_REFERENCE.md** (sections 11-17)
+3. Try examples from **PYQUARISMA_GRAPH_SUMMARY.md** (sections 6-7)
 
 ---
 
@@ -168,15 +168,15 @@ Contains:
 
 | Component | File | Key Lines |
 |-----------|------|-----------|
-| Node class | `xsigma/csrc/autograd/function.h` | 113-792 |
-| Edge struct | `xsigma/csrc/autograd/edge.h` | 1-57 |
-| Engine | `xsigma/csrc/autograd/engine.cpp` | 1288-1380 |
-| GraphTask | `xsigma/csrc/autograd/graph_task.h` | 17-230 |
-| set_history | `xsigma/csrc/autograd/functions/utils.h` | 66-91 |
-| GraphRoot | `xsigma/csrc/autograd/functions/basic_ops.h` | 85-113 |
-| ReadyQueue | `xsigma/csrc/autograd/engine.h` | 86-125 |
-| Python API | `xsigma/autograd/function.py` | 472-566 |
-| FX Graph | `xsigma/fx/graph.py` | 1105-1350 |
+| Node class | `quarisma/csrc/autograd/function.h` | 113-792 |
+| Edge struct | `quarisma/csrc/autograd/edge.h` | 1-57 |
+| Engine | `quarisma/csrc/autograd/engine.cpp` | 1288-1380 |
+| GraphTask | `quarisma/csrc/autograd/graph_task.h` | 17-230 |
+| set_history | `quarisma/csrc/autograd/functions/utils.h` | 66-91 |
+| GraphRoot | `quarisma/csrc/autograd/functions/basic_ops.h` | 85-113 |
+| ReadyQueue | `quarisma/csrc/autograd/engine.h` | 86-125 |
+| Python API | `quarisma/autograd/function.py` | 472-566 |
+| FX Graph | `quarisma/fx/graph.py` | 1105-1350 |
 
 ---
 
@@ -184,9 +184,9 @@ Contains:
 
 ### Simple Forward-Backward
 ```python
-import xsigma
+import quarisma
 
-x = xsigma.tensor([2.0], requires_grad=True)
+x = quarisma.tensor([2.0], requires_grad=True)
 y = x * 3           # Creates MulBackward0
 z = y + 2           # Creates AddBackward0
 loss = z.sum()      # Creates SumBackward0
@@ -197,7 +197,7 @@ print(x.grad)       # tensor([3.])
 
 ### Multi-Path Gradient Accumulation
 ```python
-x = xsigma.tensor([1.0], requires_grad=True)
+x = quarisma.tensor([1.0], requires_grad=True)
 
 y = x * 2
 z = x * 3
@@ -209,7 +209,7 @@ print(x.grad)       # tensor([5.]) - gradients summed!
 
 ### Selective Execution
 ```python
-x = xsigma.tensor([1.0], requires_grad=True)
+x = quarisma.tensor([1.0], requires_grad=True)
 y = x * 2
 z = y * 3
 
@@ -217,7 +217,7 @@ z = y * 3
 z.backward()
 
 # .grad(): Execute only nodes on path to x, return gradients
-grad_x = xsigma.autograd.grad(z, x)
+grad_x = quarisma.autograd.grad(z, x)
 ```
 
 ---
@@ -229,7 +229,7 @@ grad_x = xsigma.autograd.grad(z, x)
 print(loss.grad_fn)
 
 # Enable anomaly detection
-xsigma.autograd.set_detect_anomaly(True)
+quarisma.autograd.set_detect_anomaly(True)
 
 # Inspect next functions
 print(loss.grad_fn.next_functions)
@@ -258,7 +258,7 @@ loss.backward(retain_graph=True)
 
 After reading this documentation, you should understand:
 
-1. ✅ How XSigma builds computational graphs during forward pass
+1. ✅ How Quarisma builds computational graphs during forward pass
 2. ✅ How nodes and edges represent operations and dependencies
 3. ✅ How the backward pass executes the graph
 4. ✅ How gradients are accumulated and propagated
@@ -274,10 +274,10 @@ After reading this documentation, you should understand:
 ## 🔗 Related Resources
 
 - **Official Autograd Documentation:** https://pytorch.org/docs/stable/autograd.html
-- **Custom Functions Guide:** https://pytorch.org/docs/stable/autograd.html#extending-xsigma-autograd
+- **Custom Functions Guide:** https://pytorch.org/docs/stable/autograd.html#extending-quarisma-autograd
 - **Profiling Guide:** https://pytorch.org/docs/stable/profiler.html
 - **Anomaly Detection:** https://pytorch.org/docs/stable/autograd.html#anomaly-detection
-- **XSigma GitHub:** https://github.com/pytorch/pytorch
+- **Quarisma GitHub:** https://github.com/pytorch/pytorch
 
 ---
 
@@ -285,11 +285,11 @@ After reading this documentation, you should understand:
 
 | Document | Sections | Focus |
 |----------|----------|-------|
-| PYXSIGMA_GRAPH_SUMMARY.md | 13 | Executive summary |
-| PYXSIGMA_GRAPH_ARCHITECTURE.md | 6 | Technical details |
-| PYXSIGMA_GRAPH_DETAILED_EXAMPLES.md | 7 | Code examples |
-| PYXSIGMA_GRAPH_DATA_FLOW.md | 8 | Practical examples |
-| PYXSIGMA_GRAPH_QUICK_REFERENCE.md | 17 | Quick lookup |
+| PYQUARISMA_GRAPH_SUMMARY.md | 13 | Executive summary |
+| PYQUARISMA_GRAPH_ARCHITECTURE.md | 6 | Technical details |
+| PYQUARISMA_GRAPH_DETAILED_EXAMPLES.md | 7 | Code examples |
+| PYQUARISMA_GRAPH_DATA_FLOW.md | 8 | Practical examples |
+| PYQUARISMA_GRAPH_QUICK_REFERENCE.md | 17 | Quick lookup |
 
 ---
 
@@ -308,11 +308,11 @@ After reading this documentation, you should understand:
 
 ## 🚀 Next Steps
 
-1. **Start with:** PYXSIGMA_GRAPH_SUMMARY.md
-2. **Deep dive:** PYXSIGMA_GRAPH_ARCHITECTURE.md
-3. **Study code:** PYXSIGMA_GRAPH_DETAILED_EXAMPLES.md
-4. **Practice:** PYXSIGMA_GRAPH_DATA_FLOW.md
-5. **Reference:** PYXSIGMA_GRAPH_QUICK_REFERENCE.md
+1. **Start with:** PYQUARISMA_GRAPH_SUMMARY.md
+2. **Deep dive:** PYQUARISMA_GRAPH_ARCHITECTURE.md
+3. **Study code:** PYQUARISMA_GRAPH_DETAILED_EXAMPLES.md
+4. **Practice:** PYQUARISMA_GRAPH_DATA_FLOW.md
+5. **Reference:** PYQUARISMA_GRAPH_QUICK_REFERENCE.md
 
 Happy learning! 🎉
 

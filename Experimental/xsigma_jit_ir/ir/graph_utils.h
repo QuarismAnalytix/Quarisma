@@ -7,7 +7,7 @@
 namespace torch::jit
 {
 
-TORCH_API TypePtr getTensorType(const xsigma::Tensor& t, bool complete);
+TORCH_API TypePtr getTensorType(const quarisma::Tensor& t, bool complete);
 
 TORCH_API TypePtr inferShapeAndTypeForInput(
     TypePtr                      input_type,

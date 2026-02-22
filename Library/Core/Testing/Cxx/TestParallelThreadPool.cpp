@@ -1,5 +1,5 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -24,20 +24,20 @@
 #include <thread>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 
 // Only compile these tests for std_thread backend
-#if !XSIGMA_HAS_OPENMP && !XSIGMA_HAS_TBB
+#if !QUARISMA_HAS_OPENMP && !QUARISMA_HAS_TBB
 
 #include "parallel/std_thread/parallel_thread_pool.h"
 
-namespace xsigma
+namespace quarisma
 {
 // ============================================================================
 // Consolidated Test 1: Singleton, Lifecycle, and Initial State
 // ============================================================================
 
-XSIGMATEST(ParallelThreadPool, singleton_lifecycle_and_state)
+QUARISMATEST(ParallelThreadPool, singleton_lifecycle_and_state)
 {
     // Test 1: Singleton access - ensure same instance is returned
     detail::parallel::parallel_thread_pool& pool1 = detail::parallel::parallel_thread_pool::instance();
@@ -60,7 +60,7 @@ XSIGMATEST(ParallelThreadPool, singleton_lifecycle_and_state)
 // Consolidated Test 2: Thread Allocation and Proxy Management
 // ============================================================================
 
-XSIGMATEST(ParallelThreadPool, thread_allocation_and_proxy_management)
+QUARISMATEST(ParallelThreadPool, thread_allocation_and_proxy_management)
 {
     detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
@@ -126,7 +126,7 @@ XSIGMATEST(ParallelThreadPool, thread_allocation_and_proxy_management)
 // Consolidated Test 3: Job Execution and Distribution
 // ============================================================================
 
-XSIGMATEST(ParallelThreadPool, job_execution_and_distribution)
+QUARISMATEST(ParallelThreadPool, job_execution_and_distribution)
 {
     detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
@@ -200,7 +200,7 @@ XSIGMATEST(ParallelThreadPool, job_execution_and_distribution)
 // Consolidated Test 4: Thread Identification
 // ============================================================================
 
-XSIGMATEST(ParallelThreadPool, thread_identification)
+QUARISMATEST(ParallelThreadPool, thread_identification)
 {
     detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
@@ -234,7 +234,7 @@ XSIGMATEST(ParallelThreadPool, thread_identification)
 // Consolidated Test 5: Parallel Scope Detection
 // ============================================================================
 
-XSIGMATEST(ParallelThreadPool, parallel_scope_detection)
+QUARISMATEST(ParallelThreadPool, parallel_scope_detection)
 {
     detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
@@ -264,7 +264,7 @@ XSIGMATEST(ParallelThreadPool, parallel_scope_detection)
 // Consolidated Test 6: Nested Proxies and Top-Level Detection
 // ============================================================================
 
-XSIGMATEST(ParallelThreadPool, nested_proxies_and_top_level)
+QUARISMATEST(ParallelThreadPool, nested_proxies_and_top_level)
 {
     detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
@@ -309,7 +309,7 @@ XSIGMATEST(ParallelThreadPool, nested_proxies_and_top_level)
 // Consolidated Test 7: Thread Reuse and Sequential Allocation
 // ============================================================================
 
-XSIGMATEST(ParallelThreadPool, thread_reuse_and_sequential_allocation)
+QUARISMATEST(ParallelThreadPool, thread_reuse_and_sequential_allocation)
 {
     detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
@@ -332,7 +332,7 @@ XSIGMATEST(ParallelThreadPool, thread_reuse_and_sequential_allocation)
 // Consolidated Test 8: Edge Cases and Error Handling
 // ============================================================================
 
-XSIGMATEST(ParallelThreadPool, edge_cases_and_error_handling)
+QUARISMATEST(ParallelThreadPool, edge_cases_and_error_handling)
 {
     detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
@@ -380,7 +380,7 @@ XSIGMATEST(ParallelThreadPool, edge_cases_and_error_handling)
 // Consolidated Test 9: Thread Safety and Concurrency
 // ============================================================================
 
-XSIGMATEST(ParallelThreadPool, thread_safety_and_concurrency)
+QUARISMATEST(ParallelThreadPool, thread_safety_and_concurrency)
 {
     detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
@@ -462,7 +462,7 @@ XSIGMATEST(ParallelThreadPool, thread_safety_and_concurrency)
 // Consolidated Test 10: Integration Tests
 // ============================================================================
 
-XSIGMATEST(ParallelThreadPool, integration_tests)
+QUARISMATEST(ParallelThreadPool, integration_tests)
 {
     detail::parallel::parallel_thread_pool& pool = detail::parallel::parallel_thread_pool::instance();
 
@@ -536,6 +536,6 @@ XSIGMATEST(ParallelThreadPool, integration_tests)
     }
 }
 
-}  // namespace xsigma
+}  // namespace quarisma
 
-#endif  // !XSIGMA_HAS_OPENMP && !XSIGMA_HAS_TBB
+#endif  // !QUARISMA_HAS_OPENMP && !QUARISMA_HAS_TBB

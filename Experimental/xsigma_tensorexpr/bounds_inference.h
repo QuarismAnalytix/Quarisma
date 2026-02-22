@@ -13,7 +13,7 @@ class Expr;
 class Buf;
 class Stmt;
 
-enum XSIGMA_API_ENUM TensorAccessKind
+enum QUARISMA_API_ENUM TensorAccessKind
 {
     kLoad,
     kStore,
@@ -55,7 +55,7 @@ getPotentialHazards(analysis::MemDependencyChecker& analyzer, const StmtPtr& A, 
 
 // Returns true if there is a conflicting overlap between accesses in
 // statements A and B. A conflicting overlap is an overlap in buffer accesses
-// where xsigma least one of the accesses is a Store.
+// where quarisma least one of the accesses is a Store.
 TORCH_API bool hasConflictingOverlap(
     analysis::MemDependencyChecker& analyzer, const StmtPtr& A, const StmtPtr& B);
 // Same as above, between accesses in stores S1 and S2.

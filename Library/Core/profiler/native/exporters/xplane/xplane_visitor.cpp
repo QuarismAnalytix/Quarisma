@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
@@ -43,7 +43,7 @@ limitations under the License.
 #include "util/exception.h"
 #include "util/flat_hash.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 x_stat_visitor::x_stat_visitor(const xplane_visitor* plane, const xstat* stat)
@@ -117,7 +117,7 @@ xplane_visitor::xplane_visitor(
     const xplane*         plane,
     const TypeGetterList& event_type_getter_list,
     const TypeGetterList& stat_type_getter_list)
-    : xstats_owner<xsigma::xplane>(this, plane), plane_(plane)
+    : xstats_owner<quarisma::xplane>(this, plane), plane_(plane)
 {
     build_event_type_map(plane, event_type_getter_list);
     build_stat_type_map(plane, stat_type_getter_list);
@@ -140,7 +140,7 @@ void xplane_visitor::build_event_type_map(
             if (event_type.has_value())
             {
                 [[maybe_unused]] auto result = event_type_by_id_.emplace(metadata_id, *event_type);
-                XSIGMA_CHECK_DEBUG(result.second);  // inserted
+                QUARISMA_CHECK_DEBUG(result.second);  // inserted
                 break;
             }
         }
@@ -185,7 +185,7 @@ void xplane_visitor::build_stat_type_map(
             if (stat_type.has_value())
             {
                 [[maybe_unused]] auto result = stat_type_by_id_.emplace(metadata_id, *stat_type);
-                XSIGMA_CHECK_DEBUG(result.second);  // inserted
+                QUARISMA_CHECK_DEBUG(result.second);  // inserted
                 stat_metadata_by_type_.emplace(*stat_type, &metadata);
                 break;
             }
@@ -231,4 +231,4 @@ const x_stat_metadata* xplane_visitor::get_stat_metadata_by_type(int64_t stat_ty
     }
     return nullptr;
 }
-}  // namespace xsigma
+}  // namespace quarisma

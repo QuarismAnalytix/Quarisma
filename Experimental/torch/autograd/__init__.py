@@ -1,6 +1,6 @@
 # mypy: allow-untyped-defs
 """
-``xsigma.autograd`` provides classes and functions implementing automatic differentiation of arbitrary scalar valued functions.
+``quarisma.autograd`` provides classes and functions implementing automatic differentiation of arbitrary scalar valued functions.
 
 It requires minimal changes to the existing code - you only need to declare :class:`Tensor` s
 for which gradients should be computed with the ``requires_grad=True`` keyword.
@@ -12,10 +12,10 @@ import warnings
 from collections.abc import Sequence
 from typing import cast, Optional, Union
 
-import xsigma
-from xsigma import _vmap_internals
-from xsigma.overrides import handle_torch_function, has_torch_function, is_tensor_like
-from xsigma.types import _size, _TensorOrTensors, _TensorOrTensorsOrGradEdge
+import quarisma
+from quarisma import _vmap_internals
+from quarisma.overrides import handle_torch_function, has_torch_function, is_tensor_like
+from quarisma.types import _size, _TensorOrTensors, _TensorOrTensorsOrGradEdge
 
 from . import forward_ad, functional, graph
 from .anomaly_mode import detect_anomaly, set_detect_anomaly
@@ -53,25 +53,25 @@ __all__ = [
     "variable",
 ]
 
-_OptionalTensor = Optional[xsigma.Tensor]
-_ShapeorNestedShape = Union[_size, Sequence[_size], xsigma.Tensor]
+_OptionalTensor = Optional[quarisma.Tensor]
+_ShapeorNestedShape = Union[_size, Sequence[_size], quarisma.Tensor]
 
 
 def _calculate_shape(
-    output: Union[xsigma.Tensor, graph.GradientEdge],
-    grad: xsigma.Tensor,
+    output: Union[quarisma.Tensor, graph.GradientEdge],
+    grad: quarisma.Tensor,
     is_grads_batched: bool,
 ) -> tuple[_ShapeorNestedShape, _ShapeorNestedShape]:
     # is_same_size ensures that both tensors are either nested or non nested
     # circular import
-    from xsigma.nested._internal.nested_tensor import NestedTensor
+    from quarisma.nested._internal.nested_tensor import NestedTensor
 
     if isinstance(output, graph.GradientEdge):
         # We have already checked that we are not a C++ NestedTensor
         if is_grads_batched:
             raise RuntimeError("Batched grads are not supported with GradientEdge")
         out_metadata = output.node._input_metadata[output.output_nr]
-        return xsigma.Size(out_metadata.shape), grad.shape
+        return quarisma.Size(out_metadata.shape), grad.shape
 
     if output.is_nested and not isinstance(output, NestedTensor):
         if is_grads_batched:
@@ -87,20 +87,20 @@ def _calculate_shape(
 
 
 def _make_grads(
-    outputs: Union[Sequence[xsigma.Tensor], Sequence[graph.GradientEdge]],
+    outputs: Union[Sequence[quarisma.Tensor], Sequence[graph.GradientEdge]],
     grads: Sequence[_OptionalTensor],
     is_grads_batched: bool,
 ) -> tuple[_OptionalTensor, ...]:
     new_grads: list[_OptionalTensor] = []
 
     for out, grad in zip(outputs, grads):
-        out = cast(Union[xsigma.Tensor, graph.GradientEdge], out)
+        out = cast(Union[quarisma.Tensor, graph.GradientEdge], out)
         out_size = None
         out_device = None
 
         if isinstance(out, graph.GradientEdge):
             out_metadata = out.node._input_metadata[out.output_nr]
-            out_size = xsigma.Size(out_metadata.shape)
+            out_size = quarisma.Size(out_metadata.shape)
             out_dtype = out_metadata.dtype
             out_device = out_metadata.device
             out_is_nested = out_metadata.is_nested_tensor
@@ -111,18 +111,18 @@ def _make_grads(
             out_is_cpp_nested = False
         else:
             # circular import
-            from xsigma.nested._internal.nested_tensor import NestedTensor
+            from quarisma.nested._internal.nested_tensor import NestedTensor
 
-            if not isinstance(out, xsigma.Tensor):
-                raise AssertionError("Expected output to be a xsigma.Tensor")
+            if not isinstance(out, quarisma.Tensor):
+                raise AssertionError("Expected output to be a quarisma.Tensor")
             out_dtype = out.dtype
             out_is_nested = out.is_nested
             out_is_cpp_nested = out_is_nested and not isinstance(out, NestedTensor)
             if not out_is_cpp_nested:
                 out_size = out.shape
 
-        if isinstance(grad, xsigma.Tensor):
-            from xsigma.fx.experimental.symbolic_shapes import expect_true, sym_eq
+        if isinstance(grad, quarisma.Tensor):
+            from quarisma.fx.experimental.symbolic_shapes import expect_true, sym_eq
 
             first_grad = grad if not is_grads_batched else grad[0]
 
@@ -130,9 +130,9 @@ def _make_grads(
             # singleton int to represent jagged dimension, so that size() call
             # on nested tensor works.
             if out_is_cpp_nested:
-                if not isinstance(out, xsigma.Tensor):
-                    raise AssertionError("Expected output to be a xsigma.Tensor.")
-                shape_matches = xsigma.is_same_size(out, first_grad)
+                if not isinstance(out, quarisma.Tensor):
+                    raise AssertionError("Expected output to be a quarisma.Tensor.")
+                shape_matches = quarisma.is_same_size(out, first_grad)
             else:
                 # We need to do a regular size check, without going through
                 # the operator, to be able to handle unbacked symints
@@ -142,7 +142,7 @@ def _make_grads(
                 shape_matches = expect_true(sym_eq(out_size, first_grad.size()))
 
             if not shape_matches:
-                out = cast(Union[xsigma.Tensor, graph.GradientEdge], out)  # type: ignore[redundant-cast]
+                out = cast(Union[quarisma.Tensor, graph.GradientEdge], out)  # type: ignore[redundant-cast]
                 out_shape, grad_shape = _calculate_shape(
                     out, first_grad, is_grads_batched
                 )
@@ -198,8 +198,8 @@ def _make_grads(
                         raise AssertionError("Expected out_size to be set.")
                     out_numel_is_1 = all(o == 1 for o in out_size)
                 else:
-                    if not isinstance(out, xsigma.Tensor):
-                        raise AssertionError("Expected output to be a xsigma.Tensor")
+                    if not isinstance(out, quarisma.Tensor):
+                        raise AssertionError("Expected output to be a quarisma.Tensor")
                     out_numel_is_1 = out.numel() == 1
                 if not out_numel_is_1:
                     raise RuntimeError(
@@ -217,17 +217,17 @@ def _make_grads(
                     if out_device is None:
                         raise AssertionError("Expected out_device to be set.")
                     new_grads.append(
-                        xsigma.ones(
+                        quarisma.ones(
                             out_size,
                             dtype=out_dtype,
                             device=out_device,
                         )
                     )
                 else:
-                    if not isinstance(out, xsigma.Tensor):
-                        raise AssertionError("Expected output to be a xsigma.Tensor")
+                    if not isinstance(out, quarisma.Tensor):
+                        raise AssertionError("Expected output to be a quarisma.Tensor")
                     new_grads.append(
-                        xsigma.ones_like(out, memory_format=xsigma.preserve_format)
+                        quarisma.ones_like(out, memory_format=quarisma.preserve_format)
                     )
             else:
                 new_grads.append(None)
@@ -244,7 +244,7 @@ def _tensor_or_tensors_to_tuple(
 ) -> tuple[_OptionalTensor, ...]:
     if tensors is None:
         return (None,) * length
-    if isinstance(tensors, xsigma.Tensor):
+    if isinstance(tensors, quarisma.Tensor):
         return (tensors,)
     return tuple(tensors)
 
@@ -313,7 +313,7 @@ def backward(
             not provided, the gradient is accumulated into all the leaf Tensors that
             were used to compute the :attr:`tensors`.
     """
-    if xsigma._C._are_functorch_transforms_active():
+    if quarisma._C._are_functorch_transforms_active():
         raise RuntimeError(
             "backward() called inside a functorch transform. This is not "
             "supported, please use functorch.grad or functorch.vjp instead "
@@ -335,10 +335,10 @@ def backward(
                 "use `grad_tensors`."
             )
 
-    inputs_tuple: tuple[Union[xsigma.Tensor, graph.GradientEdge], ...]
+    inputs_tuple: tuple[Union[quarisma.Tensor, graph.GradientEdge], ...]
     if inputs is None:
         inputs_tuple = ()
-    elif isinstance(inputs, (xsigma.Tensor, graph.GradientEdge)):
+    elif isinstance(inputs, (quarisma.Tensor, graph.GradientEdge)):
         inputs_tuple = (inputs,)
     else:
         inputs_tuple = tuple(inputs)
@@ -347,7 +347,7 @@ def backward(
 
     if is_tensor_like(tensors) or isinstance(tensors, graph.GradientEdge):
         tensors = cast(
-            Union[tuple[xsigma.Tensor], tuple[graph.GradientEdge]], (tensors,)
+            Union[tuple[quarisma.Tensor], tuple[graph.GradientEdge]], (tensors,)
         )
     else:
         # pyrefly: ignore [bad-argument-type]
@@ -382,7 +382,7 @@ def grad(
     allow_unused: Optional[bool] = None,
     is_grads_batched: bool = False,
     materialize_grads: bool = False,
-) -> tuple[xsigma.Tensor, ...]:
+) -> tuple[quarisma.Tensor, ...]:
     r"""Compute and return the sum of gradients of outputs with respect to the inputs.
 
     ``grad_outputs`` should be a sequence of length matching ``output``
@@ -400,7 +400,7 @@ def grad(
 
         ``only_inputs`` argument is deprecated and is ignored now (defaults to ``True``).
         To accumulate gradient for other parts of the graph, please use
-        ``xsigma.autograd.backward``.
+        ``quarisma.autograd.backward``.
 
     Args:
         outputs (sequence of Tensor or GradientEdge): outputs of the differentiated function.
@@ -429,7 +429,7 @@ def grad(
             single call. This should lead to performance improvements when compared
             to manually looping and performing backward multiple times. Note that
             due to this feature being experimental, there may be performance
-            cliffs. Please use ``xsigma._C._debug_only_display_vmap_fallback_warnings(True)``
+            cliffs. Please use ``quarisma._C._debug_only_display_vmap_fallback_warnings(True)``
             to show any performance warnings and file an issue on github if warnings exist
             for your use case. Defaults to ``False``.
         materialize_grads (bool, optional): If ``True``, set the gradient for unused inputs
@@ -447,7 +447,7 @@ def grad(
         allow_unused = materialize_grads
     if is_tensor_like(outputs) or isinstance(outputs, graph.GradientEdge):
         outputs = cast(
-            Union[Sequence[xsigma.Tensor], Sequence[graph.GradientEdge]], (outputs,)
+            Union[Sequence[quarisma.Tensor], Sequence[graph.GradientEdge]], (outputs,)
         )
     else:
         # pyrefly: ignore [bad-argument-type]
@@ -479,7 +479,7 @@ def grad(
         warnings.warn(
             "only_inputs argument is deprecated and is ignored now "
             "(defaults to True). To accumulate gradient for other "
-            "parts of the graph, please use xsigma.autograd.backward.",
+            "parts of the graph, please use quarisma.autograd.backward.",
             FutureWarning,
             stacklevel=2,
         )
@@ -532,7 +532,7 @@ def grad(
         result = tuple(
             output
             if output is not None
-            else xsigma.zeros_like(input, requires_grad=True)
+            else quarisma.zeros_like(input, requires_grad=True)
             for (output, input) in zip(result, inputs)
         )
     return result
@@ -540,14 +540,14 @@ def grad(
 
 # This function applies in case of gradient checkpointing for memory
 # optimization. Currently, gradient checkpointing is supported only if the
-# execution engine is invoked through xsigma.autograd.backward() and its
-# inputs argument is not passed. It is not supported for xsigma.autograd.grad().
+# execution engine is invoked through quarisma.autograd.backward() and its
+# inputs argument is not passed. It is not supported for quarisma.autograd.grad().
 # This is because if inputs are specified, the gradient won't be calculated for
 # anything else e.g. model parameters like weights, bias etc.
 #
-# This function returns whether the checkpointing is valid i.e. xsigma.autograd.backward
-# or not i.e. xsigma.autograd.grad. The implementation works by maintaining a thread
-# local variable in xsigma/csrc/autograd/engine.cpp which looks at the NodeTask
+# This function returns whether the checkpointing is valid i.e. quarisma.autograd.backward
+# or not i.e. quarisma.autograd.grad. The implementation works by maintaining a thread
+# local variable in quarisma/csrc/autograd/engine.cpp which looks at the NodeTask
 # in the stack and before a NodeTask is executed in evaluate_function, it
 # checks for whether reentrant backwards is imperative or not.
 # See https://github.com/pytorch/pytorch/pull/4594 for more discussion/context
@@ -557,21 +557,21 @@ def _is_checkpoint_valid():
 
 def variable(*args, **kwargs):  # noqa: D103
     raise RuntimeError(
-        "xsigma.autograd.variable(...) is deprecated, use xsigma.tensor(...) instead"
+        "quarisma.autograd.variable(...) is deprecated, use quarisma.tensor(...) instead"
     )
 
 
 # Monkey patching variable.Variable to fix FX codegen. FX generates a call by roughly doing
-# f"{fn.__module__}.{fn.__name__}(...). This yields xsigma.autograd.variable.Variable(...) in the
-# output of an FX graph.  Unfortunately the module name xsigma.autograd.variable is shadowed by the
+# f"{fn.__module__}.{fn.__name__}(...). This yields quarisma.autograd.variable.Variable(...) in the
+# output of an FX graph.  Unfortunately the module name quarisma.autograd.variable is shadowed by the
 # deprecated function - variable(...).
 variable.Variable = Variable  # type: ignore[attr-defined]
 
-if not xsigma._C._autograd_init():
+if not quarisma._C._autograd_init():
     raise RuntimeError("autograd initialization failed")
 
 # Import all native method/classes
-from xsigma._C._autograd import (
+from quarisma._C._autograd import (
     _add_metadata_json,
     _disable_profiler,
     _disable_profiler_legacy,
@@ -596,7 +596,7 @@ from xsigma._C._autograd import (
     ProfilerEvent,
     SavedTensor,
 )
-from xsigma._C._profiler import ProfilerActivity, ProfilerConfig, ProfilerState
+from quarisma._C._profiler import ProfilerActivity, ProfilerConfig, ProfilerState
 
 from . import profiler
 
@@ -604,15 +604,15 @@ from . import profiler
 def _register_py_tensor_class_for_device(device, cls):
     if not isinstance(cls, type):
         raise RuntimeError("cls isn't a typeinfo object")
-    xsigma._C._register_py_class_for_device(device, cls)
+    quarisma._C._register_py_class_for_device(device, cls)
 
 
-is_multithreading_enabled = xsigma._C._is_multithreading_enabled
-xsigma._C._add_docstr(
+is_multithreading_enabled = quarisma._C._is_multithreading_enabled
+quarisma._C._add_docstr(
     is_multithreading_enabled, "Returns True if multithreading is currently enabled."
 )
 
-is_view_replay_enabled = xsigma._C._is_view_replay_enabled
-xsigma._C._add_docstr(
+is_view_replay_enabled = quarisma._C._is_view_replay_enabled
+quarisma._C._add_docstr(
     is_view_replay_enabled, "Returns True if view-replay is currently enabled."
 )

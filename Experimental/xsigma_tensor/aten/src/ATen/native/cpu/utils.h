@@ -1,8 +1,8 @@
 #pragma once
 
-#include <XSigma/Parallel.h>
-#include <XSigma/core/TensorAccessor.h>
-#include <XSigma/cpu/vec/vec.h>
+#include <Quarisma/Parallel.h>
+#include <Quarisma/core/TensorAccessor.h>
+#include <Quarisma/cpu/vec/vec.h>
 #include <c10/util/llvmMathExtras.h>
 
 #ifdef USE_FBGEMM

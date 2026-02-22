@@ -5,7 +5,7 @@
 #include <set>
 #include <string>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "logging/logger.h"
 #include "profiler/common/api.h"
 #include "profiler/common/record_function.h"
@@ -13,12 +13,12 @@
 
 namespace
 {
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 
 std::string makeTracePath()
 {
     const auto timestamp = std::chrono::steady_clock::now().time_since_epoch().count();
-    return "xsigma_autograd_trace.json";
+    return "quarisma_autograd_trace.json";
 }
 
 void runSampleWork()
@@ -28,10 +28,10 @@ void runSampleWork()
 
     const auto start_time = std::chrono::steady_clock::now();
 
-    auto step_callbacks = xsigma::getStepCallbacksUnlessEmpty(xsigma::RecordScope::FUNCTION);
-    if XSIGMA_UNLIKELY (step_callbacks.has_value())
+    auto step_callbacks = quarisma::getStepCallbacksUnlessEmpty(quarisma::RecordScope::FUNCTION);
+    if QUARISMA_UNLIKELY (step_callbacks.has_value())
     {
-        xsigma::RecordFunction guard(std::move(*step_callbacks));
+        quarisma::RecordFunction guard(std::move(*step_callbacks));
         auto                   f = [](int n)
         {
             double accumulator = 0.;
@@ -51,22 +51,22 @@ void runSampleWork()
     }
 }
 
-#endif  // XSIGMA_HAS_KINETO
+#endif  // QUARISMA_HAS_KINETO
 }  // namespace
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 
-XSIGMATEST(profiler, autograd_chrome_trace_export)
+QUARISMATEST(profiler, autograd_chrome_trace_export)
 {
-    const std::set<xsigma::autograd::profiler::ActivityType> activities{
-        xsigma::autograd::profiler::ActivityType::CPU,
+    const std::set<quarisma::autograd::profiler::ActivityType> activities{
+        quarisma::autograd::profiler::ActivityType::CPU,
     };
 
     // Enable RecordFunction FIRST before enabling profiler
-    //xsigma::RecordFunctionGuard record_function_guard(/*is_enabled=*/true);
+    //quarisma::RecordFunctionGuard record_function_guard(/*is_enabled=*/true);
 
-    xsigma::autograd::profiler::ProfilerConfig config(
-        xsigma::autograd::profiler::ProfilerState::KINETO,
+    quarisma::autograd::profiler::ProfilerConfig config(
+        quarisma::autograd::profiler::ProfilerState::KINETO,
         /*report_input_shapes=*/true,
         /*profile_memory=*/true,
         /*with_stack=*/true,
@@ -74,18 +74,18 @@ XSIGMATEST(profiler, autograd_chrome_trace_export)
         /*with_modules=*/false);
 
     // Specify USER_SCOPE to capture RECORD_USER_SCOPE events
-    const std::unordered_set<xsigma::RecordScope> scopes = {xsigma::RecordScope::FUNCTION};
+    const std::unordered_set<quarisma::RecordScope> scopes = {quarisma::RecordScope::FUNCTION};
 
-    xsigma::autograd::profiler::prepareProfiler(config, activities);
-    xsigma::autograd::profiler::enableProfiler(config, activities, scopes);
+    quarisma::autograd::profiler::prepareProfiler(config, activities);
+    quarisma::autograd::profiler::enableProfiler(config, activities, scopes);
 
-    EXPECT_TRUE(xsigma::hasCallbacks()) << "RecordFunction callbacks not registered for profiler";
+    EXPECT_TRUE(quarisma::hasCallbacks()) << "RecordFunction callbacks not registered for profiler";
 
-    std::cout << "Callbacks registered: " << xsigma::hasCallbacks() << std::endl;
+    std::cout << "Callbacks registered: " << quarisma::hasCallbacks() << std::endl;
 
     runSampleWork();
 
-    auto result = xsigma::autograd::profiler::disableProfiler();
+    auto result = quarisma::autograd::profiler::disableProfiler();
     EXPECT_NE(result, nullptr);
     const auto trace_path = makeTracePath();
     result->save(trace_path);
@@ -102,4 +102,4 @@ XSIGMATEST(profiler, autograd_chrome_trace_export)
               << std::endl;
 }
 
-#endif  // XSIGMA_HAS_KINETO
+#endif  // QUARISMA_HAS_KINETO

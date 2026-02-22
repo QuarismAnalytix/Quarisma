@@ -1,7 +1,7 @@
 # PyTorch-Style Profiler Table Implementation Checklist
 
 ## Quick Summary
-To generate PyTorch-style profiler output, the XSigma Non-Naive Profiler needs **6 key enhancements**:
+To generate PyTorch-style profiler output, the Quarisma Non-Naive Profiler needs **6 key enhancements**:
 
 | # | Feature | Status | Priority | Effort | Dependencies |
 |---|---------|--------|----------|--------|--------------|

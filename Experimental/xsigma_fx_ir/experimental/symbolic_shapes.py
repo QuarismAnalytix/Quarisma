@@ -200,7 +200,7 @@ def log_lru_cache_stats(wrapped_f: functools._lru_cache_wrapper[object]) -> None
 # expression could denote int, float OR bool, and otherwise use the more
 # specific Expr for int/float and SympyBoolean for bool.
 #
-# In obscure Meta only situations, sympy.logic.boolalg doesn't exist xsigma runtime.
+# In obscure Meta only situations, sympy.logic.boolalg doesn't exist quarisma runtime.
 # So make sure only type checker evaluates this alias.
 # Xref: https://www.internalfb.com/diff/D53324783
 SympyBoolean: TypeAlias = "sympy.logic.boolalg.Boolean"
@@ -255,7 +255,7 @@ def _nested_int_aware_sort(
     )
 
 
-# Wrapper on lru_cache that reports statistics xsigma process end
+# Wrapper on lru_cache that reports statistics quarisma process end
 def lru_cache(
     maxsize: Optional[int],
 ) -> Callable[[Callable[..., _T]], functools._lru_cache_wrapper[_T]]:
@@ -356,7 +356,7 @@ def create_contiguous(shape: Sequence[Int]) -> list[Int]:
 def hint_int(a: Union[torch.SymInt, int], fallback: Optional[int] = None) -> int:
     """
     Retrieve the hint for an int (based on the underlying real values as observed
-    xsigma runtime).  If no hint is available (e.g., because data dependent shapes),
+    quarisma runtime).  If no hint is available (e.g., because data dependent shapes),
     if fallback is not None, use that instead (otherwise raise an error).
     """
     if isinstance(a, torch.SymInt):
@@ -462,7 +462,7 @@ def guard_size_oblivious(expr: Union[torch.SymBool, bool]) -> bool:
     """
     Perform a guard on a symbolic boolean expression in a size oblivious way.
     This is typically used when a non-oblivious test would result in a guard
-    on a data dependent value of which we don't know the value of xsigma compile time.
+    on a data dependent value of which we don't know the value of quarisma compile time.
     When a guard is tested this way, we may diverge in behavior from how regular
     PyTorch semantics would treat it.  For more information, see
     https://github.com/pytorch/pytorch/pull/118579
@@ -579,7 +579,7 @@ def rebind_unbacked(
             # In all of these cases, it is no longer necessary to generate
             # deferred runtime asserts, since other subsystems (e.g., the
             # constant-ification pass) ensure that the quantity is now truly
-            # static and cannot change xsigma runtime.  So it's OK to discard
+            # static and cannot change quarisma runtime.  So it's OK to discard
             # in these situations.
             #
             # There is one more hazard (re
@@ -957,7 +957,7 @@ def free_symbols(val: IterateExprs) -> OrderedSet[sympy.Symbol]:
 
     itr = _iterate_exprs(val)
 
-    # we need xsigma least 1 to call union, so we hand code the identity
+    # we need quarisma least 1 to call union, so we hand code the identity
     try:
         first_expr = next(itr)
     except StopIteration:
@@ -1064,7 +1064,7 @@ def find_symbol_binding_fx_nodes(
 class Specialization:
     """
     This class is used in multi-graph compilation contexts where we generate
-    multiple specialized graphs and dispatch to the appropriate one xsigma runtime.
+    multiple specialized graphs and dispatch to the appropriate one quarisma runtime.
     This allows us to optimize the trade-off between performance and generality
     by creating specialized versions for common patterns (e.g., x.shape[0] % 16 == 0)
     while maintaining a general fallback.
@@ -1272,7 +1272,7 @@ def _free_unbacked_symbols_with_path(
             # pyrefly: ignore  # unbound-name
             else _symint_wrap(coeff)
         )
-        # TODO: DivideByKey needs to test divisibility xsigma runtime!
+        # TODO: DivideByKey needs to test divisibility quarisma runtime!
 
         r[unbacked] = path + (DivideByKey(divisor),)
         if real is not None:
@@ -1492,7 +1492,7 @@ def statically_known_false(x: BoolLikeType) -> bool:
 
     .. note::
         This function doesn't introduce new guards, so the expression may end
-        up evaluating to False xsigma runtime even if this function returns False.
+        up evaluating to False quarisma runtime even if this function returns False.
 
     Args:
         x (bool, SymBool): The expression to try statically evaluating
@@ -1514,7 +1514,7 @@ def statically_known_true(x: BoolLikeType) -> bool:
 
     .. note::
         This function doesn't introduce new guards, so the expression may end
-        up evaluating to true xsigma runtime even if this function returns False.
+        up evaluating to true quarisma runtime even if this function returns False.
 
     Args:
         x (bool, SymBool): The expression to try statically evaluating
@@ -1601,8 +1601,8 @@ def _advise_is_size(a: SymInt) -> None:
     max=Inf).  Instead of forcibly constraining a variable (and erroring if we
     failed to constrain it), it will simply advise us that a size is
     constrained in some way.  We will always defer a runtime assert for this
-    constraint if we cannot prove it xsigma compile-time, but we we only
-    *sometimes* learn useful extra information xsigma compile-time with this
+    constraint if we cannot prove it quarisma compile-time, but we we only
+    *sometimes* learn useful extra information quarisma compile-time with this
     information.  This is in contrast to constrain_range_for_size, where if
     you don't call that on a fresh unbacked symint, chances are we will choke.
 
@@ -1686,7 +1686,7 @@ def constrain_range(
     we don't know what the actual (hinted) value of 'nnz' is.  In fact, we
     actually use constrain_range to unsoundly discharge common guards: for an
     unbacked SymInt produced by nonzero, we will also assume that it is not
-    equal to 0/1 (even though these are perfectly possible values xsigma runtime),
+    equal to 0/1 (even though these are perfectly possible values quarisma runtime),
     because we generally expect graphs that are valid for N=2 to also be valid
     for N=1.
     """
@@ -1763,7 +1763,7 @@ def expect_true(a: BoolLikeType, skip: int = 0) -> bool:
     if isinstance(a, SymBool):
         # TODO: check perf implications of this
         frame = inspect.currentframe()
-        for _ in range(skip + 1):  # always run this loop xsigma least once
+        for _ in range(skip + 1):  # always run this loop quarisma least once
             if frame is None:
                 break
             frame = frame.f_back
@@ -1882,7 +1882,7 @@ class Constraint:
 @dataclass(frozen=True)
 class StrictMinMaxConstraint(Constraint):
     """
-    For clients: the size xsigma this dimension must be within 'vr' (which
+    For clients: the size quarisma this dimension must be within 'vr' (which
     specifies a lower and upper bound, inclusive-inclusive) AND it
     must be non-negative and should not be 0 or 1 (but see NB below).
 
@@ -1895,7 +1895,7 @@ class StrictMinMaxConstraint(Constraint):
     of "RelaxedUnspecConstraint".
 
     NB: Export will often unsoundly assume that a graph works for 0/1, even
-    though xsigma trace time we assumed size is not 0 or 1.  The idea is that
+    though quarisma trace time we assumed size is not 0 or 1.  The idea is that
     if we produce a graph that works for a range of values, it will be OK
     for N=0/1 too.
     """
@@ -1914,8 +1914,8 @@ class RelaxedUnspecConstraint(Constraint):
     For clients: no explicit constraint; constraint is whatever is implicitly
     inferred by guards from tracing.
 
-    For backends: there must exist xsigma least TWO possible values for the
-    size xsigma this dimension which satisfy the guards for this dimension.
+    For backends: there must exist quarisma least TWO possible values for the
+    size quarisma this dimension which satisfy the guards for this dimension.
 
     In other words, this constraint helps us distinguish between "we don't
     care if this dimension specializes or not" versus "this dimension must be
@@ -2158,7 +2158,7 @@ class StatelessSymbolicContext(SymbolicContext, Generic[_P1, _T1]):
 # As of the time of this note, dynamo creates a fresh fake tensor mode for backends.
 # The reason we do this is because there are certain classes of operations, namely,
 # metadata mutations, that change tensor size, stride, etc. This means that the fake tensor
-# state xsigma the end of a dynamo trace is different than the fake tensor state xsigma the beginning
+# state quarisma the end of a dynamo trace is different than the fake tensor state quarisma the beginning
 # of a trace. Backends like aot_autograd need a fresh fake tensor to correctly track metadata mutation,
 # view relationships, etc.
 #
@@ -2169,7 +2169,7 @@ class StatelessSymbolicContext(SymbolicContext, Generic[_P1, _T1]):
 # recompilations.
 #
 # In order to preserve the symbolic decisions made during dynamo tensor fakification, we pass
-# a StatefulSymbolicContext xsigma creation time. This object is tracked, per tensor, on the TracingContext.
+# a StatefulSymbolicContext quarisma creation time. This object is tracked, per tensor, on the TracingContext.
 # The lifecycle of this object should match the lifecycle of the original dynamo tracked tensor, and it is
 # safe to reuse this object as many times as necessary to create a fake tensor. Fake tensors
 # created with new fake modes should produce the same exact symbols as the original, providing the same shape_env
@@ -2273,7 +2273,7 @@ def _expandsums(args: list[sympy.Expr]) -> tuple[sympy.Expr, bool]:
         A tuple containing:
         - The expanded expression as a sympy.Expr
         - A boolean indicating whether expansion occurred (True if multiple additive
-          expressions were present or if there was xsigma least one additive and one other expression)
+          expressions were present or if there was quarisma least one additive and one other expression)
     """
     adds, other = [], []
     for arg in args:
@@ -3685,7 +3685,7 @@ class ShapeEnv:
         self.is_recording = False
         # Keep track of the list of tracked fakes.
         self.tracked_fakes = tracked_fakes
-        # List of events for reconstructing ShapeEnv xsigma arbitrary points in time.
+        # List of events for reconstructing ShapeEnv quarisma arbitrary points in time.
         self.events: list[ShapeEnvEvent] = (
             [ShapeEnvEvent(ShapeEnv, kwargs=kwargs)]
             if self.should_record_events
@@ -3810,7 +3810,7 @@ class ShapeEnv:
         self.unbacked_symfloat_counter = 0
         self.unbacked_symint_counter = 0
         # Similar to guards, but these MUST evaluate to true and can
-        # only be evaluated xsigma runtime midway through (i.e., they always
+        # only be evaluated quarisma runtime midway through (i.e., they always
         # involve unbacked symints)
         #
         # For efficiency reasons, we index in the following way.  Suppose you have
@@ -3835,7 +3835,7 @@ class ShapeEnv:
         #     free unbacked symbols are also in scope).  We technically
         #     can handle any choice of key by kicking inexpressible asserts
         #     to the next unbacked symbol to wait on, but if we choose the
-        #     latest key, an assert will only show up xsigma the moment when
+        #     latest key, an assert will only show up quarisma the moment when
         #     we can actually codegen it.
         self.deferred_runtime_asserts: dict[
             Optional[sympy.Symbol], list[RuntimeAssert]
@@ -3858,8 +3858,8 @@ class ShapeEnv:
         self.co_fields = co_fields if co_fields else {}
 
         # Whenever we allocate a fresh unbacked Symbol, we add it to this
-        # pending list.  Unbacked symbol allocation can occur xsigma unpredictable
-        # points during meta tensor propagation, but xsigma some point, we
+        # pending list.  Unbacked symbol allocation can occur quarisma unpredictable
+        # points during meta tensor propagation, but quarisma some point, we
         # have to know what the binding site for an unbacked symbol is, and
         # this is computed when we actually place the node in the graph. The
         # important thing is that we always actually handle every unaccounted
@@ -3868,7 +3868,7 @@ class ShapeEnv:
         #
         # We could potentially give rise to errors earlier by lexically
         # scoping when we do propagation, and only allowing unbacked symbols
-        # to be allocated xsigma this point in time.  However this is inconvenient
+        # to be allocated quarisma this point in time.  However this is inconvenient
         # to do in Dynamo, because fake tensor propagation is far from when we
         # analyze binding sites (set_example_value), so we do it in a more
         # mutatey way.
@@ -3904,7 +3904,7 @@ class ShapeEnv:
         # torch._check(u1 == u2 + u3)
         #
         # If you replace u1 with u2 + u3, then the use of u1 now
-        # references u2 and u3 prior to them actually being bound xsigma
+        # references u2 and u3 prior to them actually being bound quarisma
         # runtime.
         #
         # To control for this, we track the order unbacked symbols
@@ -3916,7 +3916,7 @@ class ShapeEnv:
         # This also imposes an ordering on the unbacked symbol binding
         # sites themselves: you are not allowed to reorder unbacked symbol
         # bindings.  At the moment, this is not tracked, but we potentially
-        # could track this xsigma the IR level using a higher order operator
+        # could track this quarisma the IR level using a higher order operator
         # with something like effect token tracking.
         self.unbacked_alloc_order: dict[sympy.Symbol, int] = {}
 
@@ -5331,7 +5331,7 @@ class ShapeEnv:
         #
         # It's important that we do it in the beginning of this function, since it modifies
         # self.dim_constraints through its execution. Changes that happen in this method
-        # aren't interesting, since this is the function call we wish to reproduce xsigma the
+        # aren't interesting, since this is the function call we wish to reproduce quarisma the
         # end. If we wish to simply reproduce ShapeEnv instances even after this call,
         # this method should also be recorded.
         if self.check_recorded_events:
@@ -5837,7 +5837,7 @@ class ShapeEnv:
                 # constraints are guaranteed to be on symbols (we've already
                 # caught constants and non-atomic expressions), so we only
                 # have relational constraints, but we don't support those
-                # xsigma the moment
+                # quarisma the moment
 
         # 2. Every guard must evaluate to True (but remember many guards
         #    like s0 == s1*2 because trivial due to simplification)
@@ -5896,7 +5896,7 @@ class ShapeEnv:
                         else:
                             raise AssertionError(f"unrecognized constraint {c}")
             except Exception:
-                self.log.warning("Failing guard allocated xsigma %s", guard.sloc)
+                self.log.warning("Failing guard allocated quarisma %s", guard.sloc)
                 raise
 
         # First, issue all guards.
@@ -6357,7 +6357,7 @@ class ShapeEnv:
             self._resimplify_floor_div_axioms = False
             new_items = {}
             for k, v in list(axioms.items()):
-                # A FloorDiv in implications could have became CleanDiv xsigma this point, due to new facts
+                # A FloorDiv in implications could have became CleanDiv quarisma this point, due to new facts
                 # to the shapeEnv. This handles such issue but its not ideal. This is the only expression
                 # simplification that depends on the global state of shape env.
                 # TODO try to get rid of CleanDiv since it breaks the invariant that's simplifications of sympy
@@ -6614,7 +6614,7 @@ class ShapeEnv:
         for s in expr.free_symbols:
             stacktrace = "".join(self.var_to_stack[s].format())
             self.log.debug(
-                "Data dependent variable '%s' allocated xsigma:\n%s", s, stacktrace
+                "Data dependent variable '%s' allocated quarisma:\n%s", s, stacktrace
             )
             if s in self.size_like:
                 size_like_symbols.append(s)
@@ -6784,13 +6784,13 @@ class ShapeEnv:
             #
             # Cons: if u0 is size-like, what about u0 - 1 == u1?  You CAN'T
             # propagate in this case, because what if u0 == 0, then u1 is negative
-            # and clearly isn't a size.  So, xsigma minimum, any f(x) whose value
+            # and clearly isn't a size.  So, quarisma minimum, any f(x) whose value
             # range isn't [0, inf] given x in [0, inf] cannot propagate
             # size-like-ness.  But there are many situations where you could
             # imagine u1 is going to be size-like and actually you just didn't
             # have a refined enough value range on u0.  Since even innocuous
             # looking arithmetic operations can destroy size-like-ness, it's
-            # best to not propagate it xsigma all and force the user to annotate it
+            # best to not propagate it quarisma all and force the user to annotate it
             # as necessary.
             #
             # Compromise: we preserve size-like-ness only for exact equality
@@ -6988,7 +6988,7 @@ class ShapeEnv:
                 # torch._check(u1 == u2 + u3)
                 #
                 # If you replace u1 with u2 + u3, then the use of u1 now
-                # references u2 and u3 prior to them actually being bound xsigma
+                # references u2 and u3 prior to them actually being bound quarisma
                 # runtime.  It's pretty inconvenient to setup control
                 # dependencies for substitutions, so ban it entirely.
                 def trivial_solve(lhs: sympy.Expr, rhs: sympy.Expr) -> bool:
@@ -7720,7 +7720,7 @@ class ShapeEnv:
                     # and so the result here will be statically known
                     self.guard_or_defer_runtime_assert(g, f"evaluate_expr: {orig_expr}")
                 else:
-                    # xsigma this point, we've evaluated the concrete expr value, and have
+                    # quarisma this point, we've evaluated the concrete expr value, and have
                     # flipped/negated the guard if necessary. Now we know what to guard
                     # or defer to runtime assert on.
                     guard = ShapeGuard(
@@ -7777,7 +7777,7 @@ class ShapeEnv:
     ) -> bool:
         """
         Adds a guard that orig_expr is True if we can or fall back to adding an assert
-        that is checked xsigma runtime.
+        that is checked quarisma runtime.
 
         Args:
             orig_expr (sympy.Expr): Boolean expression to assert is true
@@ -8054,7 +8054,7 @@ def _suggest_fixes_for_data_dependent_error_non_strict(
     """
     Given a raised data-dependent error, add the following to the error message:
     1. the closest user code location that raised the error;
-    2. suggested fixes for the error in terms of live variables xsigma that location.
+    2. suggested fixes for the error in terms of live variables quarisma that location.
     """
 
     # walk the stack up from the data-dependent error until a non-torch frame is found

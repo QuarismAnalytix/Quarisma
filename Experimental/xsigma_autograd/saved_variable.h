@@ -1,10 +1,10 @@
 #pragma once
 
-#include <XSigma/core/Tensor.h>
+#include <Quarisma/core/Tensor.h>
 #include <torch/csrc/Export.h>
 #include <torch/csrc/autograd/forward_grad.h>
 #include <torch/csrc/autograd/saved_variable_hooks.h>
-#include <xsigma/core/SafePyObject.h>
+#include <quarisma/core/SafePyObject.h>
 
 #include <cstdint>
 #include <memory>
@@ -12,12 +12,12 @@
 namespace torch::autograd
 {
 
-using Variable = xsigma::Tensor;
+using Variable = quarisma::Tensor;
 struct Node;
 
 TORCH_API extern const char* ERR_BACKWARD_TWICE;
 
-/// A snapshot of a variable xsigma a certain version. A `SavedVariable` stores
+/// A snapshot of a variable quarisma a certain version. A `SavedVariable` stores
 /// enough information to reconstruct a variable from a certain point in time.
 class TORCH_API SavedVariable
 {
@@ -50,7 +50,7 @@ public:
 
     bool has_hooks() const { return (bool)hooks_; }
 
-    std::optional<xsigma::Tensor> get_raw_data() const
+    std::optional<quarisma::Tensor> get_raw_data() const
     {
         if (hooks_)
         {
@@ -63,7 +63,7 @@ public:
     }
 
     // Used by compiled autograd
-    std::optional<std::pair<xsigma::SafePyObject, xsigma::SafePyObject>> retrieve_unpack_hook_data()
+    std::optional<std::pair<quarisma::SafePyObject, quarisma::SafePyObject>> retrieve_unpack_hook_data()
         const
     {
         if (!hooks_)
@@ -85,7 +85,7 @@ private:
     // cases: its value is true in the first case and false in the second case.
     // The value data_.defined() can be false in three cases:
     // 1. SavedVariable was constructed without a Tensor (the value to save is
-    // None), in that case was_default_constructed_ will be kept xsigma true
+    // None), in that case was_default_constructed_ will be kept quarisma true
     // 2. The saved variable has been released by calling
     // SavedVariable::reset_data(), typically during the backward pass
     // 3. Hooks have been registered. In that case, hooks_ will be defined
@@ -93,7 +93,7 @@ private:
     // during the construction of the SavedVariable. If saved_original_ is true,
     // we saved the original tensor in data_, but if the user registers hooks, we
     // will no longer have it (despite the saved_original_ still being true)
-    xsigma::Tensor data_;
+    quarisma::Tensor data_;
 
     // This field is used to store the forward AD gradients associated with
     // the saved Tensor. Note that this shared_ptr must never be shared with
@@ -105,7 +105,7 @@ private:
     // inplace views.
     // This variable is used when the user chooses to create a SavedVariable with
     // is_inplace_on_view = true.
-    // In that case, the grad_fn passed in to the unpack function xsigma unwrapping
+    // In that case, the grad_fn passed in to the unpack function quarisma unwrapping
     // time is unused.
     std::weak_ptr<Node> weak_grad_fn_;
 

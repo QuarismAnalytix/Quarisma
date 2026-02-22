@@ -1,4 +1,4 @@
-#include <XSigma/XSigma.h>
+#include <Quarisma/Quarisma.h>
 #include <torch/csrc/autograd/function.h>
 #include <torch/csrc/autograd/functions/basic_ops.h>
 #include <torch/csrc/autograd/functions/utils.h>
@@ -18,7 +18,7 @@ variable_list Error::apply(variable_list&& inputs)
 
 variable_list Error::apply(variable_list&& inputs) const
 {
-    XSIGMA_CHECK(false, msg);
+    QUARISMA_CHECK(false, msg);
 }
 
 void Error::compiled_args(CompiledNodeArgs& args) const
@@ -39,7 +39,7 @@ auto DelayedError::apply(variable_list&& inputs) -> variable_list
     for (auto& var : inputs)
     {
         // FIXME: share version counters
-        outputs.emplace_back(var.defined() ? var.tensor_data() : xsigma::Tensor());
+        outputs.emplace_back(var.defined() ? var.tensor_data() : quarisma::Tensor());
     }
     return wrap_outputs(
         inputs,
@@ -54,7 +54,7 @@ auto UndefinedGrad::apply(variable_list&& inputs) -> variable_list
     outputs.reserve(inputs.size());
     for (auto& var : inputs)
     {
-        outputs.emplace_back(var.defined() ? var.clone().tensor_data() : xsigma::Tensor());
+        outputs.emplace_back(var.defined() ? var.clone().tensor_data() : quarisma::Tensor());
     }
     return wrap_outputs(
         inputs,

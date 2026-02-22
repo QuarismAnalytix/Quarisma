@@ -1,9 +1,9 @@
 /**
  * @file example_profiling_basic.cpp
- * @brief Comprehensive example demonstrating XSigma's profiling systems.
+ * @brief Comprehensive example demonstrating Quarisma's profiling systems.
  *
  * This example shows:
- * - XSigma native profiler with hierarchical CPU profiling
+ * - Quarisma native profiler with hierarchical CPU profiling
  * - Kineto profiler for GPU-related CPU operations
  * - ITT profiler for Intel VTune integration
  * - Combined profiling with multiple systems
@@ -20,7 +20,7 @@
 
 #include "profiler/session/profiler.h"
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 #include <ActivityTrace.h>
 
 #include "profiler/kineto/kineto_shim.h"
@@ -28,7 +28,7 @@
 
 #include "profiler/itt/itt_wrapper.h"
 
-namespace xsigma::examples::profiling
+namespace quarisma::examples::profiling
 {
 
 // ============================================================================
@@ -41,7 +41,7 @@ namespace xsigma::examples::profiling
 std::vector<std::vector<double>> matrix_multiply(
     const std::vector<std::vector<double>>& a, const std::vector<std::vector<double>>& b)
 {
-    XSIGMA_PROFILE_SCOPE("matrix_multiply");
+    QUARISMA_PROFILE_SCOPE("matrix_multiply");
 
     const size_t rows_a = a.size();
     const size_t cols_a = a[0].size();
@@ -50,7 +50,7 @@ std::vector<std::vector<double>> matrix_multiply(
     std::vector<std::vector<double>> result(rows_a, std::vector<double>(cols_b, 0.0));
 
     {
-        XSIGMA_PROFILE_SCOPE("matrix_multiply_computation");
+        QUARISMA_PROFILE_SCOPE("matrix_multiply_computation");
 
         for (size_t i = 0; i < rows_a; ++i)
         {
@@ -72,7 +72,7 @@ std::vector<std::vector<double>> matrix_multiply(
  */
 std::vector<std::vector<double>> generate_matrix(size_t rows, size_t cols)
 {
-    XSIGMA_PROFILE_SCOPE("generate_matrix");
+    QUARISMA_PROFILE_SCOPE("generate_matrix");
 
     std::vector<std::vector<double>> matrix(rows, std::vector<double>(cols));
 
@@ -96,7 +96,7 @@ std::vector<std::vector<double>> generate_matrix(size_t rows, size_t cols)
  */
 void merge_sort(std::vector<double>& arr, size_t left, size_t right)
 {
-    XSIGMA_PROFILE_SCOPE("merge_sort");
+    QUARISMA_PROFILE_SCOPE("merge_sort");
 
     if (left >= right)
         return;
@@ -134,20 +134,20 @@ void merge_sort(std::vector<double>& arr, size_t left, size_t right)
 }
 
 // ============================================================================
-// Example 1: XSigma Native Profiler
+// Example 1: Quarisma Native Profiler
 // ============================================================================
 
 /**
- * @brief Demonstrates XSigma's native profiler with hierarchical CPU profiling.
+ * @brief Demonstrates Quarisma's native profiler with hierarchical CPU profiling.
  *
  * The native profiler provides:
- * - Hierarchical scope tracking with XSIGMA_PROFILE_SCOPE()
+ * - Hierarchical scope tracking with QUARISMA_PROFILE_SCOPE()
  * - Chrome Trace JSON export for visualization
  * - Full drill-down capability in Chrome DevTools and Perfetto UI
  */
-void example_xsigma_native_profiler()
+void example_quarisma_native_profiler()
 {
-    std::cout << "\n=== Example 1: XSigma Native Profiler ===" << std::endl;
+    std::cout << "\n=== Example 1: Quarisma Native Profiler ===" << std::endl;
 
     // Configure profiler options
     profiler_options opts;
@@ -161,11 +161,11 @@ void example_xsigma_native_profiler()
     profiler_session session(opts);
     session.start();
 
-    std::cout << "✓ XSigma profiler started" << std::endl;
+    std::cout << "✓ Quarisma profiler started" << std::endl;
 
     // Profile matrix operations
     {
-        XSIGMA_PROFILE_SCOPE("matrix_operations");
+        QUARISMA_PROFILE_SCOPE("matrix_operations");
 
         const size_t matrix_size = 100;
         auto         matrix_a    = generate_matrix(matrix_size, matrix_size);
@@ -179,7 +179,7 @@ void example_xsigma_native_profiler()
 
     // Profile sorting operations
     {
-        XSIGMA_PROFILE_SCOPE("sorting_operations");
+        QUARISMA_PROFILE_SCOPE("sorting_operations");
 
         const size_t        array_size = 10000;
         std::vector<double> test_data(array_size);
@@ -202,10 +202,10 @@ void example_xsigma_native_profiler()
     session.stop();
 
     // Export Chrome Trace JSON
-    std::string const output_file = "xsigma_native_profile.json";
+    std::string const output_file = "quarisma_native_profile.json";
     session.write_chrome_trace(output_file);
 
-    std::cout << "✓ XSigma profiler stopped" << std::endl;
+    std::cout << "✓ Quarisma profiler stopped" << std::endl;
     std::cout << "✓ Trace saved to: " << output_file << std::endl;
     std::cout << "\nVisualization:" << std::endl;
     std::cout << "  1. Chrome DevTools: chrome://tracing" << std::endl;
@@ -216,22 +216,22 @@ void example_xsigma_native_profiler()
 // Example 2: Kineto Profiler
 // ============================================================================
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 
 /**
- * @brief Demonstrates Kineto profiler combined with XSigma profiler.
+ * @brief Demonstrates Kineto profiler combined with Quarisma profiler.
  *
  * Kineto captures GPU-related CPU operations. For hierarchical CPU profiling,
- * we combine it with XSigma's native profiler.
+ * we combine it with Quarisma's native profiler.
  */
 void example_kineto_profiler()
 {
     std::cout << "\n=== Example 2: Kineto Profiler ===" << std::endl;
 
     // Initialize Kineto profiler
-    xsigma::profiler::kineto_init(false, true);
+    quarisma::profiler::kineto_init(false, true);
 
-    if (!xsigma::profiler::kineto_is_profiler_registered())
+    if (!quarisma::profiler::kineto_is_profiler_registered())
     {
         std::cout << "✗ Kineto profiler not available - skipping example" << std::endl;
         return;
@@ -242,12 +242,12 @@ void example_kineto_profiler()
     // Prepare Kineto trace
     std::set<libkineto::ActivityType> activities;
     activities.insert(libkineto::ActivityType::CPU_OP);
-    xsigma::profiler::kineto_prepare_trace(activities);
+    quarisma::profiler::kineto_prepare_trace(activities);
 
     // Start Kineto profiling
-    xsigma::profiler::kineto_start_trace();
+    quarisma::profiler::kineto_start_trace();
 
-    // Also start XSigma profiler for hierarchical CPU profiling
+    // Also start Quarisma profiler for hierarchical CPU profiling
     profiler_options opts;
     opts.enable_timing_ = true;
     opts.output_format_ = profiler_options::output_format_enum::JSON;
@@ -255,11 +255,11 @@ void example_kineto_profiler()
     profiler_session session(opts);
     session.start();
 
-    std::cout << "✓ Combined profiling started (Kineto + XSigma)" << std::endl;
+    std::cout << "✓ Combined profiling started (Kineto + Quarisma)" << std::endl;
 
     // Profile workload
     {
-        XSIGMA_PROFILE_SCOPE("kineto_workload");
+        QUARISMA_PROFILE_SCOPE("kineto_workload");
 
         const size_t matrix_size = 80;
         auto         matrix_a    = generate_matrix(matrix_size, matrix_size);
@@ -274,13 +274,13 @@ void example_kineto_profiler()
     session.stop();
 
     std::unique_ptr<libkineto::ActivityTraceInterface> kineto_trace(
-        static_cast<libkineto::ActivityTraceInterface*>(xsigma::profiler::kineto_stop_trace()));
+        static_cast<libkineto::ActivityTraceInterface*>(quarisma::profiler::kineto_stop_trace()));
 
     // Export traces
-    std::string const xsigma_file = "kineto_xsigma_trace.json";
+    std::string const quarisma_file = "kineto_quarisma_trace.json";
     std::string const kineto_file = "kineto_only_trace.json";
 
-    session.write_chrome_trace(xsigma_file);
+    session.write_chrome_trace(quarisma_file);
 
     if (kineto_trace)
     {
@@ -288,45 +288,45 @@ void example_kineto_profiler()
     }
 
     std::cout << "✓ Combined profiling stopped" << std::endl;
-    std::cout << "✓ XSigma trace saved to: " << xsigma_file << std::endl;
+    std::cout << "✓ Quarisma trace saved to: " << quarisma_file << std::endl;
     std::cout << "✓ Kineto trace saved to: " << kineto_file << std::endl;
 }
 
-#endif  // XSIGMA_HAS_KINETO
+#endif  // QUARISMA_HAS_KINETO
 
 // ============================================================================
 // Example 3: ITT Profiler
 // ============================================================================
 
-#if XSIGMA_HAS_ITT
+#if QUARISMA_HAS_ITT
 
 /**
- * @brief Demonstrates ITT profiler combined with XSigma profiler.
+ * @brief Demonstrates ITT profiler combined with Quarisma profiler.
  *
  * ITT provides annotations for Intel VTune Profiler. We combine it with
- * XSigma's profiler for JSON export and graceful degradation.
+ * Quarisma's profiler for JSON export and graceful degradation.
  */
 void example_itt_profiler()
 {
     std::cout << "\n=== Example 3: ITT Profiler ===" << std::endl;
 
     // Initialize ITT profiler
-    xsigma::profiler::itt_init();
+    quarisma::profiler::itt_init();
 
     // Check if ITT is available
-    bool const itt_available = (xsigma::profiler::itt_get_domain() != nullptr);
+    bool const itt_available = (quarisma::profiler::itt_get_domain() != nullptr);
 
     if (!itt_available)
     {
         std::cout << "✗ ITT not available (VTune not installed)" << std::endl;
-        std::cout << "  Falling back to XSigma profiler only" << std::endl;
+        std::cout << "  Falling back to Quarisma profiler only" << std::endl;
     }
     else
     {
-        std::cout << "✓ ITT profiler initialized (domain: XSigma)" << std::endl;
+        std::cout << "✓ ITT profiler initialized (domain: Quarisma)" << std::endl;
     }
 
-    // Start XSigma profiler for JSON export
+    // Start Quarisma profiler for JSON export
     profiler_options opts;
     opts.enable_timing_ = true;
     opts.output_format_ = profiler_options::output_format_enum::JSON;
@@ -336,13 +336,13 @@ void example_itt_profiler()
 
     std::cout << "✓ Profiling started" << std::endl;
 
-    // Profile with both ITT and XSigma
+    // Profile with both ITT and Quarisma
     {
         if (itt_available)
         {
-            xsigma::profiler::itt_range_push("itt_workload");
+            quarisma::profiler::itt_range_push("itt_workload");
         }
-        XSIGMA_PROFILE_SCOPE("itt_workload");
+        QUARISMA_PROFILE_SCOPE("itt_workload");
 
         const size_t matrix_size = 60;
         auto         matrix_a    = generate_matrix(matrix_size, matrix_size);
@@ -351,15 +351,15 @@ void example_itt_profiler()
         {
             if (itt_available)
             {
-                xsigma::profiler::itt_range_push("matrix_computation");
+                quarisma::profiler::itt_range_push("matrix_computation");
             }
-            XSIGMA_PROFILE_SCOPE("matrix_computation");
+            QUARISMA_PROFILE_SCOPE("matrix_computation");
 
             auto result = matrix_multiply(matrix_a, matrix_b);
 
             if (itt_available)
             {
-                xsigma::profiler::itt_range_pop();
+                quarisma::profiler::itt_range_pop();
             }
         }
 
@@ -367,19 +367,19 @@ void example_itt_profiler()
 
         if (itt_available)
         {
-            xsigma::profiler::itt_range_pop();
+            quarisma::profiler::itt_range_pop();
         }
     }
 
     // Stop profiling
     session.stop();
 
-    // Export XSigma trace
-    std::string const output_file = "itt_xsigma_trace.json";
+    // Export Quarisma trace
+    std::string const output_file = "itt_quarisma_trace.json";
     session.write_chrome_trace(output_file);
 
     std::cout << "✓ Profiling stopped" << std::endl;
-    std::cout << "✓ XSigma trace saved to: " << output_file << std::endl;
+    std::cout << "✓ Quarisma trace saved to: " << output_file << std::endl;
 
     if (itt_available)
     {
@@ -390,9 +390,9 @@ void example_itt_profiler()
     }
 }
 
-#endif  // XSIGMA_HAS_ITT
+#endif  // QUARISMA_HAS_ITT
 
-}  // namespace xsigma::examples::profiling
+}  // namespace quarisma::examples::profiling
 
 // ============================================================================
 // Main Function
@@ -401,26 +401,26 @@ void example_itt_profiler()
 int main()
 {
     std::cout << "============================================" << std::endl;
-    std::cout << "XSigma Profiling Examples" << std::endl;
+    std::cout << "Quarisma Profiling Examples" << std::endl;
     std::cout << "============================================" << std::endl;
 
-    // Example 1: XSigma Native Profiler
-    xsigma::examples::profiling::example_xsigma_native_profiler();
+    // Example 1: Quarisma Native Profiler
+    quarisma::examples::profiling::example_quarisma_native_profiler();
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
     // Example 2: Kineto Profiler
-    xsigma::examples::profiling::example_kineto_profiler();
+    quarisma::examples::profiling::example_kineto_profiler();
 #else
     std::cout << "\n=== Example 2: Kineto Profiler ===" << std::endl;
-    std::cout << "✗ Kineto not available (XSIGMA_HAS_KINETO=0)" << std::endl;
+    std::cout << "✗ Kineto not available (QUARISMA_HAS_KINETO=0)" << std::endl;
 #endif
 
-#if XSIGMA_HAS_ITT
+#if QUARISMA_HAS_ITT
     // Example 3: ITT Profiler
-    xsigma::examples::profiling::example_itt_profiler();
+    quarisma::examples::profiling::example_itt_profiler();
 #else
     std::cout << "\n=== Example 3: ITT Profiler ===" << std::endl;
-    std::cout << "✗ ITT not available (XSIGMA_HAS_ITT=0)" << std::endl;
+    std::cout << "✗ ITT not available (QUARISMA_HAS_ITT=0)" << std::endl;
 #endif
 
     std::cout << "\n============================================" << std::endl;

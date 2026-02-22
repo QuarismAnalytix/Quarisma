@@ -9,7 +9,7 @@ bool nonConstantParameters(Node* n)
     // first param are all constants.
     for (size_t i = 1; i < n->inputs().size(); i++)
     {
-        if (n->inputs().xsigma(i)->node()->kind() != prim::Constant)
+        if (n->inputs().quarisma(i)->node()->kind() != prim::Constant)
         {
             return true;
         }

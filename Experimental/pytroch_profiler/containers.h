@@ -11,7 +11,7 @@
 #include "util/array_ref.h"
 #include "util/exception.h"
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 // ============================================================================
@@ -39,7 +39,7 @@ namespace xsigma::profiler::impl
 // is recommended if performance is absolutely critical.
 
 template <typename T, size_t ChunkSize, template <typename U, size_t N> class block_t = std::array>
-class XSIGMA_VISIBILITY AppendOnlyList
+class QUARISMA_VISIBILITY AppendOnlyList
 {
 public:
     using array_t = block_t<T, ChunkSize>;
@@ -75,15 +75,15 @@ public:
 
     template <typename T0>
     std::enable_if_t<std::is_same_v<T0, T> && std::is_trivially_copyable_v<T>> copy(
-        xsigma::array_ref<T0> src)
+        quarisma::array_ref<T0> src)
     {
         size_t n = src.size();
-        if XSIGMA_UNLIKELY (n == 0)
+        if QUARISMA_UNLIKELY (n == 0)
         {
             return;
         }
         maybe_grow();
-        if XSIGMA_LIKELY (next_ && (next_ + n <= end_))
+        if QUARISMA_LIKELY (next_ && (next_ + n <= end_))
         {
             std::memcpy((void*)next_, (void*)src.begin(), n * sizeof(T0));
             next_ += n;
@@ -172,7 +172,7 @@ public:
             auto a = address();
             if (a.first == nullptr)
             {
-                XSIGMA_CHECK(!checked, "Invalid access on AppendOnlyList.");
+                QUARISMA_CHECK(!checked, "Invalid access on AppendOnlyList.");
                 return nullptr;
             }
             return a.first->data() + a.second;
@@ -190,7 +190,7 @@ public:
 private:
     void maybe_grow()
     {
-        if XSIGMA_UNLIKELY (next_ == end_)
+        if QUARISMA_UNLIKELY (next_ == end_)
         {
             buffer_last_ = buffer_.emplace_after(buffer_last_);
             n_blocks_++;
@@ -211,4 +211,4 @@ protected:
     typename std::forward_list<array_t>::iterator buffer_last_;
 };
 
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl

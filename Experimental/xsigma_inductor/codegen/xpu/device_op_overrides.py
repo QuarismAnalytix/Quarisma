@@ -23,19 +23,19 @@ class XPUDeviceOpOverrides(DeviceOpOverrides):
         return f"torch.xpu._DeviceGuard({device_idx})"
 
     def cpp_device_guard(self) -> str:
-        return "xsigma::DeviceGuard"
+        return "quarisma::DeviceGuard"
 
     def cpp_aoti_device_guard(self) -> str:
         return "AOTIXpuGuard"
 
     def cpp_stream_guard(self) -> str:
-        return "xsigma::xpu::XPUStreamGuard"
+        return "quarisma::xpu::XPUStreamGuard"
 
     def cpp_aoti_stream_guard(self) -> str:
         return "AOTIXpuStreamGuard"
 
     def cpp_getStreamFromExternal(self) -> str:
-        return "xsigma::xpu::getStreamFromExternal"
+        return "quarisma::xpu::getStreamFromExternal"
 
     def kernel_header(self) -> str:
         source_codes = """

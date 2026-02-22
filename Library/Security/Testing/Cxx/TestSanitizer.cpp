@@ -1,16 +1,16 @@
 #include <cmath>
 #include <limits>
 
-#include "Core/Testing/xsigmaTest.h"
+#include "Core/Testing/baseTest.h"
 #include "sanitizer.h"
 
-using namespace xsigma::security;
+using namespace quarisma::security;
 
 // ============================================================================
 // String Sanitization Tests
 // ============================================================================
 
-XSIGMATEST(sanitizer_test, remove_null_bytes)
+QUARISMATEST(sanitizer_test, remove_null_bytes)
 {
     std::string input = "hello";
     input += '\0';
@@ -20,13 +20,13 @@ XSIGMATEST(sanitizer_test, remove_null_bytes)
     EXPECT_EQ(result, "helloworld");
 }
 
-XSIGMATEST(sanitizer_test, remove_null_bytes_no_nulls)
+QUARISMATEST(sanitizer_test, remove_null_bytes_no_nulls)
 {
     std::string result = sanitizer::remove_null_bytes("hello world");
     EXPECT_EQ(result, "hello world");
 }
 
-XSIGMATEST(sanitizer_test, remove_non_printable)
+QUARISMATEST(sanitizer_test, remove_non_printable)
 {
     // Use string concatenation to avoid \x01c being interpreted as \x1c
     std::string input =
@@ -36,33 +36,33 @@ XSIGMATEST(sanitizer_test, remove_non_printable)
     EXPECT_EQ(result, "helloworldtabcontrol");
 }
 
-XSIGMATEST(sanitizer_test, remove_non_printable_all_printable)
+QUARISMATEST(sanitizer_test, remove_non_printable_all_printable)
 {
     std::string result = sanitizer::remove_non_printable("Hello World 123!");
     EXPECT_EQ(result, "Hello World 123!");
 }
 
-XSIGMATEST(sanitizer_test, trim_whitespace)
+QUARISMATEST(sanitizer_test, trim_whitespace)
 {
     EXPECT_EQ(sanitizer::trim("  hello  "), "hello");
     EXPECT_EQ(sanitizer::trim("\t\ntest\r\n"), "test");
     EXPECT_EQ(sanitizer::trim("   "), "");
 }
 
-XSIGMATEST(sanitizer_test, trim_no_whitespace)
+QUARISMATEST(sanitizer_test, trim_no_whitespace)
 {
     EXPECT_EQ(sanitizer::trim("hello"), "hello");
     EXPECT_EQ(sanitizer::trim(""), "");
 }
 
-XSIGMATEST(sanitizer_test, truncate_string)
+QUARISMATEST(sanitizer_test, truncate_string)
 {
     EXPECT_EQ(sanitizer::truncate("hello world", 5), "hello");
     EXPECT_EQ(sanitizer::truncate("test", 10), "test");
     EXPECT_EQ(sanitizer::truncate("abc", 3), "abc");
 }
 
-XSIGMATEST(sanitizer_test, truncate_empty_string)
+QUARISMATEST(sanitizer_test, truncate_empty_string)
 {
     EXPECT_EQ(sanitizer::truncate("", 5), "");
 }
@@ -71,7 +71,7 @@ XSIGMATEST(sanitizer_test, truncate_empty_string)
 // Escape Function Tests
 // ============================================================================
 
-XSIGMATEST(sanitizer_test, escape_html)
+QUARISMATEST(sanitizer_test, escape_html)
 {
     EXPECT_EQ(
         sanitizer::escape_html("<script>alert('XSS')</script>"),
@@ -80,18 +80,18 @@ XSIGMATEST(sanitizer_test, escape_html)
     EXPECT_EQ(sanitizer::escape_html("\"quoted\""), "&quot;quoted&quot;");
 }
 
-XSIGMATEST(sanitizer_test, escape_html_no_special_chars)
+QUARISMATEST(sanitizer_test, escape_html_no_special_chars)
 {
     EXPECT_EQ(sanitizer::escape_html("hello world"), "hello world");
 }
 
-XSIGMATEST(sanitizer_test, escape_sql)
+QUARISMATEST(sanitizer_test, escape_sql)
 {
     EXPECT_EQ(sanitizer::escape_sql("O'Reilly"), "O''Reilly");
     EXPECT_EQ(sanitizer::escape_sql("test\\value"), "test\\\\value");
 }
 
-XSIGMATEST(sanitizer_test, escape_sql_null_bytes)
+QUARISMATEST(sanitizer_test, escape_sql_null_bytes)
 {
     std::string input = "test";
     input += '\0';
@@ -100,19 +100,19 @@ XSIGMATEST(sanitizer_test, escape_sql_null_bytes)
     EXPECT_EQ(result, "testvalue");
 }
 
-XSIGMATEST(sanitizer_test, escape_shell)
+QUARISMATEST(sanitizer_test, escape_shell)
 {
     std::string result = sanitizer::escape_shell("rm -rf /");
     EXPECT_NE(result.find('\\'), std::string::npos);  // Should contain escapes
 }
 
-XSIGMATEST(sanitizer_test, escape_shell_safe_string)
+QUARISMATEST(sanitizer_test, escape_shell_safe_string)
 {
     std::string result = sanitizer::escape_shell("filename");
     EXPECT_EQ(result, "filename");
 }
 
-XSIGMATEST(sanitizer_test, escape_json)
+QUARISMATEST(sanitizer_test, escape_json)
 {
     EXPECT_EQ(sanitizer::escape_json("hello\nworld"), "hello\\nworld");
     EXPECT_EQ(sanitizer::escape_json("tab\there"), "tab\\there");
@@ -120,20 +120,20 @@ XSIGMATEST(sanitizer_test, escape_json)
     EXPECT_EQ(sanitizer::escape_json("back\\slash"), "back\\\\slash");
 }
 
-XSIGMATEST(sanitizer_test, escape_json_control_chars)
+QUARISMATEST(sanitizer_test, escape_json_control_chars)
 {
     std::string input  = "test\x01value";
     std::string result = sanitizer::escape_json(input);
     EXPECT_NE(result.find("\\u"), std::string::npos);
 }
 
-XSIGMATEST(sanitizer_test, escape_url)
+QUARISMATEST(sanitizer_test, escape_url)
 {
     EXPECT_EQ(sanitizer::escape_url("hello world"), "hello%20world");
     EXPECT_EQ(sanitizer::escape_url("test@example.com"), "test%40example.com");
 }
 
-XSIGMATEST(sanitizer_test, escape_url_safe_chars)
+QUARISMATEST(sanitizer_test, escape_url_safe_chars)
 {
     std::string result = sanitizer::escape_url("hello-world_123.txt");
     EXPECT_EQ(result, "hello-world_123.txt");
@@ -143,40 +143,40 @@ XSIGMATEST(sanitizer_test, escape_url_safe_chars)
 // Path Sanitization Tests
 // ============================================================================
 
-XSIGMATEST(sanitizer_test, sanitize_path_traversal)
+QUARISMATEST(sanitizer_test, sanitize_path_traversal)
 {
     EXPECT_EQ(sanitizer::sanitize_path("../etc/passwd"), "etc/passwd");
     EXPECT_EQ(sanitizer::sanitize_path("dir/../file.txt"), "dir/file.txt");
 }
 
-XSIGMATEST(sanitizer_test, sanitize_path_absolute)
+QUARISMATEST(sanitizer_test, sanitize_path_absolute)
 {
     EXPECT_EQ(sanitizer::sanitize_path("/etc/passwd"), "etc/passwd");
     EXPECT_EQ(sanitizer::sanitize_path("\\Windows\\System32"), "Windows/System32");
 }
 
-XSIGMATEST(sanitizer_test, sanitize_path_drive_letter)
+QUARISMATEST(sanitizer_test, sanitize_path_drive_letter)
 {
     EXPECT_EQ(sanitizer::sanitize_path("C:/Windows"), "Windows");
 }
 
-XSIGMATEST(sanitizer_test, sanitize_path_multiple_slashes)
+QUARISMATEST(sanitizer_test, sanitize_path_multiple_slashes)
 {
     EXPECT_EQ(sanitizer::sanitize_path("dir//file.txt"), "dir/file.txt");
 }
 
-XSIGMATEST(sanitizer_test, sanitize_filename)
+QUARISMATEST(sanitizer_test, sanitize_filename)
 {
     EXPECT_EQ(sanitizer::sanitize_filename("file name.txt"), "file_name.txt");
     EXPECT_EQ(sanitizer::sanitize_filename("test@#$.doc"), "test___.doc");
 }
 
-XSIGMATEST(sanitizer_test, sanitize_filename_hidden_file)
+QUARISMATEST(sanitizer_test, sanitize_filename_hidden_file)
 {
     EXPECT_EQ(sanitizer::sanitize_filename(".hidden"), "_hidden");
 }
 
-XSIGMATEST(sanitizer_test, sanitize_filename_safe)
+QUARISMATEST(sanitizer_test, sanitize_filename_safe)
 {
     EXPECT_EQ(sanitizer::sanitize_filename("file-name_123.txt"), "file-name_123.txt");
 }
@@ -185,33 +185,33 @@ XSIGMATEST(sanitizer_test, sanitize_filename_safe)
 // Numeric Sanitization Tests
 // ============================================================================
 
-XSIGMATEST(sanitizer_test, clamp_value)
+QUARISMATEST(sanitizer_test, clamp_value)
 {
     EXPECT_EQ(sanitizer::clamp(5, 1, 10), 5);
     EXPECT_EQ(sanitizer::clamp(0, 1, 10), 1);
     EXPECT_EQ(sanitizer::clamp(15, 1, 10), 10);
 }
 
-XSIGMATEST(sanitizer_test, clamp_float)
+QUARISMATEST(sanitizer_test, clamp_float)
 {
     EXPECT_DOUBLE_EQ(sanitizer::clamp(0.5, 0.0, 1.0), 0.5);
     EXPECT_DOUBLE_EQ(sanitizer::clamp(-0.5, 0.0, 1.0), 0.0);
     EXPECT_DOUBLE_EQ(sanitizer::clamp(1.5, 0.0, 1.0), 1.0);
 }
 
-XSIGMATEST(sanitizer_test, sanitize_float_finite)
+QUARISMATEST(sanitizer_test, sanitize_float_finite)
 {
     EXPECT_DOUBLE_EQ(sanitizer::sanitize_float(1.5), 1.5);
     EXPECT_DOUBLE_EQ(sanitizer::sanitize_float(-2.5), -2.5);
 }
 
-XSIGMATEST(sanitizer_test, sanitize_float_nan)
+QUARISMATEST(sanitizer_test, sanitize_float_nan)
 {
     double nan_value = std::numeric_limits<double>::quiet_NaN();
     EXPECT_DOUBLE_EQ(sanitizer::sanitize_float(nan_value, 0.0), 0.0);
 }
 
-XSIGMATEST(sanitizer_test, sanitize_float_infinity)
+QUARISMATEST(sanitizer_test, sanitize_float_infinity)
 {
     double inf_value = std::numeric_limits<double>::infinity();
     EXPECT_DOUBLE_EQ(sanitizer::sanitize_float(inf_value, 0.0), 0.0);
@@ -220,7 +220,7 @@ XSIGMATEST(sanitizer_test, sanitize_float_infinity)
     EXPECT_DOUBLE_EQ(sanitizer::sanitize_float(neg_inf, 0.0), 0.0);
 }
 
-XSIGMATEST(sanitizer_test, sanitize_float_custom_default)
+QUARISMATEST(sanitizer_test, sanitize_float_custom_default)
 {
     double nan_value = std::numeric_limits<double>::quiet_NaN();
     EXPECT_DOUBLE_EQ(sanitizer::sanitize_float(nan_value, 42.0), 42.0);
@@ -230,7 +230,7 @@ XSIGMATEST(sanitizer_test, sanitize_float_custom_default)
 // Edge Cases and Boundary Tests
 // ============================================================================
 
-XSIGMATEST(sanitizer_test, empty_string_handling)
+QUARISMATEST(sanitizer_test, empty_string_handling)
 {
     EXPECT_EQ(sanitizer::remove_null_bytes(""), "");
     EXPECT_EQ(sanitizer::remove_non_printable(""), "");
@@ -241,28 +241,28 @@ XSIGMATEST(sanitizer_test, empty_string_handling)
     EXPECT_EQ(sanitizer::escape_url(""), "");
 }
 
-XSIGMATEST(sanitizer_test, large_string_handling)
+QUARISMATEST(sanitizer_test, large_string_handling)
 {
     std::string large(10000, 'a');
     std::string result = sanitizer::remove_non_printable(large);
     EXPECT_EQ(result.length(), 10000);
 }
 
-XSIGMATEST(sanitizer_test, unicode_handling)
+QUARISMATEST(sanitizer_test, unicode_handling)
 {
     // Basic ASCII should pass through
     std::string ascii = "Hello World";
     EXPECT_EQ(sanitizer::remove_non_printable(ascii), ascii);
 }
 
-XSIGMATEST(sanitizer_test, all_special_chars_html)
+QUARISMATEST(sanitizer_test, all_special_chars_html)
 {
     std::string input  = "<>&\"'";
     std::string result = sanitizer::escape_html(input);
     EXPECT_EQ(result, "&lt;&gt;&amp;&quot;&#39;");
 }
 
-XSIGMATEST(sanitizer_test, path_with_null_bytes)
+QUARISMATEST(sanitizer_test, path_with_null_bytes)
 {
     std::string path = "dir";
     path += '\0';

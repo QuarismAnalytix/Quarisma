@@ -7,7 +7,7 @@
 namespace torch::autograd
 {
 
-using hooks_list = std::vector<std::function<xsigma::TensorBase(const xsigma::TensorBase&)>>;
+using hooks_list = std::vector<std::function<quarisma::TensorBase(const quarisma::TensorBase&)>>;
 
 struct CppFunctionTensorPreHook : public FunctionPreHook
 {
@@ -21,12 +21,12 @@ struct CppFunctionTensorPreHook : public FunctionPreHook
 struct CppFunctionSingleTensorPreHook : public FunctionPreHook
 {
     CppFunctionSingleTensorPreHook(
-        std::function<xsigma::TensorBase(const xsigma::TensorBase&)> hook, size_t value_idx);
+        std::function<quarisma::TensorBase(const quarisma::TensorBase&)> hook, size_t value_idx);
     variable_list operator()(const variable_list& values) override;
 
     void compiled_args(torch::dynamo::autograd::CompiledNodeArgs& args) const override;
 
-    std::function<xsigma::TensorBase(const xsigma::TensorBase&)> hook_;
+    std::function<quarisma::TensorBase(const quarisma::TensorBase&)> hook_;
     size_t                                                       value_idx_;
 };
 

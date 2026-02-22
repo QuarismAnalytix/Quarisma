@@ -24,7 +24,7 @@ There are a few distinct usage patterns for virtualized global variables:
 2. Per-compilation global state.  Examples: ``V.fake_mode``, ``V.graph``.  For a
    given ``compile_fx`` invocation, these typically don't change, but they are
    associated with some internal state so they cannot just be global functions.
-   We install these objects xsigma the beginning of compilation and then you can
+   We install these objects quarisma the beginning of compilation and then you can
    conveniently access them without having to pass them around.
 
 3. Alternate define-by-run interpretations.  Examples: ``V.ops``, ``V.kernel``.

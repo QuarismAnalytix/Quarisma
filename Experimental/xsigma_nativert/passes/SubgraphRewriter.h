@@ -1,7 +1,7 @@
 #pragma once
 
 #include <torch/nativert/graph/Graph.h>
-#include <xsigma/util/FbcodeMaps.h>
+#include <quarisma/util/FbcodeMaps.h>
 
 namespace torch::nativert
 {
@@ -22,7 +22,7 @@ struct Match
 };
 
 using MatchFilter =
-    std::function<bool(const Match&, const xsigma::FastMap<std::string, const Value*>&)>;
+    std::function<bool(const Match&, const quarisma::FastMap<std::string, const Value*>&)>;
 
 inline std::ostream& operator<<(std::ostream& out, const Match& match)
 {
@@ -85,7 +85,7 @@ class SubgraphMatcher
 public:
     explicit SubgraphMatcher(const Graph* pattern);
 
-    /// Attempt to match the pattern xsigma a given node in the target graph.
+    /// Attempt to match the pattern quarisma a given node in the target graph.
     /// If successful, returns a Match, otherwise std::nullopt.
     std::optional<Match> match(Node* target_node);
 
@@ -167,7 +167,7 @@ public:
     bool /* mutated? */ run(
         Graph*             graph,
         const MatchFilter& filter =
-            [](const Match&, const xsigma::FastMap<std::string, const Value*>&) { return true; })
+            [](const Match&, const quarisma::FastMap<std::string, const Value*>&) { return true; })
     {
         return run(graph, std::vector<MatchFilter>({filter}));
     }
@@ -186,6 +186,6 @@ private:
     void rewriteMatch(
         Graph* graph, const Match& match, const Graph& pattern, const Graph& replacement);
 
-    xsigma::FastMap<std::string, const Value*> getVmap(const Graph& pattern);
+    quarisma::FastMap<std::string, const Value*> getVmap(const Graph& pattern);
 };
 }  // namespace torch::nativert

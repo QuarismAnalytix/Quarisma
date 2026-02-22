@@ -1,4 +1,4 @@
-#include <XSigma/ScalarOps.h>
+#include <Quarisma/ScalarOps.h>
 #include <torch/csrc/jit/ir/constants.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
@@ -40,14 +40,14 @@ void EraseNumberTypesOnBlock(Block* block)
             if (it->output()->type()->isSubtypeOf(*NumberType::get()) ||
                 it->output()->type()->isSubtypeOf(*BoolType::get()))
             {
-                xsigma::Scalar s;
+                quarisma::Scalar s;
                 if (it->output()->type()->isSubtypeOf(*BoolType::get()))
                 {
                     s = *constant_as<bool>(it->output());
                 }
                 else
                 {
-                    s = *constant_as<xsigma::Scalar>(it->output());
+                    s = *constant_as<quarisma::Scalar>(it->output());
                 }
 
                 WithInsertPoint guard(*it);

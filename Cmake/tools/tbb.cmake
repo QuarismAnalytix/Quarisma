@@ -1,5 +1,5 @@
 # ============================================================================= 
-# XSigma Intel TBB
+# Quarisma Intel TBB
 # (Threading Building Blocks) Integration Module
 # =============================================================================
 # This module provides robust TBB integration with automatic fallback support: 1. First attempts to
@@ -14,15 +14,15 @@ cmake_minimum_required(VERSION 3.16)
 include_guard(GLOBAL)
 
 
-function(XSigma_create_tbb_interface_targets)
-  if(TARGET TBB::tbb AND NOT TARGET XSigma::tbb)
-    add_library(XSigma::tbb INTERFACE IMPORTED)
-    target_link_libraries(XSigma::tbb INTERFACE TBB::tbb)
+function(Quarisma_create_tbb_interface_targets)
+  if(TARGET TBB::tbb AND NOT TARGET Quarisma::tbb)
+    add_library(Quarisma::tbb INTERFACE IMPORTED)
+    target_link_libraries(Quarisma::tbb INTERFACE TBB::tbb)
   endif()
 
-  if(TARGET TBB::tbbmalloc AND NOT TARGET XSigma::tbbmalloc)
-    add_library(XSigma::tbbmalloc INTERFACE IMPORTED)
-    target_link_libraries(XSigma::tbbmalloc INTERFACE TBB::tbbmalloc)
+  if(TARGET TBB::tbbmalloc AND NOT TARGET Quarisma::tbbmalloc)
+    add_library(Quarisma::tbbmalloc INTERFACE IMPORTED)
+    target_link_libraries(Quarisma::tbbmalloc INTERFACE TBB::tbbmalloc)
   endif()
 endfunction()
 
@@ -30,14 +30,14 @@ endfunction()
 # parallel task scheduling and memory allocation. When enabled, provides automatic fallback to
 # building from source if system TBB is not found. On Windows with Clang, requires system-installed
 # TBB (building from source not supported).
-option(XSIGMA_ENABLE_TBB
+option(QUARISMA_ENABLE_TBB
        "Enable Intel TBB (Threading Building Blocks) support with automatic fallback." ON
 )
-mark_as_advanced(XSIGMA_ENABLE_TBB)
+mark_as_advanced(QUARISMA_ENABLE_TBB)
 
 # Only proceed if TBB is enabled
-if(NOT XSIGMA_ENABLE_TBB)
-  message(STATUS "Intel TBB support is disabled (XSIGMA_ENABLE_TBB=OFF)")
+if(NOT QUARISMA_ENABLE_TBB)
+  message(STATUS "Intel TBB support is disabled (QUARISMA_ENABLE_TBB=OFF)")
   return()
 endif()
 
@@ -48,20 +48,20 @@ message(STATUS "Configuring Intel TBB (Threading Building Blocks) support...")
 # =============================================================================
 
 # Option to force building TBB from source (useful for testing)
-option(XSIGMA_TBB_FORCE_BUILD_FROM_SOURCE
+option(QUARISMA_TBB_FORCE_BUILD_FROM_SOURCE
        "Force building TBB from source instead of using system TBB" OFF
 )
-mark_as_advanced(XSIGMA_TBB_FORCE_BUILD_FROM_SOURCE)
+mark_as_advanced(QUARISMA_TBB_FORCE_BUILD_FROM_SOURCE)
 
 # TBB version to use when building from source
-set(XSIGMA_TBB_VERSION "v2021.13.0" CACHE STRING "TBB version to build from source")
-mark_as_advanced(XSIGMA_TBB_VERSION)
+set(QUARISMA_TBB_VERSION "v2021.13.0" CACHE STRING "TBB version to build from source")
+mark_as_advanced(QUARISMA_TBB_VERSION)
 
 # TBB repository URL
-set(XSIGMA_TBB_REPOSITORY "https://github.com/oneapi-src/oneTBB.git" CACHE STRING
+set(QUARISMA_TBB_REPOSITORY "https://github.com/oneapi-src/oneTBB.git" CACHE STRING
                                                                            "TBB repository URL"
 )
-mark_as_advanced(XSIGMA_TBB_REPOSITORY)
+mark_as_advanced(QUARISMA_TBB_REPOSITORY)
 
 # ============================================================================= 
 # Step 1: Try to find system-installed TBB
@@ -70,7 +70,7 @@ mark_as_advanced(XSIGMA_TBB_REPOSITORY)
 set(TBB_FOUND FALSE)
 set(TBB_FROM_SOURCE FALSE)
 
-if(NOT XSIGMA_TBB_FORCE_BUILD_FROM_SOURCE)
+if(NOT QUARISMA_TBB_FORCE_BUILD_FROM_SOURCE)
   message(STATUS "Searching for system-installed Intel TBB...")
 
   # Try to find TBB using our custom FindTBB module first
@@ -94,7 +94,7 @@ if(NOT XSIGMA_TBB_FORCE_BUILD_FROM_SOURCE)
       message(STATUS "   TBB::tbbmalloc target available")
     endif()
 
-    XSigma_create_tbb_interface_targets()
+    Quarisma_create_tbb_interface_targets()
 
     return()
   else()
@@ -152,16 +152,16 @@ endif()
 # =============================================================================
 
 message(STATUS "Building Intel TBB from source...")
-message(STATUS "   Repository: ${XSIGMA_TBB_REPOSITORY}")
-message(STATUS "   Version: ${XSIGMA_TBB_VERSION}")
+message(STATUS "   Repository: ${QUARISMA_TBB_REPOSITORY}")
+message(STATUS "   Version: ${QUARISMA_TBB_VERSION}")
 
 include(FetchContent)
 
 # Configure FetchContent for TBB
 FetchContent_Declare(
   oneTBB
-  GIT_REPOSITORY ${XSIGMA_TBB_REPOSITORY}
-  GIT_TAG ${XSIGMA_TBB_VERSION}
+  GIT_REPOSITORY ${QUARISMA_TBB_REPOSITORY}
+  GIT_TAG ${QUARISMA_TBB_VERSION}
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
 )
@@ -223,7 +223,7 @@ endif()
 # Check if TBB was successfully populated
 FetchContent_GetProperties(oneTBB)
 if(NOT onetbb_POPULATED)
-  message(FATAL_ERROR "Failed to download Intel TBB from ${XSIGMA_TBB_REPOSITORY}")
+  message(FATAL_ERROR "Failed to download Intel TBB from ${QUARISMA_TBB_REPOSITORY}")
 endif()
 
 message(STATUS "✅ Successfully downloaded Intel TBB source")
@@ -253,13 +253,13 @@ if(TARGET TBB::tbbmalloc)
   message(STATUS "   TBB::tbbmalloc target available")
 endif()
 
-XSigma_create_tbb_interface_targets()
+Quarisma_create_tbb_interface_targets()
 
 # ============================================================================= 
-# Step 4: Configure TBB output directories to match XSigma project structure
+# Step 4: Configure TBB output directories to match Quarisma project structure
 # =============================================================================
 
-# Configure TBB output directories to match XSigma project structure This ensures TBB binaries are
+# Configure TBB output directories to match Quarisma project structure This ensures TBB binaries are
 # placed in the correct locations for runtime linking
 if(TBB_FROM_SOURCE)
   # Get the actual TBB targets (not the imported interface targets) TBB creates targets like 'tbb'
@@ -281,20 +281,20 @@ if(TBB_FROM_SOURCE)
         set_target_properties(
           ${_tbb_target}
           PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${config_upper}
-                     "${XSIGMA_BINARY_DIR}/bin/${config_upper}"
+                     "${QUARISMA_BINARY_DIR}/bin/${config_upper}"
                      ARCHIVE_OUTPUT_DIRECTORY_${config_upper}
-                     "${XSIGMA_BINARY_DIR}/lib/${config_upper}"
+                     "${QUARISMA_BINARY_DIR}/lib/${config_upper}"
                      LIBRARY_OUTPUT_DIRECTORY_${config_upper}
-                     "${XSIGMA_BINARY_DIR}/lib/${config_upper}"
+                     "${QUARISMA_BINARY_DIR}/lib/${config_upper}"
         )
       endforeach()
 
       # Also set the default output directories (for single-config generators)
       set_target_properties(
         ${_tbb_target}
-        PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${XSIGMA_BINARY_DIR}/bin" ARCHIVE_OUTPUT_DIRECTORY
-                                                                       "${XSIGMA_BINARY_DIR}/lib"
-                   LIBRARY_OUTPUT_DIRECTORY "${XSIGMA_BINARY_DIR}/lib"
+        PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${QUARISMA_BINARY_DIR}/bin" ARCHIVE_OUTPUT_DIRECTORY
+                                                                       "${QUARISMA_BINARY_DIR}/lib"
+                   LIBRARY_OUTPUT_DIRECTORY "${QUARISMA_BINARY_DIR}/lib"
       )
 
       message(STATUS "Configured output directories for TBB target '${_tbb_target}'")

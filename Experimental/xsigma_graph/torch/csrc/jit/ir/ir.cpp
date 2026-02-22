@@ -1,5 +1,5 @@
-#include <XSigma/core/builtin_function.h>
-#include <XSigma/core/function.h>
+#include <Quarisma/core/builtin_function.h>
+#include <Quarisma/core/function.h>
 #include <torch/csrc/jit/api/function_impl.h>
 #include <torch/csrc/jit/frontend/error_report.h>
 #include <torch/csrc/jit/frontend/schema_matching.h>
@@ -7,8 +7,8 @@
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/runtime/operator.h>
 #include <torch/csrc/jit/serialization/python_print.h>
-#include <xsigma/util/StringUtil.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/StringUtil.h>
+#include <quarisma/util/irange.h>
 
 #include <algorithm>
 #include <iostream>
@@ -117,12 +117,12 @@ void findAllNodes(Block& block, Symbol kind, bool recurse, std::vector<Node*>& r
 template <typename T>
 static std::ostream& operator<<(std::ostream& out, const std::vector<T>& nodes)
 {
-    out << xsigma::ArrayRef<T>{nodes};
+    out << quarisma::ArrayRef<T>{nodes};
     return out;
 }
 
 template <typename T>
-static std::ostream& printValueRefs(std::ostream& out, const xsigma::ArrayRef<T> nodes)
+static std::ostream& printValueRefs(std::ostream& out, const quarisma::ArrayRef<T> nodes)
 {
     size_t i = 0;
     for (auto n : nodes)
@@ -139,7 +139,7 @@ static std::ostream& printValueRefs(std::ostream& out, const xsigma::ArrayRef<T>
 // Can't make these two overloads directly a template, it'll be ambiguous with
 // the global printer for operator<<.
 
-static std::ostream& operator<<(std::ostream& out, const xsigma::ArrayRef<const Value*> nodes)
+static std::ostream& operator<<(std::ostream& out, const quarisma::ArrayRef<const Value*> nodes)
 {
     return printValueRefs(out, nodes);
 }
@@ -164,7 +164,7 @@ static std::ostream& operator<<(std::ostream& out, const const_value_list_with_t
             out << l.delim;
         }
         printValueRef(out, n);
-        if (xsigma::type_verbosity() >= xsigma::TypeVerbosity::Type)
+        if (quarisma::type_verbosity() >= quarisma::TypeVerbosity::Type)
         {
             out << " : ";
             out << *n->type();
@@ -173,7 +173,7 @@ static std::ostream& operator<<(std::ostream& out, const const_value_list_with_t
     return out;
 }
 
-static void printAttribute(std::ostream& out, const xsigma::Tensor& tensor)
+static void printAttribute(std::ostream& out, const quarisma::Tensor& tensor)
 {
     // 1-elem tensors are usually boxed scalars, so print them like it
     if (tensor.numel() == 1)
@@ -337,7 +337,7 @@ SourceRange Node::sourceRange() const
 
 static std::ostream& indent(std::ostream& out, size_t level)
 {
-    for ([[maybe_unused]] const auto i : xsigma::irange(level))
+    for ([[maybe_unused]] const auto i : quarisma::irange(level))
     {
         out << "  ";
     }
@@ -418,7 +418,7 @@ std::ostream& Node::print(
 
     out << "\n";
 
-    for (const auto i : xsigma::irange(blocks().size()))
+    for (const auto i : quarisma::irange(blocks().size()))
     {
         auto b = blocks()[i];
         indent(out, level + 1) << "block" << i << "(" << const_value_list_with_types(b->inputs())
@@ -476,7 +476,7 @@ std::ostream& operator<<(std::ostream& out, const Graph& g)
 static void checkSameDevice(const Node* node)
 {
     bool                          has_device = false;
-    std::optional<xsigma::Device> device     = std::nullopt;
+    std::optional<quarisma::Device> device     = std::nullopt;
     auto                          checkValue = [&](const Value* v)
     {
         if (TensorTypePtr type = v->type()->cast<TensorType>())
@@ -522,7 +522,7 @@ void Node::lint() const
     //
     // The handle invariant:
     //    If a node takes a handle as an input, it is always the
-    //    LAST input of the node.  There is xsigma most one handle input.
+    //    LAST input of the node.  There is quarisma most one handle input.
 
     {
         size_t i = 0;
@@ -858,7 +858,7 @@ void Graph::cloneFrom(Graph& src)
 {
     auto env = [](Value* v) -> Value*
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false,
             "Graph::copy() encountered a use of a value " + v->debugName() +
                 " not in scope. Run lint!");
@@ -918,12 +918,12 @@ void Graph::remapTypes(const std::function<TypePtr(TypePtr)>& type_map)
     block()->remapTypes(type_map);
 }
 
-void Value::inferTypeFrom(const xsigma::Tensor& output)
+void Value::inferTypeFrom(const quarisma::Tensor& output)
 {
     setType(TensorType::create(output));
 }
 
-void Value::inferTypeFrom(const xsigma::intrusive_ptr<xsigma::ivalue::Object>& output)
+void Value::inferTypeFrom(const quarisma::intrusive_ptr<quarisma::ivalue::Object>& output)
 {
     setType(output->type());
 }
@@ -974,7 +974,7 @@ bool Value::isValidName(const std::string& name)
 
 Value* Value::setDebugName(const std::string& name)
 {
-    XSIGMA_CHECK(isValidName(name), "Invalid name: '", name, "'")
+    QUARISMA_CHECK(isValidName(name), "Invalid name: '", name, "'")
     auto& names = node()->owningGraph()->unique_names_;
 
     // clear any old name from the map
@@ -1111,7 +1111,7 @@ void Value::replaceAllUsesDominatedByNodeWith(const Node* node, Value* newValue)
 
 static size_t findArgument(const FunctionSchema& the_schema, const std::string& unqualName)
 {
-    for (const auto i : xsigma::irange(the_schema.arguments().size()))
+    for (const auto i : quarisma::irange(the_schema.arguments().size()))
     {
         const Argument* arg = &the_schema.arguments()[i];
         if (arg->name() == unqualName)
@@ -1119,7 +1119,7 @@ static size_t findArgument(const FunctionSchema& the_schema, const std::string& 
             return i;
         }
     }
-    XSIGMA_CHECK(false, "Couldn't find an argument called ", unqualName);
+    QUARISMA_CHECK(false, "Couldn't find an argument called ", unqualName);
 }
 
 static size_t findArgument(const FunctionSchema& the_schema, Symbol name)
@@ -1165,7 +1165,7 @@ bool Node::matches(const FunctionSchema& schema) const
     {
         return false;
     }
-    xsigma::ArrayRef<const Value*> actuals = inputs();
+    quarisma::ArrayRef<const Value*> actuals = inputs();
     const auto&                    formals = schema.arguments();
 
     // not enough inputs
@@ -1175,7 +1175,7 @@ bool Node::matches(const FunctionSchema& schema) const
     }
 
     TypeEnv type_env;
-    for (const auto i : xsigma::irange(formals.size()))
+    for (const auto i : quarisma::irange(formals.size()))
     {
         auto                  formal = formals[i].type();
         const MatchTypeReturn matched_type =
@@ -1190,9 +1190,9 @@ bool Node::matches(const FunctionSchema& schema) const
         {
             formal = resolved;
         }
-        // note: it is possible xsigma this point that type variable matching has
+        // note: it is possible quarisma this point that type variable matching has
         // not resolved all type variables, e.g. if None was matched to Optional[T]
-        // we will not succeed xsigma matching T. However None <: Optional[T] so this
+        // we will not succeed quarisma matching T. However None <: Optional[T] so this
         // check can still succeed.
 
         if (!actuals[i]->type()->isSubtypeOf(*formal))
@@ -1210,7 +1210,7 @@ bool Node::matches(const FunctionSchema& schema) const
     return true;
 }
 
-bool Node::matches(const char* signature_literal, xsigma::ArrayRef<Symbol> const_inputs) const
+bool Node::matches(const char* signature_literal, quarisma::ArrayRef<Symbol> const_inputs) const
 {
     if (!matches(getOperatorForLiteral(signature_literal)->schema()))
     {
@@ -1289,7 +1289,7 @@ const Operator& Node::getOperator() const
     er << "Schema not found for node. File a bug report.\n";
     er << "Node: " << *this << "\n";
     er << "Input types:";
-    for (const auto i : xsigma::irange(inputs().size()))
+    for (const auto i : quarisma::irange(inputs().size()))
     {
         if (i > 0)
             er << ", ";
@@ -1428,7 +1428,7 @@ bool Node::hasSideEffects() const
 // The basic scheme is: assign every node a position (uint64_t).  The common
 // case (appending to the end of the graph) is made more efficient by advancing
 // a fixed interval past the previous node and placing `this` there. Otherwise,
-// assign `this` a position xsigma the midpoint between its prev() and next()
+// assign `this` a position quarisma the midpoint between its prev() and next()
 // nodes.
 //
 // If we ever run out of space (by, e.g. inserting too much in place), we
@@ -1515,7 +1515,7 @@ void Node::eraseOutput(size_t i)
     Value* n = outputs_[i];
     outputs_.erase(outputs_.begin() + i);
     owningGraph()->freeValue(n);
-    for (const auto j : xsigma::irange(i, outputs_.size()))
+    for (const auto j : quarisma::irange(i, outputs_.size()))
     {
         outputs_[j]->offset_--;
     }
@@ -1570,7 +1570,7 @@ void Node::replaceAllUsesWith(Node* n)
 {
     AT_ASSERT(outputs().size() == n->outputs().size());
     size_t nOutputs = outputs().size();
-    for (const auto i : xsigma::irange(nOutputs))
+    for (const auto i : quarisma::irange(nOutputs))
     {
         outputs()[i]->replaceAllUsesWith(n->outputs()[i]);
     }
@@ -1620,16 +1620,16 @@ Value* Node::insertInput(size_t i, Value* value)
     AT_ASSERT(graph_ == value->owningGraph());
     op_ = nullptr;
     // First we update the offsets for all existing inputs that will reside
-    // after the one we're inserting. Concretely, these are the inputs xsigma
+    // after the one we're inserting. Concretely, these are the inputs quarisma
     // indices [i, # input). Since we're inserting one input before all of
     // these inputs, increment their use offsets for this value by 1
-    for (const auto use_itr : xsigma::irange(i, inputs_.size()))
+    for (const auto use_itr : quarisma::irange(i, inputs_.size()))
     {
         // See Note [User node does not uniquely identify use]
         auto use = findUseForInput(use_itr);
         use->offset += 1;
     }
-    // Insert the actual input xsigma the specified index
+    // Insert the actual input quarisma the specified index
     inputs_.insert(inputs_.begin() + i, value);
     // Register the new use of the value we're inserted as an input.
     value->uses_.emplace_back(this, i);
@@ -1686,7 +1686,7 @@ Value* Node::insertOutput(size_t i)
     {
         outputs_[itr]->setOffset(outputs_[itr]->offset() + 1);
     }
-    return outputs_.xsigma(i);
+    return outputs_.quarisma(i);
 }
 
 bool Node::isBeforeOrAfter(const Node* n, MoveSide moveSide) const
@@ -1803,7 +1803,7 @@ void Node::removeInput(size_t i)
 void Node::removeAllInputs()
 {
     op_ = nullptr;
-    for (const auto i : xsigma::irange(inputs().size()))
+    for (const auto i : quarisma::irange(inputs().size()))
     {
         dropInput(i);
     }
@@ -1814,7 +1814,7 @@ void Node::removeAllOutputs()
 {
     op_               = nullptr;
     size_t init_osize = outputs_.size();
-    for (auto i : xsigma::irange(init_osize))
+    for (auto i : quarisma::irange(init_osize))
     {
         eraseOutput(init_osize - i - 1);
     }
@@ -1826,13 +1826,13 @@ void Node::permuteInputs(const std::vector<size_t>& new_order)
     AT_ASSERT(new_order.size() == inputs_.size());
     std::vector<Value*> new_inputs;
     new_inputs.reserve(new_order.size());
-    for (const auto i : xsigma::irange(new_order.size()))
+    for (const auto i : quarisma::irange(new_order.size()))
     {
-        TORCH_INTERNAL_ASSERT(inputs_.xsigma(new_order[i]) != nullptr, "Repeated index");
-        new_inputs.push_back(inputs_.xsigma(new_order[i]));
+        TORCH_INTERNAL_ASSERT(inputs_.quarisma(new_order[i]) != nullptr, "Repeated index");
+        new_inputs.push_back(inputs_.quarisma(new_order[i]));
         auto it                      = findUseForInput(new_order[i]);
         it->offset                   = i;
-        inputs_.xsigma(new_order[i]) = nullptr;
+        inputs_.quarisma(new_order[i]) = nullptr;
     }
     inputs_ = std::move(new_inputs);
 }
@@ -1843,12 +1843,12 @@ void Node::permuteOutputs(const std::vector<size_t>& new_order)
     AT_ASSERT(new_order.size() == outputs_.size());
     std::vector<Value*> new_outputs;
     new_outputs.reserve(new_order.size());
-    for (const auto i : xsigma::irange(new_order.size()))
+    for (const auto i : quarisma::irange(new_order.size()))
     {
-        TORCH_INTERNAL_ASSERT(outputs_.xsigma(new_order[i]) != nullptr, "Repeated index");
-        new_outputs.push_back(outputs_.xsigma(new_order[i]));
-        outputs_.xsigma(new_order[i])->setOffset(i);
-        outputs_.xsigma(new_order[i]) = nullptr;
+        TORCH_INTERNAL_ASSERT(outputs_.quarisma(new_order[i]) != nullptr, "Repeated index");
+        new_outputs.push_back(outputs_.quarisma(new_order[i]));
+        outputs_.quarisma(new_order[i])->setOffset(i);
+        outputs_.quarisma(new_order[i]) = nullptr;
     }
     outputs_ = std::move(new_outputs);
 }
@@ -1946,8 +1946,8 @@ static inline const SourceRange& fakeRange()
 
 Value* Graph::insert(
     Symbol                            opname,
-    xsigma::ArrayRef<NamedValue>      args,
-    xsigma::ArrayRef<NamedValue>      kwargs,
+    quarisma::ArrayRef<NamedValue>      args,
+    quarisma::ArrayRef<NamedValue>      kwargs,
     const std::optional<SourceRange>& range)
 {
     return emitBuiltinCall(range.value_or(fakeRange()), *this, opname, args, kwargs);
@@ -1957,7 +1957,7 @@ Node* Graph::create(NodeKind kind, size_t num_outputs)
 {
     // NB: Node constructor adds node to all_nodes
     auto n = new Node(this, kind);
-    for (const auto i : xsigma::irange(num_outputs))
+    for (const auto i : quarisma::irange(num_outputs))
     {
         (void)i;
         n->addOutput();
@@ -2001,7 +2001,7 @@ Node* Graph::createWithSubgraph(Symbol kind)
     return n;
 }
 
-Node* Graph::createTuple(xsigma::ArrayRef<Value*> values, TupleTypePtr tuple_type)
+Node* Graph::createTuple(quarisma::ArrayRef<Value*> values, TupleTypePtr tuple_type)
 {
     TORCH_INTERNAL_ASSERT(
         !tuple_type || tuple_type->schema(), "only pass tuple_type when creating a named tuple");
@@ -2041,7 +2041,7 @@ Node* Graph::createTupleSlice(Value* tup, int64_t beg, int64_t step_size, int64_
     new_vals.reserve(num_values);
 
     int64_t i = beg;
-    for ([[maybe_unused]] const auto j : xsigma::irange(num_values))
+    for ([[maybe_unused]] const auto j : quarisma::irange(num_values))
     {
         auto idx        = insertConstant(IValue(i));
         auto tupleIndex = insertNode(createTupleIndex(tup, idx, tt->elements()[i]));
@@ -2071,12 +2071,12 @@ Node* Graph::createEnumValue(Value* e)
     return n;
 }
 
-Node* Graph::createList(const TypePtr& contained_type, xsigma::ArrayRef<Value*> values)
+Node* Graph::createList(const TypePtr& contained_type, quarisma::ArrayRef<Value*> values)
 {
     auto n = create(prim::ListConstruct, values);
     for (const auto& v : values)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             v->type()->isSubtypeOf(*contained_type),
             "Expected a list element that subtypes '",
             contained_type->repr_str(),
@@ -2093,7 +2093,7 @@ Node* Graph::createListUnpack(Value* v, size_t size)
     ListTypePtr list_type = v->type()->expect<ListType>();
     TypePtr     elem_type = list_type->getElementType();
     auto        n         = create(prim::ListUnpack, {v}, 0);
-    for ([[maybe_unused]] const auto i : xsigma::irange(size))
+    for ([[maybe_unused]] const auto i : quarisma::irange(size))
     {
         n->addOutput()->setType(elem_type);
     }
@@ -2103,12 +2103,12 @@ Node* Graph::createListUnpack(Value* v, size_t size)
 Node* Graph::createDict(
     const TypePtr&           key_type,
     const TypePtr&           value_type,
-    xsigma::ArrayRef<Value*> keys,
-    xsigma::ArrayRef<Value*> values)
+    quarisma::ArrayRef<Value*> keys,
+    quarisma::ArrayRef<Value*> values)
 {
     AT_ASSERT(keys.size() == values.size());
     auto n = create(prim::DictConstruct, 1);
-    for (const auto i : xsigma::irange(keys.size()))
+    for (const auto i : quarisma::irange(keys.size()))
     {
         AT_ASSERT(keys[i]->type()->isSubtypeOf(*key_type));
         AT_ASSERT(values[i]->type()->isSubtypeOf(*value_type));
@@ -2169,7 +2169,7 @@ Node* Graph::createLoad(const std::string& name, const TypePtr& type)
     return n;
 }
 
-Node* Graph::createIsInstance(Value* v, xsigma::ArrayRef<TypePtr> types)
+Node* Graph::createIsInstance(Value* v, quarisma::ArrayRef<TypePtr> types)
 {
     auto n = create(prim::isinstance, {v}, /*num_outputs*/ 1);
     n->tys_(attr::types, types.vec());
@@ -2215,7 +2215,7 @@ Value* Graph::insertToList(Value* v, TypePtr type)
     }
     else
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false,
             ptr->repr_str(),
             " is not one of the supported element types for tolist: int, float, complex, bool");
@@ -2241,7 +2241,7 @@ Value* Graph::insertFunctionCall(Function* callee, const MatchedSchema& matched)
     inputs.insert(inputs.end(), matched.inputs.begin(), matched.inputs.end());
     Value* result = insertNode(create(prim::CallFunction, inputs))
                         ->output()
-                        ->setType(matched.return_types.xsigma(0));
+                        ->setType(matched.return_types.quarisma(0));
     return result;
 }
 
@@ -2250,7 +2250,7 @@ Value* Graph::insertMethodCall(std::string method_name, const MatchedSchema& mat
     Value* result = insertNode(create(prim::CallMethod, matched.inputs))
                         ->s_(attr::name, std::move(method_name))
                         ->output()
-                        ->setType(matched.return_types.xsigma(0));
+                        ->setType(matched.return_types.quarisma(0));
     return result;
 }
 
@@ -2329,7 +2329,7 @@ void Graph::freeBlock(Block* b)
     all_blocks.erase(it);
 }
 
-xsigma::ArrayRef<Value*> createTupleUnpack(Value* v)
+quarisma::ArrayRef<Value*> createTupleUnpack(Value* v)
 {
     // small peephole optimization to ensure IntArrayRef attributes can still turn
     // into constants e.g. in x.expand([3, 4])
@@ -2376,16 +2376,16 @@ void inlineCallStackOfNode(
     {
         if (new_node_cs)
         {
-            new_cs_entries[raw_callstack_ptr] = xsigma::make_intrusive<InlinedCallStack>(
+            new_cs_entries[raw_callstack_ptr] = quarisma::make_intrusive<InlinedCallStack>(
                 *new_node_cs, callee, to_replace->sourceRange(), m_info);
         }
         else
         {
             new_cs_entries[raw_callstack_ptr] =
-                xsigma::make_intrusive<InlinedCallStack>(callee, to_replace->sourceRange(), m_info);
+                quarisma::make_intrusive<InlinedCallStack>(callee, to_replace->sourceRange(), m_info);
         }
     }
-    new_node->setCallStack(new_cs_entries.xsigma(raw_callstack_ptr));
+    new_node->setCallStack(new_cs_entries.quarisma(raw_callstack_ptr));
     // We updated the inlined callstack of new_node.
     // Same must be done for the nodes of the blocks of new_node.
     // For example If node's block otherwise is not annotated appropriately.
@@ -2407,7 +2407,7 @@ std::vector<Value*> inlineCallTo(Node* to_replace, GraphFunction* callee, Graph*
     std::optional<ModuleInstanceInfo> module_instance_info = std::nullopt;
     if (to_replace->kind() == prim::CallMethod)
     {
-        auto class_type_ptr = to_replace->input(0)->type()->cast<xsigma::ClassType>();
+        auto class_type_ptr = to_replace->input(0)->type()->cast<quarisma::ClassType>();
         if (to_replace->input(0)->node()->kind() == prim::GetAttr)
         {
             module_instance_info =
@@ -2461,7 +2461,7 @@ std::vector<Value*> inlineCallTo(Node* to_replace, GraphFunction* callee, Graph*
     const auto& old_outputs = to_replace->outputs();
 
     AT_ASSERT(new_outputs.size() == old_outputs.size());
-    for (const auto i : xsigma::irange(old_outputs.size()))
+    for (const auto i : quarisma::irange(old_outputs.size()))
     {
         if (old_outputs[i]->hasDebugName())
         {
@@ -2486,7 +2486,7 @@ std::vector<Value*> inlineCallTo(
 std::vector<Value*> unpackOutputs(const std::vector<Value*>& outputs)
 {
     std::vector<Value*> new_outputs;
-    if (outputs.size() != 1 || outputs.xsigma(0)->type()->kind() != TupleType::Kind)
+    if (outputs.size() != 1 || outputs.quarisma(0)->type()->kind() != TupleType::Kind)
     {
         return outputs;
     }
@@ -2505,7 +2505,7 @@ std::vector<Value*> unpackOutputs(const std::vector<Value*>& outputs)
     return new_outputs;
 }
 
-std::vector<Node*> findAllNodes(xsigma::ArrayRef<Block*> array, Symbol kind, bool recurse)
+std::vector<Node*> findAllNodes(quarisma::ArrayRef<Block*> array, Symbol kind, bool recurse)
 {
     std::vector<Node*> ret;
     for (auto block : array)
@@ -2528,9 +2528,9 @@ std::vector<Node*> findAllNodes(Graph& g, Symbol kind, bool recurse)
 std::vector<Value*> insertGraph(
     Graph& g, Graph& callee, ArrayRef<Value*> inputs, std::unordered_map<Value*, Value*>& value_map)
 {
-    auto value_map_func = [&](Value* v) { return value_map.xsigma(v); };
+    auto value_map_func = [&](Value* v) { return value_map.quarisma(v); };
     AT_ASSERT(callee.inputs().size() == inputs.size());
-    for (const auto i : xsigma::irange(inputs.size()))
+    for (const auto i : quarisma::irange(inputs.size()))
     {
         value_map[callee.inputs()[i]] = inputs[i];
     }
@@ -2594,8 +2594,8 @@ TypePtr NamedValue::type() const
     }
 }
 
-const Symbol ProfileOp::Kind       = ::xsigma::prim::profile;
-const Symbol ProfileIValueOp::Kind = ::xsigma::prim::profile_ivalue;
+const Symbol ProfileOp::Kind       = ::quarisma::prim::profile;
+const Symbol ProfileIValueOp::Kind = ::quarisma::prim::profile_ivalue;
 
 OperatorSet::OperatorSet(std::initializer_list<const char*> sig_literals)
 {

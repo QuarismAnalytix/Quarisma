@@ -69,7 +69,7 @@ public:
         {
             return loc->second;
         }
-        XSIGMA_CHECK(false, "Cannot get non-existent key");
+        QUARISMA_CHECK(false, "Cannot get non-existent key");
     }
 
 private:
@@ -84,7 +84,7 @@ public:
     {
         auto dict_type       = dict_creation_node->output()->type();
         auto key_value_types = dict_type->containedTypes();
-        XSIGMA_CHECK(key_value_types.size() == 2, "Dict must have 2 contained types");
+        QUARISMA_CHECK(key_value_types.size() == 2, "Dict must have 2 contained types");
         const auto& key_type = key_value_types[0];
 
         switch (key_type->kind())

@@ -1,8 +1,8 @@
-# XSigma Kineto Profiler Architecture Guide
+# Quarisma Kineto Profiler Architecture Guide
 
 ## Overview
 
-The Kineto profiler is a high-performance profiling system integrated into XSigma that captures CPU and GPU execution traces. It's built on top of **libkineto** (XSigma's profiling library) and provides detailed performance insights for debugging and optimization.
+The Kineto profiler is a high-performance profiling system integrated into Quarisma that captures CPU and GPU execution traces. It's built on top of **libkineto** (Quarisma's profiling library) and provides detailed performance insights for debugging and optimization.
 
 ---
 
@@ -15,9 +15,9 @@ The Kineto profiler is a high-performance profiling system integrated into XSigm
 
 ```cpp
 void enableProfiler(
-    const xsigma::profiler::impl::ProfilerConfig& config,
-    const std::set<xsigma::profiler::impl::ActivityType>& activities,
-    const std::unordered_set<xsigma::RecordScope>& scopes = {});
+    const quarisma::profiler::impl::ProfilerConfig& config,
+    const std::set<quarisma::profiler::impl::ActivityType>& activities,
+    const std::unordered_set<quarisma::RecordScope>& scopes = {});
 ```
 
 **Purpose:** Initializes and starts profiling session.
@@ -67,8 +67,8 @@ std::unique_ptr<ProfilerResult> disableProfiler();
 ```cpp
 struct KinetoThreadLocalState : public ProfilerStateBase {
     uint64_t startTime;
-    xsigma::ApproximateClockToUnixTimeConverter clockConverter;
-    xsigma::profiler::impl::RecordQueue recordQueue;
+    quarisma::ApproximateClockToUnixTimeConverter clockConverter;
+    quarisma::profiler::impl::RecordQueue recordQueue;
     std::vector<KinetoEvent> kinetoEvents;
     std::vector<experimental_event_t> eventTree;
     post_process_t eventPostProcessCb;  // Optional post-processing
@@ -302,7 +302,7 @@ result->save("trace.json");
 ✅ **Memory Tracking:** Allocation/deallocation events  
 ✅ **Stack Traces:** Optional call stack capture  
 ✅ **Tensor Metadata:** Shapes, dtypes, concrete inputs  
-✅ **Module Hierarchy:** Track XSigma module structure  
+✅ **Module Hierarchy:** Track Quarisma module structure  
 ✅ **Correlation IDs:** Link CPU and GPU events  
 ✅ **Thread-Safe:** Per-thread and global profiling modes  
 ✅ **Extensible:** Support for custom backends (PrivateUse1)
@@ -313,8 +313,8 @@ result->save("trace.json");
 
 ```cpp
 // Configure profiler
-xsigma::profiler::impl::ProfilerConfig config(
-    xsigma::profiler::impl::ProfilerState::KINETO,
+quarisma::profiler::impl::ProfilerConfig config(
+    quarisma::profiler::impl::ProfilerState::KINETO,
     true,   // report_input_shapes
     true,   // profile_memory
     true,   // with_stack
@@ -323,17 +323,17 @@ xsigma::profiler::impl::ProfilerConfig config(
 );
 
 // Specify activities
-std::set<xsigma::profiler::impl::ActivityType> activities{
-    xsigma::profiler::impl::ActivityType::CPU
+std::set<quarisma::profiler::impl::ActivityType> activities{
+    quarisma::profiler::impl::ActivityType::CPU
 };
 
 // Start profiling
-xsigma::autograd::profiler::enableProfiler(config, activities);
+quarisma::autograd::profiler::enableProfiler(config, activities);
 
 // ... code to profile ...
 
 // Stop and get results
-auto result = xsigma::autograd::profiler::disableProfiler();
+auto result = quarisma::autograd::profiler::disableProfiler();
 
 // Save trace
 result->save("profile_trace.json");

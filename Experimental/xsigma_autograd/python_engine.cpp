@@ -1,5 +1,5 @@
-#include <XSigma/LegacyBatchedTensorImpl.h>
-#include <XSigma/LegacyVmapMode.h>
+#include <Quarisma/LegacyBatchedTensorImpl.h>
+#include <Quarisma/LegacyVmapMode.h>
 #include <pybind11/pybind11.h>
 #include <torch/csrc/DynamicTypes.h>
 #include <torch/csrc/THP.h>
@@ -14,7 +14,7 @@
 #include <torch/csrc/autograd/python_saved_variable_hooks.h>
 #include <torch/csrc/utils/pybind.h>
 #include <torch/csrc/utils/pycfunction_helpers.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #ifndef _WIN32
 #include <pthread.h>
@@ -127,7 +127,7 @@ variable_list PythonEngine::execute(
     bool                 accumulate_grad,
     const edge_list&     outputs)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         !PyGILState_Check(),
         "The autograd engine was called while holding the GIL. If you are using the C++ "
         "API, the autograd engine is an expensive operation that does not require the "
@@ -144,7 +144,7 @@ variable_list PythonEngine::execute(
     }
 }
 
-xsigma::intrusive_ptr<xsigma::ivalue::Future> PythonEngine::execute_with_graph_task(
+quarisma::intrusive_ptr<quarisma::ivalue::Future> PythonEngine::execute_with_graph_task(
     const std::shared_ptr<GraphTask>& graph_task,
     std::shared_ptr<Node>             graph_root,
     InputBuffer&&                     input_buffer)
@@ -182,7 +182,7 @@ static Edge parseGradientEdge(PyObject* obj, int64_t index)
     }
     else
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false,
             "GradientEdge's first object must be an autograd.graph.Node "
             "but got ",
@@ -226,12 +226,12 @@ static PyObject* THPEngine_run_backward(PyObject* self, PyObject* args, PyObject
             &allow_unreachable,
             &accumulate_grad))
         return nullptr;
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         PyTuple_Check(tensors),
         "tensors argument is expected to "
         "be a tuple, but got ",
         THPUtils_typename(tensors));
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         PyTuple_Check(grad_tensors),
         "grad_tensors argument is "
         "expected to be a tuple, but got ",
@@ -239,7 +239,7 @@ static PyObject* THPEngine_run_backward(PyObject* self, PyObject* args, PyObject
 
     Py_ssize_t num_tensors   = PyTuple_GET_SIZE(tensors);
     Py_ssize_t num_gradients = PyTuple_GET_SIZE(grad_tensors);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         num_tensors == num_gradients,
         "got ",
         num_tensors,
@@ -250,8 +250,8 @@ static PyObject* THPEngine_run_backward(PyObject* self, PyObject* args, PyObject
     // The user either called autograd.backward(...) or autograd.grad(...) to get
     // here
     bool backward_api_called = accumulate_grad;
-    XSIGMA_CHECK(
-        !backward_api_called || xsigma::impl::VmapMode::current_vmap_level() == 0,
+    QUARISMA_CHECK(
+        !backward_api_called || quarisma::impl::VmapMode::current_vmap_level() == 0,
         "backward() called inside torch.vmap. This is not supported, "
         "please call backward() outside torch.vmap or instead use "
         "torch.autograd.grad inside torch.vmap");
@@ -260,15 +260,15 @@ static PyObject* THPEngine_run_backward(PyObject* self, PyObject* args, PyObject
     roots.reserve(num_tensors);
     variable_list grads;
     grads.reserve(num_tensors);
-    for (const auto i : xsigma::irange(num_tensors))
+    for (const auto i : quarisma::irange(num_tensors))
     {
         PyObject* _tensor = PyTuple_GET_ITEM(tensors, i);
         Edge      gradient_edge;  // Temporary variable to hold the gradient edge
-        std::optional<xsigma::Tensor> mb_output;
+        std::optional<quarisma::Tensor> mb_output;
         if (THPVariable_Check(_tensor))
         {
             mb_output = THPVariable_Unpack(_tensor);
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 !isBatchedTensor(mb_output.value()),
                 "torch.autograd.grad(outputs, inputs, grad_outputs) called inside ",
                 "torch.vmap. We do not support the case where any outputs are ",
@@ -285,10 +285,10 @@ static PyObject* THPEngine_run_backward(PyObject* self, PyObject* args, PyObject
         }
         else
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 false, "element ", i, " of tensors tuple is neither a Tensor nor a GradientEdge");
         }
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             gradient_edge.function,
             "element ",
             i,
@@ -312,15 +312,15 @@ static PyObject* THPEngine_run_backward(PyObject* self, PyObject* args, PyObject
         }
         else
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 grad == Py_None, "element ", i, " of gradients tuple is not a Tensor or None");
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 mb_output.has_value(),
                 "element ",
                 i,
                 " of gradients tuple is None, but the corresponding output is a GradientEdge."
                 "This is not supported.");
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 !mb_output.value().requires_grad(),
                 "element ",
                 i,
@@ -331,16 +331,16 @@ static PyObject* THPEngine_run_backward(PyObject* self, PyObject* args, PyObject
     std::vector<Edge> output_edges;
     if (inputs != nullptr)
     {
-        XSIGMA_CHECK(PyTuple_CheckExact(inputs), "inputs to run_backward must be a tuple");
+        QUARISMA_CHECK(PyTuple_CheckExact(inputs), "inputs to run_backward must be a tuple");
         int num_inputs = PyTuple_GET_SIZE(inputs);
         output_edges.reserve(num_inputs);
-        for (const auto i : xsigma::irange(num_inputs))
+        for (const auto i : quarisma::irange(num_inputs))
         {
             PyObject* input = PyTuple_GET_ITEM(inputs, i);
             if (THPVariable_Check(input))
             {
                 const auto& tensor = THPVariable_Unpack(input);
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     !isBatchedTensor(tensor),
                     "torch.autograd.grad(outputs, inputs, grad_outputs) called inside ",
                     "torch.vmap. We do not support the case where any inputs are ",
@@ -359,7 +359,7 @@ static PyObject* THPEngine_run_backward(PyObject* self, PyObject* args, PyObject
                 {
                     tensor.retain_grad();
                 }
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     tensor.requires_grad(),
                     "One of the differentiated Tensors does not require grad");
                 if (!grad_fn)
@@ -383,7 +383,7 @@ static PyObject* THPEngine_run_backward(PyObject* self, PyObject* args, PyObject
             }
             else
             {
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     "all inputs have to be Tensors or GradientEdges, but got ",
                     THPUtils_typename(input));
@@ -405,9 +405,9 @@ static PyObject* THPEngine_run_backward(PyObject* self, PyObject* args, PyObject
         THPObjectPtr py_outputs{PyTuple_New(num_inputs)};
         if (!py_outputs)
             return nullptr;
-        for (const auto i : xsigma::irange(num_inputs))
+        for (const auto i : quarisma::irange(num_inputs))
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 allow_unreachable || outputs[i].defined(),
                 "One of the "
                 "differentiated Tensors appears to not have been used "
@@ -545,7 +545,7 @@ static void child_atfork()
 bool THPEngine_initModule(PyObject* module)
 {
 #ifndef _WIN32
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         pthread_atfork(nullptr, nullptr, child_atfork) == 0,
         "unable to set pthread_atfork handler");
 #endif

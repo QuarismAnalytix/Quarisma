@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
@@ -41,7 +41,7 @@ limitations under the License.
 #include "profiler/native/core/profiler_interface.h"
 #include "profiler/native/exporters/xplane/xplane.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 profiler_controller::profiler_controller(std::unique_ptr<profiler_interface> profiler)
@@ -73,10 +73,10 @@ profiler_status profiler_controller::start()
             return status_;
         }
 
-        XSIGMA_LOG_ERROR("Previous call returned an error: {}", status_.message());
+        QUARISMA_LOG_ERROR("Previous call returned an error: {}", status_.message());
         return status_;
     }
-    XSIGMA_LOG_ERROR("start called in the wrong order");
+    QUARISMA_LOG_ERROR("start called in the wrong order");
     status_ = profiler_status::Error("start called in the wrong order");
     return status_;
 }
@@ -96,10 +96,10 @@ profiler_status profiler_controller::stop()
             return status_;
         }
 
-        XSIGMA_LOG_ERROR("Previous call returned an error: {}", status_.message());
+        QUARISMA_LOG_ERROR("Previous call returned an error: {}", status_.message());
         return status_;
     }
-    XSIGMA_LOG_ERROR("stop called in the wrong order");
+    QUARISMA_LOG_ERROR("stop called in the wrong order");
     status_ = profiler_status::Error("stop called in the wrong order");
     return status_;
 }
@@ -119,12 +119,12 @@ profiler_status profiler_controller::collect_data(x_space* space)
             return status_;
         }
 
-        XSIGMA_LOG_ERROR("Previous call returned an error: {}", status_.message());
+        QUARISMA_LOG_ERROR("Previous call returned an error: {}", status_.message());
         return status_;
     }
-    XSIGMA_LOG_ERROR("collect_data called in the wrong order.");
+    QUARISMA_LOG_ERROR("collect_data called in the wrong order.");
     status_ = profiler_status::Error("collect_data called in the wrong order.");
     return status_;
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

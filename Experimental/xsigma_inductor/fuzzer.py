@@ -900,7 +900,7 @@ class ConfigFuzzer:
             quart4 = failing_config[high:]
             if test(quart4).failing():
                 return self._bisect_failing_config_helper(results, quart4)
-        # try dropping one value xsigma a time
+        # try dropping one value quarisma a time
         for i in range(len(failing_config)):
             new_list = [x for j, x in enumerate(failing_config) if j != i]
             if test(new_list).failing():

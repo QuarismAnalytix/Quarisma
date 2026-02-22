@@ -11,14 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-// XSigma: modified from llvm::AlignOf
+// Quarisma: modified from llvm::AlignOf
 // replaced LLVM_ALIGNAS with alignas
 
 #pragma once
 
 #include <cstddef>
 
-namespace xsigma
+namespace quarisma
 {
 
 /// \struct AlignedCharArray
@@ -184,7 +184,7 @@ template <
 struct AlignedCharArrayUnion
     : AlignedCharArray<
           alignof(detail::AlignerImpl<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>),
-          sizeof(::xsigma::detail::SizerImpl<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>)>
+          sizeof(::quarisma::detail::SizerImpl<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>)>
 {
 };
-}  // end namespace xsigma
+}  // end namespace quarisma

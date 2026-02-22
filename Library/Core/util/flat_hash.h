@@ -15,7 +15,7 @@
 //    (See http://www.boost.org/LICENSE_1_0.txt)
 #pragma once
 
-#ifndef __XSIGMA_WRAP__
+#ifndef __QUARISMA_WRAP__
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -42,7 +42,7 @@
 #define SKA_NOINLINE(...) __VA_ARGS__ __attribute__((noinline))
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 struct prime_number_hash_policy;
 struct power_of_two_hash_policy;
@@ -1739,29 +1739,29 @@ public:
 template <typename T>
 struct power_of_two_std_hash : std::hash<T>
 {
-    typedef xsigma::power_of_two_hash_policy hash_policy;
+    typedef quarisma::power_of_two_hash_policy hash_policy;
 };
 
 #if 1
 template <typename T>
-using xsigma_set = flat_hash_set<T>;
+using quarisma_set = flat_hash_set<T>;
 template <typename K, typename V, typename H = std::hash<K>>
-using xsigma_map = flat_hash_map<K, V, H>;
+using quarisma_map = flat_hash_map<K, V, H>;
 #else
 template <typename T>
-using xsigma_set = std::unordered_set<T>;
+using quarisma_set = std::unordered_set<T>;
 template <typename K, typename V>
-using xsigma_map = std::unordered_map<K, V>;
+using quarisma_map = std::unordered_map<K, V>;
 #endif
 
-using double_map_t    = xsigma_map<size_t, double>;
-using container_map_t = xsigma_map<size_t, double_map_t>;
+using double_map_t    = quarisma_map<size_t, double>;
+using container_map_t = quarisma_map<size_t, double_map_t>;
 template <typename T>
-using pair_dates_map_template_t = xsigma_map<size_t, flat_hash_set<std::pair<T, T>>>;
+using pair_dates_map_template_t = quarisma_map<size_t, flat_hash_set<std::pair<T, T>>>;
 
 using forecast_map_t = container_map_t;
 
-}  // namespace xsigma
+}  // namespace quarisma
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)

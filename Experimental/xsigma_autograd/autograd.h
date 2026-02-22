@@ -36,7 +36,7 @@ namespace torch::autograd
 /// allowing
 ///     to compute higher order derivative products. Defaults to `false`.
 /// \param inputs Inputs w.r.t. which the gradient will be accumulated into
-///     `xsigma::Tensor::grad`. All other Tensors will be ignored. If not provided,
+///     `quarisma::Tensor::grad`. All other Tensors will be ignored. If not provided,
 ///     the gradient is accumulated into all the leaf Tensors that were used to
 ///     compute param `tensors`.
 //      When inputs are provided and a given input is not a leaf,
@@ -62,7 +62,7 @@ TORCH_API void backward(
 ///
 /// \param outputs outputs of the differentiated function.
 /// \param inputs Inputs w.r.t. which the gradient will be
-///     returned (and not accumulated into ``xsigma::Tensor::grad``).
+///     returned (and not accumulated into ``quarisma::Tensor::grad``).
 /// \param grad_outputs The "vector" in the Jacobian-vector product.
 ///     Usually gradients w.r.t. each output. `torch::Tensor()` values can be
 ///     specified for scalar Tensors or ones that don't require grad. If a

@@ -2,42 +2,42 @@
 
 #include <torch/csrc/utils/generated_serialization_types.h>
 #include <torch/nativert/executor/Placement.h>
-#include <xsigma/core/Device.h>
-#include <xsigma/core/Layout.h>
-#include <xsigma/core/MemoryFormat.h>
-#include <xsigma/core/ScalarType.h>
-#include <xsigma/core/TensorOptions.h>
-#include <xsigma/util/ArrayRef.h>
-#include <xsigma/util/Logging.h>
+#include <quarisma/core/Device.h>
+#include <quarisma/core/Layout.h>
+#include <quarisma/core/MemoryFormat.h>
+#include <quarisma/core/ScalarType.h>
+#include <quarisma/core/TensorOptions.h>
+#include <quarisma/util/ArrayRef.h>
+#include <quarisma/util/Logging.h>
 
 namespace torch::nativert
 {
 
-xsigma::ScalarType   convertJsonScalarType(const torch::_export::ScalarType& scalarType);
-xsigma::MemoryFormat convertJsonMemoryFormat(const torch::_export::MemoryFormat& memoryFormat);
-xsigma::Layout       convertJsonLayout(const torch::_export::Layout& layout);
-xsigma::Device       convertJsonDevice(const torch::_export::Device& device);
+quarisma::ScalarType   convertJsonScalarType(const torch::_export::ScalarType& scalarType);
+quarisma::MemoryFormat convertJsonMemoryFormat(const torch::_export::MemoryFormat& memoryFormat);
+quarisma::Layout       convertJsonLayout(const torch::_export::Layout& layout);
+quarisma::Device       convertJsonDevice(const torch::_export::Device& device);
 
 class TensorMeta
 {
 public:
     explicit TensorMeta(const torch::_export::TensorMeta& tensorMeta);
 
-    xsigma::IntArrayRef sizes() const
+    quarisma::IntArrayRef sizes() const
     {
-        XSIGMA_CHECK(!hasSymbolicShape_, "TensorMeta has symbolic shape");
+        QUARISMA_CHECK(!hasSymbolicShape_, "TensorMeta has symbolic shape");
         return sizes_;
     }
 
-    xsigma::IntArrayRef strides() const
+    quarisma::IntArrayRef strides() const
     {
-        XSIGMA_CHECK(!hasSymbolicShape_, "TensorMeta has symbolic shape");
+        QUARISMA_CHECK(!hasSymbolicShape_, "TensorMeta has symbolic shape");
         return strides_;
     }
 
-    xsigma::Layout layout() const { return layout_; }
+    quarisma::Layout layout() const { return layout_; }
 
-    xsigma::ScalarType dtype() const { return dtype_; }
+    quarisma::ScalarType dtype() const { return dtype_; }
 
     bool requires_grad() const { return requiresGrad_; }
 
@@ -47,18 +47,18 @@ public:
 
     int64_t numel() const
     {
-        XSIGMA_CHECK(!hasSymbolicShape_, "TensorMeta has symbolic shape");
+        QUARISMA_CHECK(!hasSymbolicShape_, "TensorMeta has symbolic shape");
         return numel_;
     }
 
-    xsigma::Device device() const { return device_; }
+    quarisma::Device device() const { return device_; }
 
     // override device according to placement
-    void setDevice(xsigma::Device device) { device_ = device; }
+    void setDevice(quarisma::Device device) { device_ = device; }
 
-    xsigma::TensorOptions asTensorOptions() const
+    quarisma::TensorOptions asTensorOptions() const
     {
-        return xsigma::TensorOptions().dtype(dtype_).layout(layout_).requires_grad(requiresGrad_);
+        return quarisma::TensorOptions().dtype(dtype_).layout(layout_).requires_grad(requiresGrad_);
     }
 
     // override device according to placement
@@ -68,10 +68,10 @@ public:
     }
 
     // NYI
-    // xsigma::SymIntArrayRef sym_sizes() const {}
-    // xsigma::SymIntArrayRef sym_strides() const {}
-    // xsigma::SymInt sym_storage_offset() const {}
-    // xsigma::SymInt sym_numel() const {}
+    // quarisma::SymIntArrayRef sym_sizes() const {}
+    // quarisma::SymIntArrayRef sym_strides() const {}
+    // quarisma::SymInt sym_storage_offset() const {}
+    // quarisma::SymInt sym_numel() const {}
 
 private:
     bool hasSymbolicShape_ = false;
@@ -81,11 +81,11 @@ private:
     int64_t              storage_offset_ = 0;
     int64_t              numel_          = 1;
 
-    xsigma::ScalarType dtype_;
-    xsigma::Layout     layout_;
+    quarisma::ScalarType dtype_;
+    quarisma::Layout     layout_;
     bool               requiresGrad_;
 
-    xsigma::Device device_;
+    quarisma::Device device_;
 };
 
 }  // namespace torch::nativert

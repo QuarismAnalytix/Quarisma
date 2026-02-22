@@ -2,7 +2,7 @@ import os
 import site
 import sys
 
-import xsigma
+import quarisma
 
 
 def _prefix_regex() -> list[str]:
@@ -11,7 +11,7 @@ def _prefix_regex() -> list[str]:
         + sys.path
         + [site.getuserbase()]
         + [site.getusersitepackages()]
-        + [os.path.dirname(os.path.dirname(xsigma.__file__))]
+        + [os.path.dirname(os.path.dirname(quarisma.__file__))]
     )
 
     path_prefixes = sorted({os.path.abspath(i) for i in raw_paths}, reverse=True)

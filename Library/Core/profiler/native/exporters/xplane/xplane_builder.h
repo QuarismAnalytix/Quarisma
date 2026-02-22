@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -51,7 +51,7 @@ limitations under the License.
 #include "profiler/native/exporters/xplane/xplane.h"
 #include "util/flat_hash.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 class xplane_builder;
@@ -386,7 +386,7 @@ private:
         {
             const auto& stat_metadata_by_id = src_plane.stat_metadata();
             const auto  it                  = stat_metadata_by_id.find(src_stat.ref_value());
-            if XSIGMA_LIKELY (it != stat_metadata_by_id.end())
+            if QUARISMA_LIKELY (it != stat_metadata_by_id.end())
             {
                 std::string_view value = it->second.name();
                 dst_stat->set_ref_value(get_or_create_stat_metadata(value).id());
@@ -465,7 +465,7 @@ private:
     xevent*      event_;
 };
 
-class XSIGMA_VISIBILITY xline_builder
+class QUARISMA_VISIBILITY xline_builder
 {
 public:
     explicit xline_builder(xline* line, xplane_builder* plane) : line_(line), plane_(plane) {}
@@ -507,9 +507,9 @@ public:
         }
     }
 
-    XSIGMA_API xevent_builder add_event(const timespan& timespan, const xevent_metadata& metadata);
-    XSIGMA_API xevent_builder add_event(const xevent_metadata& metadata);
-    XSIGMA_API xevent_builder add_event(const xevent& event);
+    QUARISMA_API xevent_builder add_event(const timespan& timespan, const xevent_metadata& metadata);
+    QUARISMA_API xevent_builder add_event(const xevent_metadata& metadata);
+    QUARISMA_API xevent_builder add_event(const xevent& event);
 
     template <typename ForEachEventFunc>
     void ForEachEvent(ForEachEventFunc&& for_each_event)
@@ -527,10 +527,10 @@ private:
 
 // Provides methods to build an xplane.
 // NOTE: avoid to use two builders to wrap the same xplane.
-class xplane_builder : public xstats_builder<xsigma::xplane>
+class xplane_builder : public xstats_builder<quarisma::xplane>
 {
 public:
-    XSIGMA_API explicit xplane_builder(xplane* plane);
+    QUARISMA_API explicit xplane_builder(xplane* plane);
 
     int64_t Id() const { return plane_->id(); }
     void    SetId(int64_t id) { plane_->set_id(id); }
@@ -551,26 +551,26 @@ public:
 
     // Returns a builder for the line with the given id. Creates a new line if the
     // id was unused, otherwise the builder will add events to an existing line.
-    XSIGMA_API xline_builder get_or_create_line(int64_t line_id);
+    QUARISMA_API xline_builder get_or_create_line(int64_t line_id);
 
     // Returns a new event metadata with an automatically generated metadata_id.
     // WARNING: If calling this function, don't call get_or_create_event_metadata.
-    XSIGMA_API xevent_metadata* create_event_metadata();
+    QUARISMA_API xevent_metadata* create_event_metadata();
 
     // Returns event metadata with the given id. Creates a new metadata if the id
     // was unused.
     // WARNING: If calling this function, don't call the string overloads below
     // on the same instance.
     // TODO(b/363276932): deprecate this method and add get_event_metadata(int64_t)
-    XSIGMA_API xevent_metadata* get_or_create_event_metadata(int64_t metadata_id);
+    QUARISMA_API xevent_metadata* get_or_create_event_metadata(int64_t metadata_id);
 
     // Returns event metadata with the given name. The id is internally assigned.
     // Creates a new metadata if the name was unused.
     // Using these overloads guarantees names are unique.
     // WARNING: If calling any of these overloads, do not call the integer one
     // above on the same instance.
-    XSIGMA_API xevent_metadata* get_or_create_event_metadata(std::string_view name);
-    XSIGMA_API xevent_metadata* get_or_create_event_metadata(std::string&& name);
+    QUARISMA_API xevent_metadata* get_or_create_event_metadata(std::string_view name);
+    QUARISMA_API xevent_metadata* get_or_create_event_metadata(std::string&& name);
     xevent_metadata*            get_or_create_event_metadata(const char* name)
     {
         return get_or_create_event_metadata(std::string_view(name));
@@ -596,15 +596,15 @@ public:
     // was unused.
     // WARNING: If calling this function, don't call the string overloads below
     // on the same instance.
-    XSIGMA_API x_stat_metadata* get_or_create_stat_metadata(int64_t metadata_id);
+    QUARISMA_API x_stat_metadata* get_or_create_stat_metadata(int64_t metadata_id);
 
     // Returns stat metadata with the given name. The id is internally assigned.
     // Creates a new metadata if the name was unused.
     // Using these overloads guarantees names are unique.
     // WARNING: If calling any of these overloads, do not call the integer one
     // above on the same instance.
-    XSIGMA_API x_stat_metadata* get_or_create_stat_metadata(std::string_view name);
-    XSIGMA_API x_stat_metadata* get_or_create_stat_metadata(std::string&& name);
+    QUARISMA_API x_stat_metadata* get_or_create_stat_metadata(std::string_view name);
+    QUARISMA_API x_stat_metadata* get_or_create_stat_metadata(std::string&& name);
     x_stat_metadata*            get_or_create_stat_metadata(const char* name)
     {
         return get_or_create_stat_metadata(std::string_view(name));
@@ -648,4 +648,4 @@ std::string_view xstats_builder<T>::StrOrRefValue(const xstat& stat)
     }
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

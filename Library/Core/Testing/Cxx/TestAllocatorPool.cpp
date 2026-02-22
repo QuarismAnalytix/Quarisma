@@ -17,13 +17,13 @@
 #include <thread>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "common/pointer.h"
 #include "memory/backend/allocator_pool.h"
 #include "memory/cpu/allocator.h"
 #include "memory/helper/memory_allocator.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 namespace
 {
@@ -170,7 +170,7 @@ std::pair<std::unique_ptr<allocator_pool>, counting_cpu_allocator*> create_test_
 /**
  * @brief Test basic allocation and deallocation with pooling
  */
-XSIGMATEST(AllocatorPool, basic_allocation_deallocation)
+QUARISMATEST(AllocatorPool, basic_allocation_deallocation)
 {
     auto [pool_allocator, sub_allocator_ptr] = create_test_pool_allocator();
 
@@ -203,7 +203,7 @@ XSIGMATEST(AllocatorPool, basic_allocation_deallocation)
 /**
  * @brief Test pool size limits and LRU eviction
  */
-XSIGMATEST(AllocatorPool, pool_size_limits_and_lru)
+QUARISMATEST(AllocatorPool, pool_size_limits_and_lru)
 {
     auto [pool_allocator, sub_allocator_ptr] = create_test_pool_allocator();
 
@@ -249,7 +249,7 @@ XSIGMATEST(AllocatorPool, pool_size_limits_and_lru)
 /**
  * @brief Test pool statistics and monitoring
  */
-XSIGMATEST(AllocatorPool, pool_statistics)
+QUARISMATEST(AllocatorPool, pool_statistics)
 {
     auto [pool_allocator, sub_allocator_ptr] = create_test_pool_allocator();
 
@@ -287,7 +287,7 @@ XSIGMATEST(AllocatorPool, pool_statistics)
 /**
  * @brief Test Clear() functionality
  */
-XSIGMATEST(AllocatorPool, clear_functionality)
+QUARISMATEST(AllocatorPool, clear_functionality)
 {
     auto [pool_allocator, sub_allocator_ptr] = create_test_pool_allocator();
 
@@ -328,7 +328,7 @@ XSIGMATEST(AllocatorPool, clear_functionality)
 /**
  * @brief Test allocator properties
  */
-XSIGMATEST(AllocatorPool, allocator_properties)
+QUARISMATEST(AllocatorPool, allocator_properties)
 {
     auto [pool_allocator, sub_allocator_ptr] = create_test_pool_allocator();
 
@@ -347,7 +347,7 @@ XSIGMATEST(AllocatorPool, allocator_properties)
 /**
  * @brief Test zero-size allocation handling
  */
-XSIGMATEST(AllocatorPool, zero_size_allocation)
+QUARISMATEST(AllocatorPool, zero_size_allocation)
 {
     auto [pool_allocator, sub_allocator_ptr] = create_test_pool_allocator();
 
@@ -360,7 +360,7 @@ XSIGMATEST(AllocatorPool, zero_size_allocation)
 /**
  * @brief Test null pointer deallocation
  */
-XSIGMATEST(AllocatorPool, null_pointer_deallocation)
+QUARISMATEST(AllocatorPool, null_pointer_deallocation)
 {
     auto [pool_allocator, sub_allocator_ptr] = create_test_pool_allocator();
 
@@ -578,7 +578,7 @@ TEST(AllocatorPool, allocation_timing)
     EXPECT_GT(ptrs.size(), num_allocations / 2);  // Most allocations should succeed
 
     // Pool allocations should be faster than initial allocations
-    XSIGMA_UNUSED auto pool_time =
+    QUARISMA_UNUSED auto pool_time =
         std::chrono::duration_cast<std::chrono::microseconds>(pool_end_time - pool_start_time)
             .count();
 
@@ -586,7 +586,7 @@ TEST(AllocatorPool, allocation_timing)
 }
 
 // Test pool basic functionality
-XSIGMATEST(AllocatorPool, BasicFunctionality)
+QUARISMATEST(AllocatorPool, BasicFunctionality)
 {
     // Create a pool allocator with size limit of 5
     auto sub_allocator = util::make_ptr_unique_mutable<basic_cpu_allocator>(
@@ -613,7 +613,7 @@ XSIGMATEST(AllocatorPool, BasicFunctionality)
 }
 
 // Test pool zero-size handling
-XSIGMATEST(AllocatorPool, ZeroSizeHandling)
+QUARISMATEST(AllocatorPool, ZeroSizeHandling)
 {
     auto sub_allocator = util::make_ptr_unique_mutable<basic_cpu_allocator>(
         0, std::vector<sub_allocator::Visitor>{}, std::vector<sub_allocator::Visitor>{});
@@ -641,7 +641,7 @@ XSIGMATEST(AllocatorPool, ZeroSizeHandling)
 }
 
 // Test pool alignment requirements
-XSIGMATEST(AllocatorPool, AlignmentRequirements)
+QUARISMATEST(AllocatorPool, AlignmentRequirements)
 {
     auto sub_allocator = util::make_ptr_unique_mutable<basic_cpu_allocator>(
         0, std::vector<sub_allocator::Visitor>{}, std::vector<sub_allocator::Visitor>{});

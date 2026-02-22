@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -34,7 +34,7 @@
  * This component provides memory profiling capabilities but is not required
  * for basic profiling functionality. Can be disabled to reduce binary size.
  *
- * @author XSigma Development Team
+ * @author Quarisma Development Team
  * @version 1.0
  * @date 2024
  */
@@ -59,7 +59,7 @@
 #include <unistd.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -109,28 +109,28 @@ struct memory_allocation
  * calculates memory usage statistics, and supports cross-platform
  * memory usage queries.
  */
-class XSIGMA_VISIBILITY memory_tracker
+class QUARISMA_VISIBILITY memory_tracker
 {
 public:
     /**
      * @brief Construct a new memory tracker
      */
-    XSIGMA_API memory_tracker();
+    QUARISMA_API memory_tracker();
 
     /**
      * @brief Destructor - automatically stops tracking if active
      */
-    XSIGMA_API ~memory_tracker();
+    QUARISMA_API ~memory_tracker();
 
     /**
      * @brief Start memory tracking
      */
-    XSIGMA_API void start_tracking();
+    QUARISMA_API void start_tracking();
 
     /**
      * @brief Stop memory tracking
      */
-    XSIGMA_API void stop_tracking();
+    QUARISMA_API void stop_tracking();
 
     /**
      * @brief Check if memory tracking is currently active
@@ -144,89 +144,89 @@ public:
      * @param size Size of the allocation in bytes
      * @param context Optional context information
      */
-    XSIGMA_API void track_allocation(void* ptr, size_t size, const std::string& context = "");
+    QUARISMA_API void track_allocation(void* ptr, size_t size, const std::string& context = "");
 
     /**
      * @brief Track a memory deallocation
      * @param ptr Pointer to the memory being deallocated
      */
-    XSIGMA_API void track_deallocation(void* ptr);
+    QUARISMA_API void track_deallocation(void* ptr);
 
     /**
      * @brief Get current memory usage statistics
      * @return Complete memory statistics structure
      */
-    XSIGMA_API xsigma::memory_stats get_current_stats() const;
+    QUARISMA_API quarisma::memory_stats get_current_stats() const;
 
     /**
      * @brief Get current memory usage in bytes
      * @return Current memory usage
      */
-    XSIGMA_API size_t get_current_usage() const;
+    QUARISMA_API size_t get_current_usage() const;
 
     /**
      * @brief Get peak memory usage in bytes
      * @return Peak memory usage observed
      */
-    XSIGMA_API size_t get_peak_usage() const;
+    QUARISMA_API size_t get_peak_usage() const;
     /**
      * @brief Get total memory allocated since tracking started
      * @return Total allocated memory in bytes
      */
-    XSIGMA_API size_t get_total_allocated() const;
+    QUARISMA_API size_t get_total_allocated() const;
 
     /**
      * @brief Get total memory deallocated since tracking started
      * @return Total deallocated memory in bytes
      */
-    XSIGMA_API size_t get_total_deallocated() const;
+    QUARISMA_API size_t get_total_deallocated() const;
 
     /**
      * @brief Get current system memory usage
      * @return System memory usage in bytes
      */
-    XSIGMA_API static size_t get_system_memory_usage();
+    QUARISMA_API static size_t get_system_memory_usage();
 
     /**
      * @brief Get peak system memory usage
      * @return Peak system memory usage in bytes
      */
-    XSIGMA_API static size_t get_system_peak_memory_usage();
+    QUARISMA_API static size_t get_system_peak_memory_usage();
 
     /**
      * @brief Get available system memory
      * @return Available system memory in bytes
      */
-    XSIGMA_API static size_t get_available_system_memory();
+    QUARISMA_API static size_t get_available_system_memory();
 
     /**
      * @brief Reset all tracking data and statistics
      */
-    XSIGMA_API void reset();
+    QUARISMA_API void reset();
 
     /**
      * @brief Get a copy of all currently active allocations (thread-safe)
      * @return Vector of active memory allocations
      */
-    XSIGMA_API std::vector<xsigma::memory_allocation> get_active_allocations() const;
+    QUARISMA_API std::vector<quarisma::memory_allocation> get_active_allocations() const;
 
     /**
      * @brief Get the number of currently active allocations
      * @return Number of active allocations
      */
-    XSIGMA_API size_t get_allocation_count() const;
+    QUARISMA_API size_t get_allocation_count() const;
 
     /**
      * @brief Take a memory usage snapshot with optional label
      * @param label Optional label for the snapshot
      */
-    XSIGMA_API void take_snapshot(const std::string& label = "");
+    QUARISMA_API void take_snapshot(const std::string& label = "");
 
     /**
      * @brief Get all memory usage snapshots
      * @return Vector of labeled memory statistics snapshots
      */
-    XSIGMA_API std::vector<std::pair<std::string, xsigma::memory_stats>> get_snapshots() const;
+    QUARISMA_API std::vector<std::pair<std::string, quarisma::memory_stats>> get_snapshots() const;
 
 private:
     /// Atomic flag indicating if tracking is active
@@ -236,7 +236,7 @@ private:
     mutable std::mutex allocations_mutex_;
 
     /// Map of active memory allocations (using custom hash for void*)
-    xsigma_map<void*, xsigma::memory_allocation, xsigma::void_ptr_hash> active_allocations_;
+    quarisma_map<void*, quarisma::memory_allocation, quarisma::void_ptr_hash> active_allocations_;
 
     /// Atomic counter for current memory usage
     std::atomic<size_t> current_usage_{0};
@@ -254,7 +254,7 @@ private:
     mutable std::mutex snapshots_mutex_;
 
     /// Vector of labeled memory usage snapshots
-    std::vector<std::pair<std::string, xsigma::memory_stats>> snapshots_;
+    std::vector<std::pair<std::string, quarisma::memory_stats>> snapshots_;
 
     /**
      * @brief Get current process memory usage (platform-specific)
@@ -282,7 +282,7 @@ private:
  * memory usage at the beginning and end of the scope to calculate
  * memory deltas and usage patterns.
  */
-class XSIGMA_VISIBILITY memory_tracking_scope
+class QUARISMA_VISIBILITY memory_tracking_scope
 {
 public:
     /**
@@ -290,7 +290,7 @@ public:
      * @param tracker Reference to the memory tracker to use
      * @param label Optional label for this tracking scope
      */
-    explicit memory_tracking_scope(xsigma::memory_tracker& tracker, std::string label = "");
+    explicit memory_tracking_scope(quarisma::memory_tracker& tracker, std::string label = "");
 
     /**
      * @brief Destructor - automatically captures final memory statistics
@@ -301,17 +301,17 @@ public:
      * @brief Get memory usage delta since scope creation
      * @return Memory statistics showing the change since scope start
      */
-    xsigma::memory_stats get_delta_stats() const;
+    quarisma::memory_stats get_delta_stats() const;
 
 private:
     /// Reference to the memory tracker
-    xsigma::memory_tracker& tracker_;
+    quarisma::memory_tracker& tracker_;
 
     /// Optional label for this scope
     std::string label_;
 
     /// Memory statistics captured at scope start
-    xsigma::memory_stats start_stats_;
+    quarisma::memory_stats start_stats_;
 
     /// Flag indicating if the scope is still active
     bool active_ = true;
@@ -352,7 +352,7 @@ public:
      * @brief Construct allocator with optional memory tracker
      * @param tracker Pointer to memory tracker (nullptr to disable tracking)
      */
-    explicit tracked_allocator(xsigma::memory_tracker* tracker = nullptr) : tracker_(tracker) {}
+    explicit tracked_allocator(quarisma::memory_tracker* tracker = nullptr) : tracker_(tracker) {}
 
     /**
      * @brief Copy constructor for different types
@@ -429,11 +429,11 @@ public:
 
 private:
     /// Pointer to the memory tracker
-    xsigma::memory_tracker* tracker_;
+    quarisma::memory_tracker* tracker_;
 
     /// Allow access to tracker_ from other template instantiations
     template <typename U>
     friend class tracked_allocator;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

@@ -1,8 +1,8 @@
-# XSigma Setup Guide
+# Quarisma Setup Guide
 
 ## Overview
 
-The `Scripts/setup.py` script provides a convenient interface for configuring and building XSigma with various options. This guide explains how to use the script and documents all available CMake flags.
+The `Scripts/setup.py` script provides a convenient interface for configuring and building Quarisma with various options. This guide explains how to use the script and documents all available CMake flags.
 
 ## Basic Usage
 
@@ -104,77 +104,77 @@ When multiple feature flags are used, they are concatenated:
 
 | Flag | CMake Variable | Description | Default |
 |------|----------------|-------------|---------|
-| `lto` | `XSIGMA_ENABLE_LTO` | Link-Time Optimization | ON |
-| `avx2` | `XSIGMA_VECTORIZATION_TYPE` | AVX2 vectorization | - |
-| `avx` | `XSIGMA_VECTORIZATION_TYPE` | AVX vectorization | - |
-| `avx512` | `XSIGMA_VECTORIZATION_TYPE` | AVX-512 vectorization | - |
-| `sse` | `XSIGMA_VECTORIZATION_TYPE` | SSE vectorization | - |
+| `lto` | `QUARISMA_ENABLE_LTO` | Link-Time Optimization | ON |
+| `avx2` | `QUARISMA_VECTORIZATION_TYPE` | AVX2 vectorization | - |
+| `avx` | `QUARISMA_VECTORIZATION_TYPE` | AVX vectorization | - |
+| `avx512` | `QUARISMA_VECTORIZATION_TYPE` | AVX-512 vectorization | - |
+| `sse` | `QUARISMA_VECTORIZATION_TYPE` | SSE vectorization | - |
 
 ### Feature Flags
 
 | Flag | CMake Variable | Description | Default |
 |------|----------------|-------------|---------|
-| `cuda` | `XSIGMA_ENABLE_CUDA` | GPU acceleration with CUDA | OFF |
-| `tbb` | `XSIGMA_ENABLE_TBB` | Intel Threading Building Blocks | OFF |
-| `mkl` | `XSIGMA_ENABLE_MKL` | Intel Math Kernel Library | OFF |
-| `numa` | `XSIGMA_ENABLE_NUMA` | NUMA support | OFF |
-| `memkind` | `XSIGMA_ENABLE_MEMKIND` | Memory kind support | OFF |
-| `external` | `XSIGMA_ENABLE_EXTERNAL` | Use external system libraries | ON |
+| `cuda` | `QUARISMA_ENABLE_CUDA` | GPU acceleration with CUDA | OFF |
+| `tbb` | `QUARISMA_ENABLE_TBB` | Intel Threading Building Blocks | OFF |
+| `mkl` | `QUARISMA_ENABLE_MKL` | Intel Math Kernel Library | OFF |
+| `numa` | `QUARISMA_ENABLE_NUMA` | NUMA support | OFF |
+| `memkind` | `QUARISMA_ENABLE_MEMKIND` | Memory kind support | OFF |
+| `external` | `QUARISMA_ENABLE_EXTERNAL` | Use external system libraries | ON |
 
 ### Testing Flags
 
 | Flag | CMake Variable | Description | Default |
 |------|----------------|-------------|---------|
-| `test` | `XSIGMA_BUILD_TESTING` | Enable testing | ON |
-| `gtest` | `XSIGMA_ENABLE_GTEST` | Google Test framework | ON |
-| `benchmark` | `XSIGMA_ENABLE_BENCHMARK` | Benchmark library | OFF |
+| `test` | `QUARISMA_BUILD_TESTING` | Enable testing | ON |
+| `gtest` | `QUARISMA_ENABLE_GTEST` | Google Test framework | ON |
+| `benchmark` | `QUARISMA_ENABLE_BENCHMARK` | Benchmark library | OFF |
 
 ### Analysis Flags
 
 | Flag | CMake Variable | Description | Default |
 |------|----------------|-------------|---------|
-| `coverage` | `XSIGMA_ENABLE_COVERAGE` | Code coverage analysis | OFF |
-| `sanitizer` | `XSIGMA_ENABLE_SANITIZER` | Enable sanitizers | OFF |
-| `sanitizer.address` | `XSIGMA_SANITIZER_TYPE` | Address Sanitizer | - |
-| `sanitizer.thread` | `XSIGMA_SANITIZER_TYPE` | Thread Sanitizer | - |
-| `sanitizer.undefined` | `XSIGMA_SANITIZER_TYPE` | Undefined Behavior Sanitizer | - |
-| `sanitizer.memory` | `XSIGMA_SANITIZER_TYPE` | Memory Sanitizer | - |
-| `valgrind` | `XSIGMA_ENABLE_VALGRIND` | Valgrind support | OFF |
-| `clangtidy` | `XSIGMA_ENABLE_CLANGTIDY` | Clang-Tidy analysis | OFF |
-| `iwyu` | `XSIGMA_ENABLE_IWYU` | Include-What-You-Use | OFF |
-| `cppcheck` | `XSIGMA_ENABLE_CPPCHECK` | Cppcheck analysis | OFF |
+| `coverage` | `QUARISMA_ENABLE_COVERAGE` | Code coverage analysis | OFF |
+| `sanitizer` | `QUARISMA_ENABLE_SANITIZER` | Enable sanitizers | OFF |
+| `sanitizer.address` | `QUARISMA_SANITIZER_TYPE` | Address Sanitizer | - |
+| `sanitizer.thread` | `QUARISMA_SANITIZER_TYPE` | Thread Sanitizer | - |
+| `sanitizer.undefined` | `QUARISMA_SANITIZER_TYPE` | Undefined Behavior Sanitizer | - |
+| `sanitizer.memory` | `QUARISMA_SANITIZER_TYPE` | Memory Sanitizer | - |
+| `valgrind` | `QUARISMA_ENABLE_VALGRIND` | Valgrind support | OFF |
+| `clangtidy` | `QUARISMA_ENABLE_CLANGTIDY` | Clang-Tidy analysis | OFF |
+| `iwyu` | `QUARISMA_ENABLE_IWYU` | Include-What-You-Use | OFF |
+| `cppcheck` | `QUARISMA_ENABLE_CPPCHECK` | Cppcheck analysis | OFF |
 
 ### Logging Flags
 
 | Flag | CMake Variable | Description | Default |
 |------|----------------|-------------|---------|
-| `loguru` | `XSIGMA_ENABLE_LOGURU` | Loguru logging backend | ON |
-| `logging_backend=glog` | `XSIGMA_LOGGING_BACKEND` | Use GLOG backend | - |
-| `logging_backend=native` | `XSIGMA_LOGGING_BACKEND` | Use native backend | - |
+| `loguru` | `QUARISMA_ENABLE_LOGURU` | Loguru logging backend | ON |
+| `logging_backend=glog` | `QUARISMA_LOGGING_BACKEND` | Use GLOG backend | - |
+| `logging_backend=native` | `QUARISMA_LOGGING_BACKEND` | Use native backend | - |
 
 ### Library Flags
 
 | Flag | CMake Variable | Description | Default |
 |------|----------------|-------------|---------|
-| `magic_enum` | `XSIGMA_ENABLE_MAGICENUM` | Magic enum library | ON |
-| `mimalloc` | `XSIGMA_ENABLE_MIMALLOC` | mimalloc allocator | ON |
+| `magic_enum` | `QUARISMA_ENABLE_MAGICENUM` | Magic enum library | ON |
+| `mimalloc` | `QUARISMA_ENABLE_MIMALLOC` | mimalloc allocator | ON |
 
 ### Caching Flags
 
 | Flag | CMake Variable | Description | Default |
 |------|----------------|-------------|---------|
-| `ccache` | `XSIGMA_CACHE_BACKEND` | Use ccache compiler cache | - |
-| `sccache` | `XSIGMA_CACHE_BACKEND` | Use sccache distributed cache | - |
-| `buildcache` | `XSIGMA_CACHE_BACKEND` | Use buildcache | - |
-| `none` | `XSIGMA_CACHE_BACKEND` | Disable caching | - |
+| `ccache` | `QUARISMA_CACHE_BACKEND` | Use ccache compiler cache | - |
+| `sccache` | `QUARISMA_CACHE_BACKEND` | Use sccache distributed cache | - |
+| `buildcache` | `QUARISMA_CACHE_BACKEND` | Use buildcache | - |
+| `none` | `QUARISMA_CACHE_BACKEND` | Disable caching | - |
 
 ### C++ Standard Flags
 
 | Flag | CMake Variable | Description |
 |------|----------------|-------------|
-| `cxxstd=17` | `XSIGMA_CXX_STANDARD` | C++17 standard |
-| `cxxstd=20` | `XSIGMA_CXX_STANDARD` | C++20 standard |
-| `cxxstd=23` | `XSIGMA_CXX_STANDARD` | C++23 standard |
+| `cxxstd=17` | `QUARISMA_CXX_STANDARD` | C++17 standard |
+| `cxxstd=20` | `QUARISMA_CXX_STANDARD` | C++20 standard |
+| `cxxstd=23` | `QUARISMA_CXX_STANDARD` | C++23 standard |
 
 ## Common Build Configurations
 
@@ -251,8 +251,8 @@ For more control, use CMake directly:
 ```bash
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release \
-      -DXSIGMA_ENABLE_LTO=ON \
-      -DXSIGMA_VECTORIZATION_TYPE=avx2 \
+      -DQUARISMA_ENABLE_LTO=ON \
+      -DQUARISMA_VECTORIZATION_TYPE=avx2 \
       ..
 cmake --build . --parallel
 ```

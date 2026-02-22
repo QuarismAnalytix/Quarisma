@@ -1,5 +1,5 @@
-#include <XSigma/TensorNames.h>
-#include <XSigma/WrapDimUtils.h>
+#include <Quarisma/TensorNames.h>
+#include <Quarisma/WrapDimUtils.h>
 #include <c10/util/irange.h>
 
 namespace at::namedinference

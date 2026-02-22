@@ -1,8 +1,8 @@
-# XSigma Bazel User Guide
+# Quarisma Bazel User Guide
 
-**Comprehensive guide to building XSigma with Bazel**
+**Comprehensive guide to building Quarisma with Bazel**
 
-This document consolidates all Bazel-related documentation for the XSigma project, providing a complete reference for building, testing, and configuring XSigma using the Bazel build system.
+This document consolidates all Bazel-related documentation for the Quarisma project, providing a complete reference for building, testing, and configuring Quarisma using the Bazel build system.
 
 ---
 
@@ -25,9 +25,9 @@ This document consolidates all Bazel-related documentation for the XSigma projec
 
 ### What is Bazel?
 
-Bazel is a fast, scalable, multi-language build system developed by Google. XSigma supports both CMake and Bazel build systems, providing flexibility for different development workflows and CI/CD environments.
+Bazel is a fast, scalable, multi-language build system developed by Google. Quarisma supports both CMake and Bazel build systems, providing flexibility for different development workflows and CI/CD environments.
 
-### Why Use Bazel for XSigma?
+### Why Use Bazel for Quarisma?
 
 **Advantages of Bazel:**
 1. **Incremental builds** - Only rebuilds what changed
@@ -390,10 +390,10 @@ python Scripts/setup_bazel.py build.release.vs22
 
 ### Shared vs Static Libraries
 
-By default, XSigma builds static libraries. To build shared libraries:
+By default, Quarisma builds static libraries. To build shared libraries:
 
 ```bash
-bazel build --define=xsigma_build_shared_libs=true //...
+bazel build --define=quarisma_build_shared_libs=true //...
 ```
 
 ---
@@ -536,7 +536,7 @@ python setup.py config.build.test.ninja.clang.debug.coverage
 
 ## Third-Party Dependencies
 
-XSigma uses a conditional compilation pattern where each library is controlled by `XSIGMA_ENABLE_XXX` options in CMake. In Bazel, dependencies are managed through the `WORKSPACE.bazel` file and controlled via `--config` flags.
+Quarisma uses a conditional compilation pattern where each library is controlled by `QUARISMA_ENABLE_XXX` options in CMake. In Bazel, dependencies are managed through the `WORKSPACE.bazel` file and controlled via `--config` flags.
 
 ### Dependency Categories
 
@@ -660,54 +660,54 @@ Both build systems are fully supported and offer different advantages. This sect
 
 | Feature | CMake Option | Bazel Equivalent |
 |---------|--------------|------------------|
-| **LTO** | `-DXSIGMA_ENABLE_LTO=ON` | `--config=lto` |
-| **AVX2** | `-DXSIGMA_VECTORIZATION_TYPE=avx2` | `--config=avx2` |
-| **AVX512** | `-DXSIGMA_VECTORIZATION_TYPE=avx512` | `--config=avx512` |
-| **SSE** | `-DXSIGMA_VECTORIZATION_TYPE=sse` | `--config=sse` |
-| **mimalloc** | `-DXSIGMA_ENABLE_MIMALLOC=ON` | `--config=mimalloc` |
-| **magic_enum** | `-DXSIGMA_ENABLE_MAGICENUM=ON` | `--config=magic_enum` |
-| **Kineto** | `-DXSIGMA_ENABLE_KINETO=ON` | `--config=kineto` |
-| **TBB** | `-DXSIGMA_ENABLE_TBB=ON` | `--config=tbb` |
-| **OpenMP** | `-DXSIGMA_ENABLE_OPENMP=ON` | `--config=openmp` |
-| **CUDA** | `-DXSIGMA_ENABLE_CUDA=ON` | `--config=cuda` |
-| **HIP** | `-DXSIGMA_ENABLE_HIP=ON` | `--config=hip` |
-| **Google Test** | `-DXSIGMA_ENABLE_GTEST=ON` | `--config=gtest` |
-| **Benchmark** | `-DXSIGMA_ENABLE_BENCHMARK=ON` | `--config=benchmark` |
-| **LU Pivoting** | `-DXSIGMA_LU_PIVOTING=ON` | `--config=lu_pivoting` |
-| **Sobol 1111** | `-DXSIGMA_SOBOL_1111=ON` | `--config=sobol_1111` |
+| **LTO** | `-DQUARISMA_ENABLE_LTO=ON` | `--config=lto` |
+| **AVX2** | `-DQUARISMA_VECTORIZATION_TYPE=avx2` | `--config=avx2` |
+| **AVX512** | `-DQUARISMA_VECTORIZATION_TYPE=avx512` | `--config=avx512` |
+| **SSE** | `-DQUARISMA_VECTORIZATION_TYPE=sse` | `--config=sse` |
+| **mimalloc** | `-DQUARISMA_ENABLE_MIMALLOC=ON` | `--config=mimalloc` |
+| **magic_enum** | `-DQUARISMA_ENABLE_MAGICENUM=ON` | `--config=magic_enum` |
+| **Kineto** | `-DQUARISMA_ENABLE_KINETO=ON` | `--config=kineto` |
+| **TBB** | `-DQUARISMA_ENABLE_TBB=ON` | `--config=tbb` |
+| **OpenMP** | `-DQUARISMA_ENABLE_OPENMP=ON` | `--config=openmp` |
+| **CUDA** | `-DQUARISMA_ENABLE_CUDA=ON` | `--config=cuda` |
+| **HIP** | `-DQUARISMA_ENABLE_HIP=ON` | `--config=hip` |
+| **Google Test** | `-DQUARISMA_ENABLE_GTEST=ON` | `--config=gtest` |
+| **Benchmark** | `-DQUARISMA_ENABLE_BENCHMARK=ON` | `--config=benchmark` |
+| **LU Pivoting** | `-DQUARISMA_LU_PIVOTING=ON` | `--config=lu_pivoting` |
+| **Sobol 1111** | `-DQUARISMA_SOBOL_1111=ON` | `--config=sobol_1111` |
 
 ### Logging Backend Mapping
 
 | Backend | CMake Option | Bazel Equivalent |
 |---------|--------------|------------------|
-| **Loguru** | `-DXSIGMA_LOGGING_BACKEND=LOGURU` | `--config=logging_loguru` |
-| **glog** | `-DXSIGMA_LOGGING_BACKEND=GLOG` | `--config=logging_glog` |
-| **Native** | `-DXSIGMA_LOGGING_BACKEND=NATIVE` | `--config=logging_native` |
+| **Loguru** | `-DQUARISMA_LOGGING_BACKEND=LOGURU` | `--config=logging_loguru` |
+| **glog** | `-DQUARISMA_LOGGING_BACKEND=GLOG` | `--config=logging_glog` |
+| **Native** | `-DQUARISMA_LOGGING_BACKEND=NATIVE` | `--config=logging_native` |
 
 ### Profiler Backend Mapping
 
 | Backend | CMake Option | Bazel Equivalent |
 |---------|--------------|------------------|
-| **Native** | `-DXSIGMA_PROFILER_BACKEND=NATIVE` | `--config=profiler_native` |
-| **Kineto** | `-DXSIGMA_PROFILER_BACKEND=KINETO` | `--config=kineto` |
-| **ITT** | `-DXSIGMA_PROFILER_BACKEND=ITT` | `--config=profiler_itt` |
+| **Native** | `-DQUARISMA_PROFILER_BACKEND=NATIVE` | `--config=profiler_native` |
+| **Kineto** | `-DQUARISMA_PROFILER_BACKEND=KINETO` | `--config=kineto` |
+| **ITT** | `-DQUARISMA_PROFILER_BACKEND=ITT` | `--config=profiler_itt` |
 
 ### Sanitizer Mapping
 
 | Sanitizer | CMake Option | Bazel Equivalent |
 |-----------|--------------|------------------|
-| **AddressSanitizer** | `-DXSIGMA_ENABLE_SANITIZER=ON -DXSIGMA_SANITIZER_TYPE=address` | `--config=asan` |
-| **ThreadSanitizer** | `-DXSIGMA_ENABLE_SANITIZER=ON -DXSIGMA_SANITIZER_TYPE=thread` | `--config=tsan` |
-| **UBSanitizer** | `-DXSIGMA_ENABLE_SANITIZER=ON -DXSIGMA_SANITIZER_TYPE=undefined` | `--config=ubsan` |
-| **MemorySanitizer** | `-DXSIGMA_ENABLE_SANITIZER=ON -DXSIGMA_SANITIZER_TYPE=memory` | `--config=msan` |
+| **AddressSanitizer** | `-DQUARISMA_ENABLE_SANITIZER=ON -DQUARISMA_SANITIZER_TYPE=address` | `--config=asan` |
+| **ThreadSanitizer** | `-DQUARISMA_ENABLE_SANITIZER=ON -DQUARISMA_SANITIZER_TYPE=thread` | `--config=tsan` |
+| **UBSanitizer** | `-DQUARISMA_ENABLE_SANITIZER=ON -DQUARISMA_SANITIZER_TYPE=undefined` | `--config=ubsan` |
+| **MemorySanitizer** | `-DQUARISMA_ENABLE_SANITIZER=ON -DQUARISMA_SANITIZER_TYPE=memory` | `--config=msan` |
 
 ### GPU Allocation Strategy Mapping
 
 | Strategy | CMake Option | Bazel Equivalent |
 |----------|--------------|------------------|
-| **Sync** | `-DXSIGMA_GPU_ALLOC=SYNC` | `--config=gpu_alloc_sync` |
-| **Async** | `-DXSIGMA_GPU_ALLOC=ASYNC` | `--config=gpu_alloc_async` |
-| **Pool Async** | `-DXSIGMA_GPU_ALLOC=POOL_ASYNC` | `--config=gpu_alloc_pool_async` |
+| **Sync** | `-DQUARISMA_GPU_ALLOC=SYNC` | `--config=gpu_alloc_sync` |
+| **Async** | `-DQUARISMA_GPU_ALLOC=ASYNC` | `--config=gpu_alloc_async` |
+| **Pool Async** | `-DQUARISMA_GPU_ALLOC=POOL_ASYNC` | `--config=gpu_alloc_pool_async` |
 
 ### Example Build Scenarios
 
@@ -716,9 +716,9 @@ Both build systems are fully supported and offer different advantages. This sect
 **CMake:**
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release \
-               -DXSIGMA_VECTORIZATION_TYPE=avx2 \
-               -DXSIGMA_ENABLE_MIMALLOC=ON \
-               -DXSIGMA_ENABLE_MAGICENUM=ON
+               -DQUARISMA_VECTORIZATION_TYPE=avx2 \
+               -DQUARISMA_ENABLE_MIMALLOC=ON \
+               -DQUARISMA_ENABLE_MAGICENUM=ON
 cmake --build build
 ```
 
@@ -736,8 +736,8 @@ bazel build --config=release \
 **CMake:**
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release \
-               -DXSIGMA_ENABLE_LTO=ON \
-               -DXSIGMA_VECTORIZATION_TYPE=avx2
+               -DQUARISMA_ENABLE_LTO=ON \
+               -DQUARISMA_VECTORIZATION_TYPE=avx2
 cmake --build build
 ```
 
@@ -751,8 +751,8 @@ bazel build --config=release --config=lto --config=avx2 //...
 **CMake:**
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Debug \
-               -DXSIGMA_ENABLE_SANITIZER=ON \
-               -DXSIGMA_SANITIZER_TYPE=address
+               -DQUARISMA_ENABLE_SANITIZER=ON \
+               -DQUARISMA_SANITIZER_TYPE=address
 cmake --build build
 ```
 
@@ -766,8 +766,8 @@ bazel build --config=debug --config=asan //...
 **CMake:**
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release \
-               -DXSIGMA_ENABLE_CUDA=ON \
-               -DXSIGMA_VECTORIZATION_TYPE=avx2
+               -DQUARISMA_ENABLE_CUDA=ON \
+               -DQUARISMA_VECTORIZATION_TYPE=avx2
 cmake --build build
 ```
 
@@ -785,7 +785,7 @@ Understanding the Bazel build structure helps you navigate and modify the build 
 ### File Structure
 
 ```
-XSigma/
+Quarisma/
 ├── WORKSPACE.bazel              # Workspace definition and external dependencies
 ├── BUILD.bazel                  # Root build file
 ├── .bazelrc                     # Build configuration flags
@@ -793,7 +793,7 @@ XSigma/
 │
 ├── bazel/                       # Bazel helper files
 │   ├── BUILD.bazel             # Config settings
-│   └── xsigma.bzl              # Helper functions (copts, defines, linkopts)
+│   └── quarisma.bzl              # Helper functions (copts, defines, linkopts)
 │
 ├── third_party/                 # Third-party BUILD files
 │   ├── fmt.BUILD               # fmt library
@@ -820,7 +820,7 @@ XSigma/
 
 **Example:**
 ```python
-workspace(name = "xsigma")
+workspace(name = "quarisma")
 
 http_archive(
     name = "fmt",
@@ -866,23 +866,23 @@ build:avx2 --copt=-mavx2
 build:avx2 --copt=-mfma
 
 # mimalloc allocator
-build:mimalloc --define=xsigma_enable_mimalloc=true
+build:mimalloc --define=quarisma_enable_mimalloc=true
 ```
 
-#### 4. bazel/xsigma.bzl
+#### 4. bazel/quarisma.bzl
 
 - Provides reusable functions for compiler flags and defines
 - Equivalent to CMake functions in `Cmake/tools/*.cmake`
 
 **Example:**
 ```python
-def xsigma_copts():
+def quarisma_copts():
     return ["-Wall", "-Wextra", "-Wpedantic"]
 
-def xsigma_defines():
+def quarisma_defines():
     return select({
-        "//bazel:enable_cuda": ["XSIGMA_ENABLE_CUDA", "XSIGMA_HAS_CUDA=1"],
-        "//conditions:default": ["XSIGMA_HAS_CUDA=0"],
+        "//bazel:enable_cuda": ["QUARISMA_ENABLE_CUDA", "QUARISMA_HAS_CUDA=1"],
+        "//conditions:default": ["QUARISMA_HAS_CUDA=0"],
     })
 ```
 
@@ -901,7 +901,7 @@ Bazel uses `config_setting` + defines:
 ```python
 config_setting(
     name = "enable_mimalloc",
-    define_values = {"xsigma_enable_mimalloc": "true"},
+    define_values = {"quarisma_enable_mimalloc": "true"},
 )
 ```
 
@@ -909,7 +909,7 @@ Used in build with:
 ```bash
 bazel build --config=mimalloc //...
 # or
-bazel build --define=xsigma_enable_mimalloc=true //...
+bazel build --define=quarisma_enable_mimalloc=true //...
 ```
 
 #### Conditional Compilation
@@ -927,7 +927,7 @@ cc_library(
 
 **CMake Equivalent:**
 ```cmake
-if(XSIGMA_ENABLE_CUDA)
+if(QUARISMA_ENABLE_CUDA)
     target_sources(Core PRIVATE gpu/*.cpp)
 endif()
 ```
@@ -1348,9 +1348,9 @@ When adding new source files:
 
 ## Support and Resources
 
-### XSigma Documentation
+### Quarisma Documentation
 
-- [XSigma README](../README.md) - Project overview and quick start
+- [Quarisma README](../README.md) - Project overview and quick start
 - [Build Configuration](readme/build/build-configuration.md) - CMake build configuration
 - [Third-Party Dependencies](readme/third-party-dependencies.md) - Dependency management
 - [Sanitizer Guide](readme/sanitizer.md) - Runtime instrumentation
@@ -1379,7 +1379,7 @@ For issues with the Bazel build:
 - `.bazelrc` - Build configurations
 - `.bazelversion` - Bazel version (7.0.0)
 - `bazel/BUILD.bazel` - Config settings
-- `bazel/xsigma.bzl` - Helper functions
+- `bazel/quarisma.bzl` - Helper functions
 - `Library/*/BUILD.bazel` - Library build files
 - `third_party/*.BUILD` - Third-party dependencies
 
@@ -1389,7 +1389,7 @@ For issues with the Bazel build:
 
 This guide has covered:
 
-1. **Overview** - Introduction to Bazel and its benefits for XSigma
+1. **Overview** - Introduction to Bazel and its benefits for Quarisma
 2. **Getting Started** - Installation and quick start guide
 3. **Build Flags** - Comprehensive list of all build configurations
 4. **Sanitizers** - Memory and threading issue detection
@@ -1406,5 +1406,5 @@ Both CMake and Bazel build systems are fully supported and produce equivalent bi
 
 **Last Updated:** 2025-11-23
 **Bazel Version:** 7.0.0
-**XSigma Version:** 1.0.0
+**Quarisma Version:** 1.0.0
 

@@ -22,7 +22,7 @@ def _split_to_graph_and_name_node_map(
                 "Expecting the pattern graph to return a tuple"
             )
             assert len(output) >= 2, (
-                "Expecting the pattern graph to have xsigma least two outputs"
+                "Expecting the pattern graph to have quarisma least two outputs"
             )
             *out, name_node_map = output
             flattened, out_spec = tree_flatten(out)
@@ -41,7 +41,7 @@ def _split_to_graph_and_name_node_map(
 @compatibility(is_backward_compatible=False)
 class SubgraphMatcherWithNameNodeMap(SubgraphMatcher):
     """Extends SubgraphMatcher to support querying the matched subgraph nodes through node name,
-    this requires pattern to have specific format (returning and additional dictionary xsigma the output,
+    this requires pattern to have specific format (returning and additional dictionary quarisma the output,
     that has node name as key, and the node in the pattern graph as value, see Example for more details)
 
     Difference with SubgraphMatcher is that it takes a `pattern_gm` GraphModule as input during

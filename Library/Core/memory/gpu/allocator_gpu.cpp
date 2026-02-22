@@ -1,6 +1,6 @@
 /*
- * XSigma: High-Performance Quantitative Library
- * Copyright 2025 XSigma Contributors
+ * Quarisma: High-Performance Quantitative Library
+ * Copyright 2025 Quarisma Contributors
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
 
@@ -12,21 +12,21 @@
 
 #include "logging/logger.h"
 #include "memory/helper/memory_allocator.h"
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 #include "profiler/native/tracing/traceme.h"
 #endif
 #include "util/exception.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda.h>  // For CUDA Driver API
 #include <cuda_runtime.h>
 #endif
 
-#if XSIGMA_HAS_HIP
+#if QUARISMA_HAS_HIP
 #include <hip/hip_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -39,17 +39,17 @@ basic_gpu_allocator::basic_gpu_allocator(
     int                         device_id,
     const std::vector<Visitor>& alloc_visitors,
     const std::vector<Visitor>& free_visitors,
-    XSIGMA_UNUSED int           numa_node)
+    QUARISMA_UNUSED int           numa_node)
     : sub_allocator(alloc_visitors, free_visitors), device_id_(device_id)
 {
     // Verify device is accessible by attempting to set it
-    if (!xsigma::gpu::memory_allocator::set_device(device_id))
+    if (!quarisma::gpu::memory_allocator::set_device(device_id))
     {
-        XSIGMA_THROW(
+        QUARISMA_THROW(
             "Failed to set GPU device {}: device may not exist or be accessible", device_id);
     }
 
-    XSIGMA_LOG_INFO("Created GPU sub-allocator for device {}", device_id);
+    QUARISMA_LOG_INFO("Created GPU sub-allocator for device {}", device_id);
 }
 
 basic_gpu_allocator::~basic_gpu_allocator()
@@ -57,23 +57,23 @@ basic_gpu_allocator::~basic_gpu_allocator()
     std::scoped_lock const lock(stats_mutex_);
     if (total_allocated_.load() > 0)
     {
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "GPU sub-allocator destroyed with {} bytes still allocated", total_allocated_.load());
     }
 }
 
 void* basic_gpu_allocator::Alloc(
-    XSIGMA_UNUSED size_t alignment, size_t num_bytes, size_t* bytes_received)
+    QUARISMA_UNUSED size_t alignment, size_t num_bytes, size_t* bytes_received)
 {
-#if XSIGMA_HAS_NATIVE_PROFILER
-    xsigma::traceme const traceme("basic_gpu_allocator::Alloc");
+#if QUARISMA_HAS_NATIVE_PROFILER
+    quarisma::traceme const traceme("basic_gpu_allocator::Alloc");
 #endif
 
     void* ptr       = nullptr;
     *bytes_received = num_bytes;
     if (num_bytes > 0)
     {
-        ptr = xsigma::gpu::memory_allocator::allocate(num_bytes, device_id_);
+        ptr = quarisma::gpu::memory_allocator::allocate(num_bytes, device_id_);
 
         if (ptr != nullptr)
         {
@@ -86,7 +86,7 @@ void* basic_gpu_allocator::Alloc(
                 // Retry if another thread updated peak_allocated_
             }
 
-            XSIGMA_LOG_INFO_DEBUG(
+            QUARISMA_LOG_INFO_DEBUG(
                 "GPU allocated {} bytes at {} on device {}", num_bytes, ptr, device_id_);
 
             // Call allocation visitors for monitoring
@@ -102,19 +102,19 @@ void* basic_gpu_allocator::Alloc(
 
 void basic_gpu_allocator::Free(void* ptr, size_t num_bytes)
 {
-#if XSIGMA_HAS_NATIVE_PROFILER
-    xsigma::traceme const traceme("basic_gpu_allocator::Free");
+#if QUARISMA_HAS_NATIVE_PROFILER
+    quarisma::traceme const traceme("basic_gpu_allocator::Free");
 #endif
 
     if (num_bytes > 0)
     {
         VisitFree(ptr, device_id_, num_bytes);
-        xsigma::gpu::memory_allocator::free(ptr, num_bytes, device_id_);
+        quarisma::gpu::memory_allocator::free(ptr, num_bytes, device_id_);
 
         // Update statistics
         total_allocated_.fetch_sub(num_bytes);
 
-        XSIGMA_LOG_INFO_DEBUG("GPU freed {} bytes at {} on device {}", num_bytes, ptr, device_id_);
+        QUARISMA_LOG_INFO_DEBUG("GPU freed {} bytes at {} on device {}", num_bytes, ptr, device_id_);
     }
 }
 
@@ -125,29 +125,29 @@ void basic_gpu_allocator::Free(void* ptr, size_t num_bytes)
 allocator_gpu::allocator_gpu(int device_id, const Options& options, std::string name)
     : device_id_(device_id), options_(options), name_(std::move(name))
 {
-#if XSIGMA_HAS_NATIVE_PROFILER
-    xsigma::traceme const traceme("allocator_gpu::allocator_gpu");
+#if QUARISMA_HAS_NATIVE_PROFILER
+    quarisma::traceme const traceme("allocator_gpu::allocator_gpu");
 #endif
 
     // Verify device is accessible by attempting to set it
-    if (!xsigma::gpu::memory_allocator::set_device(device_id))
+    if (!quarisma::gpu::memory_allocator::set_device(device_id))
     {
-        XSIGMA_THROW(
+        QUARISMA_THROW(
             "Failed to set GPU device {}: device may not exist or be accessible", device_id);
     }
 
     // Get the allocation method name for logging
     const char* method_name;
-    auto        strategy = xsigma::gpu::memory_allocator::get_allocation_strategy();
+    auto        strategy = quarisma::gpu::memory_allocator::get_allocation_strategy();
     switch (strategy)
     {
-    case xsigma::gpu::memory_allocator::allocation_strategy::SYNC:
+    case quarisma::gpu::memory_allocator::allocation_strategy::SYNC:
         method_name = "SYNC";
         break;
-    case xsigma::gpu::memory_allocator::allocation_strategy::ASYNC:
+    case quarisma::gpu::memory_allocator::allocation_strategy::ASYNC:
         method_name = "ASYNC";
         break;
-    case xsigma::gpu::memory_allocator::allocation_strategy::POOL_ASYNC:
+    case quarisma::gpu::memory_allocator::allocation_strategy::POOL_ASYNC:
         method_name = "POOL_ASYNC";
         break;
     default:
@@ -155,32 +155,32 @@ allocator_gpu::allocator_gpu(int device_id, const Options& options, std::string 
         break;
     }
 
-    XSIGMA_LOG_INFO(
+    QUARISMA_LOG_INFO(
         "Created GPU allocator '{}' with {} method on device {}", name_, method_name, device_id);
 }
 
 allocator_gpu::~allocator_gpu()
 {
-#if XSIGMA_HAS_NATIVE_PROFILER
-    xsigma::traceme const traceme("allocator_gpu::~allocator_gpu");
+#if QUARISMA_HAS_NATIVE_PROFILER
+    quarisma::traceme const traceme("allocator_gpu::~allocator_gpu");
 #endif
 
     // Check for memory leaks
     size_t total_allocated = total_allocated_.load();
     if (total_allocated > 0)
     {
-        XSIGMA_LOG_WARNING(
+        QUARISMA_LOG_WARNING(
             "GPU allocator '{}' destroyed with {} bytes still allocated", name_, total_allocated);
     }
 
-    XSIGMA_LOG_INFO("Destroyed GPU allocator '{}'", name_);
+    QUARISMA_LOG_INFO("Destroyed GPU allocator '{}'", name_);
 }
 
 void* allocator_gpu::allocate_gpu_memory(size_t num_bytes, void* stream) const
 {
     // Use the new gpu::memory_allocator with stream and memory pool support
     void* gpu_stream = (stream != nullptr) ? stream : options_.gpu_stream;
-    return xsigma::gpu::memory_allocator::allocate(
+    return quarisma::gpu::memory_allocator::allocate(
         num_bytes, device_id_, gpu_stream, options_.memory_pool);
 }
 
@@ -193,12 +193,12 @@ void allocator_gpu::deallocate_gpu_memory(void* ptr, size_t num_bytes, void* str
 
     // Use the new gpu::memory_allocator with stream support
     void* gpu_stream = (stream != nullptr) ? stream : options_.gpu_stream;
-    xsigma::gpu::memory_allocator::free(ptr, num_bytes, device_id_, gpu_stream);
+    quarisma::gpu::memory_allocator::free(ptr, num_bytes, device_id_, gpu_stream);
 }
 
 bool allocator_gpu::set_device_context() const
 {
-    return xsigma::gpu::memory_allocator::set_device(device_id_);
+    return quarisma::gpu::memory_allocator::set_device(device_id_);
 }
 
 void* allocator_gpu::allocate_raw(size_t alignment, size_t num_bytes)
@@ -207,12 +207,12 @@ void* allocator_gpu::allocate_raw(size_t alignment, size_t num_bytes)
 }
 
 void* allocator_gpu::allocate_raw(
-    XSIGMA_UNUSED size_t                       alignment,
+    QUARISMA_UNUSED size_t                       alignment,
     size_t                                     num_bytes,
-    XSIGMA_UNUSED const allocation_attributes& allocation_attr)
+    QUARISMA_UNUSED const allocation_attributes& allocation_attr)
 {
-#if XSIGMA_HAS_NATIVE_PROFILER
-    xsigma::traceme const traceme("allocator_gpu::allocate_raw");
+#if QUARISMA_HAS_NATIVE_PROFILER
+    quarisma::traceme const traceme("allocator_gpu::allocate_raw");
 #endif
 
     if (num_bytes == 0)
@@ -245,7 +245,7 @@ void* allocator_gpu::allocate_raw(
             // Retry if another thread updated peak_allocated_
         }
 
-        XSIGMA_LOG_INFO_DEBUG(
+        QUARISMA_LOG_INFO_DEBUG(
             "GPU allocated {} bytes at {} on device {}", num_bytes, ptr, device_id_);
     }
 
@@ -254,8 +254,8 @@ void* allocator_gpu::allocate_raw(
 
 void allocator_gpu::deallocate_raw(void* ptr)
 {
-#if XSIGMA_HAS_NATIVE_PROFILER
-    xsigma::traceme const traceme("allocator_gpu::deallocate_raw");
+#if QUARISMA_HAS_NATIVE_PROFILER
+    quarisma::traceme const traceme("allocator_gpu::deallocate_raw");
 #endif
 
     if (ptr == nullptr)
@@ -278,7 +278,7 @@ void allocator_gpu::deallocate_raw(void* ptr)
     if (options_.enable_statistics)
     {
         deallocation_count_.fetch_add(1);
-        XSIGMA_LOG_INFO_DEBUG("GPU freed memory at {} on device {}", ptr, device_id_);
+        QUARISMA_LOG_INFO_DEBUG("GPU freed memory at {} on device {}", ptr, device_id_);
     }
 }
 
@@ -289,19 +289,19 @@ bool allocator_gpu::tracks_allocation_sizes() const noexcept
     return false;
 }
 
-size_t allocator_gpu::RequestedSize(XSIGMA_UNUSED const void* ptr) const noexcept
+size_t allocator_gpu::RequestedSize(QUARISMA_UNUSED const void* ptr) const noexcept
 {
     // Direct GPU allocation doesn't track requested sizes
 
     return 0;
 }
 
-size_t allocator_gpu::AllocatedSize(XSIGMA_UNUSED const void* ptr) const noexcept
+size_t allocator_gpu::AllocatedSize(QUARISMA_UNUSED const void* ptr) const noexcept
 {
     return 0;
 }
 
-int64_t allocator_gpu::AllocationId(XSIGMA_UNUSED const void* ptr) const
+int64_t allocator_gpu::AllocationId(QUARISMA_UNUSED const void* ptr) const
 {
     return 0;
 }
@@ -357,4 +357,4 @@ std::unique_ptr<allocator_gpu> create_gpu_allocator(
 }
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

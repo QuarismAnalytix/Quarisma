@@ -2,7 +2,7 @@
 #include <torch/csrc/autograd/function.h>
 #include <torch/csrc/autograd/functions/utils.h>
 #include <torch/csrc/autograd/variable.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <sstream>
 #include <utility>
@@ -64,7 +64,7 @@ void check_input_variables(
     {
         required_args = args;
     }
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         inputs.size() == static_cast<size_t>(args),
         name,
         ": expected ",
@@ -73,12 +73,12 @@ void check_input_variables(
         inputs.size(),
         ")");
 
-    for (const auto i : xsigma::irange(required_args))
+    for (const auto i : quarisma::irange(required_args))
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             inputs[i].defined() || allow_undefined,
             name,
-            ": expected Tensor xsigma argument ",
+            ": expected Tensor quarisma argument ",
             i,
             " (got None)");
     }

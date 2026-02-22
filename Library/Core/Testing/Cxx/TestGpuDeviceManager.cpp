@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,15 +13,15 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "common/configure.h"
 #include "common/macros.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 
 #include <string>
 #include <vector>
@@ -30,13 +30,13 @@
 #include "memory/device.h"
 #include "memory/gpu/gpu_device_manager.h"
 
-using namespace xsigma;
-using namespace xsigma::gpu;
+using namespace quarisma;
+using namespace quarisma::gpu;
 
 /**
  * @brief Test GPU device manager singleton access
  */
-XSIGMATEST(GpuDeviceManager, provides_singleton_instance)
+QUARISMATEST(GpuDeviceManager, provides_singleton_instance)
 {
     // Test singleton access
     auto& manager1 = gpu_device_manager::instance();
@@ -45,13 +45,13 @@ XSIGMATEST(GpuDeviceManager, provides_singleton_instance)
     // Should be the same instance
     EXPECT_EQ(&manager1, &manager2);
 
-    XSIGMA_LOG_INFO("GPU device manager singleton test passed");
+    QUARISMA_LOG_INFO("GPU device manager singleton test passed");
 }
 
 /**
  * @brief Test GPU device manager initialization
  */
-XSIGMATEST(GpuDeviceManager, initializes_successfully)
+QUARISMATEST(GpuDeviceManager, initializes_successfully)
 {
     auto& manager = gpu_device_manager::instance();
 
@@ -59,11 +59,11 @@ XSIGMATEST(GpuDeviceManager, initializes_successfully)
     {
         manager.initialize();
         EXPECT_TRUE(true);  // Initialization succeeded
-        XSIGMA_LOG_INFO("GPU device manager initialization test passed");
+        QUARISMA_LOG_INFO("GPU device manager initialization test passed");
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "GPU device manager initialization failed (expected if no GPU): {}", e.what());
         // This is acceptable if no GPU hardware is available
     }
@@ -72,7 +72,7 @@ XSIGMATEST(GpuDeviceManager, initializes_successfully)
 /**
  * @brief Test runtime information retrieval
  */
-XSIGMATEST(GpuDeviceManager, provides_runtime_information)
+QUARISMATEST(GpuDeviceManager, provides_runtime_information)
 {
     auto& manager = gpu_device_manager::instance();
     manager.initialize();
@@ -89,18 +89,18 @@ XSIGMATEST(GpuDeviceManager, provides_runtime_information)
         runtime_info.recommended_backend == device_enum::CPU ||
         runtime_info.recommended_backend == device_enum::CUDA);
 
-    XSIGMA_LOG_INFO("CUDA available: {}", runtime_info.cuda_available);
-    XSIGMA_LOG_INFO("CUDA runtime version: {}", runtime_info.cuda_runtime_version);
-    XSIGMA_LOG_INFO("CUDA device count: {}", runtime_info.cuda_device_count);
-    XSIGMA_LOG_INFO("Recommended backend: {}", static_cast<int>(runtime_info.recommended_backend));
+    QUARISMA_LOG_INFO("CUDA available: {}", runtime_info.cuda_available);
+    QUARISMA_LOG_INFO("CUDA runtime version: {}", runtime_info.cuda_runtime_version);
+    QUARISMA_LOG_INFO("CUDA device count: {}", runtime_info.cuda_device_count);
+    QUARISMA_LOG_INFO("Recommended backend: {}", static_cast<int>(runtime_info.recommended_backend));
 
-    XSIGMA_LOG_INFO("GPU device manager runtime information test passed");
+    QUARISMA_LOG_INFO("GPU device manager runtime information test passed");
 }
 
 /**
  * @brief Test available devices enumeration
  */
-XSIGMATEST(GpuDeviceManager, enumerates_available_devices)
+QUARISMATEST(GpuDeviceManager, enumerates_available_devices)
 {
     auto& manager = gpu_device_manager::instance();
     manager.initialize();
@@ -118,20 +118,20 @@ XSIGMATEST(GpuDeviceManager, enumerates_available_devices)
         EXPECT_GE(device.total_memory, 0);
         EXPECT_GE(device.multiprocessor_count, 0);
 
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "device_option {}: {} ({}MB)",
             device.device_index,
             device.name,
             device.total_memory / (1024ULL));
     }
 
-    XSIGMA_LOG_INFO("GPU device manager device enumeration test passed");
+    QUARISMA_LOG_INFO("GPU device manager device enumeration test passed");
 }
 
 /**
  * @brief Test device information retrieval for specific devices
  */
-XSIGMATEST(GpuDeviceManager, retrieves_specific_device_info)
+QUARISMATEST(GpuDeviceManager, retrieves_specific_device_info)
 {
     auto& manager = gpu_device_manager::instance();
     manager.initialize();
@@ -150,28 +150,28 @@ XSIGMATEST(GpuDeviceManager, retrieves_specific_device_info)
             EXPECT_FALSE(device_info.name.empty());
             EXPECT_GT(device_info.total_memory, 0);
 
-            XSIGMA_LOG_INFO(
+            QUARISMA_LOG_INFO(
                 "device_option 0 info: {} ({}MB)",
                 device_info.name,
                 device_info.total_memory / (1024ULL));
 
-            XSIGMA_LOG_INFO("GPU device manager specific device info test passed");
+            QUARISMA_LOG_INFO("GPU device manager specific device info test passed");
         }
         catch (const std::exception& e)
         {
-            XSIGMA_LOG_INFO("device_option info retrieval failed: {}", e.what());
+            QUARISMA_LOG_INFO("device_option info retrieval failed: {}", e.what());
         }
     }
     else
     {
-        XSIGMA_LOG_INFO("No CUDA devices available for specific device info test");
+        QUARISMA_LOG_INFO("No CUDA devices available for specific device info test");
     }
 }
 
 /**
  * @brief Test device availability checking
  */
-XSIGMATEST(GpuDeviceManager, checks_device_availability)
+QUARISMATEST(GpuDeviceManager, checks_device_availability)
 {
     auto& manager = gpu_device_manager::instance();
     manager.initialize();
@@ -184,20 +184,20 @@ XSIGMATEST(GpuDeviceManager, checks_device_availability)
         bool device0_available = manager.is_device_available(device_enum::CUDA, 0);
         EXPECT_TRUE(device0_available);
 
-        XSIGMA_LOG_INFO("device_option 0 availability: {}", device0_available);
+        QUARISMA_LOG_INFO("device_option 0 availability: {}", device0_available);
     }
 
     // Test invalid device
     bool invalid_device_available = manager.is_device_available(device_enum::CUDA, 999);
     EXPECT_FALSE(invalid_device_available);
 
-    XSIGMA_LOG_INFO("GPU device manager device availability test passed");
+    QUARISMA_LOG_INFO("GPU device manager device availability test passed");
 }
 
 /**
  * @brief Test device context management
  */
-XSIGMATEST(GpuDeviceManager, manages_device_context)
+QUARISMATEST(GpuDeviceManager, manages_device_context)
 {
     auto& manager = gpu_device_manager::instance();
     manager.initialize();
@@ -216,26 +216,26 @@ XSIGMATEST(GpuDeviceManager, manages_device_context)
             EXPECT_EQ(0, current_device.device_index);
             EXPECT_EQ(device_enum::CUDA, current_device.device_type);
 
-            XSIGMA_LOG_INFO(
+            QUARISMA_LOG_INFO(
                 "Current device: {} (index {})", current_device.name, current_device.device_index);
 
-            XSIGMA_LOG_INFO("GPU device manager context management test passed");
+            QUARISMA_LOG_INFO("GPU device manager context management test passed");
         }
         catch (const std::exception& e)
         {
-            XSIGMA_LOG_INFO("device_option context management failed: {}", e.what());
+            QUARISMA_LOG_INFO("device_option context management failed: {}", e.what());
         }
     }
     else
     {
-        XSIGMA_LOG_INFO("No CUDA devices available for context management test");
+        QUARISMA_LOG_INFO("No CUDA devices available for context management test");
     }
 }
 
 /**
  * @brief Test device information refresh
  */
-XSIGMATEST(GpuDeviceManager, refreshes_device_information)
+QUARISMATEST(GpuDeviceManager, refreshes_device_information)
 {
 #if 0
     auto& manager = gpu_device_manager::instance();
@@ -246,14 +246,14 @@ XSIGMATEST(GpuDeviceManager, refreshes_device_information)
         manager.refresh_device_info();
         EXPECT_TRUE(true);  // Should not throw
 
-        XSIGMA_LOG_INFO("GPU device manager refresh test passed");
+        QUARISMA_LOG_INFO("GPU device manager refresh test passed");
 #endif
 }
 
 /**
  * @brief Test system report generation
  */
-XSIGMATEST(GpuDeviceManager, generates_system_report)
+QUARISMATEST(GpuDeviceManager, generates_system_report)
 {
     auto& manager = gpu_device_manager::instance();
     manager.initialize();
@@ -268,15 +268,15 @@ XSIGMATEST(GpuDeviceManager, generates_system_report)
         report.find("GPU") != std::string::npos || report.find("CUDA") != std::string::npos ||
         report.find("device_option") != std::string::npos);
 
-    XSIGMA_LOG_INFO("System report length: {} characters", report.length());
+    QUARISMA_LOG_INFO("System report length: {} characters", report.length());
 
-    XSIGMA_LOG_INFO("GPU device manager system report test passed");
+    QUARISMA_LOG_INFO("GPU device manager system report test passed");
 }
 
 /**
  * @brief Test error handling for invalid operations
  */
-XSIGMATEST(GpuDeviceManager, handles_invalid_operations)
+QUARISMATEST(GpuDeviceManager, handles_invalid_operations)
 {
     auto& manager = gpu_device_manager::instance();
     manager.initialize();
@@ -292,7 +292,7 @@ XSIGMATEST(GpuDeviceManager, handles_invalid_operations)
     {
         // Expected behavior for invalid device
         EXPECT_TRUE(true);  // Test passes if exception is thrown
-        XSIGMA_LOG_INFO("Expected exception for invalid device: {}", e.what());
+        QUARISMA_LOG_INFO("Expected exception for invalid device: {}", e.what());
     }
 
     try
@@ -305,10 +305,10 @@ XSIGMATEST(GpuDeviceManager, handles_invalid_operations)
     {
         // Expected behavior for invalid device context
         EXPECT_TRUE(true);  // Test passes if exception is thrown
-        XSIGMA_LOG_INFO("Expected exception for invalid device context: {}", e.what());
+        QUARISMA_LOG_INFO("Expected exception for invalid device context: {}", e.what());
     }
 
-    XSIGMA_LOG_INFO("GPU device manager error handling test passed");
+    QUARISMA_LOG_INFO("GPU device manager error handling test passed");
 }
 
-#endif  // XSIGMA_HAS_CUDA
+#endif  // QUARISMA_HAS_CUDA

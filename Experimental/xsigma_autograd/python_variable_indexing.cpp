@@ -1,9 +1,9 @@
-#include <XSigma/DeviceGuard.h>
-#include <XSigma/ExpandUtils.h>
-#include <XSigma/Functions.h>
-#include <XSigma/TensorIndexing.h>
-#include <XSigma/TracerMode.h>
-#include <XSigma/core/LegacyTypeDispatch.h>
+#include <Quarisma/DeviceGuard.h>
+#include <Quarisma/ExpandUtils.h>
+#include <Quarisma/Functions.h>
+#include <Quarisma/TensorIndexing.h>
+#include <Quarisma/TracerMode.h>
+#include <Quarisma/core/LegacyTypeDispatch.h>
 #include <fmt/format.h>
 #include <torch/csrc/DynamicTypes.h>
 #include <torch/csrc/Exceptions.h>
@@ -23,13 +23,13 @@
 #include <torch/csrc/utils/tensor_new.h>
 #include <torch/csrc/utils/tensor_numpy.h>
 #include <torch/csrc/utils/tensor_types.h>
-#include <xsigma/core/Layout.h>
-#include <xsigma/core/TensorOptions.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/core/Layout.h>
+#include <quarisma/core/TensorOptions.h>
+#include <quarisma/util/irange.h>
 
 #include "util/exception.h"
 
-using namespace xsigma;
+using namespace quarisma;
 using namespace torch::autograd::utils;
 
 namespace torch::autograd
@@ -65,7 +65,7 @@ Py_ssize_t THPVariable_length(PyObject* self)
 
 // We only go one deep, because that's all torchdim needs (it supports
 // a tuple/list of FCDs which triggers a split behavior, but you can
-// only do it xsigma the top level) and it's all the dispatcher will do
+// only do it quarisma the top level) and it's all the dispatcher will do
 // as well.
 static bool sequence_has_torch_function(PyObject* seq)
 {
@@ -153,20 +153,20 @@ static void invalid_index(PyObject* obj)
         ")");
 }
 
-static Variable sequenceToVariable(xsigma::TensorOptions options, PyObject* seq)
+static Variable sequenceToVariable(quarisma::TensorOptions options, PyObject* seq)
 {
     return torch::utils::indexing_tensor_from_data(options, kLong, std::nullopt, seq);
 }
 
 inline Variable valueToTensor(
-    xsigma::TensorOptions options, PyObject* value, const xsigma::Device& device)
+    quarisma::TensorOptions options, PyObject* value, const quarisma::Device& device)
 {
     if (THPVariable_Check(value))
     {
         return THPVariable_Unpack(value);
     }
-    xsigma::AutoDispatchBelowADInplaceOrView   guard;  // TODO: remove
-    xsigma::tracer::impl::NoTracerDispatchMode tracer_guard;
+    quarisma::AutoDispatchBelowADInplaceOrView   guard;  // TODO: remove
+    quarisma::tracer::impl::NoTracerDispatchMode tracer_guard;
     Scalar                                     scalar;
     if (THPUtils_checkLong(value) || PyBool_Check(value))
     {
@@ -182,15 +182,15 @@ inline Variable valueToTensor(
     }
     else if (torch::is_symint(value))
     {
-        scalar = Scalar(py::cast<xsigma::SymInt>(py::handle(value)));
+        scalar = Scalar(py::cast<quarisma::SymInt>(py::handle(value)));
     }
     else if (torch::is_symfloat(value))
     {
-        scalar = Scalar(py::cast<xsigma::SymFloat>(py::handle(value)));
+        scalar = Scalar(py::cast<quarisma::SymFloat>(py::handle(value)));
     }
     else if (torch::is_symbool(value))
     {
-        scalar = Scalar(py::cast<xsigma::SymBool>(py::handle(value)));
+        scalar = Scalar(py::cast<quarisma::SymBool>(py::handle(value)));
     }
     else
     {
@@ -204,13 +204,13 @@ inline Variable valueToTensor(
     // lift_fresh is supposed to be used in situations where you are guaranteed to
     // get a plain Tensor which is not true for cpu device but not for non cpu
     // device
-    if (device == xsigma::kCPU && !scalar.isSymbolic())
+    if (device == quarisma::kCPU && !scalar.isSymbolic())
     {
-        return xsigma::lift_fresh(xsigma::indexing::scalarToTensor(scalar, options, device));
+        return quarisma::lift_fresh(quarisma::indexing::scalarToTensor(scalar, options, device));
     }
     else
     {
-        return xsigma::indexing::scalarToTensor(scalar, options, device);
+        return quarisma::indexing::scalarToTensor(scalar, options, device);
     }
 }
 
@@ -248,7 +248,7 @@ static Variable applySlicing(
     PyObject*                     index,
     variable_list&                outIndices,
     bool                          is_tracing,
-    const xsigma::Device&         self_device,
+    const quarisma::Device&         self_device,
     const std::optional<int64_t>& self_ndim,
     int64_t                       specified_dims)
 {
@@ -265,7 +265,7 @@ static Variable applySlicing(
     }
 
     Variable result = self;
-    for (const auto i : xsigma::irange(size))
+    for (const auto i : quarisma::irange(size))
     {
         PyObject* obj = PyTuple_GET_ITEM(index, i);
         // NOTE [nested tensor size for indexing]
@@ -275,7 +275,7 @@ static Variable applySlicing(
         std::optional<SymIntArrayRef> result_sizes =
             result.is_nested() ? std::optional<SymIntArrayRef>(std::nullopt)
                                : std::optional<SymIntArrayRef>(result.sym_sizes());
-        result = xsigma::indexing::handleDimInMultiDimIndexing(
+        result = quarisma::indexing::handleDimInMultiDimIndexing(
             /*prev_dim_result=*/result,
             /*original_tensor=*/self,
             /*index=*/
@@ -288,7 +288,7 @@ static Variable applySlicing(
                         {
                             recordSelectTrace(THPVariable_Unpack(obj));
                         }
-                        return xsigma::indexing::TensorIndex(THPUtils_unpackLong(obj));
+                        return quarisma::indexing::TensorIndex(THPUtils_unpackLong(obj));
                     }
                     else if (PySlice_Check(obj))
                     {
@@ -297,20 +297,20 @@ static Variable applySlicing(
                         {
                             recordSliceTrace(obj);
                         }
-                        return xsigma::indexing::TensorIndex(
-                            xsigma::indexing::Slice(val.start, val.stop, val.step));
+                        return quarisma::indexing::TensorIndex(
+                            quarisma::indexing::Slice(val.start, val.stop, val.step));
                     }
                     else if (obj == Py_Ellipsis)
                     {
-                        return xsigma::indexing::TensorIndex(xsigma::indexing::Ellipsis);
+                        return quarisma::indexing::TensorIndex(quarisma::indexing::Ellipsis);
                     }
                     else if (obj == Py_None)
                     {
-                        return xsigma::indexing::TensorIndex(xsigma::indexing::None);
+                        return quarisma::indexing::TensorIndex(quarisma::indexing::None);
                     }
                     else if (PyBool_Check(obj))
                     {
-                        return xsigma::indexing::TensorIndex(obj == Py_True);
+                        return quarisma::indexing::TensorIndex(obj == Py_True);
                     }
                     else if (THPVariable_Check(obj))
                     {
@@ -319,17 +319,17 @@ static Variable applySlicing(
                         {
                             auto scalar_type = tensor.scalar_type();
                             if (tensor.dim() == 0 &&
-                                xsigma::isIntegralType(scalar_type, /*includeBool=*/false) &&
-                                scalar_type != xsigma::kByte)
+                                quarisma::isIntegralType(scalar_type, /*includeBool=*/false) &&
+                                scalar_type != quarisma::kByte)
                             {
                                 recordSelectTrace(tensor);
                             }
                         }
-                        return xsigma::indexing::TensorIndex(std::move(tensor));
+                        return quarisma::indexing::TensorIndex(std::move(tensor));
                     }
                     else if (PySequence_Check(obj))
                     {
-                        return xsigma::indexing::TensorIndex(
+                        return quarisma::indexing::TensorIndex(
                             sequenceToVariable(self.options(), obj));
                     }
                     else
@@ -344,7 +344,7 @@ static Variable applySlicing(
                         {
                             recordSelectTrace(THPVariable_Unpack(idx));
                         }
-                        return xsigma::indexing::TensorIndex(THPUtils_unpackLong(idx));
+                        return quarisma::indexing::TensorIndex(THPUtils_unpackLong(idx));
                     }
                 })(),
             /*dim_ptr=*/&dim,
@@ -455,12 +455,12 @@ static THPObjectPtr wrapTuple(PyObject* index)
 
 // NOTE: Here is the dispatch structure for `THPVariable_getitem`:
 //
-// 1. Python 1-D getter calls C++ `xsigma::indexing::get_item` after
+// 1. Python 1-D getter calls C++ `quarisma::indexing::get_item` after
 // converting Python index to C++ TensorIndex.
 //
-// 2. Python N-D getter calls C++ `xsigma::indexing::handleDimInMultiDimIndexing`
+// 2. Python N-D getter calls C++ `quarisma::indexing::handleDimInMultiDimIndexing`
 // for each dim, after converting Python index to C++ TensorIndex. If advanced
-// indexing is needed, it calls C++ `xsigma::indexing::dispatch_index`.
+// indexing is needed, it calls C++ `quarisma::indexing::dispatch_index`.
 PyObject* THPVariable_getitem(PyObject* self, PyObject* index)
 {
     HANDLE_TH_ERRORS
@@ -475,14 +475,14 @@ PyObject* THPVariable_getitem(PyObject* self, PyObject* index)
     if (index == Py_None)
     {
         return THPVariable_Wrap(
-            xsigma::indexing::get_item(
-                self_, {xsigma::indexing::TensorIndex(xsigma::indexing::None)}));
+            quarisma::indexing::get_item(
+                self_, {quarisma::indexing::TensorIndex(quarisma::indexing::None)}));
     }
     else if (index == Py_Ellipsis)
     {
         return THPVariable_Wrap(
-            xsigma::indexing::get_item(
-                self_, {xsigma::indexing::TensorIndex(xsigma::indexing::Ellipsis)}));
+            quarisma::indexing::get_item(
+                self_, {quarisma::indexing::TensorIndex(quarisma::indexing::Ellipsis)}));
     }
 
     bool is_tracing = torch::jit::tracer::isTracing();
@@ -495,8 +495,8 @@ PyObject* THPVariable_getitem(PyObject* self, PyObject* index)
             recordSelectTrace(THPVariable_Unpack(index));
         }
         return THPVariable_Wrap(
-            xsigma::indexing::get_item(
-                self_, {xsigma::indexing::TensorIndex(THPUtils_unpackLong(index))}));
+            quarisma::indexing::get_item(
+                self_, {quarisma::indexing::TensorIndex(THPUtils_unpackLong(index))}));
     }
     else if (PySlice_Check(index))
     {
@@ -506,10 +506,10 @@ PyObject* THPVariable_getitem(PyObject* self, PyObject* index)
             recordSliceTrace(index);
         }
         return THPVariable_Wrap(
-            xsigma::indexing::get_item(
+            quarisma::indexing::get_item(
                 self_,
-                {xsigma::indexing::TensorIndex(
-                    xsigma::indexing::Slice(val.start, val.stop, val.step))}));
+                {quarisma::indexing::TensorIndex(
+                    quarisma::indexing::Slice(val.start, val.stop, val.step))}));
     }
     else if (index == Py_False || index == Py_True)
     {
@@ -517,8 +517,8 @@ PyObject* THPVariable_getitem(PyObject* self, PyObject* index)
             [&]()
             {
                 pybind11::gil_scoped_release no_gil;
-                return xsigma::indexing::get_item(
-                    self_, {xsigma::indexing::TensorIndex(index == Py_True)});
+                return quarisma::indexing::get_item(
+                    self_, {quarisma::indexing::TensorIndex(index == Py_True)});
             })());
     }
 
@@ -544,7 +544,7 @@ PyObject* THPVariable_getitem(PyObject* self, PyObject* index)
         if (sliced.is_same(self_))
         {
             // ensure we return a shallow copy for things like x[...]
-            sliced = xsigma::alias(sliced);
+            sliced = quarisma::alias(sliced);
         }
         return THPVariable_Wrap(sliced);
     }
@@ -554,7 +554,7 @@ PyObject* THPVariable_getitem(PyObject* self, PyObject* index)
         [&]()
         {
             pybind11::gil_scoped_release no_gil;
-            return xsigma::indexing::dispatch_index(sliced, std::move(variableIndices));
+            return quarisma::indexing::dispatch_index(sliced, std::move(variableIndices));
         })());
 
     Py_RETURN_NONE;
@@ -563,22 +563,22 @@ PyObject* THPVariable_getitem(PyObject* self, PyObject* index)
 
 static void dispatch_set_item(
     const Tensor&                           self,
-    ArrayRef<xsigma::indexing::TensorIndex> indices,
+    ArrayRef<quarisma::indexing::TensorIndex> indices,
     const Tensor&                           value,
     bool                                    disable_slice_optimization = false)
 {
     pybind11::gil_scoped_release no_gil;
-    xsigma::indexing::set_item(self, indices, value, disable_slice_optimization);
+    quarisma::indexing::set_item(self, indices, value, disable_slice_optimization);
 }
 
 // NOTE: Here is the dispatch structure for `THPVariable_setitem`:
 //
-// 1. Python 1-D setter calls C++ `xsigma::indexing::set_item` after
+// 1. Python 1-D setter calls C++ `quarisma::indexing::set_item` after
 // converting Python index to C++ TensorIndex.
 //
-// 2. Python N-D setter calls C++ `xsigma::indexing::handleDimInMultiDimIndexing`
+// 2. Python N-D setter calls C++ `quarisma::indexing::handleDimInMultiDimIndexing`
 // for each dim, after converting Python index to C++ TensorIndex. If advanced
-// indexing is needed, it calls C++ `xsigma::indexing::dispatch_index_put_`.
+// indexing is needed, it calls C++ `quarisma::indexing::dispatch_index_put_`.
 int THPVariable_setitem(PyObject* self, PyObject* index, PyObject* py_value)
 {
     HANDLE_TH_ERRORS
@@ -600,16 +600,16 @@ int THPVariable_setitem(PyObject* self, PyObject* index, PyObject* py_value)
         TORCH_CHECK_TYPE(false, "Cannot assign to a sparse tensor");
     }
     OptionalDeviceGuard device_guard(device_of(self_));
-    xsigma::Device      self_device = self_.device();
+    quarisma::Device      self_device = self_.device();
     Variable            value;
     // TODO: This qint special case looks very suspicious...
     if (isQIntType(self_.scalar_type()))
     {
-        value = valueToTensor(device(kCPU).dtype(kFloat), py_value, xsigma::Device(kCPU));
+        value = valueToTensor(device(kCPU).dtype(kFloat), py_value, quarisma::Device(kCPU));
     }
     else if (self_device.is_cuda())
     {
-        value = valueToTensor(self_.options(), py_value, xsigma::Device(kCPU));
+        value = valueToTensor(self_.options(), py_value, quarisma::Device(kCPU));
     }
     else
     {
@@ -626,17 +626,17 @@ int THPVariable_setitem(PyObject* self, PyObject* index, PyObject* py_value)
     else if (index == Py_Ellipsis)
     {
         dispatch_set_item(
-            self_, {xsigma::indexing::TensorIndex(xsigma::indexing::Ellipsis)}, value);
+            self_, {quarisma::indexing::TensorIndex(quarisma::indexing::Ellipsis)}, value);
         return 0;
     }
     else if (index == Py_None)
     {
-        dispatch_set_item(self_, {xsigma::indexing::TensorIndex(xsigma::indexing::None)}, value);
+        dispatch_set_item(self_, {quarisma::indexing::TensorIndex(quarisma::indexing::None)}, value);
         return 0;
     }
     else if (index == Py_True)
     {
-        dispatch_set_item(self_, {xsigma::indexing::TensorIndex(true)}, value);
+        dispatch_set_item(self_, {quarisma::indexing::TensorIndex(true)}, value);
         return 0;
     }
 
@@ -651,7 +651,7 @@ int THPVariable_setitem(PyObject* self, PyObject* index, PyObject* py_value)
         }
         auto symint =
             torch::is_symint(index) ? py::cast<SymInt>(index) : SymInt(THPUtils_unpackLong(index));
-        dispatch_set_item(self_, {xsigma::indexing::TensorIndex(symint)}, value);
+        dispatch_set_item(self_, {quarisma::indexing::TensorIndex(symint)}, value);
         return 0;
     }
     else if (PySlice_Check(index))
@@ -665,7 +665,7 @@ int THPVariable_setitem(PyObject* self, PyObject* index, PyObject* py_value)
         // indexing functions from Python ]
         dispatch_set_item(
             self_,
-            {xsigma::indexing::TensorIndex(xsigma::indexing::Slice(val.start, val.stop, val.step))},
+            {quarisma::indexing::TensorIndex(quarisma::indexing::Slice(val.start, val.stop, val.step))},
             value,
             /*disable_slice_optimization=*/is_tracing);
         return 0;
@@ -693,14 +693,14 @@ int THPVariable_setitem(PyObject* self, PyObject* index, PyObject* py_value)
     if (variableIndices.empty())
     {
         pybind11::gil_scoped_release no_gil;
-        xsigma::indexing::copy_to(sliced, value);
+        quarisma::indexing::copy_to(sliced, value);
         return 0;
     }
 
     {
         pybind11::gil_scoped_release no_gil;
         SymIntArrayRef               valueSizes = value.sym_sizes();
-        SymIntArrayRef slicedValueSizes         = xsigma::indexing::slicePrefix1sSize(valueSizes);
+        SymIntArrayRef slicedValueSizes         = quarisma::indexing::slicePrefix1sSize(valueSizes);
         torch::autograd::Variable valuesSliced;
         if (!valueSizes.equals(slicedValueSizes))
         {
@@ -710,7 +710,7 @@ int THPVariable_setitem(PyObject* self, PyObject* index, PyObject* py_value)
         {
             valuesSliced = value;
         }
-        xsigma::indexing::dispatch_index_put_(sliced, std::move(variableIndices), valuesSliced);
+        quarisma::indexing::dispatch_index_put_(sliced, std::move(variableIndices), valuesSliced);
         return 0;
     }
     END_HANDLE_TH_ERRORS_RET(-1)

@@ -1,7 +1,7 @@
-# XSigma Linter
+# Quarisma Linter
 
 ## Overview
-The `Tools/linter` package hosts XSigma's lint and formatting toolchain. It
+The `Tools/linter` package hosts Quarisma's lint and formatting toolchain. It
 collects thin adapter scripts that wrap external tools, along with shared
 Python helpers that let every adapter participate in the repository's
 `lintrunner` workflow. The suite keeps code style consistent, enforces project
@@ -36,7 +36,7 @@ The adapter directory contains one script per lint code (for example
   and `no_workflows_on_fork` harden GitHub Actions configuration.
 - **Repository policy**: `set_linter`, `docstring_linter`, `header_only_linter`,
   `testowners_linter`, `test_device_bias_linter`, and `test_has_main_linter`
-  encode XSigma-specific conventions.
+  encode Quarisma-specific conventions.
 - **Infrastructure helpers**: `pip_init.py`, `s3_init.py`, `update_s3.py`, and
   `clang_tidy/generate_build_files.py` provision third-party binaries and prepare
   compilation databases.

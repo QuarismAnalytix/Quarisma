@@ -1,7 +1,7 @@
 """
-XSigma Build System Helper Modules
+Quarisma Build System Helper Modules
 
-This package contains modular helper modules for the XSigma build system,
+This package contains modular helper modules for the Quarisma build system,
 extracted from setup.py for better organization and maintainability.
 
 Modules:

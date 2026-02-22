@@ -16,7 +16,7 @@ int64_t normalizeAndCheckIndex(int64_t idx, int64_t list_size)
 
     if (idx < 0 || idx >= list_size)
     {
-        XSIGMA_CHECK(false, "Invalid index ", idx, " for list_size", list_size);
+        QUARISMA_CHECK(false, "Invalid index ", idx, " for list_size", list_size);
     }
     return idx;
 }
@@ -43,10 +43,10 @@ ExprHandle promoteToDtype(ExprHandle e, ScalarType dt)
         AT_FORALL_SCALAR_TYPES_AND3(Bool, Half, BFloat16, TYPE_CASE)
 #undef TYPE_CASE
     case ScalarType::QUInt8:
-        e = cast<xsigma::quint8>(e);
+        e = cast<quarisma::quint8>(e);
         break;
     case ScalarType::QInt8:
-        e = cast<xsigma::qint8>(e);
+        e = cast<quarisma::qint8>(e);
         break;
     default:
         throw unsupported_dtype();
@@ -61,11 +61,11 @@ static bool checkTypes(const ScalarType highType, const int typeConstraints)
         return true;
     }
 
-    if (xsigma::isIntegralType(highType, false))
+    if (quarisma::isIntegralType(highType, false))
     {
         return (typeConstraints & kIntegralTypes) != 0;
     }
-    else if (xsigma::isFloatingType(highType))
+    else if (quarisma::isFloatingType(highType))
     {
         return (typeConstraints & kFloatingPointTypes) != 0;
     }
@@ -89,10 +89,10 @@ static bool isScalar(const ExprHandle& e)
 
 ExprHandle promoteHalfToFloat(const ExprHandle& e)
 {
-    auto scalarType = static_cast<xsigma::ScalarType>(e.dtype().scalar_type());
-    auto floatType  = static_cast<xsigma::ScalarType>(tensorexpr::ScalarType::Float);
-    if (xsigma::isFloatingType(scalarType) &&
-        (xsigma::elementSize(scalarType) < xsigma::elementSize(floatType)))
+    auto scalarType = static_cast<quarisma::ScalarType>(e.dtype().scalar_type());
+    auto floatType  = static_cast<quarisma::ScalarType>(tensorexpr::ScalarType::Float);
+    if (quarisma::isFloatingType(scalarType) &&
+        (quarisma::elementSize(scalarType) < quarisma::elementSize(floatType)))
     {
         return Cast::make(Dtype(tensorexpr::ScalarType::Float, e.dtype().lanes()), e);
     }
@@ -118,9 +118,9 @@ void promoteInputs(std::vector<ExprHandle>& inputs, const int typeConstraints)
         {
             if (isIntegralType(highType, false) && isFloatingType(inputType))
             {
-                highType = xsigma::get_default_dtype_as_scalartype();
+                highType = quarisma::get_default_dtype_as_scalartype();
             }
-            else if (highType == xsigma::kBool)
+            else if (highType == quarisma::kBool)
             {
                 highType = inputType;
             }
@@ -144,16 +144,16 @@ void promoteInputs(std::vector<ExprHandle>& inputs, const int typeConstraints)
 
 ExprHandle promoteIntegerToDefaultType(const ExprHandle& e)
 {
-    auto scalarType = static_cast<xsigma::ScalarType>(e.dtype().scalar_type());
-    if (!xsigma::isIntegralType(scalarType, /*includeBool*/ true))
+    auto scalarType = static_cast<quarisma::ScalarType>(e.dtype().scalar_type());
+    if (!quarisma::isIntegralType(scalarType, /*includeBool*/ true))
     {
         return e;
     }
 
-    auto defaultType = xsigma::typeMetaToScalarType(xsigma::get_default_dtype());
+    auto defaultType = quarisma::typeMetaToScalarType(quarisma::get_default_dtype());
 
     // We intend to promote Integers to floating-point types
-    TORCH_INTERNAL_ASSERT(!xsigma::isIntegralType(defaultType, /*includeBool*/ true));
+    TORCH_INTERNAL_ASSERT(!quarisma::isIntegralType(defaultType, /*includeBool*/ true));
 
     return Cast::make(
         Dtype(static_cast<tensorexpr::ScalarType>(defaultType), e.dtype().lanes()), e);
@@ -200,7 +200,7 @@ std::optional<TensorInfo> getTensorInfo(const BufHandle& b)
         }
         dims.push_back(*val);
     }
-    return TensorInfo{dims, static_cast<xsigma::ScalarType>(b.dtype().scalar_type())};
+    return TensorInfo{dims, static_cast<quarisma::ScalarType>(b.dtype().scalar_type())};
 }
 
 ExprHandle clamp(const ExprHandle& cmin, const ExprHandle& cmax, const ExprHandle& input)
@@ -222,13 +222,13 @@ static bool isOne(const ExprHandle& e)
 static std::pair<std::vector<ExprHandle>, bool> broadcastShapesImpl(
     const std::vector<ExprHandle>& a, const std::vector<ExprHandle>& b)
 {
-    auto                    xsigma = a.rbegin();
+    auto                    quarisma = a.rbegin();
     auto                    bt     = b.rbegin();
     std::vector<ExprHandle> ret;
     bool                    hasBroadcast = false;
-    while (xsigma != a.rend() || bt != b.rend())
+    while (quarisma != a.rend() || bt != b.rend())
     {
-        if (xsigma == a.rend())
+        if (quarisma == a.rend())
         {
             hasBroadcast = true;
             ret.push_back(*bt++);
@@ -237,14 +237,14 @@ static std::pair<std::vector<ExprHandle>, bool> broadcastShapesImpl(
         if (bt == b.rend())
         {
             hasBroadcast = true;
-            ret.push_back(*xsigma++);
+            ret.push_back(*quarisma++);
             continue;
         }
-        // TODO: if neither *xsigma nor *bt is 1, ensure they are identical
+        // TODO: if neither *quarisma nor *bt is 1, ensure they are identical
         // expressions.  Nb: `==` doesn't work since that simply produces a new
         // ExprHandle.
-        ExprHandle dim = *xsigma;
-        if (isOne(*xsigma))
+        ExprHandle dim = *quarisma;
+        if (isOne(*quarisma))
         {
             if (!isOne(*bt))
             {
@@ -253,7 +253,7 @@ static std::pair<std::vector<ExprHandle>, bool> broadcastShapesImpl(
             }
         }
         ret.push_back(dim);
-        xsigma++;
+        quarisma++;
         bt++;
     }
     std::reverse(ret.begin(), ret.end());
@@ -382,7 +382,7 @@ Tensor computeChunk(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device)
+    quarisma::Device                   device)
 {
     return Compute(
         "prim_constantchunk",
@@ -422,7 +422,7 @@ Tensor computeTranspose(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device)
+    quarisma::Device                   device)
 {
     auto A = std::get<BufHandle>(inputs[0]);
     // Trivial case of 0-dim and 1-dim tensors: transpose is just a copy
@@ -439,8 +439,8 @@ Tensor computeTranspose(
             });
     }
     // Usual case where transpose actually swaps dimensions
-    auto start_dim = xsigma::maybe_wrap_dim(std::get<int64_t>(inputs[1]), A.ndim());
-    auto to_dim    = xsigma::maybe_wrap_dim(std::get<int64_t>(inputs[2]), A.ndim());
+    auto start_dim = quarisma::maybe_wrap_dim(std::get<int64_t>(inputs[1]), A.ndim());
+    auto to_dim    = quarisma::maybe_wrap_dim(std::get<int64_t>(inputs[2]), A.ndim());
     return Compute(
         "aten_transpose",
         outputShape,
@@ -456,7 +456,7 @@ Tensor computeExpand(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device)
+    quarisma::Device                   device)
 {
     auto A = std::get<BufHandle>(inputs[0]);
     return Compute(
@@ -474,7 +474,7 @@ Tensor computeReshape(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device)
+    quarisma::Device                   device)
 {
     auto A = std::get<BufHandle>(inputs[0]);
     if (A.ndim() == 0)
@@ -555,10 +555,10 @@ Tensor computeFlatten(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device)
+    quarisma::Device                   device)
 {
     std::vector<int64_t> outputShapeVec;
-    for (const auto dim : xsigma::irange(outputShape.size()))
+    for (const auto dim : quarisma::irange(outputShape.size()))
     {
         outputShapeVec.push_back(outputShape[dim].AsNode<LongImm>()->value());
     }
@@ -653,11 +653,11 @@ static Tensor computeCatWoConditionals(
                 loop_order.push_back(i);
             }
         }
-        else if (buf_->is_contiguous(xsigma::MemoryFormat::ChannelsLast))
+        else if (buf_->is_contiguous(quarisma::MemoryFormat::ChannelsLast))
         {
             loop_order = {1, 3, 2, 0};
         }
-        else if (buf_->is_contiguous(xsigma::MemoryFormat::ChannelsLast3d))
+        else if (buf_->is_contiguous(quarisma::MemoryFormat::ChannelsLast3d))
         {
             loop_order = {1, 4, 3, 2, 0};
         }
@@ -726,9 +726,9 @@ Tensor computeCat(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device)
+    quarisma::Device                   device)
 {
-    if (device == xsigma::kCPU && getCatWoConditionals())
+    if (device == quarisma::kCPU && getCatWoConditionals())
     {
         return computeCatWoConditionals(inputs, outputShape, outputStrides);
     }
@@ -755,7 +755,7 @@ Tensor computeCat(
             // also affect the resultant dtype.
 
             // Now we know the final dtype, we know what inputs are non-empty,
-            // and we know that there is xsigma least one such an input. With all
+            // and we know that there is quarisma least one such an input. With all
             // that we construct a tensor expression performing the
             // concatenation.
             // The expression we build here is a cascading if-then-else that
@@ -793,7 +793,7 @@ Tensor computeEmbedding(
     const std::vector<ExprHandle>&   outputShape,
     const std::vector<ExprHandle>&   outputStrides,
     const std::optional<ScalarType>& outputType,
-    xsigma::Device                   device)
+    quarisma::Device                   device)
 {
     Dtype dtype = kFloat;
     if (outputType)

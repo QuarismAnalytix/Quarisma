@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include <cstdlib>  // for setenv, unsetenv
@@ -24,9 +24,9 @@
 #include <vector>
 
 #include "util/exception.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // Helper class to manage environment variable for testing
 class env_var_guard
@@ -94,37 +94,37 @@ private:
 //        edge cases (empty message, special characters)
 // ============================================================================
 
-XSIGMATEST(Exception, basic_functionality)
+QUARISMATEST(Exception, basic_functionality)
 {
-    xsigma::set_exception_mode(xsigma::exception_mode::THROW);
+    quarisma::set_exception_mode(quarisma::exception_mode::THROW);
 
     // Test basic macros
 #ifndef NDEBUG
-    ASSERT_ANY_THROW({ XSIGMA_CHECK_DEBUG(false, "XSIGMA_CHECK_DEBUG: Should throw"); });
+    ASSERT_ANY_THROW({ QUARISMA_CHECK_DEBUG(false, "QUARISMA_CHECK_DEBUG: Should throw"); });
 #endif
 
-    ASSERT_ANY_THROW({ XSIGMA_CHECK(false, "XSIGMA_CHECK: Should throw"); });
-    ASSERT_ANY_THROW({ XSIGMA_THROW("XSIGMA_THROW: should throw"); });
+    ASSERT_ANY_THROW({ QUARISMA_CHECK(false, "QUARISMA_CHECK: Should throw"); });
+    ASSERT_ANY_THROW({ QUARISMA_THROW("QUARISMA_THROW: should throw"); });
 
     // Test NOT_IMPLEMENTED category using macro
     try
     {
-        XSIGMA_NOT_IMPLEMENTED("Feature not yet implemented");
+        QUARISMA_NOT_IMPLEMENTED("Feature not yet implemented");
         FAIL() << "Should have thrown exception";
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
-        ASSERT_EQ(e.category(), xsigma::exception_category::NOT_IMPLEMENTED);
+        ASSERT_EQ(e.category(), quarisma::exception_category::NOT_IMPLEMENTED);
         ASSERT_TRUE(std::string(e.msg()).find("Feature not yet implemented") != std::string::npos);
     }
 
     // Test cross-platform behavior
     try
     {
-        XSIGMA_THROW("Platform test: {}", "cross-platform");
+        QUARISMA_THROW("Platform test: {}", "cross-platform");
         FAIL() << "Should have thrown";
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Should work on Windows, Linux, and macOS
         ASSERT_TRUE(e.what() != nullptr);
@@ -134,10 +134,10 @@ XSIGMATEST(Exception, basic_functionality)
     // Test edge case: empty message
     try
     {
-        xsigma::source_location loc{__func__, __FILE__, __LINE__};
-        throw xsigma::exception(loc, "", xsigma::exception_category::GENERIC);
+        quarisma::source_location loc{__func__, __FILE__, __LINE__};
+        throw quarisma::exception(loc, "", quarisma::exception_category::GENERIC);
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Should not crash with empty message
         ASSERT_TRUE(e.what() != nullptr);
@@ -146,9 +146,9 @@ XSIGMATEST(Exception, basic_functionality)
     // Test edge case: message with special characters
     try
     {
-        XSIGMA_THROW("Special chars: \n\t\r\\\"\'");
+        QUARISMA_THROW("Special chars: \n\t\r\\\"\'");
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         std::string msg(e.what());
         ASSERT_TRUE(msg.find("Special chars") != std::string::npos);
@@ -162,29 +162,29 @@ XSIGMATEST(Exception, basic_functionality)
 // Tests: mode switching, get/set exception mode, LOG_FATAL mode behavior
 // ============================================================================
 
-XSIGMATEST(Exception, mode_configuration)
+QUARISMATEST(Exception, mode_configuration)
 {
     // Test default mode
-    XSIGMA_UNUSED auto default_mode = xsigma::get_exception_mode();
+    QUARISMA_UNUSED auto default_mode = quarisma::get_exception_mode();
 
     // Test mode switching to THROW
-    xsigma::set_exception_mode(xsigma::exception_mode::THROW);
-    ASSERT_EQ(xsigma::get_exception_mode(), xsigma::exception_mode::THROW);
+    quarisma::set_exception_mode(quarisma::exception_mode::THROW);
+    ASSERT_EQ(quarisma::get_exception_mode(), quarisma::exception_mode::THROW);
 
     // Test mode switching to LOG_FATAL
-    xsigma::set_exception_mode(xsigma::exception_mode::LOG_FATAL);
-    ASSERT_EQ(xsigma::get_exception_mode(), xsigma::exception_mode::LOG_FATAL);
+    quarisma::set_exception_mode(quarisma::exception_mode::LOG_FATAL);
+    ASSERT_EQ(quarisma::get_exception_mode(), quarisma::exception_mode::LOG_FATAL);
 
     // Test that get_exception_mode() returns LOG_FATAL consistently
-    auto mode = xsigma::get_exception_mode();
-    ASSERT_EQ(mode, xsigma::exception_mode::LOG_FATAL);
-    ASSERT_NE(mode, xsigma::exception_mode::THROW);
+    auto mode = quarisma::get_exception_mode();
+    ASSERT_EQ(mode, quarisma::exception_mode::LOG_FATAL);
+    ASSERT_NE(mode, quarisma::exception_mode::THROW);
 
     // Restore default mode for other tests
-    xsigma::set_exception_mode(xsigma::exception_mode::THROW);
+    quarisma::set_exception_mode(quarisma::exception_mode::THROW);
 
     // Verify restoration
-    ASSERT_EQ(xsigma::get_exception_mode(), xsigma::exception_mode::THROW);
+    ASSERT_EQ(quarisma::get_exception_mode(), quarisma::exception_mode::THROW);
 
     END_TEST();
 }
@@ -195,31 +195,31 @@ XSIGMATEST(Exception, mode_configuration)
 //        source location tracking
 // ============================================================================
 
-XSIGMATEST(Exception, categories_and_stack_traces)
+QUARISMATEST(Exception, categories_and_stack_traces)
 {
-    xsigma::set_exception_mode(xsigma::exception_mode::THROW);
+    quarisma::set_exception_mode(quarisma::exception_mode::THROW);
 
     // Test all exception categories
-    const std::vector<xsigma::exception_category> all_categories = {
-        xsigma::exception_category::GENERIC,
-        xsigma::exception_category::VALUE_ERROR,
-        xsigma::exception_category::TYPE_ERROR,
-        xsigma::exception_category::INDEX_ERROR,
-        xsigma::exception_category::NOT_IMPLEMENTED,
-        xsigma::exception_category::ENFORCE_FINITE,
-        xsigma::exception_category::RUNTIME_ERROR,
-        xsigma::exception_category::LOGIC_ERROR,
-        xsigma::exception_category::SYSTEM_ERROR,
-        xsigma::exception_category::MEMORY_ERROR};
+    const std::vector<quarisma::exception_category> all_categories = {
+        quarisma::exception_category::GENERIC,
+        quarisma::exception_category::VALUE_ERROR,
+        quarisma::exception_category::TYPE_ERROR,
+        quarisma::exception_category::INDEX_ERROR,
+        quarisma::exception_category::NOT_IMPLEMENTED,
+        quarisma::exception_category::ENFORCE_FINITE,
+        quarisma::exception_category::RUNTIME_ERROR,
+        quarisma::exception_category::LOGIC_ERROR,
+        quarisma::exception_category::SYSTEM_ERROR,
+        quarisma::exception_category::MEMORY_ERROR};
 
     for (const auto& cat : all_categories)
     {
         try
         {
-            xsigma::source_location loc{__func__, __FILE__, __LINE__};
-            throw xsigma::exception(loc, "Test", cat);
+            quarisma::source_location loc{__func__, __FILE__, __LINE__};
+            throw quarisma::exception(loc, "Test", cat);
         }
-        catch (const xsigma::exception& e)
+        catch (const quarisma::exception& e)
         {
             ASSERT_EQ(e.category(), cat);
             ASSERT_FALSE(std::string(e.what()).empty());
@@ -229,10 +229,10 @@ XSIGMATEST(Exception, categories_and_stack_traces)
     // Test exception with VALUE_ERROR category (additional coverage)
     try
     {
-        xsigma::source_location loc{__func__, __FILE__, __LINE__};
-        throw xsigma::exception(loc, "Value error test", xsigma::exception_category::VALUE_ERROR);
+        quarisma::source_location loc{__func__, __FILE__, __LINE__};
+        throw quarisma::exception(loc, "Value error test", quarisma::exception_category::VALUE_ERROR);
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         std::string msg(e.what());
         ASSERT_TRUE(msg.find("Value error test") != std::string::npos);
@@ -241,10 +241,10 @@ XSIGMATEST(Exception, categories_and_stack_traces)
     // Test stack trace capture
     try
     {
-        XSIGMA_THROW("Test exception with stack trace");
+        QUARISMA_THROW("Test exception with stack trace");
         FAIL() << "Should have thrown";
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Check that backtrace is captured
         const std::string& backtrace = e.backtrace();
@@ -257,9 +257,9 @@ XSIGMATEST(Exception, categories_and_stack_traces)
     // Test source location tracking
     try
     {
-        XSIGMA_THROW("Test source location");
+        QUARISMA_THROW("Test source location");
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Check that backtrace contains file and line information
         const std::string& backtrace = e.backtrace();
@@ -275,21 +275,21 @@ XSIGMATEST(Exception, categories_and_stack_traces)
 // Tests: exception chaining, context accumulation, nested exception access
 // ============================================================================
 
-XSIGMATEST(Exception, chaining_and_context)
+QUARISMATEST(Exception, chaining_and_context)
 {
-    xsigma::set_exception_mode(xsigma::exception_mode::THROW);
+    quarisma::set_exception_mode(quarisma::exception_mode::THROW);
 
     // Test exception chaining
     // Create a nested exception using new/shared_ptr to avoid MSVC ICE
-    xsigma::source_location            inner_loc{__func__, __FILE__, __LINE__};
-    std::shared_ptr<xsigma::exception> inner(new xsigma::exception(
+    quarisma::source_location            inner_loc{__func__, __FILE__, __LINE__};
+    std::shared_ptr<quarisma::exception> inner(new quarisma::exception(
         inner_loc,
         "Inner error: database connection failed",
-        xsigma::exception_category::RUNTIME_ERROR));
+        quarisma::exception_category::RUNTIME_ERROR));
 
     // Create outer exception with nested
-    xsigma::source_location outer_loc{__func__, __FILE__, __LINE__};
-    xsigma::exception       outer(outer_loc, "Outer error: failed to process request", inner);
+    quarisma::source_location outer_loc{__func__, __FILE__, __LINE__};
+    quarisma::exception       outer(outer_loc, "Outer error: failed to process request", inner);
 
     // Check nested exception is accessible
     ASSERT_TRUE(outer.nested() != nullptr);
@@ -304,10 +304,10 @@ XSIGMATEST(Exception, chaining_and_context)
     // Test context accumulation
     try
     {
-        auto e = xsigma::exception(
-            xsigma::source_location{__func__, __FILE__, __LINE__},
+        auto e = quarisma::exception(
+            quarisma::source_location{__func__, __FILE__, __LINE__},
             "Base error",
-            xsigma::exception_category::GENERIC);
+            quarisma::exception_category::GENERIC);
 
         e.add_context("Context 1: processing file");
         e.add_context("Context 2: parsing line 42");
@@ -340,36 +340,36 @@ XSIGMATEST(Exception, chaining_and_context)
 //        memory safety (shared_ptr, copy constructor)
 // ============================================================================
 
-XSIGMATEST(Exception, constructors_and_accessors)
+QUARISMATEST(Exception, constructors_and_accessors)
 {
-    xsigma::set_exception_mode(xsigma::exception_mode::THROW);
+    quarisma::set_exception_mode(quarisma::exception_mode::THROW);
 
     // Test base constructor with all parameters
-    xsigma::exception ex1(
-        "Test message", "Test backtrace", nullptr, xsigma::exception_category::VALUE_ERROR);
+    quarisma::exception ex1(
+        "Test message", "Test backtrace", nullptr, quarisma::exception_category::VALUE_ERROR);
 
     ASSERT_EQ(std::string(ex1.msg()), "Test message");
     ASSERT_EQ(std::string(ex1.backtrace()), "Test backtrace");
     ASSERT_EQ(ex1.caller(), nullptr);
-    ASSERT_EQ(ex1.category(), xsigma::exception_category::VALUE_ERROR);
+    ASSERT_EQ(ex1.category(), quarisma::exception_category::VALUE_ERROR);
 
     // Test base constructor with caller pointer
     int               dummy_obj = 42;
-    xsigma::exception ex2(
-        "Test message", "Test backtrace", &dummy_obj, xsigma::exception_category::RUNTIME_ERROR);
+    quarisma::exception ex2(
+        "Test message", "Test backtrace", &dummy_obj, quarisma::exception_category::RUNTIME_ERROR);
 
     ASSERT_EQ(ex2.caller(), &dummy_obj);
-    ASSERT_EQ(ex2.category(), xsigma::exception_category::RUNTIME_ERROR);
+    ASSERT_EQ(ex2.category(), quarisma::exception_category::RUNTIME_ERROR);
 
     // Test all accessor methods
-    xsigma::source_location loc{__func__, __FILE__, __LINE__};
-    xsigma::exception       ex3(loc, "Test message", xsigma::exception_category::LOGIC_ERROR);
+    quarisma::source_location loc{__func__, __FILE__, __LINE__};
+    quarisma::exception       ex3(loc, "Test message", quarisma::exception_category::LOGIC_ERROR);
 
     // Test msg() accessor
     ASSERT_EQ(std::string(ex3.msg()), "Test message");
 
     // Test category() accessor
-    ASSERT_EQ(ex3.category(), xsigma::exception_category::LOGIC_ERROR);
+    ASSERT_EQ(ex3.category(), quarisma::exception_category::LOGIC_ERROR);
 
     // Test backtrace() accessor
     ASSERT_FALSE(ex3.backtrace().empty());
@@ -386,12 +386,12 @@ XSIGMATEST(Exception, constructors_and_accessors)
 
     // Test memory safety: exception with shared_ptr (no memory leaks)
     {
-        std::shared_ptr<xsigma::exception> ex_ptr;
+        std::shared_ptr<quarisma::exception> ex_ptr;
         try
         {
-            xsigma::source_location loc_mem{__func__, __FILE__, __LINE__};
-            ex_ptr = std::make_shared<xsigma::exception>(
-                loc_mem, "Shared ptr exception", xsigma::exception_category::GENERIC);
+            quarisma::source_location loc_mem{__func__, __FILE__, __LINE__};
+            ex_ptr = std::make_shared<quarisma::exception>(
+                loc_mem, "Shared ptr exception", quarisma::exception_category::GENERIC);
         }
         catch (...)
         {
@@ -404,12 +404,12 @@ XSIGMATEST(Exception, constructors_and_accessors)
 
     // Test memory safety: exception copy
     {
-        xsigma::source_location loc_copy{__func__, __FILE__, __LINE__};
-        xsigma::exception       original(
-            loc_copy, "Original exception", xsigma::exception_category::GENERIC);
+        quarisma::source_location loc_copy{__func__, __FILE__, __LINE__};
+        quarisma::exception       original(
+            loc_copy, "Original exception", quarisma::exception_category::GENERIC);
 
         // Copy constructor
-        xsigma::exception copy(original);
+        quarisma::exception copy(original);
         ASSERT_EQ(std::string(copy.msg()), std::string(original.msg()));
         ASSERT_EQ(copy.category(), original.category());
     }
@@ -423,13 +423,13 @@ XSIGMATEST(Exception, constructors_and_accessors)
 //        what_without_backtrace with empty message
 // ============================================================================
 
-XSIGMATEST(Exception, what_methods)
+QUARISMATEST(Exception, what_methods)
 {
-    xsigma::set_exception_mode(xsigma::exception_mode::THROW);
+    quarisma::set_exception_mode(quarisma::exception_mode::THROW);
 
     // Test compute_what with context
-    xsigma::source_location loc1{__func__, __FILE__, __LINE__};
-    xsigma::exception       ex1(loc1, "Base message", xsigma::exception_category::GENERIC);
+    quarisma::source_location loc1{__func__, __FILE__, __LINE__};
+    quarisma::exception       ex1(loc1, "Base message", quarisma::exception_category::GENERIC);
 
     ex1.add_context("Context line 1");
     ex1.add_context("Context line 2");
@@ -440,8 +440,8 @@ XSIGMATEST(Exception, what_methods)
     ASSERT_TRUE(what_str.find("Context line 2") != std::string::npos);
 
     // Test what_without_backtrace
-    xsigma::source_location loc2{__func__, __FILE__, __LINE__};
-    xsigma::exception       ex2(loc2, "Test error message", xsigma::exception_category::GENERIC);
+    quarisma::source_location loc2{__func__, __FILE__, __LINE__};
+    quarisma::exception       ex2(loc2, "Test error message", quarisma::exception_category::GENERIC);
 
     // Get what_without_backtrace
     const char* msg_without_backtrace = ex2.what_without_backtrace();
@@ -458,8 +458,8 @@ XSIGMATEST(Exception, what_methods)
     // The backtrace is currently included in what_without_backtrace_
 
     // Test what_without_backtrace with context
-    xsigma::source_location loc3{__func__, __FILE__, __LINE__};
-    xsigma::exception       ex3(loc3, "Base error", xsigma::exception_category::GENERIC);
+    quarisma::source_location loc3{__func__, __FILE__, __LINE__};
+    quarisma::exception       ex3(loc3, "Base error", quarisma::exception_category::GENERIC);
 
     ex3.add_context("Additional context 1");
     ex3.add_context("Additional context 2");
@@ -478,8 +478,8 @@ XSIGMATEST(Exception, what_methods)
     ASSERT_TRUE(msg_ctx_str.find("Additional context 2") != std::string::npos);
 
     // Test what_without_backtrace with empty message
-    xsigma::source_location loc4{__func__, __FILE__, __LINE__};
-    xsigma::exception       ex4(loc4, "", xsigma::exception_category::GENERIC);
+    quarisma::source_location loc4{__func__, __FILE__, __LINE__};
+    quarisma::exception       ex4(loc4, "", quarisma::exception_category::GENERIC);
 
     // Should not crash with empty message
     const char* msg_empty = ex4.what_without_backtrace();
@@ -494,31 +494,31 @@ XSIGMATEST(Exception, what_methods)
 //        multiple args, special characters
 // ============================================================================
 
-XSIGMATEST(Exception, format_check_msg)
+QUARISMATEST(Exception, format_check_msg)
 {
     // Test format_check_msg with no arguments
-    std::string result1 = xsigma::details::format_check_msg("x > 0");
+    std::string result1 = quarisma::details::format_check_msg("x > 0");
     ASSERT_EQ(result1, "Check failed: x > 0");
 
     // Test format_check_msg with format arguments
-    std::string result2 = xsigma::details::format_check_msg("x > 0", "Value was {}", 42);
+    std::string result2 = quarisma::details::format_check_msg("x > 0", "Value was {}", 42);
     ASSERT_TRUE(result2.find("Check failed: x > 0") != std::string::npos);
     ASSERT_TRUE(result2.find("Value was 42") != std::string::npos);
 
     // Test format_check_msg when user message is empty
-    std::string result3 = xsigma::details::format_check_msg("condition", "");
+    std::string result3 = quarisma::details::format_check_msg("condition", "");
     // When user message is empty, should only show condition
     ASSERT_EQ(result3, "Check failed: condition");
 
     // Test format_check_msg with multiple format arguments
     std::string result4 =
-        xsigma::details::format_check_msg("value in range", "Expected {} <= {} <= {}", 0, 5, 10);
+        quarisma::details::format_check_msg("value in range", "Expected {} <= {} <= {}", 0, 5, 10);
     ASSERT_TRUE(result4.find("Check failed: value in range") != std::string::npos);
     ASSERT_TRUE(result4.find("Expected 0 <= 5 <= 10") != std::string::npos);
 
     // Test format_check_msg with special characters in condition
     std::string result5 =
-        xsigma::details::format_check_msg("ptr != nullptr", "Pointer was null at index {}", 3);
+        quarisma::details::format_check_msg("ptr != nullptr", "Pointer was null at index {}", 3);
     ASSERT_TRUE(result5.find("Check failed: ptr != nullptr") != std::string::npos);
     ASSERT_TRUE(result5.find("Pointer was null at index 3") != std::string::npos);
 
@@ -530,7 +530,7 @@ XSIGMATEST(Exception, format_check_msg)
 // Tests: string comparison logic, idempotency, thread safety
 // ============================================================================
 
-XSIGMATEST(Exception, init_exception_mode_from_env)
+QUARISMATEST(Exception, init_exception_mode_from_env)
 {
     // Test string comparison logic for environment variable values
     // We can't actually test the initialization with different values in the same process,
@@ -560,14 +560,14 @@ XSIGMATEST(Exception, init_exception_mode_from_env)
 
     // Test idempotency: initialization only happens once
     // Call init multiple times
-    xsigma::init_exception_mode_from_env();
-    auto mode1 = xsigma::get_exception_mode();
+    quarisma::init_exception_mode_from_env();
+    auto mode1 = quarisma::get_exception_mode();
 
-    xsigma::init_exception_mode_from_env();
-    auto mode2 = xsigma::get_exception_mode();
+    quarisma::init_exception_mode_from_env();
+    auto mode2 = quarisma::get_exception_mode();
 
-    xsigma::init_exception_mode_from_env();
-    auto mode3 = xsigma::get_exception_mode();
+    quarisma::init_exception_mode_from_env();
+    auto mode3 = quarisma::get_exception_mode();
 
     // All should return the same mode
     ASSERT_EQ(mode1, mode2);
@@ -585,7 +585,7 @@ XSIGMATEST(Exception, init_exception_mode_from_env)
             {
                 try
                 {
-                    xsigma::init_exception_mode_from_env();
+                    quarisma::init_exception_mode_from_env();
                     success_count++;
                 }
                 catch (...)
@@ -605,10 +605,10 @@ XSIGMATEST(Exception, init_exception_mode_from_env)
     ASSERT_EQ(success_count.load(), 10);
 
     // Mode should be consistent
-    auto final_mode = xsigma::get_exception_mode();
+    auto final_mode = quarisma::get_exception_mode();
     ASSERT_TRUE(
-        final_mode == xsigma::exception_mode::THROW ||
-        final_mode == xsigma::exception_mode::LOG_FATAL);
+        final_mode == quarisma::exception_mode::THROW ||
+        final_mode == quarisma::exception_mode::LOG_FATAL);
 
     END_TEST();
 }
@@ -619,17 +619,17 @@ XSIGMATEST(Exception, init_exception_mode_from_env)
 //        empty message, special characters
 // ============================================================================
 
-XSIGMATEST(Exception, check_fail_basic)
+QUARISMATEST(Exception, check_fail_basic)
 {
-    xsigma::set_exception_mode(xsigma::exception_mode::THROW);
+    quarisma::set_exception_mode(quarisma::exception_mode::THROW);
 
     // Test that check_fail throws an exception
     try
     {
-        xsigma::details::check_fail("test_function", "test_file.cpp", 42, "Test error message");
+        quarisma::details::check_fail("test_function", "test_file.cpp", 42, "Test error message");
         FAIL() << "check_fail should have thrown an exception";
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Verify the exception was thrown
         std::string msg(e.msg());
@@ -639,10 +639,10 @@ XSIGMATEST(Exception, check_fail_basic)
     // Test that check_fail includes correct source location
     try
     {
-        xsigma::details::check_fail("my_function", "my_file.cpp", 123, "Location test");
+        quarisma::details::check_fail("my_function", "my_file.cpp", 123, "Location test");
         FAIL() << "check_fail should have thrown an exception";
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Verify source location is in the backtrace
         std::string backtrace(e.backtrace());
@@ -654,13 +654,13 @@ XSIGMATEST(Exception, check_fail_basic)
     // Test that exception category is set to GENERIC
     try
     {
-        xsigma::details::check_fail("func", "file.cpp", 1, "Category test");
+        quarisma::details::check_fail("func", "file.cpp", 1, "Category test");
         FAIL() << "check_fail should have thrown an exception";
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Verify category is GENERIC
-        ASSERT_EQ(e.category(), xsigma::exception_category::GENERIC);
+        ASSERT_EQ(e.category(), quarisma::exception_category::GENERIC);
     }
 
     // Test that check_fail never returns (marked as [[noreturn]])
@@ -668,10 +668,10 @@ XSIGMATEST(Exception, check_fail_basic)
 
     try
     {
-        xsigma::details::check_fail("func", "file.cpp", 1, "No return test");
+        quarisma::details::check_fail("func", "file.cpp", 1, "No return test");
         reached_after_call = true;  // Should never reach here
     }
-    catch (const xsigma::exception&)
+    catch (const quarisma::exception&)
     {
         // Exception was thrown, which is expected
     }
@@ -682,10 +682,10 @@ XSIGMATEST(Exception, check_fail_basic)
     // Test with empty message
     try
     {
-        xsigma::details::check_fail("func", "file.cpp", 1, "");
+        quarisma::details::check_fail("func", "file.cpp", 1, "");
         FAIL() << "check_fail should have thrown an exception";
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Should not crash with empty message
         ASSERT_TRUE(e.what() != nullptr);
@@ -694,10 +694,10 @@ XSIGMATEST(Exception, check_fail_basic)
     // Test with special characters in message
     try
     {
-        xsigma::details::check_fail("func", "file.cpp", 1, "Special chars: \n\t\r\\\"\'{}[]");
+        quarisma::details::check_fail("func", "file.cpp", 1, "Special chars: \n\t\r\\\"\'{}[]");
         FAIL() << "check_fail should have thrown an exception";
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Verify special characters are preserved
         std::string msg(e.msg());
@@ -713,19 +713,19 @@ XSIGMATEST(Exception, check_fail_basic)
 //        multiline messages, various line numbers
 // ============================================================================
 
-XSIGMATEST(Exception, check_fail_advanced)
+QUARISMATEST(Exception, check_fail_advanced)
 {
-    xsigma::set_exception_mode(xsigma::exception_mode::THROW);
+    quarisma::set_exception_mode(quarisma::exception_mode::THROW);
 
     // Test with very long message
     std::string long_msg(1000, 'x');
 
     try
     {
-        xsigma::details::check_fail("func", "file.cpp", 1, long_msg);
+        quarisma::details::check_fail("func", "file.cpp", 1, long_msg);
         FAIL() << "check_fail should have thrown an exception";
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Verify long message is handled correctly
         std::string msg(e.msg());
@@ -736,10 +736,10 @@ XSIGMATEST(Exception, check_fail_advanced)
     // Test with unicode characters in message
     try
     {
-        xsigma::details::check_fail("func", "file.cpp", 1, "Unicode: αβγδ 中文 🚀");
+        quarisma::details::check_fail("func", "file.cpp", 1, "Unicode: αβγδ 中文 🚀");
         FAIL() << "check_fail should have thrown an exception";
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Verify unicode is preserved
         std::string msg(e.msg());
@@ -749,10 +749,10 @@ XSIGMATEST(Exception, check_fail_advanced)
     // Test with formatted message
     try
     {
-        xsigma::details::check_fail("func", "file.cpp", 1, "Error: value = 42");
+        quarisma::details::check_fail("func", "file.cpp", 1, "Error: value = 42");
         FAIL() << "check_fail should have thrown an exception";
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Verify message is preserved
         std::string msg(e.msg());
@@ -762,10 +762,10 @@ XSIGMATEST(Exception, check_fail_advanced)
     // Test with multiline message
     try
     {
-        xsigma::details::check_fail("func", "file.cpp", 1, "Line 1\nLine 2\nLine 3");
+        quarisma::details::check_fail("func", "file.cpp", 1, "Line 1\nLine 2\nLine 3");
         FAIL() << "check_fail should have thrown an exception";
     }
-    catch (const xsigma::exception& e)
+    catch (const quarisma::exception& e)
     {
         // Verify multiline message is preserved
         std::string msg(e.msg());
@@ -781,10 +781,10 @@ XSIGMATEST(Exception, check_fail_advanced)
     {
         try
         {
-            xsigma::details::check_fail("func", "file.cpp", line, "Line number test");
+            quarisma::details::check_fail("func", "file.cpp", line, "Line number test");
             FAIL() << "check_fail should have thrown an exception";
         }
-        catch (const xsigma::exception& e)
+        catch (const quarisma::exception& e)
         {
             // Verify exception was thrown
             ASSERT_TRUE(e.what() != nullptr);

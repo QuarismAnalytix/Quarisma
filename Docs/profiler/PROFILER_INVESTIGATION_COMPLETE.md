@@ -1,4 +1,4 @@
-# XSigma Profiler Investigation: Complete Summary
+# Quarisma Profiler Investigation: Complete Summary
 
 ## Investigation Scope
 ✅ Analyzed `Library/Core/profiler/` (excluding `native/` subfolder)
@@ -55,14 +55,14 @@ RecordFunction System          profiler_session System
 ### Current (Incomplete)
 ```cpp
 // Option 1: Use low-level RecordFunction
-xsigma::RecordFunction guard(xsigma::RecordScope::USER_SCOPE);
+quarisma::RecordFunction guard(quarisma::RecordScope::USER_SCOPE);
 guard.before("my_function");
 // ... code ...
 guard.end();
 
 // Option 2: Use macro (doesn't use RecordFunction)
 {
-    XSIGMA_PROFILE_SCOPE("my_operation");
+    QUARISMA_PROFILE_SCOPE("my_operation");
     // ... code ...
 }
 ```
@@ -71,14 +71,14 @@ guard.end();
 ```cpp
 // Simple, high-level API
 {
-    auto event = xsigma::record_function("my_function");
+    auto event = quarisma::record_function("my_function");
     // ... code ...
     // Event automatically captured and stored
 }
 
 // Or with macro
 {
-    XSIGMA_RECORD_FUNCTION("my_operation");
+    QUARISMA_RECORD_FUNCTION("my_operation");
     // ... code ...
 }
 ```
@@ -167,7 +167,7 @@ Report Generation (existing)
 
 ## Conclusion
 
-The XSigma profiler has **strong backend infrastructure** but lacks the **C++ API layer** for practical code instrumentation. The investigation identified **7 missing components** and **2 files requiring modification** to bridge the gap between low-level callbacks and high-level profiling.
+The Quarisma profiler has **strong backend infrastructure** but lacks the **C++ API layer** for practical code instrumentation. The investigation identified **7 missing components** and **2 files requiring modification** to bridge the gap between low-level callbacks and high-level profiling.
 
 **Estimated Implementation Effort**: 2-3 weeks for full implementation with testing
 

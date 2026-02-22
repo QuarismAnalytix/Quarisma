@@ -4,7 +4,7 @@
 #include <cctype>
 #include <regex>
 
-namespace xsigma
+namespace quarisma
 {
 namespace security
 {
@@ -101,4 +101,4 @@ bool input_validator::has_allowed_extension(
 }
 
 }  // namespace security
-}  // namespace xsigma
+}  // namespace quarisma

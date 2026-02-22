@@ -2,7 +2,7 @@
 
 ## Overview
 
-IncrediBuild integration has been successfully implemented as an optional Windows-only feature for the XSigma project. All changes are non-breaking and default to OFF.
+IncrediBuild integration has been successfully implemented as an optional Windows-only feature for the Quarisma project. All changes are non-breaking and default to OFF.
 
 ---
 
@@ -32,7 +32,7 @@ IncrediBuild integration has been successfully implemented as an optional Window
 3. **Scripts/setup.py**
    - Added "incredibuild" to `__key` list
    - Added description to `__description` list
-   - Added CMake flag mapping: `"incredibuild": "XSIGMA_ENABLE_INCREDIBUILD"`
+   - Added CMake flag mapping: `"incredibuild": "QUARISMA_ENABLE_INCREDIBUILD"`
    - Added platform validation in `__validate_flags()`
    - Added conflict detection with sanitizers
    - Auto-disables sanitizers on Windows when IncrediBuild is enabled
@@ -89,7 +89,7 @@ IncrediBuild integration has been successfully implemented as an optional Window
 python Scripts/setup.py config.build.incredibuild
 
 # Using CMake directly
-cmake -B build -S . -G Ninja -DXSIGMA_ENABLE_INCREDIBUILD=ON
+cmake -B build -S . -G Ninja -DQUARISMA_ENABLE_INCREDIBUILD=ON
 ```
 
 ### Disable IncrediBuild (Default)
@@ -99,7 +99,7 @@ cmake -B build -S . -G Ninja -DXSIGMA_ENABLE_INCREDIBUILD=ON
 python Scripts/setup.py config.build
 
 # Using CMake directly
-cmake -B build -S . -G Ninja -DXSIGMA_ENABLE_INCREDIBUILD=OFF
+cmake -B build -S . -G Ninja -DQUARISMA_ENABLE_INCREDIBUILD=OFF
 ```
 
 ---
@@ -112,7 +112,7 @@ cmake -B build -S . -G Ninja -DXSIGMA_ENABLE_INCREDIBUILD=OFF
 
 ### ✅ Flag Recognition
 - `incredibuild` flag recognized by setup.py
-- Correctly mapped to `XSIGMA_ENABLE_INCREDIBUILD`
+- Correctly mapped to `QUARISMA_ENABLE_INCREDIBUILD`
 
 ### ✅ Platform Validation
 - Windows: Flag enabled correctly
@@ -156,7 +156,7 @@ You can download IncrediBuild from: https://www.incredibuild.com/
 ```
 CMake Error: IncrediBuild is only supported on Windows.
 Current platform: Linux
-Please disable XSIGMA_ENABLE_INCREDIBUILD on non-Windows platforms.
+Please disable QUARISMA_ENABLE_INCREDIBUILD on non-Windows platforms.
 ```
 
 ---
@@ -189,7 +189,7 @@ Please disable XSIGMA_ENABLE_INCREDIBUILD on non-Windows platforms.
 
 ## Code Quality
 
-✅ **Follows XSigma Standards**
+✅ **Follows Quarisma Standards**
 - snake_case naming conventions
 - Proper error handling (no exceptions)
 - Comprehensive comments and documentation
@@ -205,7 +205,7 @@ IncrediBuild integration is complete and ready for use. The implementation:
 - ✅ Provides proper error handling
 - ✅ Validates platform compatibility
 - ✅ Detects and prevents conflicts
-- ✅ Follows XSigma coding standards
+- ✅ Follows Quarisma coding standards
 - ✅ Includes comprehensive helper functions
 - ✅ Has been thoroughly tested
 

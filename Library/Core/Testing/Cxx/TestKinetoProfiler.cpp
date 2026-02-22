@@ -1,5 +1,5 @@
 /*
- * XSigma Kineto Profiler Tests
+ * Quarisma Kineto Profiler Tests
  *
  * Comprehensive test suite for the Kineto profiler wrapper.
  * Tests cover happy paths, edge cases, boundary conditions, and error handling.
@@ -14,17 +14,17 @@
 #include <unordered_set>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "profiler/common/record_function.h"
 #include "profiler/kineto/profiler_kineto.h"
 
 #if 0
-// NOTE: The following tests were written for a xsigma::kineto_profiler API that does not exist.
-// The actual Kineto profiler API is in xsigma::autograd::profiler namespace with functions like
+// NOTE: The following tests were written for a quarisma::kineto_profiler API that does not exist.
+// The actual Kineto profiler API is in quarisma::autograd::profiler namespace with functions like
 // enableProfiler(), disableProfiler(), and prepareProfiler().
 // These tests are disabled until the API is implemented or tests are rewritten to use the actual API.
 
-using namespace xsigma::kineto_profiler;
+using namespace quarisma::kineto_profiler;
 
 // ============================================================================
 // Test Fixtures
@@ -49,7 +49,7 @@ protected:
 // Factory Method Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, kineto_create_returns_valid_profiler)
+QUARISMATEST(Profiler, kineto_create_returns_valid_profiler)
 {
     auto profiler = kineto_profiler::create();
     // Profiler may be nullptr if Kineto is not available
@@ -60,7 +60,7 @@ XSIGMATEST(Profiler, kineto_create_returns_valid_profiler)
     }
 }
 
-XSIGMATEST(Profiler, kineto_create_with_config_returns_valid_profiler)
+QUARISMATEST(Profiler, kineto_create_with_config_returns_valid_profiler)
 {
     profiling_config config;
     config.enable_cpu_tracing = true;
@@ -75,7 +75,7 @@ XSIGMATEST(Profiler, kineto_create_with_config_returns_valid_profiler)
     }
 }
 
-XSIGMATEST(Profiler, kineto_create_with_empty_config)
+QUARISMATEST(Profiler, kineto_create_with_empty_config)
 {
     profiling_config config;
     auto             profiler = kineto_profiler::create_with_config(config);
@@ -89,7 +89,7 @@ XSIGMATEST(Profiler, kineto_create_with_empty_config)
 // Profiling Control Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, kineto_profiler_not_profiling_initially)
+QUARISMATEST(Profiler, kineto_profiler_not_profiling_initially)
 {
     auto profiler = kineto_profiler::create();
     if (profiler)
@@ -98,7 +98,7 @@ XSIGMATEST(Profiler, kineto_profiler_not_profiling_initially)
     }
 }
 
-XSIGMATEST(Profiler, kineto_start_profiling_succeeds)
+QUARISMATEST(Profiler, kineto_start_profiling_succeeds)
 {
     auto profiler = kineto_profiler::create();
     if (profiler)
@@ -113,7 +113,7 @@ XSIGMATEST(Profiler, kineto_start_profiling_succeeds)
     }
 }
 
-XSIGMATEST(Profiler, kineto_stop_profiling_returns_result)
+QUARISMATEST(Profiler, kineto_stop_profiling_returns_result)
 {
     auto profiler = kineto_profiler::create();
     if (profiler)
@@ -128,7 +128,7 @@ XSIGMATEST(Profiler, kineto_stop_profiling_returns_result)
     }
 }
 
-XSIGMATEST(Profiler, kineto_stop_profiling_without_start)
+QUARISMATEST(Profiler, kineto_stop_profiling_without_start)
 {
     auto profiler = kineto_profiler::create();
     if (profiler)
@@ -139,7 +139,7 @@ XSIGMATEST(Profiler, kineto_stop_profiling_without_start)
     }
 }
 
-XSIGMATEST(Profiler, kineto_cannot_start_profiling_twice)
+QUARISMATEST(Profiler, kineto_cannot_start_profiling_twice)
 {
     auto profiler = kineto_profiler::create();
     if (profiler)
@@ -157,7 +157,7 @@ XSIGMATEST(Profiler, kineto_cannot_start_profiling_twice)
 // Configuration Tests
 // ============================================================================
 
-/*XSIGMATEST(Profiler, kineto_get_config_returns_valid_config)
+/*QUARISMATEST(Profiler, kineto_get_config_returns_valid_config)
 {
     profiling_config config;
     config.trace_name = "custom_trace";
@@ -172,7 +172,7 @@ XSIGMATEST(Profiler, kineto_cannot_start_profiling_twice)
     }
 }*/
 
-XSIGMATEST(Profiler, kineto_set_config_succeeds_when_not_profiling)
+QUARISMATEST(Profiler, kineto_set_config_succeeds_when_not_profiling)
 {
     auto profiler = kineto_profiler::create();
     if (profiler)
@@ -186,7 +186,7 @@ XSIGMATEST(Profiler, kineto_set_config_succeeds_when_not_profiling)
     }
 }
 
-XSIGMATEST(Profiler, kineto_set_config_fails_when_profiling)
+QUARISMATEST(Profiler, kineto_set_config_fails_when_profiling)
 {
     auto profiler = kineto_profiler::create();
     if (profiler)
@@ -201,7 +201,7 @@ XSIGMATEST(Profiler, kineto_set_config_fails_when_profiling)
     }
 }
 
-XSIGMATEST(Profiler, kineto_config_with_zero_max_activities)
+QUARISMATEST(Profiler, kineto_config_with_zero_max_activities)
 {
     profiling_config config;
     config.max_activities = 0;  // Unlimited
@@ -213,7 +213,7 @@ XSIGMATEST(Profiler, kineto_config_with_zero_max_activities)
     }
 }
 
-XSIGMATEST(Profiler, kineto_config_with_positive_max_activities)
+QUARISMATEST(Profiler, kineto_config_with_positive_max_activities)
 {
     profiling_config config;
     config.max_activities = 1000;
@@ -229,21 +229,21 @@ XSIGMATEST(Profiler, kineto_config_with_positive_max_activities)
 // Initialization Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, kineto_initialize_cpu_only)
+QUARISMATEST(Profiler, kineto_initialize_cpu_only)
 {
     bool result = kineto_profiler::initialize(true);
     // Result depends on Kineto availability
     EXPECT_TRUE(result || !result);  // Always true - just checking it doesn't crash
 }
 
-XSIGMATEST(Profiler, kineto_initialize_with_gpu)
+QUARISMATEST(Profiler, kineto_initialize_with_gpu)
 {
     bool result = kineto_profiler::initialize(false);
     // Result depends on Kineto availability
     EXPECT_TRUE(result || !result);  // Always true - just checking it doesn't crash
 }
 
-XSIGMATEST(Profiler, kineto_is_initialized_after_create)
+QUARISMATEST(Profiler, kineto_is_initialized_after_create)
 {
     auto profiler = kineto_profiler::create();
     // If profiler was created, Kineto should be initialized
@@ -257,13 +257,13 @@ XSIGMATEST(Profiler, kineto_is_initialized_after_create)
 // Edge Cases and Boundary Conditions
 // ============================================================================
 
-XSIGMATEST(Profiler, kineto_null_profiler_pointer)
+QUARISMATEST(Profiler, kineto_null_profiler_pointer)
 {
     std::unique_ptr<kineto_profiler> profiler = nullptr;
     EXPECT_EQ(profiler.get(), nullptr);
 }
 
-XSIGMATEST(Profiler, kineto_profiler_move_semantics)
+QUARISMATEST(Profiler, kineto_profiler_move_semantics)
 {
     auto profiler1 = kineto_profiler::create();
     if (profiler1)
@@ -274,7 +274,7 @@ XSIGMATEST(Profiler, kineto_profiler_move_semantics)
     }
 }
 
-XSIGMATEST(Profiler, kineto_config_with_empty_strings)
+QUARISMATEST(Profiler, kineto_config_with_empty_strings)
 {
     profiling_config config;
     config.output_dir = "";
@@ -288,7 +288,7 @@ XSIGMATEST(Profiler, kineto_config_with_empty_strings)
     }
 }
 
-XSIGMATEST(Profiler, kineto_config_with_special_characters)
+QUARISMATEST(Profiler, kineto_config_with_special_characters)
 {
     profiling_config config;
     config.output_dir = "/tmp/profiles_@#$%";
@@ -302,7 +302,7 @@ XSIGMATEST(Profiler, kineto_config_with_special_characters)
     }
 }
 
-XSIGMATEST(Profiler, kineto_profiler_destructor_stops_profiling)
+QUARISMATEST(Profiler, kineto_profiler_destructor_stops_profiling)
 {
     {
         auto profiler = kineto_profiler::create();
@@ -318,7 +318,7 @@ XSIGMATEST(Profiler, kineto_profiler_destructor_stops_profiling)
 }
 #endif  // Disabled tests for non-existent kineto_profiler API
 
-XSIGMATEST(RecordDebugHandles, Basic)
+QUARISMATEST(RecordDebugHandles, Basic)
 {
     constexpr int64_t kMyFunctionHandle   = 42;
     constexpr int64_t kPrepareHandle      = 100;
@@ -327,7 +327,7 @@ XSIGMATEST(RecordDebugHandles, Basic)
     constexpr int64_t kFinalizeHandle     = 103;
     constexpr int64_t kDefaultDebugHandle = -1;
 
-    const auto no_inputs = xsigma::array_ref<const xsigma::IValue>{};
+    const auto no_inputs = quarisma::array_ref<const quarisma::IValue>{};
 
     const auto now_in_us = []()
     {
@@ -346,11 +346,11 @@ XSIGMATEST(RecordDebugHandles, Basic)
         {
             end_us = start_us + 1;
         }
-        xsigma::autograd::profiler::reportBackendEventToActiveKinetoProfiler(
+        quarisma::autograd::profiler::reportBackendEventToActiveKinetoProfiler(
             start_us,
             end_us,
             handle,
-            xsigma::RecordScope::LITE_INTERPRETER,
+            quarisma::RecordScope::LITE_INTERPRETER,
             name,
             "record_debug_handles_test");
     };
@@ -378,18 +378,18 @@ XSIGMATEST(RecordDebugHandles, Basic)
         return sum;
     };
 
-    const std::set<xsigma::autograd::profiler::ActivityType> activities(
-        {xsigma::autograd::profiler::ActivityType::CPU});
+    const std::set<quarisma::autograd::profiler::ActivityType> activities(
+        {quarisma::autograd::profiler::ActivityType::CPU});
 
-    const auto profiler_config = xsigma::autograd::profiler::ProfilerConfig(
-        xsigma::autograd::profiler::ProfilerState::KINETO, false, false, true, true);
-    xsigma::autograd::profiler::prepareProfiler(profiler_config, activities);
+    const auto profiler_config = quarisma::autograd::profiler::ProfilerConfig(
+        quarisma::autograd::profiler::ProfilerState::KINETO, false, false, true, true);
+    quarisma::autograd::profiler::prepareProfiler(profiler_config, activities);
 
-    const std::unordered_set<xsigma::RecordScope> scopes = {xsigma::RecordScope::LITE_INTERPRETER};
-    xsigma::autograd::profiler::enableProfiler(profiler_config, activities, scopes);
-    ASSERT_TRUE(xsigma::autograd::profiler::isProfilerEnabledInMainThread());
-    ASSERT_TRUE(xsigma::hasCallbacks()) << "RecordFunction callbacks not registered for profiler";
-    xsigma::RecordFunctionGuard record_function_guard(/*is_enabled=*/true);
+    const std::unordered_set<quarisma::RecordScope> scopes = {quarisma::RecordScope::LITE_INTERPRETER};
+    quarisma::autograd::profiler::enableProfiler(profiler_config, activities, scopes);
+    ASSERT_TRUE(quarisma::autograd::profiler::isProfilerEnabledInMainThread());
+    ASSERT_TRUE(quarisma::hasCallbacks()) << "RecordFunction callbacks not registered for profiler";
+    quarisma::RecordFunctionGuard record_function_guard(/*is_enabled=*/true);
     record_step(
         "my_function",
         kMyFunctionHandle,
@@ -415,7 +415,7 @@ XSIGMATEST(RecordDebugHandles, Basic)
             record_step("finalize_results", kFinalizeHandle, [&]() { (void)z; });
         });
 
-    auto        profiler_results_ptr = xsigma::autograd::profiler::disableProfiler();
+    auto        profiler_results_ptr = quarisma::autograd::profiler::disableProfiler();
     const auto& kineto_events        = profiler_results_ptr->events();
 
     if (kineto_events.empty())
@@ -481,7 +481,7 @@ XSIGMATEST(RecordDebugHandles, Basic)
 // Thread Safety Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, kineto_concurrent_is_profiling_checks)
+QUARISMATEST(Profiler, kineto_concurrent_is_profiling_checks)
 {
     auto profiler = kineto_profiler::create();
     if (profiler)
@@ -510,7 +510,7 @@ XSIGMATEST(Profiler, kineto_concurrent_is_profiling_checks)
     }
 }
 
-XSIGMATEST(Profiler, kineto_concurrent_config_access)
+QUARISMATEST(Profiler, kineto_concurrent_config_access)
 {
     auto profiler = kineto_profiler::create();
     if (profiler)

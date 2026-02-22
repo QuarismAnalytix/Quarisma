@@ -6,7 +6,7 @@
 #include <torch/csrc/jit/tensorexpr/ir_simplifier.h>
 #include <torch/csrc/jit/tensorexpr/ir_visitor.h>
 #include <torch/csrc/jit/tensorexpr/stmt.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <iostream>
 #include <utility>
@@ -186,7 +186,7 @@ std::vector<ExprPtr> getBoundExtents(const std::vector<TensorAccessBoundsInfo>& 
     // extents of a union of all bounds.
     for (const TensorAccessBoundsInfo& p : infos)
     {
-        for (const auto i : xsigma::irange(p.start.size()))
+        for (const auto i : quarisma::irange(p.start.size()))
         {
             if (starts.size() <= i)
             {

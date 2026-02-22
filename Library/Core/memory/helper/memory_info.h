@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,13 +18,13 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  * - Separated compression functionality to dedicated module
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -34,14 +34,14 @@
 
 #include "common/macros.h"
 
-namespace xsigma
+namespace quarisma
 {
 /**
  * @brief Platform abstraction layer for memory management and system information.
  *
  * The port namespace provides cross-platform abstractions for memory allocation,
  * system information retrieval, and platform-specific optimizations. It serves
- * as the foundation for higher-level memory management systems in XSigma.
+ * as the foundation for higher-level memory management systems in Quarisma.
  *
  * **Key Features**:
  * - Cross-platform aligned memory allocation
@@ -134,7 +134,7 @@ struct memory_bandwidth_info
  * }
  * ```
  */
-XSIGMA_API memory_info GetMemoryInfo();
+QUARISMA_API memory_info GetMemoryInfo();
 
 /**
  * @brief Retrieves host memory bandwidth utilization information.
@@ -157,7 +157,7 @@ XSIGMA_API memory_info GetMemoryInfo();
  *
  * **Limitations**: Not all platforms provide bandwidth information
  */
-XSIGMA_API memory_bandwidth_info GetMemoryBandwidthInfo();
+QUARISMA_API memory_bandwidth_info GetMemoryBandwidthInfo();
 
 /**
  * @brief Returns amount of available RAM in bytes.
@@ -186,10 +186,10 @@ XSIGMA_API memory_bandwidth_info GetMemoryBandwidthInfo();
  * }
  * ```
  */
-XSIGMA_NODISCARD inline int64_t available_ram() noexcept
+QUARISMA_NODISCARD inline int64_t available_ram() noexcept
 {
     return GetMemoryInfo().free;
 }
 
 }  // namespace port
-}  // namespace xsigma
+}  // namespace quarisma

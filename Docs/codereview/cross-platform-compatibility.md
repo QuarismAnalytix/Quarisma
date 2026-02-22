@@ -2,7 +2,7 @@
 
 **Document Version:** 1.0  
 **Date:** 2025-10-28  
-**Scope:** XSigma Linter Infrastructure  
+**Scope:** Quarisma Linter Infrastructure  
 
 ---
 
@@ -18,7 +18,7 @@
 
 ## Overview
 
-The XSigma linting infrastructure demonstrates **good cross-platform awareness** with several adapters implementing Windows-specific handling. However, some components still rely on Unix-specific tools.
+The Quarisma linting infrastructure demonstrates **good cross-platform awareness** with several adapters implementing Windows-specific handling. However, some components still rely on Unix-specific tools.
 
 ### Compatibility Score by Platform
 
@@ -132,9 +132,9 @@ binary = os.path.normpath(args.binary) if IS_WINDOWS else args.binary
 from pathlib import Path
 
 def get_config_path() -> Path:
-    """Get the path to the XSigma linter configuration file."""
+    """Get the path to the Quarisma linter configuration file."""
     config_dir = Path(__file__).parent.absolute()
-    config_file = config_dir / "xsigma_linter_config.yaml"
+    config_file = config_dir / "quarisma_linter_config.yaml"
     return config_file
 
 def get_repo_root() -> Path:

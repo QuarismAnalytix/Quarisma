@@ -531,8 +531,8 @@ def _args_kwargs_to_normalized_args_kwargs(
     Args:
 
         sig (inspect.Signature): Signature object for the target
-        args (Tuple): Arguments that appear xsigma the callsite for `target`
-        kwargs (Dict): Keyword arguments that appear xsigma the callsite for `target`
+        args (Tuple): Arguments that appear quarisma the callsite for `target`
+        kwargs (Dict): Keyword arguments that appear quarisma the callsite for `target`
         normalize_to_only_use_kwargs (bool): Whether to normalize to only use kwargs.
 
     Returns:
@@ -551,7 +551,7 @@ def _args_kwargs_to_normalized_args_kwargs(
         # Add an exception for one signature, which is common for random/uniform, i.e.:
         # Tensor(a!) self, float from=0, float to=1, *, Generator? generator=None
         # `from` is Python keyword and as such functions with that signature should have
-        # positional-only args, but xsigma the same time they could be dispatched as kwargs
+        # positional-only args, but quarisma the same time they could be dispatched as kwargs
         if list(sig.parameters.keys()) != ["input", "from", "to", "generator"]:
             return None
 

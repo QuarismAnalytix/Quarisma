@@ -2448,7 +2448,7 @@ class Scan(Loops):
             ) and (len(dtypes) == 1)
             if not supports_split:
                 if can_fallback_to_aten:
-                    # Fallback to XSigma
+                    # Fallback to Quarisma
                     return [None] * len(dtypes)
                 else:
                     num_splits = 1
@@ -4524,7 +4524,7 @@ class ComputedBuffer(OperationBuffer):
     def get_free_symbol_uses(
         self, unbacked_only: bool = False
     ) -> OrderedSet[sympy.Symbol]:
-        # Ordinarily, we'd like to just peek xsigma the arguments list,
+        # Ordinarily, we'd like to just peek quarisma the arguments list,
         # but ComputedBuffers have no argument list.
         #
         # Morally, this logic needs to be synchronized with the
@@ -4572,7 +4572,7 @@ class ComputedBuffer(OperationBuffer):
         """
         If our layout is still flexible, try to determine the stride order based on stride orders of reads.
 
-        TODO(jansel): A better algorithm here would look xsigma downstream consumers of this
+        TODO(jansel): A better algorithm here would look quarisma downstream consumers of this
                       value and try to do global graph-level layout optimization.
                       This is also something just begging to be autotuned.
         """
@@ -5695,15 +5695,15 @@ class ExternKernel(InputsKernel):
             # Try to construct cpp_kernel_name from op_overload
             if kernel.namespace == "aten":
                 # Calling with the default kernel name can lead to ambiguous behavior like the following example.
-                # repeat_interleave(const xsigma::Tensor & repeats, std::optional<int64_t> output_size=std::nullopt)
-                # repeat_interleave(const xsigma::Tensor & self, int64_t repeats,
+                # repeat_interleave(const quarisma::Tensor & repeats, std::optional<int64_t> output_size=std::nullopt)
+                # repeat_interleave(const quarisma::Tensor & self, int64_t repeats,
                 #       std::optional<int64_t> dim=std::nullopt, std::optional<int64_t> output_size=std::nullopt)
                 opname = (
                     kernel.__name__.split(".")[0]
                     if kernel._overloadname == "default"
                     else kernel.__name__.replace(".", "_")
                 )
-                self.cpp_kernel_name = f"xsigma::_ops::{opname}::call"
+                self.cpp_kernel_name = f"quarisma::_ops::{opname}::call"
             else:
                 self.cpp_kernel_name = kernel._schema.name
 
@@ -6217,7 +6217,7 @@ class ExternKernel(InputsKernel):
         # Discussed with Sherlock offline and we decided to allow serializing
         # default args into the C++ wrapper code for now. We will refine this
         # part if we see real FC requirement. More details related to FC
-        # can be found xsigma:
+        # can be found quarisma:
         # https://docs.google.com/document/d/1FzWm-sHYwmRi3x_g036kOxd99KaYquUsA-L5JwOn8ys/edit?usp=sharing
         assert isinstance(args, Sequence), type(args)
         if not isinstance(args, list):
@@ -6510,10 +6510,10 @@ class RandomSeeds(ExternKernelOut):
             inputs=[],
             constant_args=[limits.min, limits.max, [count]],
             python_kernel_name="aten.randint.low_out",
-            # FIXME: Ideally we should only use xsigma::_ops::randint_low_out::call here,
-            # but the signature is different from is xsigma::randint_out. Again,
+            # FIXME: Ideally we should only use quarisma::_ops::randint_low_out::call here,
+            # but the signature is different from is quarisma::randint_out. Again,
             # we can simplify the code when only keeping an ABI-compatible version.
-            cpp_kernel_name="xsigma::_ops::randint_low_out::call",
+            cpp_kernel_name="quarisma::_ops::randint_low_out::call",
             op_overload=aten.randint.low_out,
         )
 
@@ -6855,7 +6855,7 @@ class UserDefinedTritonKernel(ExternKernel):
                 arg_types.append(type(arg))
             elif name in constexpr_names:
                 # insert a dummy value for constexpr args of unsupported type
-                # constexprs will end up getting baked into the kernel xsigma compile time
+                # constexprs will end up getting baked into the kernel quarisma compile time
                 args.append(-1)
                 arg_types.append(int)
             elif arg is None:
@@ -7297,7 +7297,7 @@ class DynamicSelectStorageOffset(ExternKernel):
     select operation is unbacked, the actual index calculation is ambiguous for negative indices
     (index + size) versus non-negative indices (just index). To resolve this, we allocate an unbacked
     SymInt to represent the storage offset and decompose the select operation into a call to as_strided,
-    computing the storage offset xsigma runtime with this node.
+    computing the storage offset quarisma runtime with this node.
     """
 
     def get_reads(self) -> OrderedSet[Dep]:
@@ -7716,7 +7716,7 @@ class FallbackKernel(ExternKernelAlloc):
         We export the ExternFallbackNodes (for custom ops) into a serialized file
         and run it with a host side proxy executor to address the ABI problem
         This is currently only implemented for fbcode. Eventually, we will also make this work for OSS.
-        Detailed design doc can be found xsigma
+        Detailed design doc can be found quarisma
         https://docs.google.com/document/d/1wC4DOZFaYym2t1Esz0X5yxlLI3RDnSiyRbUus3bkJ64/edit?usp=sharing
         """
         log.debug(
@@ -8896,7 +8896,7 @@ class WhileLoop(ExternKernel):
             assert len(p.get_size()) == 0, p
 
         assert len(all_inputs) > 0, (
-            "torch.while_loop is assumed to have xsigma least one operand."
+            "torch.while_loop is assumed to have quarisma least one operand."
         )
 
         device = all_inputs[0].get_device()
@@ -8936,7 +8936,7 @@ class WhileLoop(ExternKernel):
             additional_inputs=additional_inputs_,
             cond_subgraph=cond_fn,
             body_subgraph=body_fn,
-            # asserted above that there is xsigma least one operand
+            # asserted above that there is quarisma least one operand
             layout=MultiOutputLayout(device=device),
             unbacked_bindings=unbacked_bindings,
             stack_output=stack_output,

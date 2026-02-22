@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,19 +13,19 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
-// Test that xsigmaLogger::GetThreadName is unaffected by concurrent accesses
-// and usage of xsigmaLogger::Init()
+// Test that quarismaLogger::GetThreadName is unaffected by concurrent accesses
+// and usage of quarismaLogger::Init()
 
 #include <atomic>
 #include <string>
 #include <thread>
 
 #include "logging/logger.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
 // Control the order of operations between the threads
 std::atomic_bool wait1;
@@ -36,36 +36,36 @@ void Thread1()
     const std::string threaName = "T1";
     while (!wait1.load()) {}
 
-    xsigma::logger::SetThreadName(threaName);
+    quarisma::logger::SetThreadName(threaName);
 
     wait2.store(true);
 
-    if (xsigma::logger::GetThreadName() != threaName)
+    if (quarisma::logger::GetThreadName() != threaName)
     {
-        XSIGMA_LOG(ERROR, "Name mismatch !");
+        QUARISMA_LOG(ERROR, "Name mismatch !");
     }
 }
 
 void Thread2()
 {
     const std::string threaName = "T2";
-    xsigma::logger::SetThreadName(threaName);
+    quarisma::logger::SetThreadName(threaName);
 
     wait1.store(true);
     while (!wait2.load()) {}
 
-    xsigma::logger::Init();
+    quarisma::logger::Init();
 
-    if (xsigma::logger::GetThreadName() != threaName)
+    if (quarisma::logger::GetThreadName() != threaName)
     {
-        XSIGMA_LOG(ERROR, "Name mismatch !");
+        QUARISMA_LOG(ERROR, "Name mismatch !");
     }
 }
 
-XSIGMATEST(Logger, thread_name)
+QUARISMATEST(Logger, thread_name)
 {
-    XSIGMA_UNUSED int    arg     = 0;
-    XSIGMA_UNUSED char** arg_str = nullptr;
+    QUARISMA_UNUSED int    arg     = 0;
+    QUARISMA_UNUSED char** arg_str = nullptr;
 
     wait1.store(false);
     wait2.store(false);

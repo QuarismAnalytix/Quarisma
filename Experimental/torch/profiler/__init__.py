@@ -4,7 +4,7 @@ Profiler's context manager API can be used to better understand what model opera
 examine their input shapes and stack traces, study device kernel activity and visualize the execution trace.
 
 .. note::
-    An earlier version of the API in :mod:`xsigma.autograd` module is considered legacy and will be deprecated.
+    An earlier version of the API in :mod:`quarisma.autograd` module is considered legacy and will be deprecated.
 
 """
 
@@ -12,11 +12,11 @@ import os
 from typing import Any
 from typing_extensions import TypeVarTuple, Unpack
 
-from xsigma._C._autograd import _supported_activities, DeviceType, kineto_available
-from xsigma._C._profiler import _ExperimentalConfig, ProfilerActivity, RecordScope
-from xsigma._environment import is_fbcode
-from xsigma.autograd.profiler import KinetoStepTracker, record_function
-from xsigma.optim.optimizer import Optimizer, register_optimizer_step_post_hook
+from quarisma._C._autograd import _supported_activities, DeviceType, kineto_available
+from quarisma._C._profiler import _ExperimentalConfig, ProfilerActivity, RecordScope
+from quarisma._environment import is_fbcode
+from quarisma.autograd.profiler import KinetoStepTracker, record_function
+from quarisma.optim.optimizer import Optimizer, register_optimizer_step_post_hook
 
 from .profiler import (
     _KinetoProfile,

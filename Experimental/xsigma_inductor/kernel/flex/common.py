@@ -236,7 +236,7 @@ def construct_strides(
 
 
 def infer_dense_strides(size: Sequence[int], orig_strides: Sequence[int]):
-    """This is a mirror of the same function in aten/src/XSigma/ExpandUtils.cpp
+    """This is a mirror of the same function in aten/src/Quarisma/ExpandUtils.cpp
 
     Args:
         size: The size of the output tensor

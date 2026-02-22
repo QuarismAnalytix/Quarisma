@@ -121,7 +121,7 @@ class _LoweringSerializer:
     """
 
     # A full implementation would make sure that all lowerings are copied over
-    # (or xsigma least detected and raise a bypass when a non-standard lowering is
+    # (or quarisma least detected and raise a bypass when a non-standard lowering is
     # used). For now we just handle tests by looking for lowerings that were
     # overridden with a forced fallback.
     fallbacks: OrderedSet[str]

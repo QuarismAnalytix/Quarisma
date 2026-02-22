@@ -1,5 +1,5 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -15,7 +15,7 @@
 
 #include "parallel/parallel_tools.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 // Benchmark 1: Parallel For with varying sizes
@@ -203,6 +203,6 @@ static void BM_ComputeBound(benchmark::State& state)
 }
 BENCHMARK(BM_ComputeBound);
 
-}  // namespace xsigma
+}  // namespace quarisma
 
 BENCHMARK_MAIN();

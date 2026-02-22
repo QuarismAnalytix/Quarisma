@@ -145,7 +145,7 @@ non-contiguous layout, received stride: {stride} and shape: {shape}"
     # Based off of
     # https://github.com/NVIDIA/cutlass/blob/df18f5e4f5de76bed8be1de8e4c245f2f5ec3020/python/cutlass/epilogue/epilogue.py#L117
     # This is modified to enable directly passing the source code of the epilogue vs getting it from a bona-fide python function
-    # The reason for this is that inspect.getsource does not work with functions defined xsigma runtime via exec/eval
+    # The reason for this is that inspect.getsource does not work with functions defined quarisma runtime via exec/eval
     def _trace(
         fn_src: str,
         example_tensors: dict[str, CutlassTensor],

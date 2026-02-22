@@ -1,6 +1,6 @@
 #pragma once
 
-namespace xsigma
+namespace quarisma
 {
 //inline with loguru's verbosity levels
 enum class logger_verbosity_enum : int
@@ -14,4 +14,4 @@ enum class logger_verbosity_enum : int
     VERBOSITY_TRACE   = +9,
     VERBOSITY_MAX     = +9,
 };
-}  // namespace xsigma
+}  // namespace quarisma

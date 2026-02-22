@@ -1,13 +1,13 @@
 
 #pragma once
 
-#include <XSigma/ArrayRef.h>
-#include <XSigma/FunctionalStorageImpl.h>
-#include <XSigma/core/IListRef.h>
-#include <XSigma/core/List.h>
-#include <XSigma/core/boxing/BoxedKernel.h>
-#include <XSigma/core/boxing/impl/boxing.h>
-#include <XSigma/core/dispatch/Dispatcher.h>
+#include <Quarisma/ArrayRef.h>
+#include <Quarisma/FunctionalStorageImpl.h>
+#include <Quarisma/core/IListRef.h>
+#include <Quarisma/core/List.h>
+#include <Quarisma/core/boxing/BoxedKernel.h>
+#include <Quarisma/core/boxing/impl/boxing.h>
+#include <Quarisma/core/dispatch/Dispatcher.h>
 #include <c10/core/DispatchKey.h>
 
 namespace at

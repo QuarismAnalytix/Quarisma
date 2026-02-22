@@ -1,16 +1,16 @@
-#include <XSigma/code_template.h>
-#include <XSigma/core/op_registration/op_registration.h>
-#include <XSigma/record_function.h>
+#include <Quarisma/code_template.h>
+#include <Quarisma/core/op_registration/op_registration.h>
+#include <Quarisma/record_function.h>
 #include <torch/csrc/autograd/function.h>
 #include <torch/csrc/autograd/profiler_legacy.h>
 #include <torch/csrc/jit/frontend/tracer.h>
 #include <torch/csrc/jit/runtime/interpreter.h>
 #include <torch/csrc/jit/runtime/operator.h>
 #include <torch/library.h>
-#include <xsigma/core/Allocator.h>
-#include <xsigma/profiler/base/thread_local_debug_info.h>
-#include <xsigma/util/ApproximateClock.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/core/Allocator.h>
+#include <quarisma/profiler/base/thread_local_debug_info.h>
+#include <quarisma/util/ApproximateClock.h>
+#include <quarisma/util/irange.h>
 
 #include <fstream>
 #include <iostream>
@@ -29,7 +29,7 @@ namespace torch::autograd::profiler
 // the debug information structs.
 // thread_local_debug_info is automatically propagated across thread
 // boundaries, including the cases of:
-//  - launching async jobs with xsigma::launch
+//  - launching async jobs with quarisma::launch
 //  - executing JIT continuations
 //  - moving from the forward threads into autograd (backward) threads
 //
@@ -77,11 +77,11 @@ namespace torch::autograd::profiler
 // ThreadLocalState also automatically propagates profiler callbacks.
 //
 //
-// xsigma::record_function and observers
+// quarisma::record_function and observers
 //
 // Profiler uses observers mechanism to add a pair of thread local callbacks
 // that are executed on a number of predetermined ranges, including:
-//  - xsigma/XSigma ops
+//  - quarisma/Quarisma ops
 //  - TorchScript functions/methods
 //  - user defined named ranges (see `record_function` python context manager)
 //
@@ -128,7 +128,7 @@ struct ProfilerLegacyThreadLocalState : public ProfilerStateBase
     static ProfilerLegacyThreadLocalState* getTLS()
     {
         auto tls = ProfilerStateBase::get(/*global=*/false);
-        XSIGMA_CHECK_DEBUG(tls == nullptr || tls->profilerType() == ActiveProfilerType::LEGACY);
+        QUARISMA_CHECK_DEBUG(tls == nullptr || tls->profilerType() == ActiveProfilerType::LEGACY);
         return static_cast<ProfilerLegacyThreadLocalState*>(tls);
     }
 
@@ -139,18 +139,18 @@ struct ProfilerLegacyThreadLocalState : public ProfilerStateBase
     void setOrAddRemoteProfiledEvents(std::vector<LegacyEvent>&& remoteProfiledEvents);
 
     void pushRange(
-        const xsigma::record_function&      fn,
+        const quarisma::record_function&      fn,
         const bool                          record_cuda,
         std::vector<std::vector<int64_t>>&& shapes = {});
 
-    void popRange(const xsigma::record_function& fn, const bool record_cuda);
+    void popRange(const quarisma::record_function& fn, const bool record_cuda);
 
     void reportMemoryUsage(
         void* /* unused */,
         int64_t alloc_size,
         size_t /* total_allocated, unused for legacy */,
         size_t /* total_reserved, unused for legacy */,
-        xsigma::Device device) override;
+        quarisma::Device device) override;
 
     ActiveProfilerType profilerType() override { return ActiveProfilerType::LEGACY; }
 
@@ -199,10 +199,10 @@ void ProfilerLegacyThreadLocalState::mark(std::string name, bool include_cuda)
     {
         LegacyEvent evt(
             EventKind::Mark,
-            xsigma::StringView(std::move(name)),
-            xsigma::record_function::currentThreadId(),
+            quarisma::StringView(std::move(name)),
+            quarisma::record_function::currentThreadId(),
             include_cuda && config_.state == torch::profiler::impl::profiler_state_enum::CUDA);
-        evt.setNodeId(xsigma::record_function::getDefaultNodeId());
+        evt.setNodeId(quarisma::record_function::getDefaultNodeId());
         getEventList().record(std::move(evt));
     }
 }
@@ -223,7 +223,7 @@ void ProfilerLegacyThreadLocalState::setOrAddRemoteProfiledEvents(
 }
 
 void ProfilerLegacyThreadLocalState::pushRange(
-    const xsigma::record_function&      fn,
+    const quarisma::record_function&      fn,
     const bool                          record_cuda,
     std::vector<std::vector<int64_t>>&& shapes)
 {
@@ -240,12 +240,12 @@ void ProfilerLegacyThreadLocalState::pushRange(
     {
         LegacyEvent evt(
             EventKind::PushRange,
-            xsigma::StringView(std::string(fn.name())),
-            xsigma::record_function::currentThreadId(),
+            quarisma::StringView(std::string(fn.name())),
+            quarisma::record_function::currentThreadId(),
             record_cuda,
             fn.handle(),
             std::move(shapes),
-            xsigma::record_function::getDefaultNodeId(),
+            quarisma::record_function::getDefaultNodeId(),
             fn.isAsync());
         evt.setSequenceNr(fn.seqNr());
         evt.setFwdThreadId(fn.forwardThreadId());
@@ -257,11 +257,11 @@ void ProfilerLegacyThreadLocalState::pushRange(
                 torch::profiler::impl::computeFlops(std::string(fn.name()), evt.extraArgs()));
         }
 
-// TODO: will unify the two macros BUILD_LITE_INTERPRETER and XSIGMA_MOBILE soon.
-#if !defined BUILD_LITE_INTERPRETER && !defined XSIGMA_MOBILE
+// TODO: will unify the two macros BUILD_LITE_INTERPRETER and QUARISMA_MOBILE soon.
+#if !defined BUILD_LITE_INTERPRETER && !defined QUARISMA_MOBILE
         // backward nodes source range corresponds to the forward node
         // TODO: consider using C++ stack trace
-        if (config_.with_stack && fn.scope() != xsigma::RecordScope::BACKWARD_FUNCTION)
+        if (config_.with_stack && fn.scope() != quarisma::RecordScope::BACKWARD_FUNCTION)
         {
             auto cs = torch::profiler::impl::prepareCallstack(jit::currentCallstack());
             if (cs.empty())
@@ -276,7 +276,7 @@ void ProfilerLegacyThreadLocalState::pushRange(
 }
 
 void ProfilerLegacyThreadLocalState::popRange(
-    const xsigma::record_function& fn, const bool record_cuda)
+    const quarisma::record_function& fn, const bool record_cuda)
 {
     if (config_.disabled())
     {
@@ -294,11 +294,11 @@ void ProfilerLegacyThreadLocalState::popRange(
         // thread and save current thread id in pop event
         LegacyEvent evt(
             EventKind::PopRange,
-            xsigma::StringView(""),
-            xsigma::record_function::currentThreadId(),
+            quarisma::StringView(""),
+            quarisma::record_function::currentThreadId(),
             record_cuda,
             fn.handle());
-        evt.setNodeId(xsigma::record_function::getDefaultNodeId());
+        evt.setNodeId(quarisma::record_function::getDefaultNodeId());
         getEventList(fn.threadId()).record(std::move(evt));
     }
 }
@@ -308,14 +308,14 @@ void ProfilerLegacyThreadLocalState::reportMemoryUsage(
     int64_t alloc_size,
     size_t /* total_allocated, unused for legacy */,
     size_t /* total_reserved, unused for legacy */,
-    xsigma::Device device)
+    quarisma::Device device)
 {
     if (config_.profile_memory && !config_.disabled())
     {
-        uint64_t    thread_id = xsigma::record_function::currentThreadId();
+        uint64_t    thread_id = quarisma::record_function::currentThreadId();
         LegacyEvent evt(
             EventKind::MemoryAlloc,
-            xsigma::StringView(""),
+            quarisma::StringView(""),
             thread_id,
             config_.state == torch::profiler::impl::profiler_state_enum::CUDA);
         evt.updateMemoryStats(alloc_size, device);
@@ -327,7 +327,7 @@ RangeEventList& ProfilerLegacyThreadLocalState::getEventList(std::optional<uint6
 {
     if (!thread_id.has_value())
     {
-        thread_id = xsigma::record_function::currentThreadId();
+        thread_id = quarisma::record_function::currentThreadId();
     }
     RangeEventList*             list_ptr = nullptr;
     std::lock_guard<std::mutex> guard(state_mutex_);
@@ -383,9 +383,9 @@ void pushProfilingCallbacksLegacy()
 {
     auto registration_state_ptr = ProfilerLegacyThreadLocalState::getTLS();
     TORCH_INTERNAL_ASSERT(registration_state_ptr, "Expected profiler state set");
-    auto handle = xsigma::addThreadLocalCallback(
-        xsigma::RecordFunctionCallback(
-            [](const xsigma::record_function& fn) -> std::unique_ptr<xsigma::ObserverContext>
+    auto handle = quarisma::addThreadLocalCallback(
+        quarisma::RecordFunctionCallback(
+            [](const quarisma::record_function& fn) -> std::unique_ptr<quarisma::ObserverContext>
             {
                 auto state_ptr = ProfilerLegacyThreadLocalState::getTLS();
                 if (!state_ptr || state_ptr->config().disabled())
@@ -412,7 +412,7 @@ void pushProfilingCallbacksLegacy()
 
                 return nullptr;
             },
-            [](const xsigma::record_function& fn, xsigma::ObserverContext*)
+            [](const quarisma::record_function& fn, quarisma::ObserverContext*)
             {
                 auto state_ptr = ProfilerLegacyThreadLocalState::getTLS();
                 if (!state_ptr || state_ptr->config().disabled())
@@ -437,17 +437,17 @@ void pushProfilingCallbacksLegacy()
 
 void enableProfilerLegacy(const torch::profiler::impl::profiler_config& new_config)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         new_config.state != torch::profiler::impl::profiler_state_enum::NVTX ||
             torch::profiler::impl::cudaStubs()->enabled(),
         "Can't use NVTX profiler - PyTorch was compiled without CUDA");
 
-    XSIGMA_CHECK(new_config.state != torch::profiler::impl::profiler_state_enum::KINETO);
+    QUARISMA_CHECK(new_config.state != torch::profiler::impl::profiler_state_enum::KINETO);
 
     auto state_ptr = ProfilerLegacyThreadLocalState::getTLS();
-    XSIGMA_CHECK(!state_ptr, "Profiler is already enabled on this thread");
+    QUARISMA_CHECK(!state_ptr, "Profiler is already enabled on this thread");
     auto state = std::make_shared<ProfilerLegacyThreadLocalState>(new_config);
-    xsigma::thread_local_debug_info::_push(xsigma::DebugInfoKind::PROFILER_STATE, state);
+    quarisma::thread_local_debug_info::_push(quarisma::DebugInfoKind::PROFILER_STATE, state);
 
     pushProfilingCallbacksLegacy();
 
@@ -461,18 +461,18 @@ thread_event_lists disableProfilerLegacy(
     auto consolidate     = profilerDisableOptions ? profilerDisableOptions->consolidate : true;
     // all the DebugInfoBase objects are scope based and supposed to use
     // DebugInfoGuard
-    std::shared_ptr<xsigma::DebugInfoBase> state;
+    std::shared_ptr<quarisma::DebugInfoBase> state;
     if (cleanupTLSState)
     {
-        state = xsigma::thread_local_debug_info::_pop(xsigma::DebugInfoKind::PROFILER_STATE);
+        state = quarisma::thread_local_debug_info::_pop(quarisma::DebugInfoKind::PROFILER_STATE);
     }
     else
     {
-        state = xsigma::thread_local_debug_info::_peek(xsigma::DebugInfoKind::PROFILER_STATE);
+        state = quarisma::thread_local_debug_info::_peek(quarisma::DebugInfoKind::PROFILER_STATE);
     }
 
     auto state_ptr = static_cast<ProfilerLegacyThreadLocalState*>(state.get());
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         state_ptr && !state_ptr->config().disabled(),
         "Can't disable profiler when it's not running");
 
@@ -491,7 +491,7 @@ thread_event_lists disableProfilerLegacy(
 void addEventList(std::vector<LegacyEvent>&& profiledEvents)
 {
     auto state_ptr = ProfilerLegacyThreadLocalState::getTLS();
-    XSIGMA_CHECK(state_ptr, "Profiler must be enabled.");
+    QUARISMA_CHECK(state_ptr, "Profiler must be enabled.");
     state_ptr->setOrAddRemoteProfiledEvents(std::move(profiledEvents));
 }
 
@@ -502,17 +502,17 @@ void LegacyEvent::record(bool record_cuda)
         torch::profiler::impl::cudaStubs()->record(&device_, &cuda_event, &cpu_ns_);
         return;
     }
-    cpu_ns_ = xsigma::getTime();
+    cpu_ns_ = quarisma::getTime();
 }
 
-/* static */ LegacyEvent LegacyEvent::fromIValue(const xsigma::IValue& eventIValue)
+/* static */ LegacyEvent LegacyEvent::fromIValue(const quarisma::IValue& eventIValue)
 {
     TORCH_INTERNAL_ASSERT(
-        eventIValue.isList(), "Expected IValue to contain type xsigma::impl::GenericList");
+        eventIValue.isList(), "Expected IValue to contain type quarisma::impl::GenericList");
     auto ivalues = eventIValue.toList();
     TORCH_INTERNAL_ASSERT(
         ivalues.size() >= NUM_EVENT_IVALUE_IDX,
-        "Expected xsigma least ",
+        "Expected quarisma least ",
         NUM_EVENT_IVALUE_IDX,
         " elements to reconstruct LegacyEvent.");
 
@@ -520,22 +520,22 @@ void LegacyEvent::record(bool record_cuda)
     const auto& shapeListIValue = ivalues.get(EventIValueIdx::SHAPES);
     TORCH_INTERNAL_ASSERT(
         shapeListIValue.isList(),
-        "Expected profiler shapes IValue to contain type xsigma::impl::GenericList.");
+        "Expected profiler shapes IValue to contain type quarisma::impl::GenericList.");
 
     auto                              shapeList = shapeListIValue.toList();
     std::vector<std::vector<int64_t>> shapes;
     shapes.reserve(shapeList.size());
-    for (const auto i : xsigma::irange(shapeList.size()))
+    for (const auto i : quarisma::irange(shapeList.size()))
     {
         std::vector<int64_t> s;
         const auto&          shapeIValue = shapeList.get(i);
         TORCH_INTERNAL_ASSERT(
             shapeIValue.isList(),
             "Expected each profiler shape element to contain shapes of type "
-            "xsigma::impl::GenericList.")
+            "quarisma::impl::GenericList.")
         auto curShapesList = shapeIValue.toList();
         s.reserve(curShapesList.size());
-        for (const auto j : xsigma::irange(curShapesList.size()))
+        for (const auto j : quarisma::irange(curShapesList.size()))
         {
             s.emplace_back(curShapesList.get(j).toInt());
         }
@@ -544,9 +544,9 @@ void LegacyEvent::record(bool record_cuda)
 
     LegacyEvent evt(
         static_cast<EventKind>(ivalues.get(EventIValueIdx::KIND).toInt()),    // EventKind
-        xsigma::StringView(ivalues.get(EventIValueIdx::NAME).toStringRef()),  // name
+        quarisma::StringView(ivalues.get(EventIValueIdx::NAME).toStringRef()),  // name
         ivalues.get(EventIValueIdx::THREAD_ID).toInt(),                       // thread_id
-        static_cast<xsigma::RecordFunctionHandle>(
+        static_cast<quarisma::RecordFunctionHandle>(
             ivalues.get(EventIValueIdx::HANDLE).toDouble()),                    // handle
         std::move(shapes),                                                      // input shapes
         ivalues.get(EventIValueIdx::NODE_ID).toInt(),                           // node id
@@ -555,15 +555,15 @@ void LegacyEvent::record(bool record_cuda)
         ivalues.get(EventIValueIdx::CPU_NS).toInt(),                            // cpu_ns
         ivalues.get(EventIValueIdx::CUDA_RECORDED).toBool(),                    // was cuda recorded
         ivalues.get(EventIValueIdx::CUDA_MEM_USAGE).toInt(),                    // cuda memory usage
-        xsigma::DeviceIndex(ivalues.get(EventIValueIdx::CUDA_DEVICE).toInt()),  // device
+        quarisma::DeviceIndex(ivalues.get(EventIValueIdx::CUDA_DEVICE).toInt()),  // device
         static_cast<double>(ivalues.get(EventIValueIdx::CUDA_US).toInt())       // cuda_us
     );
     return evt;
 }
 
-xsigma::IValue LegacyEvent::toIValue() const
+quarisma::IValue LegacyEvent::toIValue() const
 {
-    xsigma::impl::GenericList eventIValueList(xsigma::AnyType::get());
+    quarisma::impl::GenericList eventIValueList(quarisma::AnyType::get());
     eventIValueList.reserve(NUM_EVENT_IVALUE_IDX);
     eventIValueList.emplace_back(static_cast<int64_t>(kind_));
     eventIValueList.emplace_back(std::string(name_.str()));
@@ -579,12 +579,12 @@ xsigma::IValue LegacyEvent::toIValue() const
     eventIValueList.emplace_back(device_);
     eventIValueList.emplace_back(cuda_us_);
     // Shapes
-    xsigma::impl::GenericList shapesList =
-        xsigma::impl::GenericList(xsigma::ListType::create(xsigma::IntType::get()));
+    quarisma::impl::GenericList shapesList =
+        quarisma::impl::GenericList(quarisma::ListType::create(quarisma::IntType::get()));
     shapesList.reserve(shapes_.size());
     for (const auto& shape : shapes_)
     {
-        xsigma::impl::GenericList s = xsigma::impl::GenericList(xsigma::IntType::get());
+        quarisma::impl::GenericList s = quarisma::impl::GenericList(quarisma::IntType::get());
         s.reserve(shape.size());
         for (const auto& k : shape)
         {
@@ -593,15 +593,15 @@ xsigma::IValue LegacyEvent::toIValue() const
         shapesList.emplace_back(s);
     }
     eventIValueList.emplace_back(shapesList);
-    return xsigma::IValue(eventIValueList);
+    return quarisma::IValue(eventIValueList);
 }
 
 double LegacyEvent::cudaElapsedUs(const LegacyEvent& e) const
 {
-    XSIGMA_CHECK(e.hasCuda() && hasCuda(), "Events were not recorded for CUDA");
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(e.hasCuda() && hasCuda(), "Events were not recorded for CUDA");
+    QUARISMA_CHECK(
         e.device() == device(),
-        xsigma::str("Events are not on the same device: ", e.device(), " vs ", device()));
+        quarisma::str("Events are not on the same device: ", e.device(), " vs ", device()));
     if (isRemote() && e.isRemote())
     {
         // validate that cuda_us_ has been set properly.
@@ -611,7 +611,7 @@ double LegacyEvent::cudaElapsedUs(const LegacyEvent& e) const
     return torch::profiler::impl::cudaStubs()->elapsed(&cuda_event, &e.cuda_event);
 }
 
-static const xsigma::jit::CodeTemplate event_template(R"(
+static const quarisma::jit::CodeTemplate event_template(R"(
 {
   "name": "${name}",
   "ph": "X",
@@ -624,7 +624,7 @@ static const xsigma::jit::CodeTemplate event_template(R"(
 
 void writeProfilerEventsToStream(std::ostream& out, const std::vector<LegacyEvent*>& events)
 {
-    XSIGMA_CHECK(out, "Could not open file");
+    QUARISMA_CHECK(out, "Could not open file");
     LegacyEvent* profiler_start = nullptr;
     for (LegacyEvent* e : events)
     {
@@ -634,17 +634,17 @@ void writeProfilerEventsToStream(std::ostream& out, const std::vector<LegacyEven
             break;
         }
     }
-    XSIGMA_CHECK(profiler_start, "Could not find __start_profile mark");
+    QUARISMA_CHECK(profiler_start, "Could not find __start_profile mark");
 
     struct PairHash
     {
-        size_t operator()(std::pair<xsigma::RecordFunctionHandle, int> p) const noexcept
+        size_t operator()(std::pair<quarisma::RecordFunctionHandle, int> p) const noexcept
         {
-            return std::hash<xsigma::RecordFunctionHandle>()(p.first) ^
+            return std::hash<quarisma::RecordFunctionHandle>()(p.first) ^
                    std::hash<int64_t>()(p.second);
         }
     };
-    std::unordered_map<std::pair<xsigma::RecordFunctionHandle, int64_t>, LegacyEvent*, PairHash>
+    std::unordered_map<std::pair<quarisma::RecordFunctionHandle, int64_t>, LegacyEvent*, PairHash>
         events_map;
     out << "[\n";
     bool first = true;
@@ -662,11 +662,11 @@ void writeProfilerEventsToStream(std::ostream& out, const std::vector<LegacyEven
             }
             first   = false;
             auto it = events_map.find(std::make_pair(evt->handle(), evt->nodeId()));
-            XSIGMA_CHECK(it != events_map.end(), "Unmatched pop event");
+            QUARISMA_CHECK(it != events_map.end(), "Unmatched pop event");
             LegacyEvent* evt_start = it->second;
             events_map.erase(it);
 
-            xsigma::jit::TemplateEnv env;
+            quarisma::jit::TemplateEnv env;
             env.s("name", evt_start->name());
             env.d("ts", profiler_start->cpuElapsedUs(*evt_start));
             env.d("dur", evt_start->cpuElapsedUs(*evt));

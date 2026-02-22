@@ -471,7 +471,7 @@ Buf::Buf(
       qscale_(std::move(qscale)),
       qzero_(std::move(qzero))
 {
-    XSIGMA_CHECK(var);
+    QUARISMA_CHECK(var);
 }
 
 BufHandle Buf::make(const std::vector<ExprHandle>& dims, Dtype dtype)
@@ -519,17 +519,17 @@ BufHandle Buf::make(
             qzero ? qzero->node() : nullptr));
 }
 
-bool Buf::is_contiguous(xsigma::MemoryFormat memory_format) const
+bool Buf::is_contiguous(quarisma::MemoryFormat memory_format) const
 {
     auto                 ndims = dims_.size();
     std::vector<int64_t> dim_order(ndims);
-    if (memory_format == xsigma::MemoryFormat::ChannelsLast)
+    if (memory_format == quarisma::MemoryFormat::ChannelsLast)
     {
         if (dims_.size() != 4)
             return false;
         dim_order = {1, 3, 2, 0};
     }
-    else if (memory_format == xsigma::MemoryFormat::ChannelsLast3d)
+    else if (memory_format == quarisma::MemoryFormat::ChannelsLast3d)
     {
         if (dims_.size() != 5)
             return false;
@@ -540,7 +540,7 @@ bool Buf::is_contiguous(xsigma::MemoryFormat memory_format) const
         if (dims_.empty())
         {
             // Scalar tensor
-            XSIGMA_CHECK(strides_.empty());
+            QUARISMA_CHECK(strides_.empty());
             return true;  // Align with the isContiguous logic in the kernel.cpp
         }
         for (size_t i = 0; i < ndims; i++)

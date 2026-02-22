@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
@@ -47,7 +47,7 @@ limitations under the License.
 #include "common/export.h"
 #include "profiler/native/analysis/stat_summarizer_options.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 template <typename ValueType, typename HighPrecisionValueType = double>
@@ -201,7 +201,7 @@ private:
 // graph execution.
 //
 // For example usage see stats_summarizer.
-class XSIGMA_VISIBILITY stats_calculator
+class QUARISMA_VISIBILITY stats_calculator
 {
 public:
     enum class sorting_metric_enum
@@ -213,24 +213,24 @@ public:
         BY_TYPE,
     };
 
-    XSIGMA_API explicit stats_calculator(const stat_summarizer_options& options);
+    QUARISMA_API explicit stats_calculator(const stat_summarizer_options& options);
 
     // Returns a string detailing the accumulated runtime stats in a tab-separated
     // format which can be pasted into a spreadsheet for further analysis.
-    XSIGMA_API std::string get_output_string() const;
+    QUARISMA_API std::string get_output_string() const;
 
-    XSIGMA_API std::string get_short_summary() const;
+    QUARISMA_API std::string get_short_summary() const;
 
-    XSIGMA_API void compute_stats_by_type(
+    QUARISMA_API void compute_stats_by_type(
         std::map<std::string, int64_t>* node_type_map_count,
         std::map<std::string, int64_t>* node_type_map_time,
         std::map<std::string, int64_t>* node_type_map_memory,
         std::map<std::string, int64_t>* node_type_map_times_called,
         int64_t*                        accumulated_us) const;
 
-    XSIGMA_API std::string get_stats_by_node_type() const;
+    QUARISMA_API std::string get_stats_by_node_type() const;
 
-    XSIGMA_API std::string get_stats_by_metric(
+    QUARISMA_API std::string get_stats_by_metric(
         const std::string& title, sorting_metric_enum sorting_metric, int num_stats) const;
 
     // Returns number of runs.
@@ -255,7 +255,7 @@ public:
 
     const std::map<std::string, detail>& get_details() const { return details_; }
 
-    XSIGMA_API void add_node_stats(
+    QUARISMA_API void add_node_stats(
         const std::string& name,
         const std::string& type,
         int64_t            run_order,
@@ -279,4 +279,4 @@ private:
     stat_summarizer_options       options_;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

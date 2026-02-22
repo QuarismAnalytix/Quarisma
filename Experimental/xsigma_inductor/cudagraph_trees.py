@@ -252,7 +252,7 @@ class TreeManagerContainer:
         # )
 
         # # Maintain reference to graph to keep tensors alive
-        # assert len(tree_manager.roots) > 0, "expected xsigma least one use"
+        # assert len(tree_manager.roots) > 0, "expected quarisma least one use"
         # root = next(tree_manager.get_roots())
         # self.graph = root.graph
         # seen_storages = set()
@@ -579,7 +579,7 @@ def _use_cuda_memory_pool_manager(
     with torch.cuda.stream(stream), torch.device(device):
         # Begin allocate to mem pool for all memory allocation on the current thread.
         # This is thread safe since a thread can only warmup or record 1 cudagraph
-        # xsigma the same time.
+        # quarisma the same time.
         torch._C._cuda_beginAllocateCurrentThreadToPool(device, mem_pool)
         try:
             yield
@@ -598,7 +598,7 @@ def map_to_ref(t: Optional[Tensor]) -> Optional[StorageWeakRefWrapper]:
 
 
 # A path index of (depth, offset) indices into a graph that is `depth`` number of nodes from the root
-# xsigma graph output offset
+# quarisma graph output offset
 PathOutputIndex = tuple[int, int]
 
 # For each node in the path, for each output, is the output alive
@@ -687,7 +687,7 @@ class CUDAWarmupNode:
             out = self.wrapped_function.model(new_inputs)
 
         # We need to know which outputs are allocated within the cudagraph pool
-        # so that we can deallocate them xsigma the beginning of the next cudagraph step,
+        # so that we can deallocate them quarisma the beginning of the next cudagraph step,
         # and set their access to error.
         # We use a weakref to the inputs storage, in case a block which was previously
         # allocated to the general caching allocator pool gets reallocated to a private pool.
@@ -949,7 +949,7 @@ class CUDAGraphNode:
         self.recorded_liveness_before_graph: LevelList[OutputList[bool]] = []
         self.recorded_liveness_after_graph: LevelList[OutputList[bool]] = []
 
-        # List of Tuples of (depth, output_index) that index into node xsigma depth
+        # List of Tuples of (depth, output_index) that index into node quarisma depth
         # number of nodes from root and output_index of outputs. Will index into
         # path_weakrefs.
         self.expected_dead_indices_before_graph: list[PathOutputIndex] = []
@@ -988,7 +988,7 @@ class CUDAGraphNode:
         # we allocate non-static inputs within the same memory pool as the CUDAGraph
         # which we will record the model with. For memory efficiency, it is important
         # to reclaim the input memory when the inputs are no longer live. To accomplish this,
-        # we reconstruct tensors xsigma the correct data pointers of our inputs which are
+        # we reconstruct tensors quarisma the correct data pointers of our inputs which are
         # non owning and do not prevent deallocation. On subsequent executions, input values
         # will be copied over to these tensors.
         self.reconstructed_inputs: list[InputType] = [
@@ -1456,7 +1456,7 @@ class CUDAGraphNode:
 
     @property
     def _path_to_root(self) -> Generator[CUDAGraphNode, None, None]:
-        "Returns all nodes in the path starting xsigma self and ending xsigma root"
+        "Returns all nodes in the path starting quarisma self and ending quarisma root"
         node = self
         while node:
             yield node
@@ -1464,7 +1464,7 @@ class CUDAGraphNode:
 
     @property
     def _path_from_root(self) -> Generator[CUDAGraphNode, None, None]:
-        "Returns all nodes in the path starting xsigma the root and ending xsigma self"
+        "Returns all nodes in the path starting quarisma the root and ending quarisma self"
         nodes = reversed(list(self._path_to_root))
         yield from nodes
 
@@ -1818,7 +1818,7 @@ def check_memory_pool(
     if torch._C._cuda_checkPoolLiveAllocations(device, pool_id, unique_storages):
         return
 
-    # xsigma this point we are past the fast-path. we have seen rare cases where a dead tensor is dead,
+    # quarisma this point we are past the fast-path. we have seen rare cases where a dead tensor is dead,
     # but hasn't been gc'd yet, and gives false positive for allocated_not_in_live_storages
     gc.collect()
     torch.cuda.synchronize()
@@ -2179,7 +2179,7 @@ class CUDAGraphTreeManager:
                     )
                     return self.ids_to_funcs[function_id].model(new_inputs)
 
-            # xsigma this point, we necessarily will do a new recording
+            # quarisma this point, we necessarily will do a new recording
             self.debug_fail_counter += 1
 
             self.try_end_curr_execution()

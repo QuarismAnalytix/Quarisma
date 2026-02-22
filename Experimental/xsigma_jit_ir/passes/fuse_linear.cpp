@@ -27,7 +27,7 @@ void FuseLinear(std::shared_ptr<Graph>& graph)
         [](const Match& match, const std::unordered_map<std::string, Value*>& vmap)
     {
         const auto& match_vmap = match.values_map;
-        auto        v          = match_vmap.xsigma(vmap.xsigma("weight_t"));
+        auto        v          = match_vmap.quarisma(vmap.quarisma("weight_t"));
         return v->node()->kind() == Symbol::aten("t");
     };
 

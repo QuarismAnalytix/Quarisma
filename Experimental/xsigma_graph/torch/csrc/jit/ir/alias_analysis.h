@@ -1,11 +1,11 @@
 #pragma once
 
-#include <XSigma/core/alias_info.h>
+#include <Quarisma/core/alias_info.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/ir/type_hashing.h>
 #include <torch/csrc/jit/passes/create_functional_graphs.h>
 #include <torch/csrc/jit/passes/utils/memory_dag.h>
-#include <xsigma/util/flat_hash_map.h>
+#include <quarisma/util/flat_hash_map.h>
 
 namespace torch::jit
 {
@@ -81,12 +81,12 @@ public:
     // hold in memory any element that exists in the other
     TORCH_API bool mayContainAlias(Value* a, Value* b) const;
 
-    TORCH_API bool mayContainAlias(Value* a, const xsigma::ArrayRef<Value*> b) const;
+    TORCH_API bool mayContainAlias(Value* a, const quarisma::ArrayRef<Value*> b) const;
 
     // Do any values in group `a` share a memory location or hold in memory
     // any element that exists in group `b`
     TORCH_API bool mayContainAlias(
-        const xsigma::ArrayRef<Value*> a, const xsigma::ArrayRef<Value*> b) const;
+        const quarisma::ArrayRef<Value*> a, const quarisma::ArrayRef<Value*> b) const;
 
     // Do `a` and `b` potentially share a memory location?
     TORCH_API bool mayAlias(const Value* a, const Value* b) const;
@@ -110,11 +110,11 @@ public:
     // reads from.
     TORCH_API bool isMutable(Node* n) const;
 
-    TORCH_API bool escapesScope(const xsigma::ArrayRef<Value*>& vs) const;
+    TORCH_API bool escapesScope(const quarisma::ArrayRef<Value*>& vs) const;
 
     // Is it safe to change whether `a` and `b` alias each other ?
     TORCH_API bool safeToChangeAliasingRelationship(
-        const xsigma::ArrayRef<Value*>& a, const xsigma::ArrayRef<Value*>& b) const;
+        const quarisma::ArrayRef<Value*>& a, const quarisma::ArrayRef<Value*>& b) const;
 
     // Move `n` (already in the graph) after `movePoint` in the topological order.
     //
@@ -252,7 +252,7 @@ private:
     void           makeAllAlias(const std::vector<Value*>& values);
     void           makePointerTo(const Value* value, const Value* to);
     TORCH_API void addToContainedElements(const Value* element, const Value* container);
-    void           mapAliases(xsigma::ArrayRef<Value*> to, xsigma::ArrayRef<Value*> from);
+    void           mapAliases(quarisma::ArrayRef<Value*> to, quarisma::ArrayRef<Value*> from);
     void           giveFreshAlias(const Value* value, bool add_wildcard_to_contained_elems = true);
     Element*       getOrCreateElement(const Value* value);
 
@@ -275,22 +275,22 @@ private:
     std::unique_ptr<MemoryDAG>        memoryDAG_;
 
     // Mapping of values to MemoryDAG elements
-    xsigma::flat_hash_map<const Value*, Element*> elementMap_;
+    quarisma::flat_hash_map<const Value*, Element*> elementMap_;
     // All wildcard Elements (one for each unique mutable type)
-    xsigma::flat_hash_map<TypePtr, Element*, HashType, EqualType> wildcardIndex_;
+    quarisma::flat_hash_map<TypePtr, Element*, HashType, EqualType> wildcardIndex_;
     Element*                getWildcard(const TypePtr& type) const;
     std::optional<Element*> tryGetOrCreateWildcard(const TypePtr& type);
     void addContainedTypesToFreshElement(Element* container_elem, const AliasTypeSet& mut_types);
     void pointUnionTypeElementToAllContainedTypes(
         Element* container_elem, const AliasTypeSet& mut_types);
 
-    std::vector<Element*> getElements(xsigma::ArrayRef<Value*> vs) const;
+    std::vector<Element*> getElements(quarisma::ArrayRef<Value*> vs) const;
     bool                  mayAliasWildcard(const Value* v) const;
-    bool                  mayAliasWildcard(const xsigma::ArrayRef<Value*> vs) const;
-    bool                  hasWriters(const xsigma::ArrayRef<Value*>& values) const;
+    bool                  mayAliasWildcard(const quarisma::ArrayRef<Value*> vs) const;
+    bool                  hasWriters(const quarisma::ArrayRef<Value*>& values) const;
 
     // Cached mapping of type ptrs to their mutable types
-    mutable xsigma::flat_hash_map<TypePtr, AliasTypeSet> mapped_mutable_types_;
+    mutable quarisma::flat_hash_map<TypePtr, AliasTypeSet> mapped_mutable_types_;
 
     /**
    * State for tracking write info.
@@ -302,7 +302,7 @@ private:
     std::unique_ptr<WriteRegistry> writeRegistry_;
 
     // Map of nodes to the memory locations that they write to
-    using TWriteIndex = xsigma::flat_hash_map<Node*, MemoryLocations>;
+    using TWriteIndex = quarisma::flat_hash_map<Node*, MemoryLocations>;
     std::optional<TWriteIndex> writeIndex_;
     // Collection of all memory locations that are written to.
     std::optional<MemoryLocations> writtenToLocationsIndex_;

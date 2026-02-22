@@ -20,11 +20,11 @@ endforeach()
 add_executable(SecurityCxxTests ${TestFiles})
 
 # Compile definitions
-target_compile_definitions(SecurityCxxTests PRIVATE XSIGMA_GOOGLE_TEST USE_GTEST _VARIADIC_MAX=10)
+target_compile_definitions(SecurityCxxTests PRIVATE QUARISMA_GOOGLE_TEST USE_GTEST _VARIADIC_MAX=10)
 
 # Link libraries Security library is linked which transitively brings in all centralized
 # dependencies
-target_link_libraries(SecurityCxxTests PRIVATE XSigma::gtest XSigma::gtest_main XSigma::Security XSigma::Core)
+target_link_libraries(SecurityCxxTests PRIVATE Quarisma::gtest Quarisma::gtest_main Quarisma::Security Quarisma::Core)
 
 # Set target properties
 set_target_properties(
@@ -45,9 +45,9 @@ add_test(NAME SecurityCxxTests COMMAND SecurityCxxTests
 set_tests_properties(SecurityCxxTests PROPERTIES TIMEOUT 300 LABELS "Security;Unit")
 
 # Set coverage environment variable if enabled
-if(XSIGMA_ENABLE_COVERAGE AND DEFINED XSIGMA_LLVM_PROFILE_FILE)
+if(QUARISMA_ENABLE_COVERAGE AND DEFINED QUARISMA_LLVM_PROFILE_FILE)
   set_tests_properties(
-    SecurityCxxTests PROPERTIES ENVIRONMENT "LLVM_PROFILE_FILE=${XSIGMA_LLVM_PROFILE_FILE}"
+    SecurityCxxTests PROPERTIES ENVIRONMENT "LLVM_PROFILE_FILE=${QUARISMA_LLVM_PROFILE_FILE}"
   )
 endif()
 
@@ -57,6 +57,6 @@ message(STATUS "  - Working directory: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 # ============================================================================= Output Directory
 # Configuration
 # =============================================================================
-if(COMMAND xsigma_set_target_output_directories)
-  xsigma_set_target_output_directories(SecurityCxxTests)
+if(COMMAND quarisma_set_target_output_directories)
+  quarisma_set_target_output_directories(SecurityCxxTests)
 endif()

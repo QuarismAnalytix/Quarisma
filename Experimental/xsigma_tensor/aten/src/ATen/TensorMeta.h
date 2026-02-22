@@ -1,7 +1,7 @@
 #pragma once
 
-#include <XSigma/DimVector.h>
-#include <XSigma/core/Dimname.h>
+#include <Quarisma/DimVector.h>
+#include <Quarisma/core/Dimname.h>
 #include <c10/core/TensorOptions.h>
 #include <c10/util/strides.h>
 

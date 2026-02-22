@@ -13,7 +13,7 @@
 
 #include "profiler/base/perf.h"
 
-namespace xsigma::profiler::impl::linux_perf
+namespace quarisma::profiler::impl::linux_perf
 {
 
 /*
@@ -73,4 +73,4 @@ inline void PerfProfiler::StopCounting() const
     }
 }
 
-}  // namespace xsigma::profiler::impl::linux_perf
+}  // namespace quarisma::profiler::impl::linux_perf

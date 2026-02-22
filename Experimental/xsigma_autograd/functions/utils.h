@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/core/Tensor.h>
+#include <Quarisma/core/Tensor.h>
 #include <torch/csrc/Export.h>
 #include <torch/csrc/autograd/InferenceMode.h>
 #include <torch/csrc/autograd/autograd.h>
@@ -38,7 +38,7 @@ struct ComputeRequiresGrad : IterArgs<ComputeRequiresGrad>
 {
     bool out = false;
     using IterArgs<ComputeRequiresGrad>::operator();
-    void operator()(const xsigma::Tensor& tensor)
+    void operator()(const quarisma::Tensor& tensor)
     {
         const auto& var = static_cast<const Variable&>(tensor);
         if (var.defined() && var.requires_grad())
@@ -46,7 +46,7 @@ struct ComputeRequiresGrad : IterArgs<ComputeRequiresGrad>
             out = true;
         }
     }
-    void operator()(const std::optional<xsigma::Tensor>& tensor)
+    void operator()(const std::optional<quarisma::Tensor>& tensor)
     {
         if (tensor.has_value())
         {
@@ -66,15 +66,15 @@ inline bool compute_requires_grad(Args&&... args)
     return ComputeRequiresGrad().apply(std::forward<Args>(args)...).out;
 }
 
-inline void set_history(const xsigma::Tensor& variable, const std::shared_ptr<Node>& grad_fn)
+inline void set_history(const quarisma::Tensor& variable, const std::shared_ptr<Node>& grad_fn)
 {
-    XSIGMA_CHECK(grad_fn != nullptr);
+    QUARISMA_CHECK(grad_fn != nullptr);
     if (variable.defined())
     {
         // If the codegen triggers this, you most likely want to add your newly
         // added function to the DONT_REQUIRE_DERIVATIVE list in
         // tools/autograd/gen_variable_type.py
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             isDifferentiableType(variable.scalar_type()),
             "Autograd not support dtype: ",
             variable.scalar_type());
@@ -96,12 +96,12 @@ inline void set_history(
     }
 }
 
-inline bool isFwGradDefined(const std::optional<xsigma::Tensor>& t)
+inline bool isFwGradDefined(const std::optional<quarisma::Tensor>& t)
 {
     return t.has_value() && t->defined() && t->_fw_grad(/*level */ 0).defined();
 }
 
-inline bool isFwGradDefinedTensorList(const xsigma::ITensorListRef& variables)
+inline bool isFwGradDefinedTensorList(const quarisma::ITensorListRef& variables)
 {
     bool ret = false;
     for (auto& variable : variables)
@@ -111,10 +111,10 @@ inline bool isFwGradDefinedTensorList(const xsigma::ITensorListRef& variables)
     return ret;
 }
 
-inline bool isFwGradDefinedTensorList(const xsigma::List<std::optional<xsigma::Tensor>>& li)
+inline bool isFwGradDefinedTensorList(const quarisma::List<std::optional<quarisma::Tensor>>& li)
 {
     bool ret = false;
-    for (auto i : xsigma::irange(li.size()))
+    for (auto i : quarisma::irange(li.size()))
     {
         auto t = li.get(i);
         ret |= isFwGradDefined(t);

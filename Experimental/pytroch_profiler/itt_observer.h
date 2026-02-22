@@ -3,11 +3,11 @@
 
 #include "api.h"
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 void pushITTCallbacks(
-    const ProfilerConfig& config, const std::unordered_set<xsigma::RecordScope>& scopes);
+    const ProfilerConfig& config, const std::unordered_set<quarisma::RecordScope>& scopes);
 
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl
 #endif

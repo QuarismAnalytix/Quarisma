@@ -249,7 +249,7 @@ Module FinalizeOnDevicePTQ(Module& module, QuantType quant_type, const std::stri
     const auto        matched_pos      = method_name.find(kQuantizeString);
     const auto        end_pos          = matched_pos + kQuantizeString.length();
     const std::string orig_method_name = method_name.substr(end_pos);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         matched_pos == 0,
         "Quantized ops can only be added to quantize_",
         orig_method_name,

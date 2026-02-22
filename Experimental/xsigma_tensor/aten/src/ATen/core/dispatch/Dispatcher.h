@@ -1,14 +1,14 @@
 #pragma once
 
-#include <XSigma/SequenceNumber.h>
-#include <XSigma/core/boxing/KernelFunction.h>
-#include <XSigma/core/boxing/impl/boxing.h>
-#include <XSigma/core/dispatch/CppSignature.h>
-#include <XSigma/core/dispatch/OperatorEntry.h>
-#include <XSigma/core/dispatch/RegistrationHandleRAII.h>
-#include <XSigma/core/enum_tag.h>
-#include <XSigma/core/grad_mode.h>
-#include <XSigma/record_function.h>
+#include <Quarisma/SequenceNumber.h>
+#include <Quarisma/core/boxing/KernelFunction.h>
+#include <Quarisma/core/boxing/impl/boxing.h>
+#include <Quarisma/core/dispatch/CppSignature.h>
+#include <Quarisma/core/dispatch/OperatorEntry.h>
+#include <Quarisma/core/dispatch/RegistrationHandleRAII.h>
+#include <Quarisma/core/enum_tag.h>
+#include <Quarisma/core/grad_mode.h>
+#include <Quarisma/record_function.h>
 #include <c10/core/SafePyObject.h>
 #include <c10/util/Exception.h>
 #include <c10/util/LeftRight.h>
@@ -384,14 +384,14 @@ private:
 
     std::list<OperatorDef> operators_;
 #if !defined(C10_MOBILE)
-    LeftRight<xsigma::flat_hash_map<OperatorName, OperatorHandle>> operatorLookupTable_;
+    LeftRight<quarisma::flat_hash_map<OperatorName, OperatorHandle>> operatorLookupTable_;
 #else
-    RWSafeLeftRightWrapper<xsigma::flat_hash_map<OperatorName, OperatorHandle>>
+    RWSafeLeftRightWrapper<quarisma::flat_hash_map<OperatorName, OperatorHandle>>
         operatorLookupTable_;
 #endif
     // Map from namespace to debug string (saying, e.g., where the library was
     // defined)
-    xsigma::flat_hash_map<std::string, std::string> libraries_;
+    quarisma::flat_hash_map<std::string, std::string> libraries_;
 
     std::array<impl::AnnotatedKernel, num_runtime_entries> backendFallbackKernels_;
 

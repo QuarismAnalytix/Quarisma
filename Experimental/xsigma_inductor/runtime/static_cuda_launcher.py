@@ -233,7 +233,7 @@ class StaticallyLaunchedCudaKernel:
         stream: int,
         *args: Unpack[tuple[object, ...]],
     ) -> None:
-        """Actually run the kernel xsigma runtime. This function is the hot codepath."""
+        """Actually run the kernel quarisma runtime. This function is the hot codepath."""
         from torch._C import _StaticCudaLauncher
 
         # Assert load_kernel() has been called and args match

@@ -1,4 +1,4 @@
-# XSigma Profiler System - Complete User Guide
+# Quarisma Profiler System - Complete User Guide
 
 ## Table of Contents
 1. [Overview](#overview)
@@ -9,7 +9,7 @@
 6. [Usage Examples](#usage-examples)
 7. [Function Pipelines](#function-pipelines)
 8. [Intel ITT API Integration](#intel-itt-api-integration)
-9. [XSigma Kineto Integration](#pytorch-kineto-integration)
+9. [Quarisma Kineto Integration](#pytorch-kineto-integration)
 10. [Output Formats](#output-formats)
 11. [Best Practices](#best-practices)
 12. [Troubleshooting](#troubleshooting)
@@ -18,7 +18,7 @@
 
 ## Overview
 
-The XSigma Profiler System is a comprehensive, modular performance analysis framework designed for high-performance applications. It provides:
+The Quarisma Profiler System is a comprehensive, modular performance analysis framework designed for high-performance applications. It provides:
 
 - **High-precision timing measurements** with nanosecond accuracy
 - **Memory usage tracking** with allocation/deallocation monitoring
@@ -28,7 +28,7 @@ The XSigma Profiler System is a comprehensive, modular performance analysis fram
 - **Multiple output formats** (console, JSON, CSV, XML, Chrome Trace)
 - **Minimal performance overhead** designed for production use
 - **Intel ITT API integration** for Intel VTune profiling
-- **XSigma Kineto integration** for comprehensive profiling
+- **Quarisma Kineto integration** for comprehensive profiling
 
 ### Key Features
 
@@ -51,7 +51,7 @@ The XSigma Profiler System is a comprehensive, modular performance analysis fram
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Application Layer                        │
-│  (User Code with XSIGMA_PROFILE_SCOPE macros)             │
+│  (User Code with QUARISMA_PROFILE_SCOPE macros)             │
 └─────────────────────────────────────────────────────────────┘
                               │
 ┌─────────────────────────────────────────────────────────────┐
@@ -107,7 +107,7 @@ The XSigma Profiler System is a comprehensive, modular performance analysis fram
 ```cpp
 #include "profiler/session/profiler.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 int main() {
     // Create profiler session with builder pattern
@@ -124,14 +124,14 @@ int main() {
 
     // Profile a function
     {
-        XSIGMA_PROFILE_FUNCTION();
+        QUARISMA_PROFILE_FUNCTION();
 
         // Your code here
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         // Profile nested operations
         {
-            XSIGMA_PROFILE_SCOPE("nested_operation");
+            QUARISMA_PROFILE_SCOPE("nested_operation");
             std::vector<int> data(1000, 42);
             // More work...
         }
@@ -232,13 +232,13 @@ Generates comprehensive profiling reports.
 
 ```cpp
 // Profile current scope
-XSIGMA_PROFILE_SCOPE("scope_name");
+QUARISMA_PROFILE_SCOPE("scope_name");
 
 // Profile current function
-XSIGMA_PROFILE_FUNCTION();
+QUARISMA_PROFILE_FUNCTION();
 
 // Profile a block of code
-XSIGMA_PROFILE_BLOCK("block_name") {
+QUARISMA_PROFILE_BLOCK("block_name") {
     // Your code here
 }
 ```
@@ -306,7 +306,7 @@ auto session = profiler_session_builder()
 session->start();
 
 {
-    XSIGMA_PROFILE_SCOPE("compute");
+    QUARISMA_PROFILE_SCOPE("compute");
     // Your computation
 }
 
@@ -325,7 +325,7 @@ auto session = profiler_session_builder()
 session->start();
 
 {
-    XSIGMA_PROFILE_SCOPE("memory_intensive");
+    QUARISMA_PROFILE_SCOPE("memory_intensive");
     std::vector<int> data(1000000);
     // Process data
 }
@@ -344,11 +344,11 @@ auto session = profiler_session_builder()
 session->start();
 
 {
-    XSIGMA_PROFILE_SCOPE("level_1");
+    QUARISMA_PROFILE_SCOPE("level_1");
     {
-        XSIGMA_PROFILE_SCOPE("level_2");
+        QUARISMA_PROFILE_SCOPE("level_2");
         {
-            XSIGMA_PROFILE_SCOPE("level_3");
+            QUARISMA_PROFILE_SCOPE("level_3");
             // Nested work
         }
     }
@@ -370,7 +370,7 @@ session->start();
 std::vector<std::thread> threads;
 for (int i = 0; i < 4; ++i) {
     threads.emplace_back([&session, i]() {
-        XSIGMA_PROFILE_SCOPE("thread_" + std::to_string(i));
+        QUARISMA_PROFILE_SCOPE("thread_" + std::to_string(i));
         // Thread-specific work
     });
 }
@@ -394,7 +394,7 @@ auto session = profiler_session_builder()
 session->start();
 
 for (int i = 0; i < 100; ++i) {
-    XSIGMA_PROFILE_SCOPE("repeated_operation");
+    QUARISMA_PROFILE_SCOPE("repeated_operation");
     // Work that varies in duration
 }
 
@@ -412,7 +412,7 @@ auto report = session->generate_report();
 ```
 User Code
     ↓
-XSIGMA_PROFILE_SCOPE macro
+QUARISMA_PROFILE_SCOPE macro
     ↓
 profiler_scope constructor
     ↓
@@ -477,7 +477,7 @@ Return success/failure
 
 ### Enabling ITT API
 
-ITT API is enabled by default in XSigma builds:
+ITT API is enabled by default in Quarisma builds:
 
 ```bash
 cd Scripts
@@ -487,15 +487,15 @@ python setup.py config.build.ninja.clang.debug
 ### Using ITT API with Profiler
 
 ```cpp
-#ifdef XSIGMA_HAS_ITT
+#ifdef QUARISMA_HAS_ITT
 #include <ittnotify.h>
 #endif
 
 #include "profiler/session/profiler.h"
 
 void profile_with_itt() {
-#ifdef XSIGMA_HAS_ITT
-    __itt_domain* domain = __itt_domain_create("XSigmaProfiler");
+#ifdef QUARISMA_HAS_ITT
+    __itt_domain* domain = __itt_domain_create("QuarismaProfiler");
     auto handle = __itt_string_handle_create("ProfiledTask");
     __itt_task_begin(domain, __itt_null, __itt_null, handle);
 #endif
@@ -506,12 +506,12 @@ void profile_with_itt() {
 
     session->start();
     {
-        XSIGMA_PROFILE_SCOPE("task");
+        QUARISMA_PROFILE_SCOPE("task");
         // Your code
     }
     session->stop();
 
-#ifdef XSIGMA_HAS_ITT
+#ifdef QUARISMA_HAS_ITT
     __itt_task_end(domain);
 #endif
 }
@@ -527,20 +527,20 @@ void profile_with_itt() {
 
 ---
 
-## XSigma Kineto Integration
+## Quarisma Kineto Integration
 
 ### Enabling Kineto
 
-Kineto is enabled by default in XSigma builds.
+Kineto is enabled by default in Quarisma builds.
 
 ### Using Kineto Profiler
 
 ```cpp
-#ifdef XSIGMA_HAS_KINETO
+#ifdef QUARISMA_HAS_KINETO
 #include "profiler/kineto_profiler.h"
 
 void profile_with_kineto() {
-    auto profiler = xsigma::kineto_profiler::create();
+    auto profiler = quarisma::kineto_profiler::create();
     if (profiler) {
         if (profiler->start_profiling()) {
             // Your code
@@ -554,16 +554,16 @@ void profile_with_kineto() {
 ### Kineto Configuration
 
 ```cpp
-#ifdef XSIGMA_HAS_KINETO
-xsigma::kineto_profiler::profiling_config config;
+#ifdef QUARISMA_HAS_KINETO
+quarisma::kineto_profiler::profiling_config config;
 config.enable_cpu_tracing = true;
 config.enable_gpu_tracing = false;
 config.enable_memory_profiling = false;
 config.output_dir = "./kineto_profiles";
-config.trace_name = "xsigma_trace";
+config.trace_name = "quarisma_trace";
 config.max_activities = 0;  // Unlimited
 
-auto profiler = xsigma::kineto_profiler::create_with_config(config);
+auto profiler = quarisma::kineto_profiler::create_with_config(config);
 #endif
 ```
 
@@ -643,7 +643,7 @@ nested_scope,500000,512000,256000,1
 
 ### XPlane Format
 
-XPlane is a structured format used internally by XSigma for comprehensive profiling data representation with planes, lines, and events.
+XPlane is a structured format used internally by Quarisma for comprehensive profiling data representation with planes, lines, and events.
 
 ---
 
@@ -651,12 +651,12 @@ XPlane is a structured format used internally by XSigma for comprehensive profil
 
 ### 1. Use RAII Scopes
 
-Prefer `XSIGMA_PROFILE_SCOPE` over manual start/stop:
+Prefer `QUARISMA_PROFILE_SCOPE` over manual start/stop:
 
 ```cpp
 // Good
 {
-    XSIGMA_PROFILE_SCOPE("operation");
+    QUARISMA_PROFILE_SCOPE("operation");
     // Work
 }
 
@@ -672,10 +672,10 @@ Use short, descriptive names to reduce overhead:
 
 ```cpp
 // Good
-XSIGMA_PROFILE_SCOPE("compute");
+QUARISMA_PROFILE_SCOPE("compute");
 
 // Avoid
-XSIGMA_PROFILE_SCOPE("very_long_descriptive_name_for_computation");
+QUARISMA_PROFILE_SCOPE("very_long_descriptive_name_for_computation");
 ```
 
 ### 3. Configure Appropriately
@@ -801,7 +801,7 @@ The Enhanced Profiler is designed for minimal overhead:
 std::vector<std::vector<double>> matrix_multiply(
     const std::vector<std::vector<double>>& a,
     const std::vector<std::vector<double>>& b) {
-    XSIGMA_PROFILE_SCOPE("matrix_multiply");
+    QUARISMA_PROFILE_SCOPE("matrix_multiply");
 
     const size_t rows_a = a.size();
     const size_t cols_a = a[0].size();
@@ -811,9 +811,9 @@ std::vector<std::vector<double>> matrix_multiply(
         rows_a, std::vector<double>(cols_b, 0.0));
 
     {
-        XSIGMA_PROFILE_SCOPE("matrix_computation");
+        QUARISMA_PROFILE_SCOPE("matrix_computation");
         for (size_t i = 0; i < rows_a; ++i) {
-            XSIGMA_PROFILE_SCOPE("row_" + std::to_string(i));
+            QUARISMA_PROFILE_SCOPE("row_" + std::to_string(i));
             for (size_t j = 0; j < cols_b; ++j) {
                 for (size_t k = 0; k < cols_a; ++k) {
                     result[i][j] += a[i][k] * b[k][j];
@@ -855,24 +855,24 @@ int main() {
 
 ```cpp
 void merge_sort(std::vector<double>& arr, size_t left, size_t right, int depth = 0) {
-    XSIGMA_PROFILE_SCOPE("merge_sort_depth_" + std::to_string(depth));
+    QUARISMA_PROFILE_SCOPE("merge_sort_depth_" + std::to_string(depth));
 
     if (left >= right) return;
 
     size_t mid = left + (right - left) / 2;
 
     {
-        XSIGMA_PROFILE_SCOPE("sort_left");
+        QUARISMA_PROFILE_SCOPE("sort_left");
         merge_sort(arr, left, mid, depth + 1);
     }
 
     {
-        XSIGMA_PROFILE_SCOPE("sort_right");
+        QUARISMA_PROFILE_SCOPE("sort_right");
         merge_sort(arr, mid + 1, right, depth + 1);
     }
 
     {
-        XSIGMA_PROFILE_SCOPE("merge");
+        QUARISMA_PROFILE_SCOPE("merge");
         std::vector<double> temp(right - left + 1);
         size_t i = left, j = mid + 1, k = 0;
 
@@ -992,7 +992,7 @@ int main() {
       "name": "process_name",
       "ph": "M",
       "pid": 1,
-      "args": {"name": "XSigmaProfiler"}
+      "args": {"name": "QuarismaProfiler"}
     },
     {
       "name": "thread_name",
@@ -1060,7 +1060,7 @@ row_2,50000000,0,0,1,100,2
 ### Example Output: Console Format
 
 ```
-XSigma Profiler Report
+Quarisma Profiler Report
 ======================
 
 Total Duration: 5.23 seconds
@@ -1101,6 +1101,6 @@ Timing Statistics:
 ## See Also
 
 - [Intel ITT API Documentation](https://github.com/intel/ittapi)
-- [XSigma Kineto](https://github.com/pytorch/kineto)
+- [Quarisma Kineto](https://github.com/pytorch/kineto)
 - [Chrome Trace Format](https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU)
 - [XPlane Format](Library/Core/profiler/exporters/xplane/)

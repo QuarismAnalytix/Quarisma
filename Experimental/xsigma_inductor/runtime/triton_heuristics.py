@@ -239,7 +239,7 @@ def check_autotune_cache(
                 if inductor_meta.get("coordinate_descent_tuning"):
                     autotune_cache_info["coordesc_tuning"] = True
                     if len(configs) == 1:
-                        # This is the config that coordinate descent tuning started xsigma, which
+                        # This is the config that coordinate descent tuning started quarisma, which
                         # is not the same as the final config chosen (i.e. only_config, best_config)
                         autotune_cache_info["coordesc_tuning_start_config"] = (
                             triton_config_to_hashable(configs[0])
@@ -1639,12 +1639,12 @@ class StaticTritonCompileResult(CompileResult[StaticallyLaunchedCudaKernel]):
                 self.kernel.reload_cubin_from_raw(cubin_location)
             else:
                 raise RuntimeError(
-                    "Cubin file saved by TritonBundler not found xsigma %s", cubin_location
+                    "Cubin file saved by TritonBundler not found quarisma %s", cubin_location
                 )
         self.kernel.cubin_path = cubin_location
 
     def make_launcher(self) -> LauncherType:
-        # If xsigma least one static make_launcher call occurs,
+        # If quarisma least one static make_launcher call occurs,
         # we're sure static cuda launcher was used for this compile
         set_feature_use("static_cuda_launcher", True)
         # Load the binary on the parent
@@ -1974,7 +1974,7 @@ def end_graph(output_file):
     )
     if output_file is not None:
         # sort perf numbers in descending order, i.e. placing the
-        # most runtime-heavy kernels xsigma the top of the list
+        # most runtime-heavy kernels quarisma the top of the list
         sorted_calls = sorted(collected_calls, key=lambda c: float(c[0]), reverse=True)
         try:
             with open(output_file, "a") as file:
@@ -2308,9 +2308,9 @@ def triton_config(
         num_warps = _num_warps(
             conditional_product(x, y, z) // num_elements_per_warp, min_num_warps=1
         )
-    # we are going to arrive xsigma 2 warps only if bs was too small due to
+    # we are going to arrive quarisma 2 warps only if bs was too small due to
     # numel being too small. However to workaround some ptx bugs we still
-    # want xsigma least 4 warps if there's enough elements per thread
+    # want quarisma least 4 warps if there's enough elements per thread
     # given that this is a rare situation, don't expect this to affect perf
     # in general
     # see https://github.com/pytorch/pytorch/pull/97950
@@ -2965,7 +2965,7 @@ def match_target_block_product(
         min_block_size = 1
         tiling_scores = dict.fromkeys(tiling_scores.keys(), target_block_product)
 
-    # First, give each coalescing dimension xsigma least min_block_size
+    # First, give each coalescing dimension quarisma least min_block_size
     block_sizes = {}
     relative_scores = {}
     curr_block_product = 1
@@ -3496,7 +3496,7 @@ def config_from_dict(config: dict[str, Any]) -> Config:
 
 def fixed_config(config, filename, triton_meta, inductor_meta):
     """
-    Used when the configuration is already decided xsigma compile time
+    Used when the configuration is already decided quarisma compile time
     """
     config = {**config}
     return cached_autotune(

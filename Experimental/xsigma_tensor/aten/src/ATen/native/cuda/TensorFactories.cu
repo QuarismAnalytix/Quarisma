@@ -1,28 +1,28 @@
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
-#include <XSigma/core/Tensor.h>
-#include <XSigma/Dispatch.h>
-#include <XSigma/cuda/CUDAApplyUtils.cuh>
-#include <XSigma/cuda/CUDAContext.h>
-#include <XSigma/cuda/EmptyTensor.h>
-#include <XSigma/InitialTensorOptions.h>
-#include <XSigma/native/cuda/Resize.h>
-#include <XSigma/native/TensorFactories.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/Dispatch.h>
+#include <Quarisma/cuda/CUDAApplyUtils.cuh>
+#include <Quarisma/cuda/CUDAContext.h>
+#include <Quarisma/cuda/EmptyTensor.h>
+#include <Quarisma/InitialTensorOptions.h>
+#include <Quarisma/native/cuda/Resize.h>
+#include <Quarisma/native/TensorFactories.h>
 #include <c10/util/accumulate.h>
 #include <c10/util/Exception.h>
-#include <XSigma/native/cuda/Loops.cuh>
+#include <Quarisma/native/cuda/Loops.cuh>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
-#include <XSigma/NativeFunctions.h>
+#include <Quarisma/Functions.h>
+#include <Quarisma/NativeFunctions.h>
 #else
-#include <XSigma/ops/_efficientzerotensor_native.h>
-#include <XSigma/ops/empty_native.h>
-#include <XSigma/ops/empty_strided_native.h>
-#include <XSigma/ops/eye_native.h>
-#include <XSigma/ops/tril_indices_native.h>
-#include <XSigma/ops/tril_native.h>
-#include <XSigma/ops/triu_indices_native.h>
-#include <XSigma/ops/triu_native.h>
+#include <Quarisma/ops/_efficientzerotensor_native.h>
+#include <Quarisma/ops/empty_native.h>
+#include <Quarisma/ops/empty_strided_native.h>
+#include <Quarisma/ops/eye_native.h>
+#include <Quarisma/ops/tril_indices_native.h>
+#include <Quarisma/ops/tril_native.h>
+#include <Quarisma/ops/triu_indices_native.h>
+#include <Quarisma/ops/triu_native.h>
 #endif
 
 #include <algorithm>

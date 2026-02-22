@@ -324,7 +324,7 @@ conv3d_template = TritonTemplate(
 
 aten_convolution = ExternKernelChoice(
     torch.convolution,
-    "xsigma::convolution",
+    "quarisma::convolution",
     has_out_variant=False,
     op_overload=aten.convolution.default,
 )

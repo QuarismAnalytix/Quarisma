@@ -1,1 +1,1 @@
-#include <XSigma/core/NamedTensor.h>
+#include <Quarisma/core/NamedTensor.h>

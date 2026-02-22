@@ -17,12 +17,12 @@
 #include <sstream>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "memory/helper/memory_allocator.h"
 #include "memory/unified_memory_stats.h"
 #include "memory/visualization/ascii_visualizer.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 namespace
 {
@@ -146,7 +146,7 @@ std::unique_ptr<ascii_visualizer> create_custom_test_visualizer()
 /**
  * @brief Test histogram creation with allocation size distribution
  */
-XSIGMATEST(AsciiVisualizer, create_histogram)
+QUARISMATEST(AsciiVisualizer, create_histogram)
 {
     auto visualizer        = create_test_visualizer();
     auto custom_visualizer = create_custom_test_visualizer();
@@ -181,7 +181,7 @@ XSIGMATEST(AsciiVisualizer, create_histogram)
 /**
  * @brief Test timeline visualization of memory usage over time
  */
-XSIGMATEST(AsciiVisualizer, create_timeline)
+QUARISMATEST(AsciiVisualizer, create_timeline)
 {
     auto visualizer    = create_test_visualizer();
     auto timeline_data = create_sample_timeline();
@@ -210,7 +210,7 @@ XSIGMATEST(AsciiVisualizer, create_timeline)
 /**
  * @brief Test fragmentation analysis and memory layout visualization
  */
-XSIGMATEST(AsciiVisualizer, create_fragmentation_map)
+QUARISMATEST(AsciiVisualizer, create_fragmentation_map)
 {
     auto visualizer            = create_test_visualizer();
     auto custom_visualizer     = create_custom_test_visualizer();
@@ -247,7 +247,7 @@ XSIGMATEST(AsciiVisualizer, create_fragmentation_map)
 /**
  * @brief Test memory usage bar charts
  */
-XSIGMATEST(AsciiVisualizer, create_usage_bars)
+QUARISMATEST(AsciiVisualizer, create_usage_bars)
 {
     auto   visualizer    = create_test_visualizer();
     size_t current_usage = 512 * 1024ULL;      // 512 MB
@@ -287,7 +287,7 @@ XSIGMATEST(AsciiVisualizer, create_usage_bars)
 /**
  * @brief Test performance summary display
  */
-XSIGMATEST(AsciiVisualizer, create_performance_summary)
+QUARISMATEST(AsciiVisualizer, create_performance_summary)
 {
     auto visualizer   = create_test_visualizer();
     auto timing_stats = create_sample_timing_stats();
@@ -316,7 +316,7 @@ XSIGMATEST(AsciiVisualizer, create_performance_summary)
 /**
  * @brief Test size bucket creation for histograms
  */
-XSIGMATEST(AsciiVisualizer, create_size_buckets)
+QUARISMATEST(AsciiVisualizer, create_size_buckets)
 {
     auto visualizer       = create_test_visualizer();
     auto allocation_sizes = create_sample_allocation_sizes();
@@ -356,7 +356,7 @@ XSIGMATEST(AsciiVisualizer, create_size_buckets)
 /**
  * @brief Test configuration management
  */
-XSIGMATEST(AsciiVisualizer, configuration_management)
+QUARISMATEST(AsciiVisualizer, configuration_management)
 {
     auto visualizer = create_test_visualizer();
 
@@ -398,7 +398,7 @@ XSIGMATEST(AsciiVisualizer, configuration_management)
 /**
  * @brief Test edge cases and error handling
  */
-XSIGMATEST(AsciiVisualizer, edge_cases_and_error_handling)
+QUARISMATEST(AsciiVisualizer, edge_cases_and_error_handling)
 {
     auto visualizer = create_test_visualizer();
 

@@ -1408,7 +1408,7 @@ public:
     // keys
     //       in TensorImpl constructor.
     // DON'T USE THIS API!! It's only created for testing purpose in
-    // file aten/src/XSigma/core/boxing/impl/test_helpers.h
+    // file aten/src/Quarisma/core/boxing/impl/test_helpers.h
     void remove_autograd_key() { key_set_ = key_set_ - autograd_dispatch_keyset; }
 
     // Inference tensor doesn't have autograd or ADInplaceOrView key.

@@ -176,26 +176,26 @@ const int   _asym_zero_point = 0;
 const float _sym_scale       = 2.0f / 256.0f;
 const int   _sym_zero_point  = 128;
 // quantization parameters for ops with range 0 to 1
-// for example: aten/src/XSigma/native/quantized/cpu/qsigmoid.cpp
-static std::tuple<xsigma::QScheme, QParamVector> _per_tensor_asym_qparam = std::make_tuple(
-    xsigma::kPerTensorAffine,
+// for example: aten/src/Quarisma/native/quantized/cpu/qsigmoid.cpp
+static std::tuple<quarisma::QScheme, QParamVector> _per_tensor_asym_qparam = std::make_tuple(
+    quarisma::kPerTensorAffine,
     QParamVector(
         {std::make_pair(".scale", IValue(_asym_scale)),
          std::make_pair(".zero_point", IValue(_asym_zero_point)),
-         std::make_pair(".scalar_type", IValue(xsigma::kQUInt8))}));
+         std::make_pair(".scalar_type", IValue(quarisma::kQUInt8))}));
 
 // quantization parameters for ops with range -1 to 1
-// for example: aten/src/XSigma/native/quantized/cpu/qtanh.cpp
-static std::tuple<xsigma::QScheme, QParamVector> _per_tensor_sym_qparam = std::make_tuple(
-    xsigma::kPerTensorAffine,
+// for example: aten/src/Quarisma/native/quantized/cpu/qtanh.cpp
+static std::tuple<quarisma::QScheme, QParamVector> _per_tensor_sym_qparam = std::make_tuple(
+    quarisma::kPerTensorAffine,
     QParamVector(
         {std::make_pair(".scale", IValue(_sym_scale)),
          std::make_pair(".zero_point", IValue(_sym_zero_point)),
-         std::make_pair(".scalar_type", IValue(xsigma::kQUInt8))}));
+         std::make_pair(".scalar_type", IValue(quarisma::kQUInt8))}));
 
 // Map from aten op symbol to the quantization parameters
 // for the ops with fixed quantization parameters
-static std::unordered_map<NodeKind, std::tuple<xsigma::QScheme, QParamVector>> _fixed_qparams_map =
+static std::unordered_map<NodeKind, std::tuple<quarisma::QScheme, QParamVector>> _fixed_qparams_map =
     {
         {Symbol::aten("hardsigmoid"), _per_tensor_asym_qparam},
         {Symbol::aten("hardsigmoid_"), _per_tensor_asym_qparam},
@@ -221,7 +221,7 @@ static std::vector<std::string> _propagate_quant_single_input_ops = {"cat"};
 // Rules are slightly different for binary ops like `aten::add`, for these ops,
 // if both of the inputs are Tensor, we'll quantize the output only if both of
 // the inputs are quantized
-// if the second input is a Scalar, we'll only look xsigma the first input to decide
+// if the second input is a Scalar, we'll only look quarisma the first input to decide
 // if we need to quantize the output
 static std::vector<std::string> _propagate_quant_binary_ops = {"add", "add_", "mul", "mul_"};
 
@@ -332,7 +332,7 @@ void cloneMethod(
     const Function& method      = module.get_method(orig_method_name).function();
     auto            graph       = toGraphFunction(method).graph()->copy();
     const auto&     schema      = method.getSchema();
-    const auto this_method_name = xsigma::QualifiedName(*module.type()->name(), new_method_name);
+    const auto this_method_name = quarisma::QualifiedName(*module.type()->name(), new_method_name);
     auto       copied =
         module._ivalue()->compilation_unit()->create_function(this_method_name, std::move(graph));
     module.type()->addMethod(copied);
@@ -514,7 +514,7 @@ bool isBinaryOpWithScalarInput(Node* n)
     return isPropagateQuantBinaryOp(n) && isScalar(n->input(1));
 }
 
-std::optional<std::tuple<xsigma::QScheme, QParamVector>> getFixedQParams(Node* n)
+std::optional<std::tuple<quarisma::QScheme, QParamVector>> getFixedQParams(Node* n)
 {
     static std::vector<NodeKind> fixed_qparam_funcs;
     std::transform(
@@ -524,7 +524,7 @@ std::optional<std::tuple<xsigma::QScheme, QParamVector>> getFixedQParams(Node* n
         [](const auto& pair) { return pair.first; });
     if (isAtenFunc(n, fixed_qparam_funcs))
     {
-        return _fixed_qparams_map.xsigma(n->kind());
+        return _fixed_qparams_map.quarisma(n->kind());
     }
     return std::nullopt;
 }
@@ -581,7 +581,7 @@ std::shared_ptr<Graph> getCallFunctionGraph(Node* n)
     auto* func_node = n->input(0)->node();
     auto  func      = func_node->output()->type()->expectRef<FunctionType>().function();
     auto  graphFunc = tryToGraphFunction(*func);
-    XSIGMA_CHECK(graphFunc, "Quantization only works for graph function");
+    QUARISMA_CHECK(graphFunc, "Quantization only works for graph function");
     return graphFunc->graph();
 }
 
@@ -649,7 +649,7 @@ std::vector<std::string> getModuleAccessPath(Value* instance, Value* self)
         // trace back the chain of GetAttr
         iter = get_attr->inputs()[0];
     }
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         iter == self,
         "Can't handle the access pattern of GetAttr "
         " in getModuleAccessPath, traced back to:",
@@ -708,7 +708,7 @@ bool is_int_constant(
     int                                            value)
 {
     const auto& match_vmap = match.values_map;
-    auto        v          = toIValue(match_vmap.xsigma(vmap.xsigma(vname)));
+    auto        v          = toIValue(match_vmap.quarisma(vmap.quarisma(vname)));
     return v && v->isInt() && v->toInt() == value;
 }
 
@@ -719,7 +719,7 @@ static bool is_functional(
     const std::string&                             functional)
 {
     const auto& match_vmap = match.values_map;
-    Value*      v          = match_vmap.xsigma(vmap.xsigma(vname));
+    Value*      v          = match_vmap.quarisma(vmap.quarisma(vname));
     return v->type()->cast<FunctionType>() && getFuncName(v) == functional;
 }
 
@@ -747,7 +747,7 @@ static bool is_module(
     const std::string&                             module_qualified_name)
 {
     const auto& match_vmap  = match.values_map;
-    Value*      v           = match_vmap.xsigma(vmap.xsigma(vname));
+    Value*      v           = match_vmap.quarisma(vmap.quarisma(vname));
     auto        module_name = getModuleName(v);
     if (module_name.has_value())
     {

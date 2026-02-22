@@ -1,6 +1,6 @@
-#include <XSigma/Dispatch.h>
+#include <Quarisma/Dispatch.h>
 #if defined ENABLE_RECORD_KERNEL_FUNCTION_DTYPE
-#include <XSigma/record_function.h>
+#include <Quarisma/record_function.h>
 
 namespace at::detail
 {

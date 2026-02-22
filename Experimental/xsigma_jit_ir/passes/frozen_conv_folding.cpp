@@ -1,4 +1,4 @@
-#include <XSigma/Utils.h>
+#include <Quarisma/Utils.h>
 #include <torch/csrc/jit/ir/constants.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/jit_log.h>
@@ -8,18 +8,18 @@
 #include <torch/csrc/jit/passes/frozen_conv_folding.h>
 #include <torch/csrc/jit/passes/utils/optimization_utils.h>
 #include <torch/csrc/jit/tensorexpr/types.h>
-#include <xsigma/core/ScalarType.h>
-#include <xsigma/util/accumulate.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/core/ScalarType.h>
+#include <quarisma/util/accumulate.h>
+#include <quarisma/util/irange.h>
 
 #include "util/exception.h"
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/ones_like.h>
-#include <XSigma/ops/zeros.h>
-#include <XSigma/ops/zeros_like.h>
+#include <Quarisma/ops/ones_like.h>
+#include <Quarisma/ops/zeros.h>
+#include <Quarisma/ops/zeros_like.h>
 #endif
 
 namespace torch::jit
@@ -28,7 +28,7 @@ namespace torch::jit
 namespace
 {
 
-using Tensor = xsigma::Tensor;
+using Tensor = quarisma::Tensor;
 
 bool supportedConvNode(Node* n)
 {
@@ -59,9 +59,9 @@ bool FoldFrozenConvBatchnorm(Block* b)
             graph_modified |= FoldFrozenConvBatchnorm(block);
         }
 
-        if (n->kind() == aten::batch_norm && supportedConvNode(n->inputs().xsigma(0)->node()))
+        if (n->kind() == aten::batch_norm && supportedConvNode(n->inputs().quarisma(0)->node()))
         {
-            auto conv = n->inputs().xsigma(0)->node();
+            auto conv = n->inputs().quarisma(0)->node();
             auto bn   = n;
             if (nonConstantParameters(conv) || nonConstantParameters(bn))
             {
@@ -95,14 +95,14 @@ bool FoldFrozenConvBatchnorm(Block* b)
                 // casted inputs to conv. And since CUDA conv implementation requires
                 // all the inputs to have the same scalar dtype, we need to make this
                 // placeholder have the same type as conv_w.
-                xsigma::ScalarType bias_dtype   = bn_rm.scalar_type();
-                xsigma::ScalarType weight_dtype = conv_w.scalar_type();
-                if ((weight_dtype == xsigma::kHalf || weight_dtype == xsigma::kBFloat16) &&
-                    bias_dtype == xsigma::kFloat)
+                quarisma::ScalarType bias_dtype   = bn_rm.scalar_type();
+                quarisma::ScalarType weight_dtype = conv_w.scalar_type();
+                if ((weight_dtype == quarisma::kHalf || weight_dtype == quarisma::kBFloat16) &&
+                    bias_dtype == quarisma::kFloat)
                 {
                     bias_dtype = weight_dtype;
                 }
-                conv_b = xsigma::zeros_like(bn_rm, xsigma::TensorOptions().dtype(bias_dtype));
+                conv_b = quarisma::zeros_like(bn_rm, quarisma::TensorOptions().dtype(bias_dtype));
             }
             else
             {
@@ -111,7 +111,7 @@ bool FoldFrozenConvBatchnorm(Block* b)
             Tensor bn_w;
             if (bn->namedInput("weight")->type() == NoneType::get())
             {
-                bn_w = xsigma::ones_like(bn_rm);
+                bn_w = quarisma::ones_like(bn_rm);
             }
             else
             {
@@ -120,7 +120,7 @@ bool FoldFrozenConvBatchnorm(Block* b)
             Tensor bn_b;
             if (n->namedInput("bias")->type() == NoneType::get())
             {
-                bn_b = xsigma::zeros_like(bn_rm);
+                bn_b = quarisma::zeros_like(bn_rm);
             }
             else
             {
@@ -224,16 +224,16 @@ bool checkConvAndBroadcastingOpPreConditions(Node* conv, Node* op)
         return false;
     }
 
-    if (op->inputs().xsigma(1)->type()->cast<TensorType>())
+    if (op->inputs().quarisma(1)->type()->cast<TensorType>())
     {
-        auto op_tensor = constant_as<Tensor>(op->inputs().xsigma(1)).value();
+        auto op_tensor = constant_as<Tensor>(op->inputs().quarisma(1)).value();
         if (!opDoesNotBroadCastWithConv(op_tensor, weight_tensor))
         {
             return false;
         }
 
         if (!op_tensor.is_floating_point() &&
-            xsigma::promoteTypes(op_tensor.scalar_type(), weight_tensor.scalar_type()) !=
+            quarisma::promoteTypes(op_tensor.scalar_type(), weight_tensor.scalar_type()) !=
                 weight_tensor.scalar_type())
         {
             return false;
@@ -243,7 +243,7 @@ bool checkConvAndBroadcastingOpPreConditions(Node* conv, Node* op)
 }
 
 Tensor resizeConstantScalarOrTensorToShape(
-    Value* v, const std::vector<int64_t>& shape, xsigma::TensorOptions options)
+    Value* v, const std::vector<int64_t>& shape, quarisma::TensorOptions options)
 {
     Tensor ret_tensor;
     if (v->type()->cast<TensorType>())
@@ -252,7 +252,7 @@ Tensor resizeConstantScalarOrTensorToShape(
     }
     else
     {
-        ret_tensor = xsigma::zeros(shape, options);
+        ret_tensor = quarisma::zeros(shape, options);
         if (v->type()->cast<IntType>())
         {
             ret_tensor.fill_(constant_as<int64_t>(v).value());
@@ -271,7 +271,7 @@ Tensor resizeConstantScalarOrTensorToShape(
     }
     else
     {
-        TORCH_INTERNAL_ASSERT(ret_tensor.numel() == xsigma::multiply_integers(shape));
+        TORCH_INTERNAL_ASSERT(ret_tensor.numel() == quarisma::multiply_integers(shape));
         ret_tensor = ret_tensor.view(shape);
     }
     return ret_tensor;
@@ -287,9 +287,9 @@ bool FoldFrozenConvAddOrSub(Block* b)
             graph_modified |= FoldFrozenConvAddOrSub(block);
         }
 
-        if (supportedAddOrSub(n) && supportedConvNode(n->inputs().xsigma(0)->node()))
+        if (supportedAddOrSub(n) && supportedConvNode(n->inputs().quarisma(0)->node()))
         {
-            auto conv       = n->inputs().xsigma(0)->node();
+            auto conv       = n->inputs().quarisma(0)->node();
             auto add_or_sub = n;
 
             if (!checkConvAndBroadcastingOpPreConditions(conv, add_or_sub))
@@ -300,11 +300,11 @@ bool FoldFrozenConvAddOrSub(Block* b)
             Tensor weight_tensor = constant_as<Tensor>(conv->namedInput("weight")).value();
 
             Tensor add_or_sub_tensor = resizeConstantScalarOrTensorToShape(
-                add_or_sub->inputs().xsigma(1), {weight_tensor.size(0)}, weight_tensor.options());
+                add_or_sub->inputs().quarisma(1), {weight_tensor.size(0)}, weight_tensor.options());
             Tensor bias;
             if (conv->namedInput("bias")->type() == NoneType::get())
             {
-                bias = xsigma::zeros_like(add_or_sub_tensor, weight_tensor.dtype());
+                bias = quarisma::zeros_like(add_or_sub_tensor, weight_tensor.dtype());
             }
             else
             {
@@ -356,9 +356,9 @@ bool FoldFrozenConvMulOrDiv(Block* b)
             graph_modified |= FoldFrozenConvMulOrDiv(block);
         }
 
-        if (supportedMulOrDiv(n) && supportedConvNode(n->inputs().xsigma(0)->node()))
+        if (supportedMulOrDiv(n) && supportedConvNode(n->inputs().quarisma(0)->node()))
         {
-            auto conv       = n->inputs().xsigma(0)->node();
+            auto conv       = n->inputs().quarisma(0)->node();
             auto mul_or_div = n;
 
             if (!checkConvAndBroadcastingOpPreConditions(conv, mul_or_div))
@@ -373,7 +373,7 @@ bool FoldFrozenConvMulOrDiv(Block* b)
             // channels-out resize it to the shape that will broadcast to
             // weight_tensor when the op is run so we dont change weight size
             std::vector<int64_t> weight_compatible_size = {out_channels};
-            for ([[maybe_unused]] const auto i : xsigma::irange(1, weight_tensor.ndimension()))
+            for ([[maybe_unused]] const auto i : quarisma::irange(1, weight_tensor.ndimension()))
             {
                 weight_compatible_size.push_back(1);
             }
@@ -381,7 +381,7 @@ bool FoldFrozenConvMulOrDiv(Block* b)
             WithInsertPoint guard(conv);
 
             Tensor mul_tensor = resizeConstantScalarOrTensorToShape(
-                mul_or_div->inputs().xsigma(1), weight_compatible_size, weight_tensor.options());
+                mul_or_div->inputs().quarisma(1), weight_compatible_size, weight_tensor.options());
 
             // First fold with weight tensor
             mul_or_div->replaceInputWith(
@@ -406,7 +406,7 @@ bool FoldFrozenConvMulOrDiv(Block* b)
                 Tensor bias = constant_as<Tensor>(conv->namedInput("bias")).value();
                 // bias is of shape {channels_out}
                 auto mul_tensor = resizeConstantScalarOrTensorToShape(
-                    mul_or_div->inputs().xsigma(1), {out_channels}, bias.options());
+                    mul_or_div->inputs().quarisma(1), {out_channels}, bias.options());
 
                 mul_or_div->replaceInput(0, b->owningGraph()->insertConstant(bias));
                 mul_or_div->replaceInput(1, b->owningGraph()->insertConstant(mul_tensor));

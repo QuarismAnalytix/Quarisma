@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -32,8 +32,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef XSIGMA_PROFILER_CPU_HOST_TRACER_UTILS_H_
-#define XSIGMA_PROFILER_CPU_HOST_TRACER_UTILS_H_
+#ifndef QUARISMA_PROFILER_CPU_HOST_TRACER_UTILS_H_
+#define QUARISMA_PROFILER_CPU_HOST_TRACER_UTILS_H_
 
 #include <cstdint>
 
@@ -41,7 +41,7 @@ limitations under the License.
 #include "profiler/native/exporters/xplane/xplane.h"
 #include "profiler/native/tracing/traceme_recorder.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace profiler
 {
@@ -62,10 +62,10 @@ namespace profiler
  * @param events The collection of TraceMe events to convert (moved)
  * @param raw_plane The XPlane to populate with converted events
  */
-XSIGMA_API void convert_complete_events_to_xplane(
+QUARISMA_API void convert_complete_events_to_xplane(
     uint64_t start_timestamp_ns, traceme_recorder::Events&& events, xplane* raw_plane);
 
 }  // namespace profiler
-}  // namespace xsigma
+}  // namespace quarisma
 
-#endif  // XSIGMA_PROFILER_CPU_HOST_TRACER_UTILS_H_
+#endif  // QUARISMA_PROFILER_CPU_HOST_TRACER_UTILS_H_

@@ -1,7 +1,7 @@
 from typing import *  # noqa: F403
 
 
-# Python version of xsigma/core/ConstantSymNodeImpl.cpp
+# Python version of quarisma/core/ConstantSymNodeImpl.cpp
 # This needs to exist because the Python version of nested int is not compatible
 # with the C++ version of constant symnode.
 class ConstantIntNode:

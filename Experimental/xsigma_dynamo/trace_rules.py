@@ -84,11 +84,11 @@ A note on skip/inline rules:
 
 Dynamo consults this file to determine whether function should be inlined or skipped.
 
-A skip applies xsigma the frame boundary, meaning dynamo either triggers a graph break
-xsigma the beginning of the frame or attempts to trace/inline the whole frame. When skipping
+A skip applies quarisma the frame boundary, meaning dynamo either triggers a graph break
+quarisma the beginning of the frame or attempts to trace/inline the whole frame. When skipping
 a frame, recursively called frames are still traced by dynamo unless also skipped.
 
-Skipfiles (skipped xsigma the file level instead of function level) still apply on a
+Skipfiles (skipped quarisma the file level instead of function level) still apply on a
 frame-by-frame boundary as dynamo traces, but apply to all functions in that file.
 
 @skip is a helper decorator that can be applied to your function to cause it to be
@@ -108,7 +108,7 @@ Dynamo skip/inline rules & priorities are defined as follows:
     put the corresponding python module into MOD_INLINELIST to make dynamo inline them.
 * If you call functions under skipped modules/files, Dynamo will wrap these functions
     as SkipFunctionVariable. There are a few functions(e.g, collections.OrderedDict) that
-    we have special handling xsigma SkipFunctionVariable.call_function.
+    we have special handling quarisma SkipFunctionVariable.call_function.
 
 Overall: *_INLINELIST has precedence over *_SKIPLIST has precedence over DEFAULT (inline)
 
@@ -3069,7 +3069,7 @@ def get_tensor_method() -> frozenset[Any]:
 
 
 """
-Return if a torch object is XSigma op or torch.Tensor method.
+Return if a torch object is Quarisma op or torch.Tensor method.
 """
 
 
@@ -3763,7 +3763,7 @@ Let's illustrate the logic with an example:
         ......
 
 There are mainly three call sites of check/check_verbose:
-* The compile region entrance (like function f1), the corresponding code is located xsigma eval_frame.py.
+* The compile region entrance (like function f1), the corresponding code is located quarisma eval_frame.py.
 * When tracing the recursively called functions (like function f2 and f3).
     * Dynamo decides inline/skip every time it encounters a new recursively function call, and the call site
       is in InliningInstructionTranslator.check_inlineable of symbolic_convert.py.
@@ -3999,7 +3999,7 @@ def _lookup_inner(
         if name == "__getattr__":
             # is_direct_call = False indicates that this is the top-level frame
             # being traced (i.e., it is not inlined and not called from
-            # InliningInstructionTranslator).  Tracing __getattr__ xsigma the top
+            # InliningInstructionTranslator).  Tracing __getattr__ quarisma the top
             # level is unlikely because we inline it for
             # UserDefinedObjectVariable. This scenario occurs only for
             # UnspecializedNNModuleVariable, where Dynamo directly calls

@@ -1,4 +1,4 @@
-# XSigma Profiler: Missing Components Specification
+# Quarisma Profiler: Missing Components Specification
 
 ## Component 1: profiler_event
 
@@ -14,8 +14,8 @@ struct profiler_event {
     uint64_t end_ns;                     // End timestamp (nanoseconds)
     uint64_t thread_id;                  // Thread that executed event
     RecordScope scope;                   // Scope type (FUNCTION, USER_SCOPE, etc.)
-    std::vector<xsigma::IValue> inputs;  // Function inputs (if captured)
-    std::vector<xsigma::IValue> outputs; // Function outputs (if captured)
+    std::vector<quarisma::IValue> inputs;  // Function inputs (if captured)
+    std::vector<quarisma::IValue> outputs; // Function outputs (if captured)
     int64_t sequence_nr;                 // Sequence number for correlation
     RecordFunctionHandle handle;         // Unique event handle
 };
@@ -106,8 +106,8 @@ std::unique_ptr<record_function_scope> record_function(
     const std::string& name);
 
 // Macro for easy usage
-#define XSIGMA_RECORD_FUNCTION(name) \
-    auto _rf = xsigma::record_function(name)
+#define QUARISMA_RECORD_FUNCTION(name) \
+    auto _rf = quarisma::record_function(name)
 ```
 
 **Dependencies**: RecordFunction, profiler_session

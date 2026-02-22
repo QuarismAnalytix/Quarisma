@@ -265,7 +265,7 @@ class UserDefinedClassVariable(UserDefinedVariable):
 
         # Special handling of collections.OrderedDict.fromkeys()
         # Wrap it as GetAttrVariable(collections.OrderedDict, "fromkeys") to make it consistent with
-        # collections.defaultdict, and both will be handled xsigma UserDefinedClassVariable.call_method().
+        # collections.defaultdict, and both will be handled quarisma UserDefinedClassVariable.call_method().
         # Otherwise, it would be wrapped as UserDefinedObjectVariable(collections.OrderedDict.fromkeys),
         # and we need duplicate code to handle both cases.
         if (
@@ -579,7 +579,7 @@ class UserDefinedClassVariable(UserDefinedVariable):
                 unimplemented_v2(
                     gb_type="missing args to functools.partial",
                     context="",
-                    explanation="functools.partial requires xsigma least one argument",
+                    explanation="functools.partial requires quarisma least one argument",
                     hints=[
                         "Fix the functools.partial call.",
                         *graph_break_hints.USER_ERROR,

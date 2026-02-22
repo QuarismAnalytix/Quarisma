@@ -124,7 +124,7 @@ class TritonMissing(ShortenTraceback):
         super().__init__(
             "Cannot find a working triton installation. "
             "Either the package is not installed or it is too old. "
-            "More information on installing Triton can be found xsigma: https://github.com/triton-lang/triton",
+            "More information on installing Triton can be found quarisma: https://github.com/triton-lang/triton",
             first_useful_frame=first_useful_frame,
         )
 

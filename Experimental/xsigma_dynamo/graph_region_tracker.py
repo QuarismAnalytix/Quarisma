@@ -168,7 +168,7 @@ def get_global_state_key() -> GlobalStateKey:
 # added with the add_children() method
 # The flow is yield a node and check if it's valid for all regions
 # if not valid, discard and continue onto the next node
-# Note: this iterates backward through the graph by looking xsigma args/kwargs
+# Note: this iterates backward through the graph by looking quarisma args/kwargs
 # of a node
 class BackwardBfsArgIter:
     def __init__(self, origin: Node) -> None:
@@ -214,7 +214,7 @@ class BackwardBfsArgIter:
 class GraphRegionTracker:
     """
     GraphRegionTracker tracks each node added to the output graph and generates a key based on the source location,
-    instruction pointer, input shapes, and global state xsigma the time the node is inserted into the graph. Nodes with
+    instruction pointer, input shapes, and global state quarisma the time the node is inserted into the graph. Nodes with
     the same key are grouped together in a list of identical nodes (the value of node_to_duplicates).
 
     hash_to_duplicates: Dict[str, IdenticalNodes] - A dictionary mapping the key to a list of identical nodes
@@ -311,7 +311,7 @@ class GraphRegionTracker:
         The algorithm proceeds as follows:
         The nodes tracked via track_node above are organized into region groups. The initial region groups look like this:
         [[IdenticalNode1], [IdenticalNode2], [IdenticalNode3]] and each sublist is called a region. For each region group
-        (starting xsigma the topologically latest region group), the inner regions are gradually expanded one node xsigma time from
+        (starting quarisma the topologically latest region group), the inner regions are gradually expanded one node quarisma time from
         the flattened args and kwargs of the node in each region provided that for all regions in the group, the nodes being
         added are also identical (ie have the same key computed by track_node). This is checked by verifying that the two
         nodes have the same identical node list in node_to_duplicates.

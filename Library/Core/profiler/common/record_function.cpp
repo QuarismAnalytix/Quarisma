@@ -1,4 +1,4 @@
-//#include <XSigma/core/dispatch/Dispatcher.h>
+//#include <Quarisma/core/dispatch/Dispatcher.h>
 //#include "util/thread_local.h"
 
 #include "profiler/common/record_function.h"
@@ -15,7 +15,7 @@
 #include "util/small_vector.h"
 #include "util/strong_type.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 extern const std::string kParamCommsCallName = "record_param_comms";
@@ -159,7 +159,7 @@ private:
         int tries_left_{-1};
     };
 
-    XSIGMA_FORCE_INLINE void getActiveCallbacksImpl();
+    QUARISMA_FORCE_INLINE void getActiveCallbacksImpl();
 
     void              rebuildActiveCallbacks();
     [[nodiscard]] int sampleTries(double p) const;
@@ -168,7 +168,7 @@ private:
     std::mt19937* generator_{nullptr};
 
     // Includes sampling callbacks which are waiting to run.
-    xsigma::small_vector<CallbackAndCounter, kSoftLimitCallbacks> callbacks_;
+    quarisma::small_vector<CallbackAndCounter, kSoftLimitCallbacks> callbacks_;
     RecordScope                                                   scope_{RecordScope::FUNCTION};
 
     StepCallbacks active_callbacks_;
@@ -311,16 +311,16 @@ void CacheEntry::getActiveCallbacksImpl()
 {
     // We rebuild the active set when `sampling_countdown_` reaches zero, so if it
     // reaches zero at the start of this function something has gone wrong.
-    //XSIGMA_CHECK(sampling_countdown_ > 0, sampling_countdown_);
+    //QUARISMA_CHECK(sampling_countdown_ > 0, sampling_countdown_);
 
-    if XSIGMA_UNLIKELY (!(--sampling_countdown_))
+    if QUARISMA_UNLIKELY (!(--sampling_countdown_))
     {
         // Use inferred steps to update sampled callbacks.
         for (auto& i : callbacks_)
         {
             if (i.tries_left_ > 0)
             {
-                XSIGMA_CHECK(i.tries_left_ >= steps_for_this_update_);
+                QUARISMA_CHECK(i.tries_left_ >= steps_for_this_update_);
                 i.tries_left_ -= steps_for_this_update_;
             }
         }
@@ -348,7 +348,7 @@ StepCallbacks CacheEntry::getActiveCallbacks()
 std::optional<StepCallbacks> CacheEntry::getActiveCallbacksUnlessEmpty()
 {
     getActiveCallbacksImpl();
-    if XSIGMA_LIKELY (active_callbacks_.empty())
+    if QUARISMA_LIKELY (active_callbacks_.empty())
     {
         return std::nullopt;
     }
@@ -394,8 +394,8 @@ void CacheEntry::rebuildActiveCallbacks()
 
 int CacheEntry::sampleTries(double p) const
 {
-    XSIGMA_CHECK(generator_ != nullptr);
-    XSIGMA_CHECK(p > 0.0 && p <= 1.0);  //NOLINT
+    QUARISMA_CHECK(generator_ != nullptr);
+    QUARISMA_CHECK(p > 0.0 && p <= 1.0);  //NOLINT
 
     // The geometric distribution returns the number of failures. We add one to
     // also account for the call where we succeed.
@@ -407,18 +407,18 @@ int CacheEntry::sampleTries(double p) const
 // ============================================================================
 LocalCallbackManager& LocalCallbackManager::get()
 {
-#ifdef XSIGMA_PREFER_CUSTOM_THREAD_LOCAL_STORAGE
-    static xsigma::ThreadLocal<LocalCallbackManager> manager;
+#ifdef QUARISMA_PREFER_CUSTOM_THREAD_LOCAL_STORAGE
+    static quarisma::ThreadLocal<LocalCallbackManager> manager;
     return manager.get();
-#else   // defined(XSIGMA_PREFER_CUSTOM_THREAD_LOCAL_STORAGE)
+#else   // defined(QUARISMA_PREFER_CUSTOM_THREAD_LOCAL_STORAGE)
     static thread_local LocalCallbackManager manager;
     return manager;
-#endif  // defined(XSIGMA_PREFER_CUSTOM_THREAD_LOCAL_STORAGE)
+#endif  // defined(QUARISMA_PREFER_CUSTOM_THREAD_LOCAL_STORAGE)
 }
 
 LocalCallbackManager::LocalCallbackManager()
 {
-    for (auto i : xsigma::irange(NumRecordScopes))
+    for (auto i : quarisma::irange(NumRecordScopes))
     {
         active_callbacks_[i] = CacheEntry(&generator_, static_cast<RecordScope>(i));
     }
@@ -433,7 +433,7 @@ const RecordFunctionTLS& LocalCallbackManager::getTLS() const
 void LocalCallbackManager::rebuildActiveCallbacksIfNeeded()
 {
     const auto global_version = GlobalCallbackManager::get().version();
-    if XSIGMA_UNLIKELY (global_version != global_version_)
+    if QUARISMA_UNLIKELY (global_version != global_version_)
     {
         rebuild_all(GlobalCallbackManager::get().getSnapshot());
     }
@@ -504,7 +504,7 @@ void LocalCallbackManager::clearCallbacks()
 void LocalCallbackManager::rebuild_all(const GlobalCallbackManager::snapshot_t& global_snapshot)
 {
     global_version_ = global_snapshot.first;
-    for (auto i : xsigma::irange(NumRecordScopes))
+    for (auto i : quarisma::irange(NumRecordScopes))
     {
         rebuild_scope(global_snapshot, static_cast<RecordScope>(i));
     }
@@ -517,7 +517,7 @@ void LocalCallbackManager::rebuild_callback_scopes(
     if (global_snapshot.first == global_version_)
     {
         // Only rebuild scopes associated with `callback`
-        for (auto i : xsigma::irange(NumRecordScopes))
+        for (auto i : quarisma::irange(NumRecordScopes))
         {
             if (callback.checkScope(static_cast<RecordScope>(i)))
             {
@@ -562,7 +562,7 @@ void logTryRunCallbackError(const char* what, const char* name)
 }
 
 template <bool is_start>
-XSIGMA_FORCE_INLINE bool tryRunCallback(
+QUARISMA_FORCE_INLINE bool tryRunCallback(
     const StepCallbacks::StartEndPair callback_ptrs,
     const RecordFunction&             rf,
     std::unique_ptr<ObserverContext>& ctx)
@@ -609,7 +609,7 @@ RecordFunction::RecordFunction(StepCallbacks&& step_callbacks)
 
 void RecordFunction::runStartCallbacks()
 {
-    for (const auto i : xsigma::irange(step_callbacks_.callbacks_.size()))
+    for (const auto i : quarisma::irange(step_callbacks_.callbacks_.size()))
     {
         tryRunCallback</*is_start=*/true>(step_callbacks_.callbacks_[i], *this, ctx_[i]);
     }
@@ -620,7 +620,7 @@ void RecordFunction::end()
 {
     if (called_start_callbacks_)
     {
-        for (const auto i : xsigma::irange(step_callbacks_.callbacks_.size()))
+        for (const auto i : quarisma::irange(step_callbacks_.callbacks_.size()))
         {
             tryRunCallback</*is_start=*/false>(step_callbacks_.callbacks_[i], *this, ctx_[i]);
         }
@@ -633,7 +633,7 @@ void RecordFunction::end()
 const char* RecordFunction::name() const
 {
     return std::visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [](const std::string& name) { return name.c_str(); },
             [](const schema_ref_t schema) { return schema.get().name().c_str(); }),
         fn_);
@@ -642,7 +642,7 @@ const char* RecordFunction::name() const
 size_t RecordFunction::num_inputs() const
 {
     return std::visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [&](const std::string&) { return inputs_.size(); },
             [](const schema_ref_t schema) { return schema.get().arguments().size(); }),
         fn_);
@@ -651,7 +651,7 @@ size_t RecordFunction::num_inputs() const
 size_t RecordFunction::num_outputs() const
 {
     return std::visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [&](const std::string&) { return outputs_.size(); },
             [](const schema_ref_t schema) { return schema.get().returns().size(); }),
         fn_);
@@ -660,7 +660,7 @@ size_t RecordFunction::num_outputs() const
 std::optional<OperatorName> RecordFunction::operator_name() const
 {
     return std::visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [&](const std::string&) -> std::optional<OperatorName> { return std::nullopt; },
             [](const schema_ref_t schema) -> std::optional<OperatorName>
             { return schema.get().operator_name(); }),
@@ -671,7 +671,7 @@ std::optional<OperatorName> RecordFunction::operator_name() const
 const char* RecordFunction::name() const
 {
     return std::visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [](const std::string& name) { return name.c_str(); },
             [](const schema_ref_t /*schema*/) { return ""; }),
         fn_);
@@ -680,7 +680,7 @@ const char* RecordFunction::name() const
 size_t RecordFunction::num_inputs() const
 {
     return std::visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [&](const std::string&) { return inputs_.size(); },
             [](const schema_ref_t /*schema*/) { return static_cast<size_t>(0); }),
         fn_);
@@ -689,7 +689,7 @@ size_t RecordFunction::num_inputs() const
 size_t RecordFunction::num_outputs() const
 {
     return std::visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [&](const std::string&) { return outputs_.size(); },
             [](const schema_ref_t /*schema*/) { return static_cast<size_t>(0); }),
         fn_);
@@ -698,7 +698,7 @@ size_t RecordFunction::num_outputs() const
 std::optional<OperatorName> RecordFunction::operator_name() const
 {
     return std::visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [&](const std::string&) -> std::optional<OperatorName> { return std::nullopt; },
             [](const schema_ref_t /*schema*/) -> std::optional<OperatorName>
             { return std::nullopt; }),
@@ -706,13 +706,13 @@ std::optional<OperatorName> RecordFunction::operator_name() const
 }
 #endif
 
-std::optional<xsigma::FunctionSchema> RecordFunction::operator_schema() const
+std::optional<quarisma::FunctionSchema> RecordFunction::operator_schema() const
 {
     return std::visit(
-        xsigma::overloaded(
-            [&](const std::string&) -> std::optional<xsigma::FunctionSchema>
+        quarisma::overloaded(
+            [&](const std::string&) -> std::optional<quarisma::FunctionSchema>
             { return std::nullopt; },
-            [](const schema_ref_t schema) -> std::optional<xsigma::FunctionSchema>
+            [](const schema_ref_t schema) -> std::optional<quarisma::FunctionSchema>
             { return schema.get(); }),
         fn_);
 }
@@ -722,7 +722,7 @@ const char* RecordFunction::overload_name()
 {
 #if 0
     return std::visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [&](const std::string&) -> const char* { return ""; },
             [](const schema_ref_t schema) -> const char*
             { return schema.get().overload_name().c_str(); }),
@@ -890,7 +890,7 @@ void RecordFunction::before(RecordFunction::FunctionDescriptor fn, int64_t seque
 
 /* static */ void RecordFunction::setDefaultNodeId(int64_t newDefaultNodeId)
 {
-    XSIGMA_CHECK(newDefaultNodeId >= 0, "setDefaultNodeId expects an id >= 0.");
+    QUARISMA_CHECK(newDefaultNodeId >= 0, "setDefaultNodeId expects an id >= 0.");
     defaultNodeId = newDefaultNodeId;
 }
 
@@ -930,4 +930,4 @@ bool RecordFunction::isStaticRuntimeOutVariant() const
     }
     return false;
 }
-}  // namespace xsigma
+}  // namespace quarisma

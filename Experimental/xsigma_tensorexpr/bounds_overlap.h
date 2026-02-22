@@ -112,7 +112,7 @@ OverlapKind TORCH_API overlaps(const IndexBounds& a, const IndexBounds& b);
 //       bound A: (0, 10)
 //       bound B: (2, 4)
 //       If we remove slice (2, 4) from the slice (0, 10), we will be left
-//       with 2 slices, one xsigma the start (0, 1), and one xsigma the end (5, 10).
+//       with 2 slices, one quarisma the start (0, 1), and one quarisma the end (5, 10).
 //       So, the result of this subtraction is [(0, 1), (5, 10)].
 //
 // Note: this doesn't use IndexBounds because the Bounds returned do not

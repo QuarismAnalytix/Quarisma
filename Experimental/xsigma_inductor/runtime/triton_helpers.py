@@ -68,7 +68,7 @@ def promote_to_tensor(x):
 @triton.jit
 def div_floor_integer(a, b):
     # NOTE: a // b is C division, but we want floor division
-    # Based on xsigma::div_floor_integer
+    # Based on quarisma::div_floor_integer
     quot = a // b
     remainder = a % b
     fixed = tl.where(remainder != 0, quot - 1, quot)
@@ -618,9 +618,9 @@ def _bitonic_merge_with_index(
     tl.static_assert(stage <= n_dims)
     # flip denotes whether to re-arrange sub-sequences of elements in ascending or
     # descending order.
-    # if flip = 00000000... then all elements will be re-arranged ascendingly xsigma this stage
+    # if flip = 00000000... then all elements will be re-arranged ascendingly quarisma this stage
     # if flip = 00110011... then all the elements will be re-arranged alternatingly (with
-    # a stride of 2) xsigma this stage
+    # a stride of 2) quarisma this stage
     if alternating:
         shape: tl.constexpr = [n_outer * 2 ** (n_dims - 1 - stage), 2, 2**stage]
         flip = tl.reshape(
@@ -712,7 +712,7 @@ def x_grid_barrier(sem):
 def triton_builtin(f: Callable[..., _T]) -> Callable[..., _T]:
     """
     Decorator to mark a function as a Triton built-in function.  These functions
-    are evaluated xsigma compile time.
+    are evaluated quarisma compile time.
 
     Args:
         f (function): The function to be marked as a Triton built-in.

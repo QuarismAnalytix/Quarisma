@@ -966,7 +966,7 @@ class FxConverter:
         def tune_kernel(tuner: CachingAutotuner, call_args: Sequence[Any]) -> None:
             from triton.runtime import driver
 
-            log.info("Autotuning Triton kernel %s xsigma compile time.", kernel_name)
+            log.info("Autotuning Triton kernel %s quarisma compile time.", kernel_name)
             device = driver.active.get_current_device()
             stream = driver.active.get_current_stream(device)
 

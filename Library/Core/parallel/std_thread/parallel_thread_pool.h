@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * Portions of this code are based on VTK (Visualization Toolkit):
  *   Licensed under BSD-3-Clause
@@ -42,7 +42,7 @@
 
 #include "common/export.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace detail
 {
@@ -57,7 +57,7 @@ namespace parallel
  * the pool, which enable support for SMP local scopes.
  * You need to have a Proxy to submit job to the pool.
  */
-class XSIGMA_VISIBILITY parallel_thread_pool
+class QUARISMA_VISIBILITY parallel_thread_pool
 {
     // Internal data structures
     struct thread_job;
@@ -69,34 +69,34 @@ public:
     /**
    * @brief Proxy class used to submit work to the thread pool.
    */
-    class XSIGMA_VISIBILITY proxy final
+    class QUARISMA_VISIBILITY proxy final
     {
     public:
-        XSIGMA_API ~proxy();
+        QUARISMA_API ~proxy();
         proxy(const proxy&)                       = delete;
         proxy&            operator=(const proxy&) = delete;
-        XSIGMA_API        proxy(proxy&&) noexcept;
-        XSIGMA_API proxy& operator=(proxy&&) noexcept;
+        QUARISMA_API        proxy(proxy&&) noexcept;
+        QUARISMA_API proxy& operator=(proxy&&) noexcept;
 
         /**
      * @brief Blocks calling thread until all jobs are done.
      */
-        XSIGMA_API void join();
+        QUARISMA_API void join();
 
         /**
      * @brief Add a job to the thread pool queue
      */
-        XSIGMA_API void do_job(std::function<void()> job);
+        QUARISMA_API void do_job(std::function<void()> job);
 
         /**
      * @brief Get a reference on all system threads used by this proxy
      */
-        XSIGMA_API std::vector<std::reference_wrapper<std::thread>> get_threads() const;
+        QUARISMA_API std::vector<std::reference_wrapper<std::thread>> get_threads() const;
 
         /**
      * @brief Return true if this proxy is allocated from a thread that does not belong to the pool
      */
-        XSIGMA_API bool is_top_level() const noexcept;
+        QUARISMA_API bool is_top_level() const noexcept;
 
     private:
         friend class parallel_thread_pool;
@@ -106,15 +106,15 @@ public:
         std::unique_ptr<proxy_data> data_;
     };
 
-    XSIGMA_API parallel_thread_pool();
-    XSIGMA_API ~parallel_thread_pool();
+    QUARISMA_API parallel_thread_pool();
+    QUARISMA_API ~parallel_thread_pool();
     parallel_thread_pool(const parallel_thread_pool&)            = delete;
     parallel_thread_pool& operator=(const parallel_thread_pool&) = delete;
 
     /**
    * @brief Create a proxy
    */
-    XSIGMA_API proxy allocate_threads(std::size_t thread_count = 0);
+    QUARISMA_API proxy allocate_threads(std::size_t thread_count = 0);
 
     /**
    * Value returned by `get_thread_id` when called by a thread that does not belong to the pool.
@@ -124,24 +124,24 @@ public:
     /**
    * @brief Get caller proxy thread virtual ID
    */
-    XSIGMA_API std::size_t get_thread_id() const noexcept;
+    QUARISMA_API std::size_t get_thread_id() const noexcept;
 
     /**
    * @brief Returns true when called from a proxy thread, false otherwise.
    */
-    XSIGMA_API bool is_parallel_scope() const noexcept;
+    QUARISMA_API bool is_parallel_scope() const noexcept;
 
     /**
    * @brief Returns true for a single proxy thread, false for the others.
    */
-    XSIGMA_API bool single_thread() const;
+    QUARISMA_API bool single_thread() const;
 
     /**
    * @brief Returns number of system thread used by the thread pool.
    */
-    XSIGMA_API std::size_t thread_count() const noexcept;
+    QUARISMA_API std::size_t thread_count() const noexcept;
 
-    XSIGMA_API static parallel_thread_pool& instance();
+    QUARISMA_API static parallel_thread_pool& instance();
 
 private:
     static void run_job(
@@ -161,6 +161,6 @@ private:
 
 }  // namespace parallel
 }  // namespace detail
-}  // namespace xsigma
+}  // namespace quarisma
 
 #endif

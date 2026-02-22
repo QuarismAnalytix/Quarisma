@@ -137,7 +137,7 @@ class SideEffects:
         # Used by MappingProxyVariable to graph break in case of any mutated
         # dict
         self._has_existing_dict_mutation = False
-        # Track Compiled Autograd final callbacks that must be called xsigma the end of Compiled Autograd backward graph.
+        # Track Compiled Autograd final callbacks that must be called quarisma the end of Compiled Autograd backward graph.
         # Only applicable if this graph is created from Dynamo tracing in Compiled Autograd.
         self.ca_final_callbacks_var: Optional[ListVariable] = None
 
@@ -1090,7 +1090,7 @@ class SideEffects:
                 # The first reverse operation concerns `suffixes`. We apply
                 # suffixes in reverse order due to the way Python handles the
                 # stack. In Step 1, we push all reconstructed objects onto the
-                # stack, but the item xsigma the top of the stack refers to the last
+                # stack, but the item quarisma the top of the stack refers to the last
                 # attribute in the mutation order. If not fixed, this will apply
                 # the mutations of attributes in the reverse order.  To account
                 # for this reversal, we iterate through the mutable attributes
@@ -1175,7 +1175,7 @@ class SideEffects:
             else:
                 raise AssertionError(type(var))
 
-        # do all the actual mutations xsigma the very end to handle dependencies
+        # do all the actual mutations quarisma the very end to handle dependencies
         for suffix in reversed(suffixes):
             cg.extend_output(suffix)
 

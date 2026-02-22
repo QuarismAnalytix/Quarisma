@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,18 +13,18 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /**
  * @file profiler.cpp
- * @brief Implementation of the enhanced profiler system for XSigma applications
+ * @brief Implementation of the enhanced profiler system for Quarisma applications
  *
  * Provides high-performance, thread-safe profiling capabilities with comprehensive
  * timing, memory tracking, and statistical analysis features.
  *
- * @author XSigma Development Team
+ * @author Quarisma Development Team
  * @version 1.0
  * @date 2024
  */
@@ -65,7 +65,7 @@
 
 #include <limits>
 
-namespace xsigma
+namespace quarisma
 {
 namespace
 {
@@ -143,7 +143,7 @@ std::string ConvertScopeDataToChromeTrace(
     // Add process metadata
     append_event(
         std::string(R"({"ph":"M","pid":0,"name":"process_name","args":{"name":)") +
-        JsonQuote("XSigma CPU Profiler") + "}}");
+        JsonQuote("Quarisma CPU Profiler") + "}}");
 
     // Track threads we've seen
     std::map<std::thread::id, int64_t> thread_to_tid;
@@ -236,7 +236,7 @@ std::string ConvertXSpaceToChromeTrace(const x_space& space)
 
     append_event(
         std::string(R"({"ph":"M","pid":0,"name":"process_name","args":{"name":)") +
-        JsonQuote("XSigma CPU Profiler") + "}}");
+        JsonQuote("Quarisma CPU Profiler") + "}}");
     append_event(R"({"ph":"M","pid":0,"name":"process_sort_index","args":{"sort_index":0}})");
 
     for (const xplane& plane : space.planes())
@@ -323,10 +323,10 @@ std::string ConvertXSpaceToChromeTrace(const x_space& space)
 }  // namespace
 
 // Static thread-local storage for current scope (DLL-compatible implementation)
-thread_local xsigma::profiler_scope_data* profiler_session::thread_current_scope_ = nullptr;
+thread_local quarisma::profiler_scope_data* profiler_session::thread_current_scope_ = nullptr;
 
 // Static current session management with atomic operations for thread safety
-static std::atomic<xsigma::profiler_session*> g_current_session{nullptr};
+static std::atomic<quarisma::profiler_session*> g_current_session{nullptr};
 
 //=============================================================================
 // timing_stats Implementation
@@ -432,7 +432,7 @@ double profiler_scope_data::get_duration_ns() const
 // profiler_session Implementation
 //=============================================================================
 
-profiler_session::profiler_session(xsigma::profiler_options options) : options_(std::move(options))
+profiler_session::profiler_session(quarisma::profiler_options options) : options_(std::move(options))
 {
     initialize_components();
 }
@@ -467,14 +467,14 @@ bool profiler_session::start()
     start_time_ns_ = start_ns;
     xspace_ready_  = false;
 
-    auto profilers = xsigma::create_profilers(backend_profile_options_);
+    auto profilers = quarisma::create_profilers(backend_profile_options_);
     if (!profilers.empty())
     {
         backend_profilers_ = std::make_unique<profiler_collection>(std::move(profilers));
         profiler_status const backend_status = backend_profilers_->start();
         if (!backend_status.ok())
         {
-            XSIGMA_LOG_ERROR(
+            QUARISMA_LOG_ERROR(
                 "Failed to start one or more profiler backends: {}", backend_status.message());
             backend_profilers_.reset();
             profiler_lock_.ReleaseIfActive();
@@ -493,7 +493,7 @@ bool profiler_session::start()
     if (options_.enable_hierarchical_profiling_)
     {
         std::scoped_lock const lock(scope_mutex_);
-        root_scope_               = std::make_unique<xsigma::profiler_scope_data>();
+        root_scope_               = std::make_unique<quarisma::profiler_scope_data>();
         root_scope_->name_        = "ROOT";
         root_scope_->start_time_  = start_time_;
         root_scope_->thread_id_   = std::this_thread::get_id();
@@ -581,7 +581,7 @@ bool profiler_session::stop()
 
         if (!backend_errors.empty())
         {
-            XSIGMA_LOG_ERROR("Profiler backend errors: {}", backend_errors);
+            QUARISMA_LOG_ERROR("Profiler backend errors: {}", backend_errors);
         }
 
         backend_profilers_.reset();
@@ -601,14 +601,14 @@ bool profiler_session::stop()
     return true;
 }
 
-std::unique_ptr<xsigma::profiler_scope> profiler_session::create_scope(const std::string& name)
+std::unique_ptr<quarisma::profiler_scope> profiler_session::create_scope(const std::string& name)
 {
-    return std::make_unique<xsigma::profiler_scope>(name, this);
+    return std::make_unique<quarisma::profiler_scope>(name, this);
 }
 
-std::unique_ptr<xsigma::profiler_report> profiler_session::generate_report() const
+std::unique_ptr<quarisma::profiler_report> profiler_session::generate_report() const
 {
-    return std::make_unique<xsigma::profiler_report>(*this);
+    return std::make_unique<quarisma::profiler_report>(*this);
 }
 
 void profiler_session::export_report(const std::string& filename) const
@@ -628,7 +628,7 @@ profiler_session* profiler_session::current_session()
     return g_current_session.load();
 }
 
-void profiler_session::set_current_session(xsigma::profiler_session* session)
+void profiler_session::set_current_session(quarisma::profiler_session* session)
 {
     g_current_session.store(session);
 }
@@ -637,12 +637,12 @@ void profiler_session::initialize_components()
 {
     if (options_.enable_memory_tracking_)
     {
-        memory_tracker_ = std::make_unique<xsigma::memory_tracker>();
+        memory_tracker_ = std::make_unique<quarisma::memory_tracker>();
     }
 
     if (options_.enable_statistical_analysis_)
     {
-        statistical_analyzer_ = std::make_unique<xsigma::statistical_analyzer>();
+        statistical_analyzer_ = std::make_unique<quarisma::statistical_analyzer>();
         statistical_analyzer_->set_max_samples_per_series(options_.max_samples_);
         statistical_analyzer_->set_worker_threads_hint(options_.thread_pool_size_);
     }
@@ -704,7 +704,7 @@ void profiler_session::normalize_xspace(x_space* space) const
         space->add_hostname("localhost");
     }
 }
-void profiler_session::register_scope_start(const xsigma::profiler_scope* scope)
+void profiler_session::register_scope_start(const quarisma::profiler_scope* scope)
 {
     if (!options_.enable_hierarchical_profiling_ || !active_.load())
     {
@@ -714,7 +714,7 @@ void profiler_session::register_scope_start(const xsigma::profiler_scope* scope)
     std::scoped_lock const lock(scope_mutex_);
 
     // Find the current scope for this thread
-    xsigma::profiler_scope_data* parent_scope = thread_current_scope_;
+    quarisma::profiler_scope_data* parent_scope = thread_current_scope_;
     if (parent_scope == nullptr)
     {
         parent_scope = root_scope_.get();
@@ -723,14 +723,14 @@ void profiler_session::register_scope_start(const xsigma::profiler_scope* scope)
     if (parent_scope != nullptr)
     {
         // Add as child to current scope
-        auto child_scope          = std::make_unique<xsigma::profiler_scope_data>();
+        auto child_scope          = std::make_unique<quarisma::profiler_scope_data>();
         child_scope->name_        = scope->data().name_;
         child_scope->start_time_  = scope->data().start_time_;
         child_scope->thread_id_   = std::this_thread::get_id();
         child_scope->depth_level_ = parent_scope->depth_level_ + 1;
         child_scope->parent_      = parent_scope;
 
-        xsigma::profiler_scope_data* child_ptr = child_scope.get();
+        quarisma::profiler_scope_data* child_ptr = child_scope.get();
         parent_scope->children_.push_back(std::move(child_scope));
 
         // Update thread-local current scope
@@ -738,7 +738,7 @@ void profiler_session::register_scope_start(const xsigma::profiler_scope* scope)
     }
 }
 
-void profiler_session::register_scope_end(const xsigma::profiler_scope* scope)
+void profiler_session::register_scope_end(const quarisma::profiler_scope* scope)
 {
     if (!options_.enable_hierarchical_profiling_ || !active_.load())
     {
@@ -762,9 +762,9 @@ void profiler_session::register_scope_end(const xsigma::profiler_scope* scope)
 // profiler_scope Implementation
 //=============================================================================
 
-profiler_scope::profiler_scope(const std::string& name, xsigma::profiler_session* session)
-    : session_((session != nullptr) ? session : xsigma::profiler_session::current_session()),
-      data_(std::make_unique<xsigma::profiler_scope_data>())
+profiler_scope::profiler_scope(const std::string& name, quarisma::profiler_session* session)
+    : session_((session != nullptr) ? session : quarisma::profiler_session::current_session()),
+      data_(std::make_unique<quarisma::profiler_scope_data>())
 {
     data_->name_      = name;
     data_->thread_id_ = std::this_thread::get_id();
@@ -929,4 +929,4 @@ bool profiler_session::write_chrome_trace(const std::string& filename) const
     return out.good();
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

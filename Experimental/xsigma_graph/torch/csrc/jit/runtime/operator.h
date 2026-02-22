@@ -1,18 +1,18 @@
-// in memory description of all XSigma Ops similar to Caffe2 schema
+// in memory description of all Quarisma Ops similar to Caffe2 schema
 // once C10 exists this can be removed, or stubbed out, but we need
 // it now to implement correct semantic checking for script
 #pragma once
 
-#include <XSigma/core/dispatch/Dispatcher.h>
-#include <XSigma/core/dispatch/OperatorOptions.h>
-#include <XSigma/core/function_schema.h>
-#include <XSigma/core/op_registration/op_allowlist.h>
-#include <XSigma/core/stack.h>
-#include <XSigma/core/symbol.h>
+#include <Quarisma/core/dispatch/Dispatcher.h>
+#include <Quarisma/core/dispatch/OperatorOptions.h>
+#include <Quarisma/core/function_schema.h>
+#include <Quarisma/core/op_registration/op_allowlist.h>
+#include <Quarisma/core/stack.h>
+#include <Quarisma/core/symbol.h>
 #include <torch/csrc/jit/frontend/function_schema_parser.h>
 #include <torch/csrc/jit/runtime/operator_options.h>
 #include <torch/library.h>
-#include <xsigma/util/overloaded.h>
+#include <quarisma/util/overloaded.h>
 
 #include <functional>
 #include <initializer_list>
@@ -29,15 +29,15 @@ namespace torch::jit
 {
 
 struct Node;
-using ::xsigma::Argument;
-using ::xsigma::FunctionSchema;
-using ::xsigma::Symbol;
+using ::quarisma::Argument;
+using ::quarisma::FunctionSchema;
+using ::quarisma::Symbol;
 
 using OperationCreator = Operation (*)(const Node*);
 
 namespace
 {
-const std::array<xsigma::Tag, 1> kJitOnlyOperatorTags = {xsigma::Tag::pt2_compliant_tag};
+const std::array<quarisma::Tag, 1> kJitOnlyOperatorTags = {quarisma::Tag::pt2_compliant_tag};
 }
 
 /*
@@ -49,28 +49,28 @@ const std::array<xsigma::Tag, 1> kJitOnlyOperatorTags = {xsigma::Tag::pt2_compli
  * so that changes to symbolic derivatives are remembered.
  *
  * Currently, the JIT operator library contains a jit::Operator instance
- * with a wrapper for each xsigma operator. The xsigma operator library registers
+ * with a wrapper for each quarisma operator. The quarisma operator library registers
  * those wrappers using listeners in register_c10_ops.cpp.
  * TODO Instead of doing it this way, we should only have pure-jit ops in
- * the jit library but have the JIT operator lookup look into the xsigma library
+ * the jit library but have the JIT operator lookup look into the quarisma library
  * too.
  */
 
 // An Operator is a thin wrapper around either a pure JIT operator (e.g. prim
-// ops) or a xsigma operator, allowing some common operations and abstracting away
+// ops) or a quarisma operator, allowing some common operations and abstracting away
 // the concrete operator nature.
 struct TORCH_API Operator
 {
 private:
     struct C10Operator final
     {
-        xsigma::OperatorHandle handle_;
+        quarisma::OperatorHandle handle_;
         Operation              op_;
     };
     struct UnparsedFunctionSchema final
     {
         std::string                                      schema_string_;
-        mutable std::optional<xsigma::AliasAnalysisKind> alias_analysis_;
+        mutable std::optional<quarisma::AliasAnalysisKind> alias_analysis_;
     };
     struct JitOnlyOperator final
     {
@@ -82,12 +82,12 @@ private:
     };
 
 public:
-    Operator(xsigma::OperatorHandle opHandle, Operation operation)
+    Operator(quarisma::OperatorHandle opHandle, Operation operation)
         : op_(C10Operator{std::move(opHandle), std::move(operation)})
     {
     }
 
-    Operator(std::string schema, Operation op, xsigma::AliasAnalysisKind alias_analysis)
+    Operator(std::string schema, Operation op, quarisma::AliasAnalysisKind alias_analysis)
         : op_(JitOnlyOperator{
               UnparsedFunctionSchema{std::move(schema), alias_analysis}, Operation(std::move(op))})
     {
@@ -99,7 +99,7 @@ public:
         std::vector<Argument>     arguments,
         std::vector<Argument>     returns,
         Operation                 op,
-        xsigma::AliasAnalysisKind alias_analysis)
+        quarisma::AliasAnalysisKind alias_analysis)
         : op_(JitOnlyOperator{
               FunctionSchema(varArgSchemaWithName(
                   std::move(name),
@@ -112,7 +112,7 @@ public:
     }
 
     Operator(
-        std::string schema, OperationCreator op_creator, xsigma::AliasAnalysisKind alias_analysis)
+        std::string schema, OperationCreator op_creator, quarisma::AliasAnalysisKind alias_analysis)
         : op_(JitOnlyOperator{
               UnparsedFunctionSchema{std::move(schema), alias_analysis}, op_creator})
     {
@@ -122,7 +122,7 @@ public:
     // run for _every_ IR Node where n.kind() == name, regardless of arguments.
     // This is accomplished by marking the schema varargs and having no required
     // arguments.
-    Operator(Symbol name, OperationCreator op_creator, xsigma::AliasAnalysisKind alias_analysis)
+    Operator(Symbol name, OperationCreator op_creator, quarisma::AliasAnalysisKind alias_analysis)
         : op_(JitOnlyOperator{
               FunctionSchema(varArgSchemaWithName(name, alias_analysis)), op_creator})
     {
@@ -131,12 +131,12 @@ public:
     Operation getOperation(const Node* node = nullptr) const
     {
         return std::visit(
-            xsigma::overloaded(
+            quarisma::overloaded(
                 [](const C10Operator& op) { return op.op_; },
                 [node](const JitOnlyOperator& op)
                 {
                     return std::visit(
-                        xsigma::overloaded(
+                        quarisma::overloaded(
                             [](const Operation& op) { return op; },
                             [node](const OperationCreator& op_creator)
                             { return op_creator(node); }),
@@ -145,11 +145,11 @@ public:
             op_);
     }
 
-    Operation getOperationForDispatchKey(xsigma::DispatchKey dk) const
+    Operation getOperationForDispatchKey(quarisma::DispatchKey dk) const
     {
         // TODO: some sort of caching mechanism?
         return std::visit(
-            xsigma::overloaded(
+            quarisma::overloaded(
                 [dk](const C10Operator& op)
                 {
                     return Operation([op, dk](Stack& stack)
@@ -157,7 +157,7 @@ public:
                 },
                 [](const JitOnlyOperator& op)
                 {
-                    XSIGMA_CHECK(false, "calling a JIT operator for dispatch key is not supported");
+                    QUARISMA_CHECK(false, "calling a JIT operator for dispatch key is not supported");
                     return Operation(nullptr);
                 }),
             op_);
@@ -166,7 +166,7 @@ public:
     const FunctionSchema& schema() const
     {
         return std::visit(
-            xsigma::overloaded(
+            quarisma::overloaded(
                 [](const C10Operator& op) -> const FunctionSchema& { return op.handle_.schema(); },
                 [](const JitOnlyOperator& op) -> const FunctionSchema&
                 {
@@ -188,30 +188,30 @@ public:
             op_);
     }
 
-    xsigma::ArrayRef<xsigma::Tag> getTags() const
+    quarisma::ArrayRef<quarisma::Tag> getTags() const
     {
         return std::visit(
-            xsigma::overloaded(
+            quarisma::overloaded(
                 [](const C10Operator& op) { return op.handle_.getTags(); },
                 [](const JitOnlyOperator& op)
                 {
-                    // JitOnlyOperators don't have an xsigma::OperatorHandle or a way to
+                    // JitOnlyOperators don't have an quarisma::OperatorHandle or a way to
                     // specify tags. We're grandfathering them all into
                     // pt2_compliant_tag, but for anything else, please just stop
                     // using JitOnlyOperator.
-                    return xsigma::ArrayRef<xsigma::Tag>(kJitOnlyOperatorTags);
+                    return quarisma::ArrayRef<quarisma::Tag>(kJitOnlyOperatorTags);
                 }),
             op_);
     }
 
     bool isC10Op() const { return op_.index() == 0; }
 
-    xsigma::AliasAnalysisKind aliasAnalysisKind() const
+    quarisma::AliasAnalysisKind aliasAnalysisKind() const
     {
         const FunctionSchema&     schemaRef      = schema();
-        xsigma::AliasAnalysisKind alias_analysis = schemaRef.aliasAnalysis();
+        quarisma::AliasAnalysisKind alias_analysis = schemaRef.aliasAnalysis();
 
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             alias_analysis == AliasAnalysisKind::FROM_SCHEMA || !schemaRef.hasAnyAliasInfo(),
             "In operator registration: Tried to register operator ",
             schemaRef,
@@ -222,7 +222,7 @@ public:
     bool hasOperation() const
     {
         return std::visit(
-            xsigma::overloaded(
+            quarisma::overloaded(
                 [](const C10Operator&) { return true; },
                 [](const JitOnlyOperator& op) { return op.op_.index() == 0; }),
             op_);
@@ -272,7 +272,7 @@ TORCH_API std::vector<std::shared_ptr<Operator>> getAllSortedOperatorsFor(Symbol
 
 // given a operator with an overload name, find the specific operator related to
 // it, may return nullptr if no operator exists.
-TORCH_API std::shared_ptr<Operator> findOperatorFor(const xsigma::OperatorName& full_name);
+TORCH_API std::shared_ptr<Operator> findOperatorFor(const quarisma::OperatorName& full_name);
 
 TORCH_API std::vector<Symbol> findSimilarOperators(Symbol input_op);
 
@@ -282,15 +282,15 @@ TORCH_API void deregisterOperator(const FunctionSchema& schema);
 // XXX: this function is meant to be used with string literals only!
 TORCH_API std::shared_ptr<Operator> getOperatorForLiteral(const char* signature);
 
-// Ensure the thing that registers xsigma ops is defined.
-// Otherwise, our registry will not have xsigma ops. You can run into this
+// Ensure the thing that registers quarisma ops is defined.
+// Otherwise, our registry will not have quarisma ops. You can run into this
 // scenario if you're querying registered ops during static init.
 //
 // This fn is defined in register_c10_ops.cpp
 TORCH_API void ensure_c10_registerer_defined();
 
 // Used to assert that unschematized operators have an analysis method written
-TORCH_API bool aliasAnalysisHasSpecialCaseFor(xsigma::Symbol sym);
+TORCH_API bool aliasAnalysisHasSpecialCaseFor(quarisma::Symbol sym);
 
 // A factory function to generate an optional operator. It has two
 // instantiations depending on the template bool arg value. The arg can be a
@@ -323,8 +323,8 @@ template <typename Func>
 std::optional<Operator> OperatorGenerator(
     const std::string                   name,
     const std::string                   overload_name,
-    const std::vector<xsigma::Argument> arguments,
-    const std::vector<xsigma::Argument> returns,
+    const std::vector<quarisma::Argument> arguments,
+    const std::vector<quarisma::Argument> returns,
     Func&&                              op,
     AliasAnalysisKind                   alias_analysis)
 {

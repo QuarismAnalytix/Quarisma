@@ -7,8 +7,8 @@ from operator import attrgetter
 from typing import Any, Optional
 from typing_extensions import deprecated
 
-import xsigma
-from xsigma.autograd import DeviceType
+import quarisma
+from quarisma.autograd import DeviceType
 
 
 __all__ = [
@@ -264,7 +264,7 @@ class EventList(list):
                         f'"cat": "cpu_to_{device_name}", '
                         '"args": {}}, '
                     )
-                    # Note: use xsigma.profiler to get device kernel trace
+                    # Note: use quarisma.profiler to get device kernel trace
                     next_id += 1
             if len(self) > 0:
                 # remove trailing whitespace and comma
@@ -793,7 +793,7 @@ class StringTable(defaultdict):
         # manage cases like 't' (demangled to 'unsigned short') separately,
         # for now simply check the length to avoid unexpected results for
         # the short sequences
-        self[key] = xsigma._C._demangle(key) if len(key) > 1 else key
+        self[key] = quarisma._C._demangle(key) if len(key) > 1 else key
         return self[key]
 
 
@@ -823,7 +823,7 @@ def _filter_stack_entry(entry):
     filtered_entries = [
         ("autograd/__init__", "_make_grads"),
         ("autograd/__init__", "backward"),
-        ("xsigma/tensor", "backward"),
+        ("quarisma/tensor", "backward"),
         ("_internal/common_utils", "prof_callable"),
         ("_internal/common_utils", "prof_func_call"),
         ("_internal/common_utils", "prof_meth_call"),

@@ -32,10 +32,10 @@ void removeDropoutImpl(Block* block)
         {
             removeDropoutImpl(block);
         }
-        if ((node->kind() == xsigma::Symbol::fromQualString("aten::dropout") ||
-             node->kind() == xsigma::Symbol::fromQualString("aten::dropout_") ||
-             node->kind() == xsigma::Symbol::fromQualString("aten::feature_dropout") ||
-             node->kind() == xsigma::Symbol::fromQualString("aten::feature_dropout_")) &&
+        if ((node->kind() == quarisma::Symbol::fromQualString("aten::dropout") ||
+             node->kind() == quarisma::Symbol::fromQualString("aten::dropout_") ||
+             node->kind() == quarisma::Symbol::fromQualString("aten::feature_dropout") ||
+             node->kind() == quarisma::Symbol::fromQualString("aten::feature_dropout_")) &&
             isDropoutRemovable(*it))
         {
             // Input tensor of dropout.
@@ -60,7 +60,7 @@ void removeDropout(std::shared_ptr<Graph>& graph)
 
 void removeDropout(script::Module& module)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         !module.hasattr("training") || !module.is_training(),
         "Dropout removal module in training mode is not yet supported");
     auto graph = module.get_method("forward").graph();

@@ -1,12 +1,12 @@
 #pragma once
 
-#include <XSigma/core/jit_type.h>
+#include <Quarisma/core/jit_type.h>
 #include <torch/csrc/Export.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/ir/type_hashing.h>
-#include <xsigma/util/ArrayRef.h>
-#include <xsigma/util/flat_hash_map.h>
-#include <xsigma/util/sparse_bitset.h>
+#include <quarisma/util/ArrayRef.h>
+#include <quarisma/util/flat_hash_map.h>
+#include <quarisma/util/sparse_bitset.h>
 
 #include <memory>
 #include <optional>
@@ -15,7 +15,7 @@
 #include <vector>
 
 // Uses a compressed index representation for faster comparisons
-typedef xsigma::SparseBitVector<256> MemoryLocations;
+typedef quarisma::SparseBitVector<256> MemoryLocations;
 namespace torch::jit
 {
 
@@ -56,7 +56,7 @@ struct Element
     std::unordered_set<const Value*> values;
 
 private:
-    // Make `from` point xsigma `to`.
+    // Make `from` point quarisma `to`.
     void makePointerTo(Element* from, Element* to);
 
     friend class MemoryDAG;
@@ -105,10 +105,10 @@ public:
     // Does `a` hold reference to any memory that is stored in `b`, or vice versa?
     bool mayContainAlias(const Element* a, const Element* b) const;
 
-    bool mayContainAlias(const Element* a, const xsigma::ArrayRef<Element*> b) const;
+    bool mayContainAlias(const Element* a, const quarisma::ArrayRef<Element*> b) const;
 
     bool mayContainAlias(
-        const xsigma::ArrayRef<Element*> a, const xsigma::ArrayRef<Element*> b) const;
+        const quarisma::ArrayRef<Element*> a, const quarisma::ArrayRef<Element*> b) const;
 
     // Converts from the compressed index representation
     const Element* fromIndex(unsigned x) const;
@@ -127,7 +127,7 @@ public:
     // method adds them in a more efficient cache-aware way.
     void setWildcards(
         const std::unordered_set<const Value*>&              wildcards,
-        const xsigma::flat_hash_map<const Value*, Element*>& elementMap,
+        const quarisma::flat_hash_map<const Value*, Element*>& elementMap,
         const std::function<Element*(const Value*)>&         getWildcardElement);
     Element* unsafeMakeFreshValue(const Value* v);
 
@@ -151,7 +151,7 @@ public:
     MemoryDAGBuilder(const MemoryDAGBuilder&)            = delete;
     MemoryDAGBuilder& operator=(const MemoryDAGBuilder&) = delete;
 
-    // Make `from` point xsigma `to`.
+    // Make `from` point quarisma `to`.
     void makePointerTo(Element* from, Element* to);
 
     void addToContainedElements(Element* contained, Element* container);

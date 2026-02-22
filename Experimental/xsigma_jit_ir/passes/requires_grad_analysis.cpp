@@ -1,8 +1,8 @@
-#include <XSigma/core/jit_type.h>
+#include <Quarisma/core/jit_type.h>
 #include <torch/csrc/jit/ir/constants.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/passes/requires_grad_analysis.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <vector>
 
@@ -25,10 +25,10 @@ void setRequiresGrad(Value* value, bool req_value)
     }
 }
 
-void setRequiresGrad(xsigma::ArrayRef<Value*> outputs, const std::vector<bool>& values)
+void setRequiresGrad(quarisma::ArrayRef<Value*> outputs, const std::vector<bool>& values)
 {
     AT_ASSERT(outputs.size() == values.size());
-    for (const auto i : xsigma::irange(values.size()))
+    for (const auto i : quarisma::irange(values.size()))
     {
         setRequiresGrad(outputs[i], values[i]);
     }
@@ -42,7 +42,7 @@ void setRequiresGrad(Node* node, const std::vector<bool>& values)
 std::vector<bool> bitwiseOr(std::vector<bool> a, const std::vector<bool>& b)
 {
     AT_ASSERT(a.size() == b.size());
-    for (const auto i : xsigma::irange(a.size()))
+    for (const auto i : quarisma::irange(a.size()))
     {
         a[i] = a[i] || b[i];
     }
@@ -83,7 +83,7 @@ void PropagateRequiresGradSimpleNode(Node* node)
     {
         if (auto grad_index = node->schema().argumentIndexWithName("requires_grad"))
         {
-            if (auto const_arg = constant_as<bool>(node->inputs().xsigma(*grad_index)))
+            if (auto const_arg = constant_as<bool>(node->inputs().quarisma(*grad_index)))
             {
                 return setRequiresGrad(node->output(), *const_arg);
             }
@@ -122,8 +122,8 @@ void PropagateRequiresGrad(Node* node)
     if (node->kind() == prim::If)
     {
         auto blocks      = node->blocks();
-        auto true_block  = blocks.xsigma(0);
-        auto false_block = blocks.xsigma(1);
+        auto true_block  = blocks.quarisma(0);
+        auto false_block = blocks.quarisma(1);
 
         PropagateRequiresGrad(true_block);
         PropagateRequiresGrad(false_block);
@@ -135,7 +135,7 @@ void PropagateRequiresGrad(Node* node)
     }
     else if (node->kind() == prim::Loop)
     {
-        auto              body                = node->blocks().xsigma(0);
+        auto              body                = node->blocks().quarisma(0);
         std::vector<bool> loop_inputs_require = fmap(node->inputs().slice(2), getRequiresGrad);
         std::vector<bool> body_inputs_require = loop_inputs_require;
         std::vector<bool> body_outputs_require(node->outputs().size(), false);

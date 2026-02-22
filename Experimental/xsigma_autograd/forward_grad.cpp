@@ -11,14 +11,14 @@ namespace
 std::mutex                                   all_forward_levels_mutex_;
 std::vector<std::shared_ptr<ForwardADLevel>> all_forward_levels_;
 
-const static xsigma::Tensor singleton_undefined_tensor;
+const static quarisma::Tensor singleton_undefined_tensor;
 }  // namespace
 
 uint64_t ForwardADLevel::get_next_idx()
 {
     std::lock_guard<std::mutex> lock(all_forward_levels_mutex_);
     auto                        next_idx = all_forward_levels_.size();
-    XSIGMA_CHECK(next_idx == 0, "Nested forward mode AD is not supported xsigma the moment");
+    QUARISMA_CHECK(next_idx == 0, "Nested forward mode AD is not supported quarisma the moment");
     all_forward_levels_.push_back(std::make_shared<ForwardADLevel>(next_idx));
     return next_idx;
 }
@@ -26,7 +26,7 @@ uint64_t ForwardADLevel::get_next_idx()
 void ForwardADLevel::release_idx(uint64_t idx)
 {
     std::unique_lock<std::mutex> lock(all_forward_levels_mutex_);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         idx + 1 == all_forward_levels_.size(),
         "Exiting a forward AD level that is not the "
         "last that was created is not support. Ensure they are released in the reverse "
@@ -41,7 +41,7 @@ void ForwardADLevel::release_idx(uint64_t idx)
 std::shared_ptr<ForwardADLevel> ForwardADLevel::get_by_idx(uint64_t idx)
 {
     std::lock_guard<std::mutex> lock(all_forward_levels_mutex_);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         idx < all_forward_levels_.size(),
         "Trying to access a forward AD level with an invalid index. "
         "This index was either not created or is already deleted.");
@@ -75,14 +75,14 @@ ForwardADLevel::~ForwardADLevel()
     }
 }
 
-const xsigma::Tensor& ForwardGrad::value(uint64_t level) const
+const quarisma::Tensor& ForwardGrad::value(uint64_t level) const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     const auto&                 it = content_.find(level);
     return it == content_.end() ? singleton_undefined_tensor : (*it).second;
 }
 
-const xsigma::Tensor& ForwardGrad::undef_grad()
+const quarisma::Tensor& ForwardGrad::undef_grad()
 {
     return singleton_undefined_tensor;
 }

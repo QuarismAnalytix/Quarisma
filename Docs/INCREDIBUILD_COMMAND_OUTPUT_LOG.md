@@ -29,7 +29,7 @@ incredibuild                  profiler.<kineto|native|itt>: select profiler back
 
 ### Command
 ```bash
-cd c:\dev\XSigma\Scripts
+cd c:\dev\Quarisma\Scripts
 python setup.py config.build.incredibuild
 ```
 
@@ -37,7 +37,7 @@ python setup.py config.build.incredibuild
 ```
 [INFO] Starting build configuration for Windows
 ================= Windows platform =================
-[INFO] Build directory: C:\dev\XSigma\build_ninja
+[INFO] Build directory: C:\dev\Quarisma\build_ninja
 [INFO] Configuring build...
 build enum: Release
 CMake Error at Cmake/tools/incredibuild.cmake:41 (message):
@@ -66,7 +66,7 @@ Call Stack (most recent call first):
 
 ### Command
 ```bash
-cd c:\dev\XSigma\Scripts
+cd c:\dev\Quarisma\Scripts
 python setup.py config.build
 ```
 
@@ -74,7 +74,7 @@ python setup.py config.build
 ```
 [INFO] Starting build configuration for Windows
 ================= Windows platform =================
-[INFO] Build directory: C:\dev\XSigma\build_ninja
+[INFO] Build directory: C:\dev\Quarisma\build_ninja
 [INFO] Configuring build...
 build enum: Release
   -cache: ENABLED. program: none
@@ -86,13 +86,13 @@ build enum: Release
 --Current compiler supports avx2 extension.
 --Current compiler supports avx512f extension.
 --Current compiler supports fma extension.
---Current compiler does not supports SVML functoins. Turn ON XSIGMA_ENABLE_SVML
+--Current compiler does not supports SVML functoins. Turn ON QUARISMA_ENABLE_SVML
 --avx compiler flags: -mavx2 -mf16c -mfma
-OpenMP support is disabled (XSIGMA_ENABLE_OPENMP=OFF)
-XSIGMA_DEPENDENCY_COMPILE_DEFINITIONS: XSIGMA_HAS_MKL=0;XSIGMA_HAS_TBB=0;...
+OpenMP support is disabled (QUARISMA_ENABLE_OPENMP=OFF)
+QUARISMA_DEPENDENCY_COMPILE_DEFINITIONS: QUARISMA_HAS_MKL=0;QUARISMA_HAS_TBB=0;...
 Windows/Clang: Using lld-link linker for faster linking
-Applied linker flag to xsigmabuild: -fuse-ld=lld-link.exe
-  - Faster linker: Automatically detected and applied to xsigmabuild target
+Applied linker flag to quarismabuild: -fuse-ld=lld-link.exe
+  - Faster linker: Automatically detected and applied to quarismabuild target
   - Third-party dependencies: Not affected by linker configuration
 ================================================================
 Build from source fmt
@@ -128,9 +128,9 @@ General:
   Build type            : Release
   CMake generator       : Ninja
   CMake build tool      : C:/PROGRA~1/WinGet/Links/ninja.exe
-  CMake install prefix  : C:/Program Files (x86)/XSigma
-  XSIGMA_VERSION        : 1.0.0
-  BUILD_BINARY          : C:/dev/XSigma/build_ninja
+  CMake install prefix  : C:/Program Files (x86)/Quarisma
+  QUARISMA_VERSION        : 1.0.0
+  BUILD_BINARY          : C:/dev/Quarisma/build_ninja
 ```
 
 ### Output (Last 50 lines - Build Completion)
@@ -169,7 +169,7 @@ General:
 [184/194] Linking CXX shared library bin\Core.dll
 [185/194] Building CXX object Library/Core/Testing/Cxx/CMakeFiles/CoreCxxTests.dir/TestThreadPool.cpp.obj
 [186/194] Linking C static library lib\cpuinfo_internals.lib
-[187/194] Building CXX object Library/Core/Testing/Cxx/CMakeFiles/CoreCxxTests.dir/TestXSigmaProfiler.cpp.obj
+[187/194] Building CXX object Library/Core/Testing/Cxx/CMakeFiles/CoreCxxTests.dir/TestQuarismaProfiler.cpp.obj
 [188/194] Linking CXX executable bin\SecurityCxxTests.exe
 [189/194] Linking CXX executable bin\ProfileParallelBackends.exe
 [190/194] Building CXX object Library/Core/Testing/Cxx/CMakeFiles/CoreCxxTests.dir/TestCPUMemory.cpp.obj

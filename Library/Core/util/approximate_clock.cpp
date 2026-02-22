@@ -3,7 +3,7 @@
 #include "util/exception.h"
 #include "util/irange.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 ApproximateClockToUnixTimeConverter::ApproximateClockToUnixTimeConverter()
@@ -19,7 +19,7 @@ ApproximateClockToUnixTimeConverter::measurePair()
     auto wall   = std::chrono::system_clock::now();
     auto fast_1 = getApproximateTime();
 
-    XSIGMA_CHECK(fast_1 >= fast_0, "getCount is non-monotonic.");
+    QUARISMA_CHECK(fast_1 >= fast_0, "getCount is non-monotonic.");
     auto t = std::chrono::duration_cast<std::chrono::nanoseconds>(wall.time_since_epoch());
 
     // `x + (y - x) / 2` is a more numerically stable average than `(x + y) / 2`.
@@ -29,14 +29,14 @@ ApproximateClockToUnixTimeConverter::measurePair()
 ApproximateClockToUnixTimeConverter::time_pairs ApproximateClockToUnixTimeConverter::measurePairs()
 {
     static constexpr auto n_warmup = 5;
-    for ([[maybe_unused]] const auto _ : xsigma::irange(n_warmup))
+    for ([[maybe_unused]] const auto _ : quarisma::irange(n_warmup))
     {
         getApproximateTime();
         static_cast<void>(steady_clock_t::now());
     }
 
     time_pairs out;
-    for (const auto i : xsigma::irange(out.size()))
+    for (const auto i : quarisma::irange(out.size()))
     {
         out[i] = measurePair();
     }
@@ -49,7 +49,7 @@ std::function<time_t(approx_time_t)> ApproximateClockToUnixTimeConverter::makeCo
 
     // Compute the real time that passes for each tick of the approximate clock.
     std::array<long double, replicates> scale_factors{};
-    for (const auto i : xsigma::irange(replicates))
+    for (const auto i : quarisma::irange(replicates))
     {
         auto delta_ns     = end_times[i].t_ - start_times_[i].t_;
         auto delta_approx = end_times[i].approx_t_ - start_times_[i].approx_t_;
@@ -68,7 +68,7 @@ std::function<time_t(approx_time_t)> ApproximateClockToUnixTimeConverter::makeCo
     auto                           t0        = start_times_[0].t_;
     auto                           t0_approx = start_times_[0].approx_t_;
     std::array<double, replicates> t0_correction{};
-    for (const auto i : xsigma::irange(replicates))
+    for (const auto i : quarisma::irange(replicates))
     {
         auto dt        = start_times_[i].t_ - t0;
         auto dt_approx = static_cast<double>(start_times_[i].approx_t_ - t0_approx) * scale_factor;
@@ -86,4 +86,4 @@ std::function<time_t(approx_time_t)> ApproximateClockToUnixTimeConverter::makeCo
     };
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

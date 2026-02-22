@@ -1,9 +1,9 @@
 #if 0
 #include "profiler/common/combined_traceback.h"
 
-//#include <xsigma/csrc/utils/cpp_stacktraces.h>
+//#include <quarisma/csrc/utils/cpp_stacktraces.h>
 
-namespace xsigma
+namespace quarisma
 {
 
 static std::atomic<CapturedTraceback::Python*> python_support_ = nullptr;
@@ -23,7 +23,7 @@ std::shared_ptr<CapturedTraceback> CapturedTraceback::gather(bool python, bool s
     }
     if (script)
     {
-        r->script_frames_ = xsigma::jit::currentCallstack();
+        r->script_frames_ = quarisma::jit::currentCallstack();
     }
     if (cpp)
     {
@@ -34,13 +34,13 @@ std::shared_ptr<CapturedTraceback> CapturedTraceback::gather(bool python, bool s
 
 int CapturedTraceback::traversePython(visitproc visit, void* arg)
 {
-    XSIGMA_CHECK(python_);
+    QUARISMA_CHECK(python_);
     return python_->traverse(frames_, visit, arg);
 }
 
 int CapturedTraceback::clearPython()
 {
-    XSIGMA_CHECK(python_);
+    QUARISMA_CHECK(python_);
     return python_->clear(frames_);
 }
 
@@ -48,7 +48,7 @@ CapturedTraceback::~CapturedTraceback()
 {
     if (!frames_.empty())
     {
-        XSIGMA_CHECK(python_);
+        QUARISMA_CHECK(python_);
         python_->release(frames_);
     }
 }
@@ -94,7 +94,7 @@ SymbolizedTracebacks symbolize(const std::vector<CapturedTraceback*>& to_symboli
     // gather symbol names for C++ frames
     if (!all_cpp_ips.empty())
     {
-        r.all_frames = unwind::symbolize(all_cpp_ips, xsigma::get_symbolize_mode());
+        r.all_frames = unwind::symbolize(all_cpp_ips, quarisma::get_symbolize_mode());
     }
 
     // batch symbolization requests so we dedup frame objects
@@ -191,7 +191,7 @@ SymbolizedTracebacks symbolize(const std::vector<CapturedTraceback*>& to_symboli
                 }
             }
             else if (
-                uf.funcname.rfind("xsigma::jit::InterpreterStateImpl::run", 0) != std::string::npos)
+                uf.funcname.rfind("quarisma::jit::InterpreterStateImpl::run", 0) != std::string::npos)
             {
                 append_jit();
             }
@@ -219,5 +219,5 @@ void CapturedTraceback::addPythonUnwinder(CapturedTraceback::Python* p)
     } while (!python_support_.compare_exchange_strong(old_unwinder, p));
 }
 
-}  // namespace xsigma
+}  // namespace quarisma
 #endif

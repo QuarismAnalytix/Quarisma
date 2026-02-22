@@ -1050,16 +1050,16 @@ def _get_torch_cpp_wrapper_definition() -> list[str]:
 
 
 def _use_custom_generated_macros() -> list[str]:
-    return [" XSIGMA_USING_CUSTOM_GENERATED_MACROS"]
+    return [" QUARISMA_USING_CUSTOM_GENERATED_MACROS"]
 
 
 def _use_fb_internal_macros() -> list[str]:
     if not _IS_WINDOWS:
         if config.is_fbcode():
             fb_internal_macros = [
-                "XSIGMA_USE_GLOG",
-                "XSIGMA_USE_MINIMAL_GLOG",
-                "XSIGMA_DISABLE_TENSORIMPL_EXTENSIBILITY",
+                "QUARISMA_USE_GLOG",
+                "QUARISMA_USE_MINIMAL_GLOG",
+                "QUARISMA_DISABLE_TENSORIMPL_EXTENSIBILITY",
             ]
             return fb_internal_macros
         else:
@@ -1342,7 +1342,7 @@ def _get_openmp_args(
                 lib_dir_paths.append(os.path.join(libomp_path, "lib"))
 
         # if openmp is still not available, we let the compiler to have a try,
-        # and raise error together with instructions xsigma compilation error later
+        # and raise error together with instructions quarisma compilation error later
     elif _IS_WINDOWS:
         """
         On Windows, `clang` and `icx` have their specific openmp implenmention.
@@ -1669,7 +1669,7 @@ def get_cpp_torch_device_options(
         cross_target_platform=config.aot_inductor.cross_target_platform,
     )
     if not config.is_fbcode() and link_libtorch:
-        libraries += ["xsigma"]
+        libraries += ["quarisma"]
     if device_type == "cuda":
         definitions.append(" USE_ROCM" if torch.version.hip else " USE_CUDA")
 
@@ -1928,7 +1928,7 @@ class CppBuilder:
         self._compile_only = BuildOption.get_compile_only()
         self._precompiling = BuildOption.get_precompiling()
         self._preprocessing = BuildOption.get_preprocessing()
-        # Only one of these options (if any) should be true xsigma any given time.
+        # Only one of these options (if any) should be true quarisma any given time.
         assert sum((self._compile_only, self._precompiling, self._preprocessing)) <= 1
         self._do_link = not (
             self._compile_only or self._precompiling or self._preprocessing
@@ -2088,7 +2088,7 @@ class CppBuilder:
                 output_path = self._target_file
                 # When we build remotely, we need to make sure to carefully copy any files
                 # that are required during the compilation process into our build directly.
-                # This is where all of the XSigma/xsigma/Torch includes come from.
+                # This is where all of the Quarisma/quarisma/Torch includes come from.
                 torch_includes_path = os.path.join(_TORCH_PATH, "include")
                 with tempfile.TemporaryDirectory() as tmp_dir:
                     # Copy everything to tmp compilation folder
@@ -2190,7 +2190,7 @@ class CppBuilder:
             contents += textwrap.dedent(
                 f"""
                 find_package(TorchStandalone REQUIRED)
-                # Set up include directories to find headers xsigma the correct paths
+                # Set up include directories to find headers quarisma the correct paths
                 target_include_directories({self._target_name} PRIVATE ${{TorchStandalone_INCLUDE_DIRS}})
                 target_include_directories({self._target_name} PRIVATE ${{TorchStandalone_INCLUDE_DIRS}}/standalone)
 

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2018 The TensorFlow Authors. All Rights Reserved.
@@ -45,7 +45,7 @@ limitations under the License.
 #include "profiler/native/tracing/traceme_recorder.h"
 #include "util/no_init.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -65,7 +65,7 @@ namespace xsigma
  *
  * @note This function is force-inlined for optimal performance in hot paths
  */
-XSIGMA_FORCE_INLINE int64_t get_current_time_nanos()
+QUARISMA_FORCE_INLINE int64_t get_current_time_nanos()
 {
     // Monotonic clock for consistent relative timing
     auto now = std::chrono::steady_clock::now();
@@ -169,7 +169,7 @@ inline int get_tf_traceme_level(bool is_expensive)
  * @note This class is optimized for high-frequency usage in performance-critical code.
  *       Events are recorded to thread-local buffers and collected during profiling sessions.
  */
-class XSIGMA_VISIBILITY traceme
+class QUARISMA_VISIBILITY traceme
 {
 public:
     static constexpr uint64_t kTraceFilterDefaultMask = traceme_recorder::kDefaultTraceFilter;
@@ -206,9 +206,9 @@ public:
     explicit traceme(
         std::string_view name, int level = 1, uint64_t filter_mask = kTraceFilterDefaultMask)
     {
-        XSIGMA_CHECK_DEBUG(level >= 1, "level is less than 1");
+        QUARISMA_CHECK_DEBUG(level >= 1, "level is less than 1");
 #if !defined(IS_MOBILE_PLATFORM)
-        if XSIGMA_UNLIKELY (
+        if QUARISMA_UNLIKELY (
             traceme_recorder::active(level) && traceme_recorder::check_filter(filter_mask))
         {
             name_.Emplace(std::string(name));
@@ -308,9 +308,9 @@ public:
         int              level       = 1,
         uint64_t         filter_mask = kTraceFilterDefaultMask)
     {
-        XSIGMA_CHECK_DEBUG(level >= 1, "level is less than 1");
+        QUARISMA_CHECK_DEBUG(level >= 1, "level is less than 1");
 #if !defined(IS_MOBILE_PLATFORM)
-        if XSIGMA_UNLIKELY (
+        if QUARISMA_UNLIKELY (
             traceme_recorder::active(level) && traceme_recorder::check_filter(filter_mask))
         {
             name_.Emplace(std::forward<NameGeneratorT>(name_generator)());
@@ -348,7 +348,7 @@ public:
     traceme& operator=(traceme&& other) noexcept
     {
 #if !defined(IS_MOBILE_PLATFORM)
-        if XSIGMA_UNLIKELY (other.start_time_ != kUntracedActivity)
+        if QUARISMA_UNLIKELY (other.start_time_ != kUntracedActivity)
         {
             name_.Emplace(std::move(other.name_).Consume());
             start_time_ = std::exchange(other.start_time_, kUntracedActivity);
@@ -410,9 +410,9 @@ public:
         //   event will be discarded when its start timestamp fall outside of the
         //   start/stop session timestamp.
 #if !defined(IS_MOBILE_PLATFORM)
-        if XSIGMA_UNLIKELY (start_time_ != kUntracedActivity)
+        if QUARISMA_UNLIKELY (start_time_ != kUntracedActivity)
         {
-            if XSIGMA_LIKELY (traceme_recorder::active())
+            if QUARISMA_LIKELY (traceme_recorder::active())
             {
                 traceme_recorder::record(
                     {std::move(name_.value), start_time_, get_current_time_nanos()});
@@ -465,9 +465,9 @@ public:
     void append_metadata(MetadataGeneratorT&& metadata_generator)
     {
 #if !defined(IS_MOBILE_PLATFORM)
-        if XSIGMA_UNLIKELY (start_time_ != kUntracedActivity)
+        if QUARISMA_UNLIKELY (start_time_ != kUntracedActivity)
         {
-            if XSIGMA_LIKELY (traceme_recorder::active())
+            if QUARISMA_LIKELY (traceme_recorder::active())
             {
                 traceme_internal::append_metadata(
                     &name_.value, std::forward<MetadataGeneratorT>(metadata_generator)());
@@ -523,7 +523,7 @@ public:
         uint64_t         filter_mask = kTraceFilterDefaultMask)
     {
 #if !defined(IS_MOBILE_PLATFORM)
-        if XSIGMA_UNLIKELY (
+        if QUARISMA_UNLIKELY (
             traceme_recorder::active(level) && traceme_recorder::check_filter(filter_mask))
         {
             int64_t activity_id = traceme_recorder::new_activity_id();
@@ -555,7 +555,7 @@ public:
         std::string_view name, int level = 1, uint64_t filter_mask = kTraceFilterDefaultMask)
     {
 #if !defined(IS_MOBILE_PLATFORM)
-        if XSIGMA_UNLIKELY (
+        if QUARISMA_UNLIKELY (
             traceme_recorder::active(level) && traceme_recorder::check_filter(filter_mask))
         {
             int64_t activity_id = traceme_recorder::new_activity_id();
@@ -616,9 +616,9 @@ public:
     {
 #if !defined(IS_MOBILE_PLATFORM)
         // We don't check the level again (see traceme::stop()).
-        if XSIGMA_UNLIKELY (activity_id != kUntracedActivity)
+        if QUARISMA_UNLIKELY (activity_id != kUntracedActivity)
         {
-            if XSIGMA_LIKELY (traceme_recorder::active())
+            if QUARISMA_LIKELY (traceme_recorder::active())
             {
                 traceme_recorder::record({std::string(), -activity_id, get_current_time_nanos()});
             }
@@ -660,7 +660,7 @@ public:
         uint64_t         filter_mask = kTraceFilterDefaultMask)
     {
 #if !defined(IS_MOBILE_PLATFORM)
-        if XSIGMA_UNLIKELY (
+        if QUARISMA_UNLIKELY (
             traceme_recorder::active(level) && traceme_recorder::check_filter(filter_mask))
         {
             int64_t now = get_current_time_nanos();
@@ -784,4 +784,4 @@ inline bool tf_op_details_enabled()
     return traceme::active(static_cast<int>(traceme_level_enum::VERBOSE));
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

@@ -2,7 +2,7 @@
 #include <torch/csrc/jit/tensorexpr/ir_simplifier.h>
 #include <torch/csrc/jit/tensorexpr/reduction.h>
 #include <torch/csrc/jit/tensorexpr/tensor.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <iostream>
 
@@ -60,7 +60,7 @@ void IRPrinter::PrinterStream::initialize_imbue()
 }
 
 // TODO: change whether to include the parenthesis to the parent expression,
-// we need to look xsigma the operator precedence to make the output simpler.
+// we need to look quarisma the operator precedence to make the output simpler.
 template <
     typename Op,
     std::enable_if_t<std::is_same_v<decltype(detail::bin_op_deducer(std::declval<Op>())), void>>* =
@@ -388,7 +388,7 @@ void IRPrinter::visit(const IfThenElsePtr& v)
 void IRPrinter::visit(const IntrinsicsPtr& v)
 {
     os() << v->func_name() << "(";
-    for (const auto i : xsigma::irange(v->nparams()))
+    for (const auto i : quarisma::irange(v->nparams()))
     {
         if (i > 0)
         {
@@ -573,7 +573,7 @@ void IRPrinter::visit(const AllocatePtr& v)
     os() << "Allocate(" << *v->buffer_var() << "); // dtype=" << dtypeToCppString(v->dtype());
     os() << ", dims=[";
     const std::vector<ExprPtr>& dims = v->dims();
-    for (const auto i : xsigma::irange(dims.size()))
+    for (const auto i : quarisma::irange(dims.size()))
     {
         if (i != 0)
         {
@@ -843,7 +843,7 @@ std::string to_string(const Tensor& t)
     std::ostringstream oss;
     // TODO: move this to Buf printer
     oss << "Tensor " << t.buf()->name_hint() << "[";
-    for (const auto i : xsigma::irange(t.buf()->ndim()))
+    for (const auto i : quarisma::irange(t.buf()->ndim()))
     {
         if (i != 0)
         {

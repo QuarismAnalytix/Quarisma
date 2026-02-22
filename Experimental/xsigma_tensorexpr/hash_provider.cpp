@@ -1,6 +1,6 @@
 #include <torch/csrc/jit/tensorexpr/hash_provider.h>
 #include <torch/csrc/jit/tensorexpr/ir_simplifier.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit::tensorexpr
 {
@@ -267,7 +267,7 @@ void HashProvider::visit(const IntrinsicsPtr& v)
     }
 
     SimplifierHashType hash(te_hash(v->func_name()));
-    for (const auto i : xsigma::irange(v->nparams()))
+    for (const auto i : quarisma::irange(v->nparams()))
     {
         v->param(i)->accept(this);
         hash = hash_combine(hash, hashOf(v->param(i)));

@@ -8,7 +8,7 @@
 #include <torch/csrc/utils/object_ptr.h>
 #include <torch/csrc/utils/pybind.h>
 #include <torch/csrc/utils/python_strings.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <iostream>
 #include <sstream>
@@ -118,7 +118,7 @@ PyFunctionTensorPreHook::~PyFunctionTensorPreHook()
 auto PyFunctionTensorPreHook::operator()(const variable_list& values) -> variable_list
 {
     pybind11::gil_scoped_acquire gil;
-    THPObjectPtr                 value(THPVariable_Wrap(values.xsigma(value_idx)));
+    THPObjectPtr                 value(THPVariable_Wrap(values.quarisma(value_idx)));
     if (!value)
         throw python_error();
     THPObjectPtr tup(PyTuple_New(1));
@@ -197,7 +197,7 @@ void PyFunctionTensorPreHook::compiled_args(CompiledNodeArgs& args) const
     {
         Py_INCREF(value);
         args.add_tensor_pre_hook(
-            xsigma::SafePyObject(value, getPyInterpreter()), static_cast<int>(value_idx));
+            quarisma::SafePyObject(value, getPyInterpreter()), static_cast<int>(value_idx));
     }
     Py_END_CRITICAL_SECTION();
 }
@@ -210,7 +210,7 @@ void PyFunctionPreHook::compiled_args(CompiledNodeArgs& args) const
     while (PyDict_Next(dict, &pos, &key, &value))
     {
         Py_INCREF(value);
-        args.add_pre_hook(xsigma::SafePyObject(value, getPyInterpreter()));
+        args.add_pre_hook(quarisma::SafePyObject(value, getPyInterpreter()));
     }
     Py_END_CRITICAL_SECTION();
 }
@@ -223,7 +223,7 @@ void PyFunctionPostHook::compiled_args(CompiledNodeArgs& args) const
     while (PyDict_Next(dict, &pos, &key, &value))
     {
         Py_INCREF(value);
-        args.add_post_hook(xsigma::SafePyObject(value, getPyInterpreter()));
+        args.add_post_hook(quarisma::SafePyObject(value, getPyInterpreter()));
     }
     Py_END_CRITICAL_SECTION();
 }
@@ -250,7 +250,7 @@ auto PyFunctionTensorPostAccGradHooks::operator()(const Variable& tensor) -> voi
     THPObjectPtr                 tup(PyTuple_New(1));
     PyTuple_SET_ITEM(tup.get(), 0, THPVariable_Wrap(tensor));
     bool returned_none = !_call_hooks(dict, tup.get());
-    XSIGMA_CHECK(returned_none, "Tensor post accumulate grad hooks should return None.");
+    QUARISMA_CHECK(returned_none, "Tensor post accumulate grad hooks should return None.");
 }
 
 void PyFunctionTensorPostAccGradHooks::compiled_args(
@@ -262,7 +262,7 @@ void PyFunctionTensorPostAccGradHooks::compiled_args(
     while (PyDict_Next(dict, &pos, &key, &value))
     {
         Py_INCREF(value);
-        xsigma::SafePyObject hook_obj(value, getPyInterpreter());
+        quarisma::SafePyObject hook_obj(value, getPyInterpreter());
         args.add_post_acc_grad_hook(std::move(hook_obj));
     }
     Py_END_CRITICAL_SECTION();
@@ -287,7 +287,7 @@ static PyObject* wrap_variables(const variable_list& c_variables)
     THPObjectPtr tuple(PyTuple_New(static_cast<Py_ssize_t>(num_vars)));
     if (!tuple)
         throw python_error();
-    for (const auto i : xsigma::irange(num_vars))
+    for (const auto i : quarisma::irange(num_vars))
     {
         THPObjectPtr var(THPVariable_Wrap(c_variables[i]));
         if (!var)
@@ -300,7 +300,7 @@ static PyObject* wrap_variables(const variable_list& c_variables)
 static variable_list unwrap_variables(PyObject* py_variables)
 {
     variable_list results(PyTuple_GET_SIZE(py_variables));
-    for (const auto i : xsigma::irange(results.size()))
+    for (const auto i : quarisma::irange(results.size()))
     {
         PyObject* item = PyTuple_GET_ITEM(py_variables, i);
         if (item == Py_None)
@@ -314,7 +314,7 @@ static variable_list unwrap_variables(PyObject* py_variables)
         else
         {
             // this should never happen, but just in case...
-            XSIGMA_CHECK(false, "expected variable but got ", Py_TYPE(item)->tp_name);
+            QUARISMA_CHECK(false, "expected variable but got ", Py_TYPE(item)->tp_name);
         }
     }
     return results;
@@ -332,7 +332,7 @@ static void check_result(PyObject* prev, PyObject* result, PyObject* hook)
     auto prev_size   = PyTuple_GET_SIZE(prev);
     auto result_size = PyTuple_GET_SIZE(result);
 
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         prev_size == result_size,
         "hook '",
         hook_name(hook),
@@ -342,7 +342,7 @@ static void check_result(PyObject* prev, PyObject* result, PyObject* hook)
         prev_size,
         ")");
 
-    for (const auto i : xsigma::irange(prev_size))
+    for (const auto i : quarisma::irange(prev_size))
     {
         check_single_result(PyTuple_GET_ITEM(prev, i), PyTuple_GET_ITEM(result, i), hook);
     }
@@ -353,7 +353,7 @@ static void check_single_result(PyObject* _original, PyObject* _result, PyObject
     if (_result == Py_None)
         return;
 
-    XSIGMA_CHECK(_original != Py_None, "can't replace a None gradient with a non-None value");
+    QUARISMA_CHECK(_original != Py_None, "can't replace a None gradient with a non-None value");
 
     if (!PyObject_IsInstance(_result, THPVariableClass))
     {

@@ -1,6 +1,6 @@
 #include <torch/csrc/autograd/anomaly_mode.h>
 #include <torch/csrc/autograd/function.h>
-#include <xsigma/util/Backtrace.h>
+#include <quarisma/util/Backtrace.h>
 
 #include <mutex>
 
@@ -51,7 +51,7 @@ AnomalyMetadata::~AnomalyMetadata() = default;
 
 void AnomalyMetadata::store_stack()
 {
-    traceback_ = xsigma::get_backtrace(/* frames_to_skip */ 1);
+    traceback_ = quarisma::get_backtrace(/* frames_to_skip */ 1);
 }
 
 void AnomalyMetadata::print_stack(const std::string& current_node_name)

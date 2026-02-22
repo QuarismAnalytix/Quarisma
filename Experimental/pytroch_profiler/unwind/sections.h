@@ -10,7 +10,7 @@
 #include "unwind/range_table.h"
 #include "unwind/unwind_error.h"
 
-namespace xsigma::unwind
+namespace quarisma::unwind
 {
 
 static std::string demangle(const std::string& mangled_name)
@@ -133,4 +133,4 @@ private:
     RangeTable<uint64_t>     symbol_table_;
 };
 
-}  // namespace xsigma::unwind
+}  // namespace quarisma::unwind

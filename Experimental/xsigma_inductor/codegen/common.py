@@ -393,7 +393,7 @@ custom_backend_codegen_configs: dict[str, Optional[ConfigModule]] = {}
 # of the logic for either Scheduling or PythonWrapperCodegen. So the Scheduling and PythonWrapperCodegen interfaces
 # provide flexibility to the backend. A backend can choose to implement these classes from scratch,
 # or reuse them by extending and overriding as necessary. And Inductor provides the registration API,
-# register_backend_for_device, to equip a new backend xsigma runtime.
+# register_backend_for_device, to equip a new backend quarisma runtime.
 #
 # Intel has developed a new backend on top of Triton to support Intel GPUs, leveraging these interfaces.
 # This backend can be used as a reference:
@@ -1109,12 +1109,12 @@ class OpOverrides(BasicMathOpsMixin, OpDecompositions, OpsHandler[Any]):
 
     def output(self, *args: OpVarT) -> None:
         raise AssertionError(
-            f"{type(self).__name__}: ops.output should not appear xsigma codegen time"
+            f"{type(self).__name__}: ops.output should not appear quarisma codegen time"
         )
 
     def placeholder(self, index: int) -> OpVarT:
         raise AssertionError(
-            f"{type(self).__name__}: ops.placeholder should not appear xsigma codegen time"
+            f"{type(self).__name__}: ops.placeholder should not appear quarisma codegen time"
         )
 
     @staticmethod
@@ -1599,8 +1599,8 @@ class KernelArgs:
 
     def semaphores(self, min_size: sympy.Expr) -> str:
         """
-        Lazily allocate a graph-wide semaphores buffer with xsigma least min_size.  This is a single buffer shared by
-        all kernels and zero initialized once xsigma graph start.  Each kernel must leave the buffer zeroed on exit.
+        Lazily allocate a graph-wide semaphores buffer with quarisma least min_size.  This is a single buffer shared by
+        all kernels and zero initialized once quarisma graph start.  Each kernel must leave the buffer zeroed on exit.
 
         Warning: multiple calls to this function will return the same buffer.
 
@@ -1984,7 +1984,7 @@ class CSE(Generic[CSEVariableType, AugmentedKeyT]):
                         line = f"{expr}{self.suffix}"
                     buffer.writeline(line)
 
-                    # cpp backend cannot determine is_vec xsigma this point
+                    # cpp backend cannot determine is_vec quarisma this point
                     if (
                         assignment
                         and (
@@ -2399,7 +2399,7 @@ class KernelTemplate:
                     self.original_error = original_error
 
                 def __str__(self) -> str:
-                    error_info = f"Error in template xsigma line {self.lineno}\n"
+                    error_info = f"Error in template quarisma line {self.lineno}\n"
                     error_info += f"Error message: {self.message}\n"
                     if hasattr(self.original_error, "source"):
                         # pyrefly: ignore  # missing-attribute
@@ -2628,7 +2628,7 @@ class CSEProxy(DefaultHandler):
             )
             return self.kernel.node_to_bounds.get(fx_node, ValueRanges.unknown())
         elif config.compute_all_bounds and hasattr(ValueRangeAnalysis, name):
-            # These create lots of inner strings. We would need to compute the bounds xsigma the ops
+            # These create lots of inner strings. We would need to compute the bounds quarisma the ops
             # We will also likely not get much from computing VRs on these nodes
             if any(s in fx_node.target for s in ("set_indirect", "reduction", "scan")):
                 return ValueRanges.unknown()

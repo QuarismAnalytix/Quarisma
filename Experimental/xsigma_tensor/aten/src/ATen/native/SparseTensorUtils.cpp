@@ -1,15 +1,15 @@
-#include <XSigma/Parallel.h>
-#include <XSigma/SparseTensorImpl.h>
-#include <XSigma/XSigma.h>
-#include <XSigma/native/SparseTensorUtils.h>
-#include <XSigma/native/sparse/SparseStubs.h>
+#include <Quarisma/Parallel.h>
+#include <Quarisma/SparseTensorImpl.h>
+#include <Quarisma/Quarisma.h>
+#include <Quarisma/native/SparseTensorUtils.h>
+#include <Quarisma/native/sparse/SparseStubs.h>
 #include <c10/util/irange.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/_sparse_coo_tensor_with_dims_and_tensors.h>
-#include <XSigma/ops/zeros.h>
+#include <Quarisma/ops/_sparse_coo_tensor_with_dims_and_tensors.h>
+#include <Quarisma/ops/zeros.h>
 #endif
 
 namespace at::native

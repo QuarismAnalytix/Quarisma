@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -30,16 +30,16 @@
 #include "common/export.h"
 #include "common/macros.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda.h>  // For CUDA Driver API
 #include <cuda_runtime.h>
 #endif
 
-#if XSIGMA_HAS_HIP
+#if QUARISMA_HAS_HIP
 #include <hip/hip_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace cpu
 {
@@ -54,7 +54,7 @@ enum class init_policy_enum : uint8_t
 };
 
 // Validate alignment is power of 2 and >= sizeof(void*)
-XSIGMA_FORCE_INLINE bool is_valid_alignment(std::size_t alignment) noexcept
+QUARISMA_FORCE_INLINE bool is_valid_alignment(std::size_t alignment) noexcept
 {
     return alignment >= sizeof(void*) &&
 #if __cplusplus >= 202002L
@@ -65,30 +65,30 @@ XSIGMA_FORCE_INLINE bool is_valid_alignment(std::size_t alignment) noexcept
 }
 
 // Get default alignment for the platform
-XSIGMA_FORCE_INLINE XSIGMA_FUNCTION_CONSTEXPR std::size_t default_alignment() noexcept
+QUARISMA_FORCE_INLINE QUARISMA_FUNCTION_CONSTEXPR std::size_t default_alignment() noexcept
 {
-    return XSIGMA_ALIGNMENT;
+    return QUARISMA_ALIGNMENT;
 }
 
-XSIGMA_API void* allocate(
+QUARISMA_API void* allocate(
     std::size_t      nbytes,
     std::size_t      alignment = default_alignment(),
     init_policy_enum init      = init_policy_enum::UNINITIALIZED);
 
-XSIGMA_API void free(void* ptr, std::size_t nbytes = 0) noexcept;
+QUARISMA_API void free(void* ptr, std::size_t nbytes = 0) noexcept;
 
 // TBB-specific allocation and deallocation
-XSIGMA_API void* allocate_tbb(std::size_t nbytes, std::size_t alignment = default_alignment());
+QUARISMA_API void* allocate_tbb(std::size_t nbytes, std::size_t alignment = default_alignment());
 
-XSIGMA_API void free_tbb(void* ptr, std::size_t nbytes = 0) noexcept;
+QUARISMA_API void free_tbb(void* ptr, std::size_t nbytes = 0) noexcept;
 
 // mimalloc-specific allocation and deallocation
-XSIGMA_API void* allocate_mi(std::size_t nbytes, std::size_t alignment = default_alignment());
+QUARISMA_API void* allocate_mi(std::size_t nbytes, std::size_t alignment = default_alignment());
 
-XSIGMA_API void free_mi(void* ptr, std::size_t nbytes = 0) noexcept;
+QUARISMA_API void free_mi(void* ptr, std::size_t nbytes = 0) noexcept;
 
 // Zero-initialized allocation
-XSIGMA_FORCE_INLINE void* allocate_zero(
+QUARISMA_FORCE_INLINE void* allocate_zero(
     std::size_t nbytes, std::size_t alignment = default_alignment())
 {
     return allocate(nbytes, alignment, init_policy_enum::ZERO);
@@ -121,11 +121,11 @@ enum class allocation_strategy : uint8_t
  */
 constexpr allocation_strategy get_allocation_strategy() noexcept
 {
-#if defined(XSIGMA_CUDA_ALLOC_SYNC) || defined(XSIGMA_HIP_ALLOC_SYNC)
+#if defined(QUARISMA_CUDA_ALLOC_SYNC) || defined(QUARISMA_HIP_ALLOC_SYNC)
     return allocation_strategy::SYNC;
-#elif defined(XSIGMA_CUDA_ALLOC_ASYNC) || defined(XSIGMA_HIP_ALLOC_ASYNC)
+#elif defined(QUARISMA_CUDA_ALLOC_ASYNC) || defined(QUARISMA_HIP_ALLOC_ASYNC)
     return allocation_strategy::ASYNC;
-#elif defined(XSIGMA_CUDA_ALLOC_POOL_ASYNC) || defined(XSIGMA_HIP_ALLOC_POOL_ASYNC)
+#elif defined(QUARISMA_CUDA_ALLOC_POOL_ASYNC) || defined(QUARISMA_HIP_ALLOC_POOL_ASYNC)
     return allocation_strategy::POOL_ASYNC;
 #else
     return allocation_strategy::SYNC;  // Default to synchronous
@@ -143,9 +143,9 @@ constexpr allocation_strategy get_allocation_strategy() noexcept
  *
  * **Thread Safety**: Thread-safe with device-level synchronization
  * **Performance**: O(1) direct GPU API call
- * **Strategy**: Determined at compile time by XSIGMA_GPU_ALLOC/XSIGMA_HIP_ALLOC flags
+ * **Strategy**: Determined at compile time by QUARISMA_GPU_ALLOC/QUARISMA_HIP_ALLOC flags
  */
-XSIGMA_API void* allocate(
+QUARISMA_API void* allocate(
     std::size_t nbytes, int device_id, void* stream = nullptr, void* memory_pool = nullptr);
 
 /**
@@ -160,7 +160,7 @@ XSIGMA_API void* allocate(
  * **Performance**: O(1) direct GPU API call
  * **Strategy**: Matches allocation strategy used for allocation
  */
-XSIGMA_API void free(
+QUARISMA_API void free(
     void* ptr, std::size_t nbytes = 0, int device_id = 0, void* stream = nullptr) noexcept;
 
 /**
@@ -169,15 +169,15 @@ XSIGMA_API void free(
  * @param device_id GPU device ID to set as current
  * @return true if device context was set successfully, false otherwise
  */
-XSIGMA_API bool set_device(int device_id) noexcept;
+QUARISMA_API bool set_device(int device_id) noexcept;
 
 /**
  * @brief Gets the current GPU device ID.
  *
  * @return Current GPU device ID, or -1 on error
  */
-XSIGMA_API int get_current_device() noexcept;
+QUARISMA_API int get_current_device() noexcept;
 
 }  // namespace memory_allocator
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/core/dispatch/Dispatcher.h>
+#include <Quarisma/core/dispatch/Dispatcher.h>
 #include <c10/core/impl/TorchDispatchModeTLS.h>
 #include <c10/util/ArrayRef.h>
 #include <torch/library.h>

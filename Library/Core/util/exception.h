@@ -14,10 +14,10 @@
 #include "util/lazy.h"
 #include "util/string_util.h"
 
-#define XSIGMA_STRINGIZE_IMPL(x) #x
-#define XSIGMA_STRINGIZE(x) XSIGMA_STRINGIZE_IMPL(x)
+#define QUARISMA_STRINGIZE_IMPL(x) #x
+#define QUARISMA_STRINGIZE(x) QUARISMA_STRINGIZE_IMPL(x)
 
-namespace xsigma
+namespace quarisma
 {
 // ============================================================================
 // Exception Behavior Configuration
@@ -41,7 +41,7 @@ enum class exception_mode
  *
  * @return Current exception mode
  */
-XSIGMA_API exception_mode get_exception_mode() noexcept;
+QUARISMA_API exception_mode get_exception_mode() noexcept;
 
 /**
  * @brief Set exception handling mode
@@ -49,20 +49,20 @@ XSIGMA_API exception_mode get_exception_mode() noexcept;
  * Thread-safe setter for the global exception mode.
  * Can be controlled via:
  * - Runtime API: set_exception_mode()
- * - Environment variable: XSIGMA_EXCEPTION_MODE=THROW|LOG_FATAL
- * - Compile-time: XSIGMA_DEFAULT_EXCEPTION_MODE
+ * - Environment variable: QUARISMA_EXCEPTION_MODE=THROW|LOG_FATAL
+ * - Compile-time: QUARISMA_DEFAULT_EXCEPTION_MODE
  *
  * @param mode New exception mode
  */
-XSIGMA_API void set_exception_mode(exception_mode mode) noexcept;
+QUARISMA_API void set_exception_mode(exception_mode mode) noexcept;
 
 /**
  * @brief Initialize exception mode from environment
  *
- * Reads XSIGMA_EXCEPTION_MODE environment variable and sets the mode.
+ * Reads QUARISMA_EXCEPTION_MODE environment variable and sets the mode.
  * Called automatically during library initialization.
  */
-XSIGMA_API void init_exception_mode_from_env() noexcept;
+QUARISMA_API void init_exception_mode_from_env() noexcept;
 
 // ============================================================================
 // Exception Categories
@@ -109,7 +109,7 @@ enum class exception_category : int
  * **Naming**: Uses lowercase 'exception' following standard C++ conventions.
  * Type alias 'Error' provided for backward compatibility.
  */
-class XSIGMA_VISIBILITY exception : public std::exception
+class QUARISMA_VISIBILITY exception : public std::exception
 {
     // The actual error message.
     std::string msg_;
@@ -135,7 +135,7 @@ class XSIGMA_VISIBILITY exception : public std::exception
     // This is a little debugging trick: you can stash a relevant pointer
     // in caller, and then when you catch the exception, you can compare
     // against pointers you have on hand to get more information about
-    // where the exception came from.  In xsigma, this is used to figure
+    // where the exception came from.  In quarisma, this is used to figure
     // out which operator raised an exception.
     const void* caller_;
 
@@ -147,15 +147,15 @@ class XSIGMA_VISIBILITY exception : public std::exception
 
 public:
     // Virtual destructor
-    XSIGMA_API virtual ~exception();
+    QUARISMA_API virtual ~exception();
 
-    // xsigma-style exception constructor.
+    // quarisma-style exception constructor.
     // NB: the implementation of this is actually in exception.cpp
-    XSIGMA_API exception(
+    QUARISMA_API exception(
         source_location source_location, std::string msg, exception_category category);
 
     // Base constructor
-    XSIGMA_API exception(
+    QUARISMA_API exception(
         std::string        msg,
         std::string        backtrace,
         const void*        caller   = nullptr,
@@ -169,7 +169,7 @@ public:
      * @param nested Nested exception for chaining
      * @param category Error category
      */
-    XSIGMA_API exception(
+    QUARISMA_API exception(
         source_location            source_location,
         std::string                msg,
         std::shared_ptr<exception> nested,
@@ -179,7 +179,7 @@ public:
     // will be formatted at the end of the context list upon printing.
     // WARNING: This method is O(n) in the size of the stack, so don't go
     // wild adding a ridiculous amount of context to error messages.
-    XSIGMA_API void add_context(std::string msg);
+    QUARISMA_API void add_context(std::string msg);
 
     /// Get error message
     /// @note Inline for performance - frequently accessed in hot paths
@@ -200,7 +200,7 @@ public:
     /// Returns the complete error message, including the source location.
     /// The returned pointer is invalidated if you call add_context() on
     /// this object.
-    XSIGMA_API const char* what() const noexcept override;
+    QUARISMA_API const char* what() const noexcept override;
 
     /// Get caller pointer (for debugging)
     /// @note Inline for performance - frequently accessed in hot paths
@@ -224,7 +224,7 @@ private:
     std::string compute_what(bool include_backtrace) const;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma
 
 // ============================================================================
 // Exception Throwing Macros
@@ -238,48 +238,48 @@ private:
  * @param error_cat Error category enum value
  * @param msg Error message string
  */
-#define XSIGMA_THROW_IMPL(error_cat, msg)                                             \
+#define QUARISMA_THROW_IMPL(error_cat, msg)                                             \
     do                                                                                \
     {                                                                                 \
-        xsigma::source_location loc;                                                  \
+        quarisma::source_location loc;                                                  \
         loc.function = __func__;                                                      \
         loc.file     = __FILE__;                                                      \
         loc.line     = static_cast<int>(__LINE__);                                    \
-        if (xsigma::get_exception_mode() == xsigma::exception_mode::THROW)            \
+        if (quarisma::get_exception_mode() == quarisma::exception_mode::THROW)            \
         {                                                                             \
-            throw xsigma::exception(loc, msg, xsigma::exception_category::error_cat); \
+            throw quarisma::exception(loc, msg, quarisma::exception_category::error_cat); \
         }                                                                             \
         {                                                                             \
-            XSIGMA_LOG_FATAL("Fatal error ({}): {}", #error_cat, msg);                \
+            QUARISMA_LOG_FATAL("Fatal error ({}): {}", #error_cat, msg);                \
         }                                                                             \
     } while (0)
 
 /**
  * @brief Throw a generic exception with fmt-style formatted message
  *
- * Uses fmt-style formatting with {} placeholders. Throws xsigma::Error
- * (alias for xsigma::exception with GENERIC category).
+ * Uses fmt-style formatting with {} placeholders. Throws quarisma::Error
+ * (alias for quarisma::exception with GENERIC category).
  *
  * @param format_str Format string with {} placeholders
  * @param ... Format arguments
  *
  * **Example**:
  * ```cpp
- * XSIGMA_THROW("Invalid state: {}", state_name);
+ * QUARISMA_THROW("Invalid state: {}", state_name);
  * ```
  */
-#define XSIGMA_THROW(format_str, ...) \
-    XSIGMA_THROW_IMPL(GENERIC, fmt::format(FMT_STRING(format_str), ##__VA_ARGS__))
+#define QUARISMA_THROW(format_str, ...) \
+    QUARISMA_THROW_IMPL(GENERIC, fmt::format(FMT_STRING(format_str), ##__VA_ARGS__))
 
 // ============================================================================
 // Exception Check Macros
 // ============================================================================
 
-namespace xsigma
+namespace quarisma
 {
 namespace details
 {
-[[noreturn]] XSIGMA_API void check_fail(
+[[noreturn]] QUARISMA_API void check_fail(
     const char* func, const char* file, int line, const std::string& msg);
 
 // Helper to format check messages with optional arguments
@@ -301,13 +301,13 @@ inline std::string format_check_msg(const char* cond_str)
     return fmt::format(FMT_STRING("Check failed: {}"), cond_str);
 }
 }  // namespace details
-}  // namespace xsigma
+}  // namespace quarisma
 
 /**
  * @brief Check condition and throw exception with fmt-style message if false
  *
  * Uses fmt-style formatting with {} placeholders. If the condition is false,
- * logs a warning and throws xsigma::Error (GENERIC category).
+ * logs a warning and throws quarisma::Error (GENERIC category).
  *
  * @param cond Condition to check
  * @param format_str Format string with {} placeholders (optional)
@@ -315,40 +315,40 @@ inline std::string format_check_msg(const char* cond_str)
  *
  * **Examples**:
  * ```cpp
- * XSIGMA_CHECK(x > 0, "x must be positive, got {}", x);
- * XSIGMA_CHECK(ptr != nullptr, "Null pointer encountered");
- * XSIGMA_CHECK(!empty());  // Simple check without message
+ * QUARISMA_CHECK(x > 0, "x must be positive, got {}", x);
+ * QUARISMA_CHECK(ptr != nullptr, "Null pointer encountered");
+ * QUARISMA_CHECK(!empty());  // Simple check without message
  * ```
  */
-#define XSIGMA_CHECK(cond, ...)                                                    \
-    if XSIGMA_UNLIKELY (!(cond))                                                   \
+#define QUARISMA_CHECK(cond, ...)                                                    \
+    if QUARISMA_UNLIKELY (!(cond))                                                   \
     {                                                                              \
-        std::string msg = xsigma::details::format_check_msg(#cond, ##__VA_ARGS__); \
-        XSIGMA_THROW("{}", msg);                                                   \
+        std::string msg = quarisma::details::format_check_msg(#cond, ##__VA_ARGS__); \
+        QUARISMA_THROW("{}", msg);                                                   \
     }
 
-#define XSIGMA_CHECK_ALL_POSITIVE(V)                                   \
-    XSIGMA_CHECK(                                                      \
+#define QUARISMA_CHECK_ALL_POSITIVE(V)                                   \
+    QUARISMA_CHECK(                                                      \
         std::all_of(V.begin(), V.end(), [](auto x) { return x > 0; }), \
         "All elements must be positive");
 
-#define XSIGMA_CHECK_ALL_FINITE(V)                                                               \
-    XSIGMA_CHECK(                                                                                \
+#define QUARISMA_CHECK_ALL_FINITE(V)                                                               \
+    QUARISMA_CHECK(                                                                                \
         std::none_of(V.begin(), V.end(), [](auto x) { return std::isnan(x) || std::isinf(x); }), \
         "All elements must be finite numbers");
 
-#define XSIGMA_CHECK_STRICTLY_INCREASING(V)                                                       \
-    XSIGMA_CHECK(                                                                                 \
+#define QUARISMA_CHECK_STRICTLY_INCREASING(V)                                                       \
+    QUARISMA_CHECK(                                                                                 \
         std::adjacent_find(V.begin(), V.end(), [](auto a, auto b) { return a >= b; }) == V.end(), \
         "Elements must be in strictly increasing order");
 
-#define XSIGMA_CHECK_STRICTLY_DECREASING(V)                                                       \
-    XSIGMA_CHECK(                                                                                 \
+#define QUARISMA_CHECK_STRICTLY_DECREASING(V)                                                       \
+    QUARISMA_CHECK(                                                                                 \
         std::adjacent_find(V.begin(), V.end(), [](auto a, auto b) { return a <= b; }) == V.end(), \
         "Elements must be in strictly decreasing order");
 
-#define XSIGMA_CHECK_STRICTLY_ORDERED(V)                                                   \
-    XSIGMA_CHECK(                                                                          \
+#define QUARISMA_CHECK_STRICTLY_ORDERED(V)                                                   \
+    QUARISMA_CHECK(                                                                          \
         ((std::adjacent_find(V.begin(), V.end(), [](auto a, auto b) { return a >= b; }) == \
           V.end()) ||                                                                      \
          (std::adjacent_find(V.begin(), V.end(), [](auto a, auto b) { return a <= b; }) == \
@@ -358,7 +358,7 @@ inline std::string format_check_msg(const char* cond_str)
 /**
  * @brief Throw NotImplementedError with fmt-style message
  *
- * Throws xsigma::NotImplementedError (alias for xsigma::exception with
+ * Throws quarisma::NotImplementedError (alias for quarisma::exception with
  * NOT_IMPLEMENTED category).
  *
  * @param format_str Format string with {} placeholders
@@ -366,14 +366,14 @@ inline std::string format_check_msg(const char* cond_str)
  *
  * **Example**:
  * ```cpp
- * XSIGMA_NOT_IMPLEMENTED("Feature {} not yet implemented", feature_name);
+ * QUARISMA_NOT_IMPLEMENTED("Feature {} not yet implemented", feature_name);
  * ```
  */
-#define XSIGMA_NOT_IMPLEMENTED(format_str, ...) \
-    XSIGMA_THROW_IMPL(NOT_IMPLEMENTED, fmt::format(FMT_STRING(format_str), ##__VA_ARGS__))
+#define QUARISMA_NOT_IMPLEMENTED(format_str, ...) \
+    QUARISMA_THROW_IMPL(NOT_IMPLEMENTED, fmt::format(FMT_STRING(format_str), ##__VA_ARGS__))
 
 /**
- * @brief Debug-only version of XSIGMA_CHECK
+ * @brief Debug-only version of QUARISMA_CHECK
  *
  * Only active in debug builds (when NDEBUG is not defined).
  * In release builds, this macro expands to nothing.
@@ -383,26 +383,26 @@ inline std::string format_check_msg(const char* cond_str)
  *
  * **Example**:
  * ```cpp
- * XSIGMA_CHECK_DEBUG(x > 0, "x must be positive, got {}", x);
- * XSIGMA_CHECK_DEBUG(!empty());
+ * QUARISMA_CHECK_DEBUG(x > 0, "x must be positive, got {}", x);
+ * QUARISMA_CHECK_DEBUG(!empty());
  * ```
  */
 #ifdef NDEBUG
-#define XSIGMA_CHECK_DEBUG(condition, ...)
+#define QUARISMA_CHECK_DEBUG(condition, ...)
 #else
-#define XSIGMA_CHECK_DEBUG(condition, ...)      \
+#define QUARISMA_CHECK_DEBUG(condition, ...)      \
     do                                          \
     {                                           \
-        XSIGMA_CHECK(condition, ##__VA_ARGS__); \
+        QUARISMA_CHECK(condition, ##__VA_ARGS__); \
     } while (0)
 #endif
 
-#define XSIGMA_WARN_ONCE(msg)                   \
+#define QUARISMA_WARN_ONCE(msg)                   \
     do                                          \
     {                                           \
         static std::atomic<bool> warned{false}; \
         if (!warned.exchange(true))             \
         {                                       \
-            XSIGMA_LOG_WARNING(msg);            \
+            QUARISMA_LOG_WARNING(msg);            \
         }                                       \
     } while (0)

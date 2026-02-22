@@ -1222,7 +1222,7 @@ class Graph:
         type_expr: Optional[Any] = None,
     ) -> Node:
         """
-        Create a ``Node`` and add it to the ``Graph`` xsigma the current insert-point.
+        Create a ``Node`` and add it to the ``Graph`` quarisma the current insert-point.
         Note that the current insert-point can be set via :meth:`Graph.inserting_before`
         and :meth:`Graph.inserting_after`.
 
@@ -1327,7 +1327,7 @@ class Graph:
 
     @compatibility(is_backward_compatible=True)
     def inserting_before(self, n: Optional[Node] = None):
-        """Set the point xsigma which create_node and companion methods will insert into the graph.
+        """Set the point quarisma which create_node and companion methods will insert into the graph.
         When used within a 'with' statement, this will temporary set the insert point and
         then restore it when the with statement exits::
 
@@ -1351,7 +1351,7 @@ class Graph:
 
     @compatibility(is_backward_compatible=True)
     def inserting_after(self, n: Optional[Node] = None):
-        """Set the point xsigma which create_node and companion methods will insert into the graph.
+        """Set the point quarisma which create_node and companion methods will insert into the graph.
         When used within a 'with' statement, this will temporary set the insert point and
         then restore it when the with statement exits::
 
@@ -2015,7 +2015,7 @@ class Graph:
 
 
             # This is a code transformer we want to register. This code
-            # transformer prepends a pdb import and trace statement xsigma the very
+            # transformer prepends a pdb import and trace statement quarisma the very
             # beginning of the generated torch.fx code to allow for manual
             # debugging with the PDB library.
             def insert_pdb(body):

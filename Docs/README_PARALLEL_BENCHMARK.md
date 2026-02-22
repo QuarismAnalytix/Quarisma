@@ -1,8 +1,8 @@
-# XSigma SMP Backend Benchmark Guide
+# Quarisma SMP Backend Benchmark Guide
 
 ## Overview
 
-This guide explains how to run comprehensive benchmarks comparing all four PARALLEL (Symmetric Multi-Processing) execution modes in XSigma:
+This guide explains how to run comprehensive benchmarks comparing all four PARALLEL (Symmetric Multi-Processing) execution modes in Quarisma:
 
 1. **Sequential execution** - No parallelism, single thread
 2. **`--parallel.std`** - C++ standard library threading (std::thread)
@@ -111,21 +111,21 @@ python3 Scripts/setup.py config.build
 ```bash
 # Build with std::thread backend
 mkdir -p build_std && cd build_std
-cmake -DXSIGMA_PARALLEL_BACKEND=std -DXSIGMA_ENABLE_BENCHMARK=ON ..
+cmake -DQUARISMA_PARALLEL_BACKEND=std -DQUARISMA_ENABLE_BENCHMARK=ON ..
 cmake --build . --target benchmark_parallelbackends
 ./bin/benchmark_parallelbackends > ../results_std.txt
 
 # Build with OpenMP backend
 cd ..
 mkdir -p build_openmp && cd build_openmp
-cmake -DXSIGMA_PARALLEL_BACKEND=openmp -DXSIGMA_ENABLE_BENCHMARK=ON ..
+cmake -DQUARISMA_PARALLEL_BACKEND=openmp -DQUARISMA_ENABLE_BENCHMARK=ON ..
 cmake --build . --target benchmark_parallelbackends
 ./bin/benchmark_parallelbackends > ../results_openmp.txt
 
 # Build with TBB backend
 cd ..
 mkdir -p build_tbb && cd build_tbb
-cmake -DXSIGMA_PARALLEL_BACKEND=tbb -DXSIGMA_ENABLE_BENCHMARK=ON ..
+cmake -DQUARISMA_PARALLEL_BACKEND=tbb -DQUARISMA_ENABLE_BENCHMARK=ON ..
 cmake --build . --target benchmark_parallelbackends
 ./bin/benchmark_parallelbackends > ../results_tbb.txt
 ```
@@ -413,5 +413,5 @@ See file header in BenchmarkParallelBackends.cpp for full license information.
 ## Contact
 
 For questions or issues:
-- GitHub Issues: https://github.com/xsigma/xsigma/issues
-- Documentation: https://docs.xsigma.co.uk
+- GitHub Issues: https://github.com/quarisma/quarisma/issues
+- Documentation: https://docs.quarisma.co.uk

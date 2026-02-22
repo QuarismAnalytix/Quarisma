@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -25,7 +25,7 @@
 #include "common/macros.h"
 #include "memory/cpu/allocator.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -34,7 +34,7 @@ namespace xsigma
  * Provides information about allocation patterns to help select
  * the optimal allocator for specific use cases.
  */
-struct XSIGMA_VISIBILITY allocation_context
+struct QUARISMA_VISIBILITY allocation_context
 {
     size_t allocation_size{0};           ///< Typical allocation size in bytes
     size_t min_size{0};                  ///< Minimum allocation size
@@ -106,7 +106,7 @@ struct XSIGMA_VISIBILITY allocation_context
  * **Thread Safety**: Thread-safe for read operations, not thread-safe for configuration
  * **Performance**: O(1) selection based on pre-computed decision tree
  */
-class XSIGMA_VISIBILITY allocator_selector
+class QUARISMA_VISIBILITY allocator_selector
 {
 public:
     /**
@@ -130,7 +130,7 @@ public:
      * **Performance**: O(1) - simple conditional checks
      * **Thread Safety**: Thread-safe (read-only operation)
      */
-    XSIGMA_API static recommendation recommend(const allocation_context& ctx);
+    QUARISMA_API static recommendation recommend(const allocation_context& ctx);
 
     /**
      * @brief Get detailed analysis of allocation context
@@ -141,7 +141,7 @@ public:
      * **Use Cases**: Debugging, performance tuning, documentation
      * **Performance**: O(1) - string formatting only
      */
-    XSIGMA_API static std::string analyze_context(const allocation_context& ctx);
+    QUARISMA_API static std::string analyze_context(const allocation_context& ctx);
 
     /**
      * @brief Compare multiple allocators for given context
@@ -152,7 +152,7 @@ public:
      * **Use Cases**: Evaluating alternatives, A/B testing
      * **Performance**: O(n) where n is number of allocator types
      */
-    XSIGMA_API static std::vector<recommendation> compare_allocators(const allocation_context& ctx);
+    QUARISMA_API static std::vector<recommendation> compare_allocators(const allocation_context& ctx);
 
     /**
      * @brief Validate allocator choice against context
@@ -164,7 +164,7 @@ public:
      * **Use Cases**: Configuration validation, code review
      * **Performance**: O(1) - simple checks
      */
-    XSIGMA_API static std::string validate_choice(
+    QUARISMA_API static std::string validate_choice(
         const std::string& allocator_type, const allocation_context& ctx);
 
 private:
@@ -224,18 +224,18 @@ private:
  * std::string report = manager.generate_report();
  * ```
  */
-class XSIGMA_VISIBILITY adaptive_allocator_manager
+class QUARISMA_VISIBILITY adaptive_allocator_manager
 {
 public:
     /**
      * @brief Construct adaptive allocator manager
      */
-    XSIGMA_API adaptive_allocator_manager();
+    QUARISMA_API adaptive_allocator_manager();
 
     /**
      * @brief Destructor - cleans up managed allocators
      */
-    XSIGMA_API ~adaptive_allocator_manager();
+    QUARISMA_API ~adaptive_allocator_manager();
 
     /**
      * @brief Initialize allocator instances
@@ -247,7 +247,7 @@ public:
      * **Thread Safety**: Not thread-safe - call before concurrent use
      * **Performance**: One-time initialization cost
      */
-    XSIGMA_API void initialize(
+    QUARISMA_API void initialize(
         bool enable_pool = true, bool enable_bfc = true, bool enable_tracking = false);
 
     /**
@@ -259,7 +259,7 @@ public:
      * **Thread Safety**: Thread-safe
      * **Performance**: O(1) - fast lookup
      */
-    XSIGMA_API Allocator* get_allocator(const allocation_context& ctx);
+    QUARISMA_API Allocator* get_allocator(const allocation_context& ctx);
 
     /**
      * @brief Generate performance report for all allocators
@@ -269,7 +269,7 @@ public:
      * **Thread Safety**: Thread-safe
      * **Performance**: O(n) where n is number of allocators
      */
-    XSIGMA_API std::string generate_report() const;
+    QUARISMA_API std::string generate_report() const;
 
     /**
      * @brief Get statistics for specific allocator type
@@ -279,18 +279,18 @@ public:
      *
      * **Thread Safety**: Thread-safe
      */
-    XSIGMA_API std::optional<allocator_stats> get_stats(const std::string& allocator_type) const;
+    QUARISMA_API std::optional<allocator_stats> get_stats(const std::string& allocator_type) const;
 
     /**
      * @brief Reset all allocator statistics
      *
      * **Thread Safety**: Thread-safe
      */
-    XSIGMA_API void reset_stats();
+    QUARISMA_API void reset_stats();
 
 private:
     struct impl;
     std::unique_ptr<impl> pimpl_;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

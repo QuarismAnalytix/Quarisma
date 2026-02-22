@@ -59,7 +59,7 @@ bool OptimizeCat(const std::shared_ptr<Graph>& graph);
 
 TORCH_API void annotateInputShapes(
     const std::shared_ptr<Graph>&                     graph,
-    const std::vector<std::optional<xsigma::Tensor>>& example_inputs);
+    const std::vector<std::optional<quarisma::Tensor>>& example_inputs);
 TORCH_API std::shared_ptr<Graph> removeUnusedSelfArgument(const std::shared_ptr<Graph>& graph);
 TORCH_API std::shared_ptr<Graph> removeGraphOutput(const std::shared_ptr<Graph>& graph, size_t idx);
 TORCH_API std::shared_ptr<Graph> replaceListOutputWithTuple(const std::shared_ptr<Graph>& graph);
@@ -68,7 +68,7 @@ TORCH_API std::shared_ptr<Graph> replaceListOutputWithTuple(const std::shared_pt
 //
 // Trimming means that we try to remove a small portion of the graph while
 // keeping it valid. This is useful for debugging when we try to find a minimal
-// example reproducing the issue xsigma hand. When ITERS is 0, the graph remains
+// example reproducing the issue quarisma hand. When ITERS is 0, the graph remains
 // unchanged, when ITERS is a big number, the graph usually becomes empty.
 TORCH_API std::shared_ptr<Graph> trimGraph(const std::shared_ptr<Graph>& graph, int64_t iters);
 

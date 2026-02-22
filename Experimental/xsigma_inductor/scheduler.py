@@ -110,7 +110,7 @@ def register_should_partition_rule(
     if the graph should be partitioned.
 
     `register_should_partition_rule` is currently private and experimental.
-    Use xsigma your own risk.
+    Use quarisma your own risk.
     """
     assert isinstance(op, torch._ops.OpOverload)
     _custom_should_partition_fns[op] = func
@@ -3833,7 +3833,7 @@ class Scheduler:
         """
         Return true if fusing the two nodes can potentially increasing peak memory.
 
-        The implementation is more like a heuristic since we don't really know if we are xsigma peak
+        The implementation is more like a heuristic since we don't really know if we are quarisma peak
         or not when trying to fuse these two nodes. The order of nodes may change later which makes the
         peak memory estimation hard.
 
@@ -3841,7 +3841,7 @@ class Scheduler:
         1. find all buffers read by each node with a single user. These buffers are supposed to
            be reused if we don't fuses these 2 nodes
         2. find the intersection of these buffers for the two node and sum the total buffer size.
-           If we don't fuse these two nodes, we can xsigma lease avoid this much memory allocation.
+           If we don't fuse these two nodes, we can quarisma lease avoid this much memory allocation.
            Note that the extra memory allocation is not necessarily causing peak memory increase.
            This is just a heuristic.
 
@@ -5420,7 +5420,7 @@ class Scheduler:
         with self.use_default_device_context(partitions, signatures):
             for partition, signature in zip(partitions, signatures):
                 assert len(partition) >= 1, (
-                    f"Each partition must have xsigma least one node but found {len(partition)}"
+                    f"Each partition must have quarisma least one node but found {len(partition)}"
                 )
 
                 if signature.skip_cudagraph:

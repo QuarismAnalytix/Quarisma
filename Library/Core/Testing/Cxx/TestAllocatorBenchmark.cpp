@@ -1,6 +1,6 @@
 /*
- * XSigma: High-Performance Quantitative Library
- * Copyright 2025 XSigma Contributors
+ * Quarisma: High-Performance Quantitative Library
+ * Copyright 2025 Quarisma Contributors
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
 
@@ -13,14 +13,14 @@
 #include <thread>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "common/pointer.h"
 #include "memory/backend/allocator_bfc.h"
 #include "memory/backend/allocator_pool.h"
 #include "memory/backend/allocator_tracking.h"
 #include "memory/helper/memory_allocator.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 namespace
 {
@@ -347,7 +347,7 @@ void print_benchmark_results(const std::vector<benchmark_results>& results)
 /**
  * @brief Comprehensive allocator benchmark test
  */
-XSIGMATEST(AllocatorBenchmark, ComprehensiveBenchmark)
+QUARISMATEST(AllocatorBenchmark, ComprehensiveBenchmark)
 {
     std::vector<benchmark_results> all_results;
 

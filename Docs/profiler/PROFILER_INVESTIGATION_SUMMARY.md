@@ -1,8 +1,8 @@
-# XSigma Profiler Investigation Summary
+# Quarisma Profiler Investigation Summary
 
 ## Executive Summary
 
-The XSigma profiler infrastructure has **significant gaps** in the C++ API layer needed for code instrumentation. While the callback/observer framework (`RecordFunction`) exists, the **high-level instrumentation API is incomplete**, making it difficult for users to instrument code for profiling.
+The Quarisma profiler infrastructure has **significant gaps** in the C++ API layer needed for code instrumentation. While the callback/observer framework (`RecordFunction`) exists, the **high-level instrumentation API is incomplete**, making it difficult for users to instrument code for profiling.
 
 ---
 
@@ -25,7 +25,7 @@ The XSigma profiler infrastructure has **significant gaps** in the C++ API layer
 3. **Profiler Scope** (`Library/Core/profiler/native/session/profiler.h`)
    - RAII-based scope profiling
    - Automatic timing and memory tracking
-   - Macros: `XSIGMA_PROFILE_SCOPE()`, `XSIGMA_PROFILE_FUNCTION()`
+   - Macros: `QUARISMA_PROFILE_SCOPE()`, `QUARISMA_PROFILE_FUNCTION()`
 
 4. **Observer/Orchestration** (`Library/Core/profiler/common/orchestration/observer.h`)
    - `ProfilerConfig` - Configuration structure
@@ -112,7 +112,7 @@ The XSigma profiler infrastructure has **significant gaps** in the C++ API layer
 ### Current Flow (Incomplete)
 ```cpp
 // User creates RecordFunction manually
-xsigma::RecordFunction guard(xsigma::RecordScope::FUNCTION);
+quarisma::RecordFunction guard(quarisma::RecordScope::FUNCTION);
 guard.before("my_function");
 // ... code ...
 guard.end();  // Destructor calls end callbacks
@@ -121,7 +121,7 @@ guard.end();  // Destructor calls end callbacks
 ### Desired Flow (Missing)
 ```cpp
 // User calls high-level API
-auto event = xsigma::record_function("my_function");
+auto event = quarisma::record_function("my_function");
 // ... code ...
 // Event automatically recorded when scope exits
 ```

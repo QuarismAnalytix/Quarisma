@@ -269,7 +269,7 @@ class DeferredTritonCallWrapper:
                     arg_name = f"{normalized_kernel_name}_{k}"
                     prefix.writelines(
                         [
-                            f"// Create xsigma::IValue for {k}",
+                            f"// Create quarisma::IValue for {k}",
                             f"C10IValueHandle tmp_{arg_name};",
                             f"aoti_torch_int64_to_ivalue({v}, &tmp_{arg_name});",
                             f"RAIIC10IValueHandle RAII_{arg_name}(tmp_{arg_name});",
@@ -301,7 +301,7 @@ class DeferredTritonCallWrapper:
                     # We only care about the shape, therefore we create a dummy scalar here.
                     prefix.writelines(
                         [
-                            f"// Create xsigma::IValue for arg_{curr_arg_id}",
+                            f"// Create quarisma::IValue for arg_{curr_arg_id}",
                             f"C10IValueHandle tmp_{arg_name};",
                             f"aoti_torch_int64_to_ivalue(0, &tmp_{arg_name});",
                             f"RAIIC10IValueHandle RAII_{arg_name}(tmp_{arg_name});",
@@ -323,10 +323,10 @@ class DeferredTritonCallWrapper:
                     elif isinstance(
                         arg_type, torch_dtype
                     ) and not signature_is_tma_desc(arg_signature):
-                        # This is an xsigma::Tensor.
+                        # This is an quarisma::Tensor.
                         prefix.writelines(
                             [
-                                f"// Create xsigma::IValue for arg_{curr_arg_id}",
+                                f"// Create quarisma::IValue for arg_{curr_arg_id}",
                                 f"C10IValueHandle tmp_{arg_name};",
                                 f"aoti_torch_tensor_to_ivalue({arg}, &tmp_{arg_name});",
                                 f"RAIIC10IValueHandle RAII_{arg_name}(tmp_{arg_name});",
@@ -358,7 +358,7 @@ class DeferredTritonCallWrapper:
                 name_var = f"{normalized_kernel_name}_input_names"
                 prefix.writelines(
                     [
-                        "// Create xsigma::IValue for input names",
+                        "// Create quarisma::IValue for input names",
                         f"C10IValueHandle tmp_{name_var};",
                         f"std::vector<const char*> {name_var}({{{', '.join(ordered_argsname)}}});",
                         f"aoti_torch_strlist_to_ivalue({name_var}.data(), {len(ordered_argsname)}, &tmp_{name_var});",
@@ -373,7 +373,7 @@ class DeferredTritonCallWrapper:
                 tmp_args = ",".join(total_args)
                 prefix.writelines(
                     [
-                        "// Aggregate all xsigma::IValue for inputs",
+                        "// Aggregate all quarisma::IValue for inputs",
                         f"std::vector<C10IValueHandle> {inputs_info_}({{{tmp_args}}});",
                     ]
                 )
@@ -420,7 +420,7 @@ class CppWrapperGpu(CppWrapperCpu):
         partition_signatures: Optional[GraphPartitionSignature] = None,
     ):
         # TODO - support subgraph codegen by lifting functions. Check the
-        # comment xsigma CppWrapperCpu `codegen_subgraph` function.
+        # comment quarisma CppWrapperCpu `codegen_subgraph` function.
         return CppWrapperGpu()
 
     def write_header(self):
@@ -475,7 +475,7 @@ class CppWrapperGpu(CppWrapperCpu):
                 )
                 warn_msg = (
                     f"Input {idx} was compiled as {GPU_ALIGN_BYTES}-bytes aligned, "
-                    "but it is not aligned xsigma run time. Copying to an aligned tensor "
+                    "but it is not aligned quarisma run time. Copying to an aligned tensor "
                     "to guarantee correctness, but expect a performance hit."
                 )
                 self.prefix.splice(
@@ -517,7 +517,7 @@ class CppWrapperGpu(CppWrapperCpu):
 
     def finalize_prefix(self):
         """Define the triton kernels now that autotuning is finished"""
-        old_prefix = self.prefix  # new content should go xsigma start of prefix
+        old_prefix = self.prefix  # new content should go quarisma start of prefix
 
         # Generating triton kernel callers can modify the prefix (cached dtypes),
         # so do this before running finalize_prefix(), but put the generated code
@@ -634,7 +634,7 @@ class CppWrapperGpu(CppWrapperCpu):
         arg_signatures: list with signatures of all the args
         is_triton_kernel: whether these are passed into a triton kernel or not. In particular,
                           calls to triton kernels will have an additional global scratch space
-                          arg injected xsigma the front of the arg list.
+                          arg injected quarisma the front of the arg list.
         """
         new_args: list[str] = []
 
@@ -661,7 +661,7 @@ class CppWrapperGpu(CppWrapperCpu):
             # TMA descriptors, a single python arg turns into 1 + 2 * N args in the
             # cubin interface (where N is the rank).
             #
-            # To do this: xsigma TMA codegen time (for aoti), we generate a struct
+            # To do this: quarisma TMA codegen time (for aoti), we generate a struct
             # (StableTMADescriptor) containing the necessary information; and then
             # when we call the function (i.e. here), we unpack the struct members.
             code.writeline(f"auto {var_name} = {cexpr(arg)};")

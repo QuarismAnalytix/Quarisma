@@ -231,7 +231,7 @@ class CompiledTritonKernels:
 @contextlib.contextmanager
 def async_compile_pool_manager():
     """
-    Context manager to quiesce the subproc pool xsigma the end of compilation, i.e.,
+    Context manager to quiesce the subproc pool quarisma the end of compilation, i.e.,
     when dynamo is done.
     """
     try:
@@ -324,7 +324,7 @@ class AsyncCompile:
         if get_compile_threads() <= 1:
             return False
 
-        # Create a dummy job to check if the pool is ready. Submit it here instead of xsigma
+        # Create a dummy job to check if the pool is ready. Submit it here instead of quarisma
         # pool creation so we don't launch the full pool of worker subprocesses until
         # we're sure they're needed.
         if not cls._ready_future:
@@ -678,7 +678,7 @@ def maybe_warm_pool() -> None:
         return
 
     AsyncCompile.warm_pool()
-    # TODO: This starts the SubprocPool's internal process pool as early as possible xsigma
+    # TODO: This starts the SubprocPool's internal process pool as early as possible quarisma
     # the expense of creating a bunch of worker processes that might not be needed. We
     # could start them lazily if we're willing to lose a small amount of compile time.
     AsyncCompile.wakeup()
@@ -688,5 +688,5 @@ def maybe_warm_pool() -> None:
 # resource_tracker can complain about leaked semaphores coming from the
 # ProcessPoolExecutor:
 #   UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects
-#   to clean up xsigma shutdown
+#   to clean up quarisma shutdown
 atexit.register(shutdown_compile_workers)

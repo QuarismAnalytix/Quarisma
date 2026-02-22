@@ -1,4 +1,4 @@
-set(SOURCE_DIR ${xsigma_cmake_dir}/svml)
+set(SOURCE_DIR ${quarisma_cmake_dir}/svml)
 
 set(SVML_INCLUDE_DIRS)
 

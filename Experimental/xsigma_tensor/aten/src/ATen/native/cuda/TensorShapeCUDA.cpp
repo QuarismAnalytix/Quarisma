@@ -1,13 +1,13 @@
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
-#include <XSigma/core/Tensor.h>
-#include <XSigma/cuda/CUDAContext.h>
-#include <XSigma/native/Resize.h>
-#include <XSigma/native/cuda/Resize.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/cuda/CUDAContext.h>
+#include <Quarisma/native/Resize.h>
+#include <Quarisma/native/cuda/Resize.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/NativeFunctions.h>
+#include <Quarisma/NativeFunctions.h>
 #else
-#include <XSigma/ops/set_native.h>
+#include <Quarisma/ops/set_native.h>
 #endif
 
 namespace at::native

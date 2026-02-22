@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "profiler/native/exporters/chrome_trace_exporter.h"
@@ -26,7 +26,7 @@
 #include "logging/logger.h"
 #include "profiler/native/exporters/xplane/xplane.h"
 
-namespace xsigma::profiler
+namespace quarisma::profiler
 {
 
 namespace
@@ -233,21 +233,21 @@ bool export_to_chrome_trace_json_file(
         std::ofstream file(filename);
         if (!file.is_open())
         {
-            XSIGMA_LOG_ERROR("Failed to open file for writing: {}", filename);
+            QUARISMA_LOG_ERROR("Failed to open file for writing: {}", filename);
             return false;
         }
 
         file << json;
         file.close();
 
-        XSIGMA_LOG_INFO("Exported Chrome Trace JSON to: {}", filename);
+        QUARISMA_LOG_INFO("Exported Chrome Trace JSON to: {}", filename);
         return true;
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_ERROR("Failed to export Chrome Trace JSON: {}", e.what());
+        QUARISMA_LOG_ERROR("Failed to export Chrome Trace JSON: {}", e.what());
         return false;
     }
 }
 
-}  // namespace xsigma::profiler
+}  // namespace quarisma::profiler

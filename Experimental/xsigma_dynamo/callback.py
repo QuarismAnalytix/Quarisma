@@ -2,7 +2,7 @@
 This module provides callback management functionality for TorchDynamo's compilation process.
 
 It implements a thread-safe system for registering, managing and executing callbacks that run
-xsigma the start and end of TorchDynamo compilations. Key features include:
+quarisma the start and end of TorchDynamo compilations. Key features include:
 
 - Registration and deregistration of compilation callbacks
 - Thread-safe callback handling with proper locking mechanisms
@@ -38,9 +38,9 @@ class CallbackTrigger(enum.Enum):
     DYNAMO = 1
     # backward compilation can be deferred to runtime
     LAZY_BACKWARD = 2
-    # some backends autotune xsigma runtime
+    # some backends autotune quarisma runtime
     TRITON_AUTOTUNING = 3  # Temporarily disabled due to spam
-    # cudagraphs record xsigma runtime
+    # cudagraphs record quarisma runtime
     CUDAGRAPH_RECORDING = 4
 
 

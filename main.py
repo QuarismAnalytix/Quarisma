@@ -112,7 +112,7 @@ def main():
     args = parser.parse_args()
 
     if args.helper:
-        print("""XSigma Bulk File Utility
+        print("""Quarisma Bulk File Utility
 -------------------------
 Use this script to automate two workflows:
   1. Rename file extensions: --from .old --to .new
@@ -120,7 +120,7 @@ Use this script to automate two workflows:
 
 Examples:
   python main.py Library --from .cpp --to .cpp
-  python main.py . --replace c10::,at:: --with xsigma::,xsigma:: --extensions h,cpp
+  python main.py . --replace c10::,at:: --with quarisma::,quarisma:: --extensions h,cpp
 
 Combine --dry-run with either mode to preview changes without touching disk.""")
         return

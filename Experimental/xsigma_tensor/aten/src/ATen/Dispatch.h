@@ -12,7 +12,7 @@
 #endif
 
 #ifdef TEMPLATE_SELECTIVE_BUILD
-#include <XSigma/selected_mobile_ops.h>
+#include <Quarisma/selected_mobile_ops.h>
 #else
 namespace at
 {

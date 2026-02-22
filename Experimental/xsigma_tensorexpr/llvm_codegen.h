@@ -26,7 +26,7 @@ public:
     explicit LLVMCodeGen(
         StmtPtr                       stmt,
         const std::vector<BufferArg>& args,
-        xsigma::Device                device           = xsigma::kCPU,
+        quarisma::Device                device           = quarisma::kCPU,
         const std::string&            kernel_func_name = "func",
         Dtype                         dtype            = kInt,
         std::optional<std::string>    triple           = std::nullopt,
@@ -47,12 +47,12 @@ public:
     TORCH_API void call_raw(const std::vector<void*>& args) override;
     TORCH_API void call_with_numel(void** args, int64_t numel) override;
 
-    xsigma::Tensor empty_strided(
-        xsigma::IntArrayRef               size,
-        xsigma::IntArrayRef               stride,
-        std::optional<xsigma::ScalarType> dtype_opt,
-        std::optional<xsigma::Layout>     layout_opt,
-        std::optional<xsigma::Device>     device_opt,
+    quarisma::Tensor empty_strided(
+        quarisma::IntArrayRef               size,
+        quarisma::IntArrayRef               stride,
+        std::optional<quarisma::ScalarType> dtype_opt,
+        std::optional<quarisma::Layout>     layout_opt,
+        std::optional<quarisma::Device>     device_opt,
         std::optional<bool>               pin_memory_opt) override;
 
     template <typename T>
@@ -93,7 +93,7 @@ struct TORCH_API LLVMCodeGenBuilder
     {
     }
 
-    LLVMCodeGenBuilder& device(xsigma::Device device)
+    LLVMCodeGenBuilder& device(quarisma::Device device)
     {
         device_ = device;
         return *this;
@@ -138,7 +138,7 @@ struct TORCH_API LLVMCodeGenBuilder
 private:
     StmtPtr                    stmt_;
     std::vector<BufferArg>     args_;
-    xsigma::Device             device_         = xsigma::kCPU;
+    quarisma::Device             device_         = quarisma::kCPU;
     std::string                kernelFuncName_ = "func";
     Dtype                      dtype_          = kInt;
     std::optional<std::string> triple_         = std::nullopt;

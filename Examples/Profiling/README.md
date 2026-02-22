@@ -1,13 +1,13 @@
-# XSigma Profiling Examples
+# Quarisma Profiling Examples
 
-This directory contains comprehensive examples demonstrating the usage of XSigma's profiling systems for performance analysis and optimization.
+This directory contains comprehensive examples demonstrating the usage of Quarisma's profiling systems for performance analysis and optimization.
 
 ## Overview
 
-XSigma provides three complementary profiling systems:
+Quarisma provides three complementary profiling systems:
 
-1. **XSigma Native Profiler** - Hierarchical CPU profiling with Chrome Trace JSON export
-2. **Kineto Profiler** - XSigma profiling library for GPU-related CPU operations
+1. **Quarisma Native Profiler** - Hierarchical CPU profiling with Chrome Trace JSON export
+2. **Kineto Profiler** - Quarisma profiling library for GPU-related CPU operations
 3. **ITT Profiler** - Intel Instrumentation and Tracing Technology for VTune integration
 
 Each profiler can be used individually or combined for comprehensive performance analysis.
@@ -19,7 +19,7 @@ Each profiler can be used individually or combined for comprehensive performance
 A complete, runnable example demonstrating all three profiling systems with realistic computational workloads.
 
 **Key Features:**
-- XSigma native profiler with hierarchical scope tracking
+- Quarisma native profiler with hierarchical scope tracking
 - Kineto profiler integration (when available)
 - ITT profiler integration for VTune (when available)
 - Graceful degradation when profilers are unavailable
@@ -28,14 +28,14 @@ A complete, runnable example demonstrating all three profiling systems with real
 
 **What You'll Learn:**
 - How to configure and start profiler sessions
-- How to instrument code with `XSIGMA_PROFILE_SCOPE()` macros
+- How to instrument code with `QUARISMA_PROFILE_SCOPE()` macros
 - How to combine multiple profilers for comprehensive analysis
 - How to export and visualize profiling data
 - Best practices for profiling instrumentation
 
 ## Building the Examples
 
-### Using XSigma Build Scripts
+### Using Quarisma Build Scripts
 
 ```bash
 # Navigate to Scripts directory
@@ -55,7 +55,7 @@ python setup.py config.build.examples.vs22
 mkdir build && cd build
 
 # Configure with examples enabled
-cmake -DXSIGMA_ENABLE_EXAMPLES=ON ..
+cmake -DQUARISMA_ENABLE_EXAMPLES=ON ..
 
 # Build
 cmake --build .
@@ -87,15 +87,15 @@ cd build_ninja
 
 ```
 ============================================
-XSigma Profiling Examples
+Quarisma Profiling Examples
 ============================================
 
-=== Example 1: XSigma Native Profiler ===
-✓ XSigma profiler started
+=== Example 1: Quarisma Native Profiler ===
+✓ Quarisma profiler started
   Matrix multiplication completed (100x100)
   Sorting completed (10000 elements)
-✓ XSigma profiler stopped
-✓ Trace saved to: xsigma_native_profile.json
+✓ Quarisma profiler stopped
+✓ Trace saved to: quarisma_native_profile.json
 
 Visualization:
   1. Chrome DevTools: chrome://tracing
@@ -103,19 +103,19 @@ Visualization:
 
 === Example 2: Kineto Profiler ===
 ✓ Kineto profiler initialized
-✓ Combined profiling started (Kineto + XSigma)
+✓ Combined profiling started (Kineto + Quarisma)
   Workload completed
 ✓ Combined profiling stopped
-✓ XSigma trace saved to: kineto_xsigma_trace.json
+✓ Quarisma trace saved to: kineto_quarisma_trace.json
 ✓ Kineto trace saved to: kineto_only_trace.json
 
 === Example 3: ITT Profiler ===
 ✗ ITT not available (VTune not installed)
-  Falling back to XSigma profiler only
+  Falling back to Quarisma profiler only
 ✓ Profiling started
   Workload completed
 ✓ Profiling stopped
-✓ XSigma trace saved to: itt_xsigma_trace.json
+✓ Quarisma trace saved to: itt_quarisma_trace.json
 
 ============================================
 All examples completed!
@@ -128,10 +128,10 @@ After running the example, you'll find the following JSON trace files in the bui
 
 | File | Size | Description |
 |------|------|-------------|
-| `xsigma_native_profile.json` | ~2-4 MB | XSigma native profiler trace (Example 1) |
-| `kineto_xsigma_trace.json` | ~2-4 MB | XSigma trace from Kineto example (Example 2) |
+| `quarisma_native_profile.json` | ~2-4 MB | Quarisma native profiler trace (Example 1) |
+| `kineto_quarisma_trace.json` | ~2-4 MB | Quarisma trace from Kineto example (Example 2) |
 | `kineto_only_trace.json` | ~1 KB | Kineto-only trace (GPU-related CPU ops) |
-| `itt_xsigma_trace.json` | ~2-4 MB | XSigma trace from ITT example (Example 3) |
+| `itt_quarisma_trace.json` | ~2-4 MB | Quarisma trace from ITT example (Example 3) |
 
 ## Visualizing Profiling Results
 
@@ -143,7 +143,7 @@ After running the example, you'll find the following JSON trace files in the bui
 1. Open Chrome browser
 2. Navigate to `chrome://tracing`
 3. Click **"Load"** button
-4. Select a JSON trace file (e.g., `xsigma_native_profile.json`)
+4. Select a JSON trace file (e.g., `quarisma_native_profile.json`)
 5. Explore the timeline:
    - **W/S** - Zoom in/out
    - **A/D** - Pan left/right
@@ -181,7 +181,7 @@ After running the example, you'll find the following JSON trace files in the bui
 
 **Prerequisites:**
 - Intel VTune Profiler installed
-- ITT profiler available (`XSIGMA_HAS_ITT=1`)
+- ITT profiler available (`QUARISMA_HAS_ITT=1`)
 
 **Steps:**
 1. Run the example under VTune:
@@ -209,7 +209,7 @@ After running the example, you'll find the following JSON trace files in the bui
 
 ### Hierarchical Scope Structure
 
-The XSigma profiler captures hierarchical scopes. For example, in the matrix multiplication example:
+The Quarisma profiler captures hierarchical scopes. For example, in the matrix multiplication example:
 
 ```
 matrix_operations (parent scope)
@@ -244,7 +244,7 @@ When analyzing the traces, look for:
 
 ## Code Examples
 
-### Example 1: XSigma Native Profiler
+### Example 1: Quarisma Native Profiler
 
 ```cpp
 #include "profiler/session/profiler.h"
@@ -261,7 +261,7 @@ void my_function() {
 
     // Instrument code
     {
-        XSIGMA_PROFILE_SCOPE("my_operation");
+        QUARISMA_PROFILE_SCOPE("my_operation");
         // ... your code ...
     }
 
@@ -271,7 +271,7 @@ void my_function() {
 }
 ```
 
-### Example 2: Kineto Profiler (Combined with XSigma)
+### Example 2: Kineto Profiler (Combined with Quarisma)
 
 ```cpp
 #include "profiler/session/profiler.h"
@@ -279,14 +279,14 @@ void my_function() {
 
 void my_function() {
     // Initialize Kineto
-    xsigma::profiler::kineto_init(false, true);
+    quarisma::profiler::kineto_init(false, true);
     
     std::set<libkineto::ActivityType> activities;
     activities.insert(libkineto::ActivityType::CPU_OP);
-    xsigma::profiler::kineto_prepare_trace(activities);
-    xsigma::profiler::kineto_start_trace();
+    quarisma::profiler::kineto_prepare_trace(activities);
+    quarisma::profiler::kineto_start_trace();
 
-    // Start XSigma profiler
+    // Start Quarisma profiler
     profiler_options opts;
     opts.enable_timing_ = true;
     opts.output_format_ = profiler_options::output_format_enum::JSON;
@@ -296,23 +296,23 @@ void my_function() {
 
     // Instrument code
     {
-        XSIGMA_PROFILE_SCOPE("my_operation");
+        QUARISMA_PROFILE_SCOPE("my_operation");
         // ... your code ...
     }
 
     // Stop both profilers
     session.stop();
-    auto kineto_trace = xsigma::profiler::kineto_stop_trace();
+    auto kineto_trace = quarisma::profiler::kineto_stop_trace();
 
     // Export traces
-    session.write_chrome_trace("xsigma_trace.json");
+    session.write_chrome_trace("quarisma_trace.json");
     if (kineto_trace) {
         static_cast<libkineto::ActivityTraceInterface*>(kineto_trace)->save("kineto_trace.json");
     }
 }
 ```
 
-### Example 3: ITT Profiler (Combined with XSigma)
+### Example 3: ITT Profiler (Combined with Quarisma)
 
 ```cpp
 #include "profiler/session/profiler.h"
@@ -320,10 +320,10 @@ void my_function() {
 
 void my_function() {
     // Initialize ITT
-    xsigma::profiler::itt_init();
-    bool const itt_available = (xsigma::profiler::itt_get_domain() != nullptr);
+    quarisma::profiler::itt_init();
+    bool const itt_available = (quarisma::profiler::itt_get_domain() != nullptr);
 
-    // Start XSigma profiler
+    // Start Quarisma profiler
     profiler_options opts;
     opts.enable_timing_ = true;
     opts.output_format_ = profiler_options::output_format_enum::JSON;
@@ -331,17 +331,17 @@ void my_function() {
     profiler_session session(opts);
     session.start();
 
-    // Instrument with both ITT and XSigma
+    // Instrument with both ITT and Quarisma
     {
         if (itt_available) {
-            xsigma::profiler::itt_range_push("my_operation");
+            quarisma::profiler::itt_range_push("my_operation");
         }
-        XSIGMA_PROFILE_SCOPE("my_operation");
+        QUARISMA_PROFILE_SCOPE("my_operation");
 
         // ... your code ...
 
         if (itt_available) {
-            xsigma::profiler::itt_range_pop();
+            quarisma::profiler::itt_range_pop();
         }
     }
 
@@ -365,7 +365,7 @@ void my_function() {
 
 ### 3. Graceful Degradation
 - Always check profiler availability before use
-- Provide fallback to XSigma profiler when Kineto/ITT unavailable
+- Provide fallback to Quarisma profiler when Kineto/ITT unavailable
 - Use conditional compilation for optional profilers
 
 ### 4. Output Management
@@ -384,14 +384,14 @@ void my_function() {
 
 **Solution:**
 - Ensure profiler session is started and stopped correctly
-- Check that `XSIGMA_PROFILE_SCOPE` macros are used
+- Check that `QUARISMA_PROFILE_SCOPE` macros are used
 - Verify `session.write_chrome_trace()` is called
 
 ### Issue: Kineto trace has no events
 
 **Solution:**
 - Kineto's `CPU_OP` captures GPU-related operations only
-- Use XSigma profiler for general CPU profiling
+- Use Quarisma profiler for general CPU profiling
 - Check that Kineto is properly initialized
 
 ### Issue: ITT annotations not visible in VTune
@@ -399,7 +399,7 @@ void my_function() {
 **Solution:**
 - Ensure VTune is installed and app is run under VTune
 - Check that `itt_get_domain()` returns non-null
-- Verify ITT is enabled (`XSIGMA_HAS_ITT=1`)
+- Verify ITT is enabled (`QUARISMA_HAS_ITT=1`)
 
 ### Issue: Chrome DevTools shows "Invalid trace format"
 
@@ -410,13 +410,13 @@ void my_function() {
 
 ## Additional Resources
 
-- **XSigma Profiler Documentation**: `Library/Core/profiler/README.md`
+- **Quarisma Profiler Documentation**: `Library/Core/profiler/README.md`
 - **Chrome Trace Event Format**: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU
 - **Perfetto UI**: https://ui.perfetto.dev
 - **Intel VTune Profiler**: https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/vtune-profiler.html
-- **XSigma Kineto**: https://github.com/pytorch/kineto
+- **Quarisma Kineto**: https://github.com/pytorch/kineto
 
 ## License
 
-Copyright © 2024 XSigma Development Team. All rights reserved.
+Copyright © 2024 Quarisma Development Team. All rights reserved.
 

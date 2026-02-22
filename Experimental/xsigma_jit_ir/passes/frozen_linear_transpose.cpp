@@ -7,9 +7,9 @@
 #include <torch/csrc/jit/runtime/graph_iterator.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/transpose.h>
+#include <Quarisma/ops/transpose.h>
 #endif
 
 #include <iostream>
@@ -20,7 +20,7 @@ namespace torch::jit
 namespace
 {
 
-using Tensor = xsigma::Tensor;
+using Tensor = quarisma::Tensor;
 
 class TransposeFrozenLinear
 {
@@ -67,7 +67,7 @@ public:
 
             Tensor weight_tensor = constant_as<Tensor>(weight).value();
             Tensor weight_t_tensor =
-                xsigma::transpose(weight_tensor, 1, 0).clone(xsigma::MemoryFormat::Contiguous);
+                quarisma::transpose(weight_tensor, 1, 0).clone(quarisma::MemoryFormat::Contiguous);
             Value* weight_t = graph_->insertConstant(std::move(weight_t_tensor));
             matmul          = graph_->create(aten::matmul, {node->inputs()[0], weight_t});
             matmul->insertAfter(node);

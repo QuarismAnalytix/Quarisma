@@ -18,10 +18,10 @@ const int ONNX_OPSET_14 = 14;
 namespace onnx_constant_fold
 {
 
-xsigma::Tensor IntToTensor(int64_t value);
+quarisma::Tensor IntToTensor(int64_t value);
 
-std::optional<xsigma::Tensor> runTorchBackendForOnnx(
-    const Node* node, std::vector<xsigma::Tensor>& inputTensorValues, int opset_version);
+std::optional<quarisma::Tensor> runTorchBackendForOnnx(
+    const Node* node, std::vector<quarisma::Tensor>& inputTensorValues, int opset_version);
 }  // namespace onnx_constant_fold
 
 void ConstantFoldONNX(

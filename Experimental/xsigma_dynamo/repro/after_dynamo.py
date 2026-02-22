@@ -163,7 +163,7 @@ def wrap_backend_debug(
 ) -> WrapBackendDebug:
     """
     A minifier decorator that wraps the TorchDynamo produced Fx graph modules.
-    As opposed to wrap_compiler_debug, this wrapper intercepts xsigma the
+    As opposed to wrap_compiler_debug, this wrapper intercepts quarisma the
     TorchDynamo produced Fx Graph Module. This makes it backend-agnostic to some
     level, e.g., it is useful for minifying issues related to Aot Autograd
     tracing.  If an error is found, we minify and save the minified repro in
@@ -322,7 +322,7 @@ def dynamo_minifier_backend(
     compiler_fn = lookup_backend(compiler_name)  # type: ignore[arg-type]
 
     # TODO: It's inconsistent to pass SymInt inputs but REAL tensors.
-    # We should pass ints and look xsigma the GraphModule placeholders
+    # We should pass ints and look quarisma the GraphModule placeholders
     # to resolve them to SymInt (if necessary)
     example_inputs = [
         i.node.hint if isinstance(i, torch.SymInt) else i for i in example_inputs

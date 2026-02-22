@@ -2,7 +2,7 @@
 
 ## What is Kineto?
 
-**Kineto** is XSigma's high-performance profiling library that captures detailed execution traces of CPU and GPU operations. XSigma integrates Kineto to provide comprehensive performance profiling capabilities.
+**Kineto** is Quarisma's high-performance profiling library that captures detailed execution traces of CPU and GPU operations. Quarisma integrates Kineto to provide comprehensive performance profiling capabilities.
 
 ---
 
@@ -142,15 +142,15 @@ struct KinetoEvent {
     uint64_t startNs();                    // Start time (ns)
     uint64_t endNs();                      // End time (ns)
     uint64_t durationNs();                 // Duration (ns)
-    xsigma::device_enum deviceType();      // CPU, CUDA, etc.
+    quarisma::device_enum deviceType();      // CPU, CUDA, etc.
     int deviceIndex();                     // Device ID
     uint64_t correlationId();              // Links CPU↔GPU
     
     // Optional metadata
     bool hasShapes();
-    const xsigma::array_ref<std::vector<int64_t>> shapes();
+    const quarisma::array_ref<std::vector<int64_t>> shapes();
     bool hasStack();
-    const xsigma::array_ref<std::string> stack();
+    const quarisma::array_ref<std::string> stack();
     std::string backend();
 };
 ```
@@ -287,7 +287,7 @@ bool enabled = isProfilerEnabledInMainThread();
 **Viewable in:**
 - Chrome DevTools (chrome://tracing)
 - Perfetto (ui.perfetto.dev)
-- XSigma TensorBoard plugin
+- Quarisma TensorBoard plugin
 
 ---
 
@@ -318,7 +318,7 @@ void onFunctionExit(at::ObserverContext* ctx);
 ✅ **Memory Tracking** - Allocation/deallocation events  
 ✅ **Stack Traces** - Optional call stack capture  
 ✅ **Tensor Metadata** - Shapes, dtypes, concrete inputs  
-✅ **Module Hierarchy** - XSigma module structure  
+✅ **Module Hierarchy** - Quarisma module structure  
 ✅ **Correlation IDs** - Link CPU and GPU events  
 ✅ **Thread-Safe** - Per-thread and global modes  
 ✅ **Extensible** - Custom backend support (PrivateUse1)  
@@ -380,5 +380,5 @@ for (const auto& event : result->events()) {
 
 - **KINETO_PROFILER_GUIDE.md** - Detailed architecture guide
 - **KINETO_QUICK_REFERENCE.md** - API quick reference
-- **XSigma Kineto Docs** - https://github.com/pytorch/kineto
+- **Quarisma Kineto Docs** - https://github.com/pytorch/kineto
 

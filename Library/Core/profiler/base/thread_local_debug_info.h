@@ -5,10 +5,10 @@
 
 #include "common/export.h"
 
-namespace xsigma
+namespace quarisma
 {
 
-enum class XSIGMA_VISIBILITY_ENUM DebugInfoKind : uint8_t
+enum class QUARISMA_VISIBILITY_ENUM DebugInfoKind : uint8_t
 {
     PRODUCER_INFO = 0,
     MOBILE_RUNTIME_INFO,
@@ -20,7 +20,7 @@ enum class XSIGMA_VISIBILITY_ENUM DebugInfoKind : uint8_t
     TEST_INFO_2,  // used only in tests
 };
 
-class XSIGMA_API DebugInfoBase
+class QUARISMA_API DebugInfoBase
 {
 public:
     DebugInfoBase()          = default;
@@ -33,7 +33,7 @@ public:
 // the higher layers (e.g. model id) down to the lower levels
 // (e.g. to the operator observers used for debugging, logging,
 // profiling, etc)
-class XSIGMA_API thread_local_debug_info
+class QUARISMA_API thread_local_debug_info
 {
 public:
     static DebugInfoBase* get(DebugInfoKind kind);
@@ -67,7 +67,7 @@ private:
 // Nested DebugInfoGuard adds/overrides existing values in the scope,
 // restoring the original values after exiting the scope.
 // Users can access the values through the thread_local_debug_info::get() call;
-class XSIGMA_API DebugInfoGuard
+class QUARISMA_API DebugInfoGuard
 {
 public:
     DebugInfoGuard(DebugInfoKind kind, std::shared_ptr<DebugInfoBase> info);
@@ -86,4 +86,4 @@ private:
     std::shared_ptr<thread_local_debug_info> prev_info_ = nullptr;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

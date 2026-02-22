@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef TORCH_ENABLE_LLVM
-#include <xsigma/util/ArrayRef.h>
+#include <quarisma/util/ArrayRef.h>
 
 namespace torch
 {
@@ -18,7 +18,7 @@ struct SymbolAddress
     SymbolAddress(const char* sym, void* addr) : symbol(sym), address(addr) {}
 };
 
-xsigma::ArrayRef<SymbolAddress> getIntrinsicSymbols();
+quarisma::ArrayRef<SymbolAddress> getIntrinsicSymbols();
 
 }  // namespace tensorexpr
 }  // namespace jit

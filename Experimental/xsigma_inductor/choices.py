@@ -151,7 +151,7 @@ class InductorChoices:
         Utility to get the KernelTemplateChoice generator for a specific input.
 
         This is a per template/op call, whereas get_template_configs is an op wide call (all templates).
-        Consider when overriding/using xsigma which level you need to make decisions
+        Consider when overriding/using quarisma which level you need to make decisions
         """
         # Extract device_type from kernel_inputs
         device_type = kernel_inputs.device_type
@@ -259,7 +259,7 @@ class InductorChoices:
             kwarg_overrides = {}
         input_tensors = kernel_inputs.nodes()
         if len(input_tensors) < 2:
-            raise ValueError(f"Need xsigma least 2 input tensors, got {len(input_tensors)}")
+            raise ValueError(f"Need quarisma least 2 input tensors, got {len(input_tensors)}")
         layout = kernel_inputs.output_layout()
         # First pass: Create dict of template.uid to generator of KernelTemplateChoice objects
         template_choices = {}

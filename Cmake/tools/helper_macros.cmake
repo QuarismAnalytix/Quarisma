@@ -1,14 +1,14 @@
-# ============================================================================= XSigma Helper Macros
+# ============================================================================= Quarisma Helper Macros
 # Module
 # =============================================================================
-# This module provides utility macros for common CMake operations used throughout the XSigma build
+# This module provides utility macros for common CMake operations used throughout the Quarisma build
 # system, including source file filtering and organization.
 # =============================================================================
 
 # Include guard to prevent multiple inclusions
 include_guard(GLOBAL)
 
-macro(xsigma_module_create_filters name)
+macro(quarisma_module_create_filters name)
   file(
     GLOB_RECURSE _source_list
     LIST_DIRECTORIES false
@@ -36,7 +36,7 @@ macro(xsigma_module_create_filters name)
   # include_directories(${includ_dirs})
 endmacro()
 
-macro(xsigma_module_remove_underscores name_in name_out)
+macro(quarisma_module_remove_underscores name_in name_out)
   string(REPLACE "_" ";" name_splited ${name_in})
   set(the_list "")
   foreach(name IN ITEMS ${name_splited})

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "profiler/native/tracing/tracing.h"
@@ -25,7 +25,7 @@
 
 #include "logging/logger.h"
 
-namespace xsigma::tracing
+namespace quarisma::tracing
 {
 namespace
 {
@@ -55,7 +55,7 @@ const char* get_event_category_name(event_category category)
 
 void event_collector::set_current_thread_name(const char* name)
 {
-    xsigma::logger::SetThreadName(name);
+    quarisma::logger::SetThreadName(name);
 }
 
 void set_event_collector(event_category category, const event_collector* collector)
@@ -132,4 +132,4 @@ const char* get_log_dir()
     return "";
 }
 
-}  // namespace xsigma::tracing
+}  // namespace quarisma::tracing

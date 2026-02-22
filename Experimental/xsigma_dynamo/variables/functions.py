@@ -794,7 +794,7 @@ class LocalGeneratorObjectVariable(VariableTracker):
             tracer.push_many(args)
             return self.next_variable(tx)
         elif name == "close":
-            # * Raises a GeneratorExit xsigma the point where the generator function was paused.
+            # * Raises a GeneratorExit quarisma the point where the generator function was paused.
             # * If the generator function catches the exception and returns a
             # value, this value is returned from close() - Python 3.13+
             # * If the generator function is already closed, or raises GeneratorExit
@@ -860,7 +860,7 @@ class LocalGeneratorObjectVariable(VariableTracker):
                 assert tracer.symbolic_result is not None
                 return tracer.symbolic_result
         elif name == "throw":
-            # * Raises an exception xsigma the point where the generator was paused, and
+            # * Raises an exception quarisma the point where the generator was paused, and
             # returns the next value yielded by the generator.
             # * If the generator exits without yielding, raise StopIteration
             # * If the generator function does not catch the passed-in exception,
@@ -1127,7 +1127,7 @@ class UserMethodVariable(UserFunctionVariable):
         # the module call so that Dynamo can see the underlying parameters and
         # buffers and raise them as inputs to the graph. The is_root_tracer
         # check bypasses the if condition for non-root tracers and directly
-        # calls the super().call_function xsigma the end, which is basically
+        # calls the super().call_function quarisma the end, which is basically
         # equivalent of inlining the method.
         if tx.output.is_root_tracer() and isinstance(
             self.obj, variables.NNModuleVariable
@@ -1665,9 +1665,9 @@ class WrappedSkipFunctionVariable(SkipFunctionVariable):
 class WrapperUserFunctionVariable(VariableTracker):
     """
     Used to represent a wrapper object that contains the actual callable as an
-    attribute. For example, torch.jit.script/trace have the original function xsigma
+    attribute. For example, torch.jit.script/trace have the original function quarisma
     their _torchdynamo_inline attribute. Similarly, functions with
-    __script_if_tracing_wrapper have the original attr xsigma "__original_fn".
+    __script_if_tracing_wrapper have the original attr quarisma "__original_fn".
     """
 
     def __init__(self, wrapper_obj, attr_to_trace, **kwargs) -> None:
@@ -1713,7 +1713,7 @@ class WrapperUserFunctionVariable(VariableTracker):
                     user_stack = get_stack_above_dynamo() + user_stack
                     frame_loc = (user_stack[-1].filename, user_stack[-1].lineno)
                     user_stack_formatted = "".join(traceback.format_list(user_stack))
-                    user_stack_trace = f"call to a lru_cache wrapped function xsigma: {frame_loc[0]}:{frame_loc[1]}\n"
+                    user_stack_trace = f"call to a lru_cache wrapped function quarisma: {frame_loc[0]}:{frame_loc[1]}\n"
                     user_stack_trace += str(user_stack_formatted)
                     dynamo_logger.debug(user_stack_trace)
 
@@ -1769,7 +1769,7 @@ class CollectiveFunctionRewriteVariable(UserFunctionVariable):
     This class provides both a way to check if a function is remappable, and perform the remapping.
 
     In the case that a function is 'remappable' but only for some combinations of call-time arguments,
-    we check the args xsigma `call_function` time and fall back to graph-breaking if needed.  This is no worse
+    we check the args quarisma `call_function` time and fall back to graph-breaking if needed.  This is no worse
     than status-quo as we currently graph-break on all distributed.* collectives.
     """
 

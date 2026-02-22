@@ -4,8 +4,8 @@
 #include <torch/csrc/jit/tensorexpr/ir_mutator.h>
 #include <torch/csrc/jit/tensorexpr/ir_simplifier.h>
 #include <torch/csrc/jit/tensorexpr/ir_visitor.h>
-#include <xsigma/core/ScalarType.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/core/ScalarType.h>
+#include <quarisma/util/irange.h>
 
 #include <utility>
 #include <vector>
@@ -23,7 +23,7 @@ For example it can replace:
 
 {
   A[0] = 0;
-  for(const auto x : xsigma::irange(10)) {
+  for(const auto x : quarisma::irange(10)) {
     A[0] = (A[0]) + x;
   }
 }
@@ -32,7 +32,7 @@ with:
 
 {
   int A_ = 0;
-  for(const auto x : xsigma::irange(10)) {
+  for(const auto x : quarisma::irange(10)) {
     A_ = x + A_;
   }
   A[0] = A_;
@@ -253,8 +253,8 @@ private:
  *
  * - Cond: Conditions complicate lifting scalars out of internal scopes.
  * Generally we cannot lift an access outside of a conditional scope unless
- * there is already a reference to that same access xsigma the higher scope, since
- * we don't know if the condition was guarding an array access not safe xsigma the
+ * there is already a reference to that same access quarisma the higher scope, since
+ * we don't know if the condition was guarding an array access not safe quarisma the
  * higher scope. In the comments I refer to this as the condition "hiding" the
  * access, and the outer access "unhiding" it.
  *

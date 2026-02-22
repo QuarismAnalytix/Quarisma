@@ -1,9 +1,9 @@
-#include <XSigma/core/jit_type.h>
+#include <Quarisma/core/jit_type.h>
 #include <torch/csrc/jit/ir/ir_views.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/peephole.h>
 #include <torch/csrc/jit/passes/peephole_non_tensor.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit
 {
@@ -147,24 +147,24 @@ struct PeepholeOptimizeNonTensorImpl
                 IfView n(node);
                 // this handles redundant short circuits like "x and True" or "x or
                 // False"
-                for (const auto i : xsigma::irange(n.outputs().size()))
+                for (const auto i : quarisma::irange(n.outputs().size()))
                 {
-                    if (n.outputs().xsigma(i)->type() != BoolType::get())
+                    if (n.outputs().quarisma(i)->type() != BoolType::get())
                     {
                         continue;
                     }
-                    bool true_val  = constant_as<bool>(n.thenOutputs().xsigma(i)).value_or(false);
-                    bool false_val = constant_as<bool>(n.elseOutputs().xsigma(i)).value_or(true);
+                    bool true_val  = constant_as<bool>(n.thenOutputs().quarisma(i)).value_or(false);
+                    bool false_val = constant_as<bool>(n.elseOutputs().quarisma(i)).value_or(true);
                     // if an if node's output equals its condition replace output with
                     // condition
                     if (true_val && !false_val)
                     {
                         GRAPH_UPDATE(
                             "Replacing ",
-                            n.outputs().xsigma(i)->debugName(),
+                            n.outputs().quarisma(i)->debugName(),
                             " (True or False) with ",
                             n.cond()->debugName());
-                        n.outputs().xsigma(i)->replaceAllUsesWith(n.cond());
+                        n.outputs().quarisma(i)->replaceAllUsesWith(n.cond());
                         changed = true;
                     }
                 }
@@ -174,16 +174,16 @@ struct PeepholeOptimizeNonTensorImpl
                 {
                     // common case of optional for now
                     bool inputs_non_optional =
-                        !n.thenOutputs().xsigma(i)->type()->cast<OptionalType>() &&
-                        !n.elseOutputs().xsigma(i)->type()->cast<OptionalType>();
-                    auto output_optional = n.outputs().xsigma(i)->type()->cast<OptionalType>();
+                        !n.thenOutputs().quarisma(i)->type()->cast<OptionalType>() &&
+                        !n.elseOutputs().quarisma(i)->type()->cast<OptionalType>();
+                    auto output_optional = n.outputs().quarisma(i)->type()->cast<OptionalType>();
                     if (inputs_non_optional && output_optional)
                     {
                         if (auto unif = unifyTypes(
-                                n.thenOutputs().xsigma(i)->type(),
-                                n.elseOutputs().xsigma(i)->type()))
+                                n.thenOutputs().quarisma(i)->type(),
+                                n.elseOutputs().quarisma(i)->type()))
                         {
-                            n.outputs().xsigma(i)->setType(*unif);
+                            n.outputs().quarisma(i)->setType(*unif);
                             changed = true;
                         }
                     }
@@ -197,9 +197,9 @@ struct PeepholeOptimizeNonTensorImpl
                 AT_ASSERT(node->inputs().size() == 2);
                 for (size_t check_none_index : {0, 1})
                 {
-                    bool input_must_be_none = node->inputs().xsigma(check_none_index)->mustBeNone();
+                    bool input_must_be_none = node->inputs().quarisma(check_none_index)->mustBeNone();
                     bool other_must_not_be_none =
-                        node->inputs().xsigma(1 - check_none_index)->mustNotBeNone();
+                        node->inputs().quarisma(1 - check_none_index)->mustNotBeNone();
                     if (input_must_be_none && other_must_not_be_none)
                     {
                         WithInsertPoint guard(node);
@@ -254,11 +254,11 @@ struct PeepholeOptimizeNonTensorImpl
             else if (node->kind() == aten::ne || node->kind() == aten::eq)
             {
                 if (node->inputs().size() != 2 ||
-                    node->inputs().xsigma(0) != node->inputs().xsigma(1))
+                    node->inputs().quarisma(0) != node->inputs().quarisma(1))
                 {
                     continue;
                 }
-                auto inp_type = node->inputs().xsigma(0)->type();
+                auto inp_type = node->inputs().quarisma(0)->type();
                 // only handling common immutable types here because other types like
                 // Tensor or list of Tensor might throw on aten::eq
                 auto immut_type = [&](const TypePtr& type)

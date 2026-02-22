@@ -2,9 +2,9 @@
  * @file unified_memory_stats_simple.cpp
  * @brief Implementation of simplified unified memory statistics system
  *
- * @author XSigma Development Team
+ * @author Quarisma Development Team
  * @date 2024
- * @copyright XSigma Ltd. All rights reserved.
+ * @copyright Quarisma Ltd. All rights reserved.
  */
 
 #include "memory/unified_memory_stats.h"
@@ -21,7 +21,7 @@
 #include <utility>
 #include <vector>
 
-namespace xsigma
+namespace quarisma
 {
 
 // ============================================================================
@@ -493,4 +493,4 @@ std::string memory_fragmentation_metrics::debug_string() const
     return oss.str();
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

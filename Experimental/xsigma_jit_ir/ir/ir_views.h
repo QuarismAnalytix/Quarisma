@@ -1,17 +1,17 @@
 #pragma once
 
 #include <torch/csrc/jit/ir/ir.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit
 {
 
 struct IfView
 {
-    explicit IfView(Node* node) : node_(node) { AT_ASSERT(node->kind() == ::xsigma::prim::If); }
+    explicit IfView(Node* node) : node_(node) { AT_ASSERT(node->kind() == ::quarisma::prim::If); }
     Value*           cond() const { return node_->input(0); }
-    Block*           thenBlock() const { return node_->blocks().xsigma(0); }
-    Block*           elseBlock() const { return node_->blocks().xsigma(1); }
+    Block*           thenBlock() const { return node_->blocks().quarisma(0); }
+    Block*           elseBlock() const { return node_->blocks().quarisma(1); }
     ArrayRef<Value*> thenOutputs() const { return thenBlock()->outputs(); }
     ArrayRef<Value*> elseOutputs() const { return elseBlock()->outputs(); }
     ArrayRef<Value*> outputs() const { return node_->outputs(); }
@@ -33,14 +33,14 @@ struct LoopView
 {
     explicit LoopView(Node* node) : node_(node)
     {
-        AT_ASSERT(node->kind() == ::xsigma::prim::Loop || node->kind() == ::xsigma::onnx::Loop);
+        AT_ASSERT(node->kind() == ::quarisma::prim::Loop || node->kind() == ::quarisma::onnx::Loop);
     }
-    Block*           bodyBlock() const { return node_->blocks().xsigma(0); }
+    Block*           bodyBlock() const { return node_->blocks().quarisma(0); }
     Value*           cond() const { return node_->input(0); }
     Value*           maxTripCount() const { return node_->input(0); }
     Value*           inputCond() const { return node_->input(1); }
-    Value*           nextCond() const { return bodyBlock()->outputs().xsigma(0); }
-    Value*           currentTripCount() const { return bodyBlock()->inputs().xsigma(0); }
+    Value*           nextCond() const { return bodyBlock()->outputs().quarisma(0); }
+    Value*           currentTripCount() const { return bodyBlock()->inputs().quarisma(0); }
     ArrayRef<Value*> carriedInputs() const
     {
         // skip trip count and cond
@@ -131,7 +131,7 @@ private:
     {
         std::vector<size_t> adjusted;
         adjusted.reserve(adjust + index_ordering.size());
-        for (const auto i : xsigma::irange(adjust))
+        for (const auto i : quarisma::irange(adjust))
         {
             adjusted.push_back(i);
         }

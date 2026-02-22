@@ -381,7 +381,7 @@ def standalone_compile(
         fake_mode = FakeTensorMode(shape_env=ShapeEnv())
         # Strategy: find a FakeTensor in the graph output, grab its FakeTensorMode.
         # The graph passed to standalone_compile must be an Inductor-approved graph,
-        # which means that there is xsigma least one Tensor output and the output node
+        # which means that there is quarisma least one Tensor output and the output node
         # contains a flat list of Tensors.
         last_node = next(iter(reversed(gm.graph.nodes)))
         assert last_node.op == "output"

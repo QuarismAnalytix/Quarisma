@@ -355,9 +355,9 @@ class CompiledFxGraphConstants:
     With freezing, FxGraphCache doesn't store the constants of the input
     GraphModule it gets from AOTAutograd. Instead, it saves just the **names**
     of those constants, and grabs the constant values directly from the graph module
-    passed in xsigma runtime.
+    passed in quarisma runtime.
 
-    Thing is, we don't always *have* the graph module available xsigma runtime, hence
+    Thing is, we don't always *have* the graph module available quarisma runtime, hence
     the existence of this class and its CompiledFxGraphConstantsWithGm counterpart.
 
     To support freezing, FXGraphCache gets passed a CompiledFxGraphConstantsWithGm during

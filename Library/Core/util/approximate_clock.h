@@ -13,27 +13,27 @@
 #include "common/export.h"
 #include "common/macros.h"
 
-#if defined(XSIGMA_IOS) && defined(XSIGMA_MOBILE)
+#if defined(QUARISMA_IOS) && defined(QUARISMA_MOBILE)
 #include <sys/time.h>  // for gettimeofday()
 #endif
 
 #if defined(__i386__) || defined(__x86_64__) || defined(__amd64__)
-#define XSIGMA_RDTSC
+#define QUARISMA_RDTSC
 #if defined(_MSC_VER)
 #include <intrin.h>
 #elif defined(__CUDACC__) || defined(__HIPCC__)
-#undef XSIGMA_RDTSC
+#undef QUARISMA_RDTSC
 #elif defined(__clang__)
 // `__rdtsc` is available by default.
 // NB: This has to be first, because Clang will also define `__GNUC__`
 #elif defined(__GNUC__)
 #include <x86intrin.h>
 #else
-#undef XSIGMA_RDTSC
+#undef QUARISMA_RDTSC
 #endif
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 
 using time_t         = int64_t;
@@ -48,9 +48,9 @@ inline time_t getTimeSinceEpoch()
     return std::chrono::duration_cast<std::chrono::nanoseconds>(now).count();
 }
 
-inline time_t getTime(XSIGMA_UNUSED bool allow_monotonic = false)
+inline time_t getTime(QUARISMA_UNUSED bool allow_monotonic = false)
 {
-#if defined(XSIGMA_IOS) && defined(XSIGMA_MOBILE)
+#if defined(QUARISMA_IOS) && defined(QUARISMA_MOBILE)
     // clock_gettime is only available on iOS 10.0 or newer. Unlike OS X, iOS
     // can't rely on CLOCK_REALTIME, as it is defined no matter if clock_gettime
     // is implemented or not
@@ -84,7 +84,7 @@ inline time_t getTime(XSIGMA_UNUSED bool allow_monotonic = false)
 // `https://github.com/google/benchmark/blob/main/src/cycleclock.h`
 inline auto getApproximateTime()
 {
-#if defined(XSIGMA_RDTSC)
+#if defined(QUARISMA_RDTSC)
     return static_cast<uint64_t>(__rdtsc());
 #else
     return getTime();
@@ -97,7 +97,7 @@ static_assert(
     "Expected either int64_t (`getTime`) or uint64_t (some TSC reads).");
 
 // Convert `getCount` results to Nanoseconds since unix epoch.
-class XSIGMA_VISIBILITY ApproximateClockToUnixTimeConverter final
+class QUARISMA_VISIBILITY ApproximateClockToUnixTimeConverter final
 {
 public:
     ApproximateClockToUnixTimeConverter();
@@ -118,4 +118,4 @@ private:
     time_pairs start_times_;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

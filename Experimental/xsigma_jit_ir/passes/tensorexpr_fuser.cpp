@@ -1,6 +1,6 @@
-#include <XSigma/core/interned_strings.h>
-#include <XSigma/core/symbol.h>
-#include <XSigma/record_function.h>
+#include <Quarisma/core/interned_strings.h>
+#include <Quarisma/core/symbol.h>
+#include <Quarisma/record_function.h>
 #include <torch/csrc/jit/codegen/cuda/interface.h>
 #include <torch/csrc/jit/codegen/fuser/interface.h>
 #include <torch/csrc/jit/ir/alias_analysis.h>
@@ -20,18 +20,18 @@
 #include <torch/csrc/jit/runtime/symbolic_shape_registry.h>
 #include <torch/csrc/jit/runtime/symbolic_shape_registry_util.h>
 #include <torch/csrc/jit/tensorexpr/kernel.h>
-#include <xsigma/util/FunctionRef.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/FunctionRef.h>
+#include <quarisma/util/irange.h>
 
 #include <utility>
 
 // clang-format off
-XSIGMA_DEFINE_bool(
+QUARISMA_DEFINE_bool(
     torch_jit_disable_cat,
     false,
     "disable aten::cat in TE fusion groups")
 
-XSIGMA_DEFINE_bool(
+QUARISMA_DEFINE_bool(
     torch_jit_enable_dynamic_shape_fusion,
     false,
     "enable TE fusion using dynamic shapes")
@@ -57,7 +57,7 @@ bool usedOnlyInSize(Value* v) {
   });
 }
 
-Value* broadcastSizes(xsigma::ArrayRef<Value*> sizes, AliasDb* db) {
+Value* broadcastSizes(quarisma::ArrayRef<Value*> sizes, AliasDb* db) {
   AT_ASSERT(!sizes.empty());
   Graph* graph = sizes[0]->owningGraph();
   Node* broadcast_n =
@@ -154,7 +154,7 @@ void setTensorExprFuserEnabled(bool val) {
 }
 
 bool tensorExprFuserEnabled() {
-  static const auto enable_opt = xsigma::utils::get_env("PYTORCH_TENSOREXPR");
+  static const auto enable_opt = quarisma::utils::get_env("PYTORCH_TENSOREXPR");
   if (!enable_opt.has_value()) {
     return texpr_fuser_enabled_;
   }
@@ -191,7 +191,7 @@ static void removeProfileNodesAndSpecializeTypes(Block* b) {
 
       TensorTypePtr input_tensor_type = nullptr;
       bool input_is_optional = false;
-      if (it->input()->type()->kind() == xsigma::TypeKind::TensorType) {
+      if (it->input()->type()->kind() == quarisma::TypeKind::TensorType) {
         input_tensor_type = it->input()->type()->expect<TensorType>();
       } else {
         auto element_type = it->input()
@@ -393,7 +393,7 @@ void insertTypeGuard(
   for (size_t idx = 0; idx < guarded_node->inputs().size(); ++idx) {
     if (typechecked_inputs.count(guarded_node->input(idx))) {
       guarded_node->replaceInput(
-          idx, typechecked_inputs.xsigma(guarded_node->input(idx)));
+          idx, typechecked_inputs.quarisma(guarded_node->input(idx)));
     }
   }
   for (Value* output : guarded_node->outputs()) {
@@ -444,7 +444,7 @@ class TensorExprFuser {
     auto inputs = fusion_group->inputs();
     auto sinputs = subgraph->inputs();
     AT_ASSERT(inputs.size() == sinputs.size());
-    for (const auto i : xsigma::irange(inputs.size())) {
+    for (const auto i : quarisma::irange(inputs.size())) {
       if (inputs[i]->type()->isSubtypeOf(*TensorType::get())) {
         Value* soutput = graph->insert(aten::size, {inputs[i]});
         aliasDb_->createValue(soutput);
@@ -464,7 +464,7 @@ class TensorExprFuser {
     auto outputs = fusion_group->outputs();
     auto soutputs = subgraph->outputs();
     AT_ASSERT(outputs.size() == soutputs.size());
-    for (const auto i : xsigma::irange(outputs.size())) {
+    for (const auto i : quarisma::irange(outputs.size())) {
       if (usedOnlyInSize(outputs[i]))
         continue;
       Value* soutput = graph->insert(aten::size, {outputs[i]});
@@ -481,7 +481,7 @@ class TensorExprFuser {
       auto shapes = fmap(tensor_inputs, [&](Value* v) {
         GRAPH_DEBUG("Getting aten::size for %", v->debugName());
         all_inputs_have_sizes &= shape_of.count(v);
-        return shape_of.count(v) != 0 ? shape_of.xsigma(v) : nullptr;
+        return shape_of.count(v) != 0 ? shape_of.quarisma(v) : nullptr;
       });
       if (!all_inputs_have_sizes) {
         GRAPH_DEBUG(
@@ -492,21 +492,21 @@ class TensorExprFuser {
 
       if (n->kind() == prim::ConstantChunk) {
         Node* sizes_node = graph->insertNode(
-            graph->create(prim::ChunkSizes, shape_of.xsigma(n->input()), 2));
+            graph->create(prim::ChunkSizes, shape_of.quarisma(n->input()), 2));
         sizes_node->i_(attr::dim, n->i(attr::dim));
         sizes_node->i_(attr::chunks, n->i(attr::chunks));
         for (Value* output : sizes_node->outputs()) {
           aliasDb_->createValue(output);
         }
-        Value* regular_size = sizes_node->outputs().xsigma(0);
-        Value* last_size = sizes_node->outputs().xsigma(1);
+        Value* regular_size = sizes_node->outputs().quarisma(0);
+        Value* last_size = sizes_node->outputs().quarisma(1);
         regular_size->setType(ListType::ofInts());
         last_size->setType(ListType::ofInts());
         auto outputs = n->outputs();
         for (Value* o : outputs.slice(0, outputs.size() - 1)) {
           shape_of.emplace(o, regular_size);
         }
-        shape_of.emplace(outputs.xsigma(outputs.size() - 1), last_size);
+        shape_of.emplace(outputs.quarisma(outputs.size() - 1), last_size);
         continue;
       }
 
@@ -544,7 +544,7 @@ class TensorExprFuser {
         auto uses = output->uses();
         for (Use u : uses) {
           AT_ASSERT(u.user->matches("aten::size(Tensor self) -> int[]"));
-          u.user->output()->replaceAllUsesWith(shape_of.xsigma(soutput));
+          u.user->output()->replaceAllUsesWith(shape_of.quarisma(soutput));
           u.user->destroy();
         }
         fusion_group->eraseOutput(i);
@@ -682,7 +682,7 @@ class TensorExprFuser {
     }
 
     // Try to merge adjacent fusion groups together. Because we have only merged
-    // by looking xsigma graph inputs, without this we would not attempt to merge
+    // by looking quarisma graph inputs, without this we would not attempt to merge
     // adjacent fusion groups that don't have a dependency on each other
 
     std::vector<Node*> initial_fusion_groups;
@@ -695,7 +695,7 @@ class TensorExprFuser {
     Node* prev_fusion_group =
         !initial_fusion_groups.empty() ? initial_fusion_groups[0] : nullptr;
 
-    for (const auto i : xsigma::irange(1, initial_fusion_groups.size())) {
+    for (const auto i : quarisma::irange(1, initial_fusion_groups.size())) {
       // Try merging the just created fusion group into the previous one.
       // If it did not work, then put the previous fusion group into
       // fusion_groups vector - we will not touch it anymore in this loop.
@@ -760,7 +760,7 @@ class TensorExprFuser {
       SubgraphUtils::unmergeSubgraph(n);
       return true;
     }
-    // Cleanup the subgraph from duplicated constants while we're xsigma it.
+    // Cleanup the subgraph from duplicated constants while we're quarisma it.
     ConstantPooling(subgraph);
 
     if (GRAPH_DEBUG_ENABLED) {
@@ -900,8 +900,8 @@ class TensorExprFuser {
       "aten::matmul(Tensor self, Tensor other) -> Tensor",
     };
     static const OperatorSet gpu_only_operator_set{
-      // On CPU, these are slower and less accurate than XSigma kernels, because
-      // XSigma is able to use MKL-VML, whereas the fuser currently can't.  The
+      // On CPU, these are slower and less accurate than Quarisma kernels, because
+      // Quarisma is able to use MKL-VML, whereas the fuser currently can't.  The
       // fuser uses sleef instead because sleef provides functions that operate
       // on vectors, instead of large buffers.
       "aten::erf(Tensor self) -> Tensor",
@@ -924,7 +924,7 @@ class TensorExprFuser {
 
         // Byte tensors introduce too many corner cases in type promotion.
         // Better not to try to handle them.
-        if (*st == xsigma::ScalarType::Byte) {
+        if (*st == quarisma::ScalarType::Byte) {
           return false;
         }
 
@@ -933,11 +933,11 @@ class TensorExprFuser {
         // but on top of that Float16 has a few kinks on LLVM.  Thus, on CPU we
         // additionally disable it until we either move to a more stable version
         // or find workarounds.
-        if (*st == xsigma::ScalarType::Half && *device == xsigma::kCPU) {
+        if (*st == quarisma::ScalarType::Half && *device == quarisma::kCPU) {
           return false;
         }
 
-        if (*st == xsigma::ScalarType::BFloat16 && *device == xsigma::kCPU) {
+        if (*st == quarisma::ScalarType::BFloat16 && *device == quarisma::kCPU) {
 #ifndef TORCH_ENABLE_LLVM
           return false;
 #endif
@@ -1018,7 +1018,7 @@ class TensorExprFuser {
 
       // all non-Tensor arguments must be constant
       for (size_t i = 1; i < node->inputs().size(); i++) {
-        if (node->inputs().xsigma(i)->node()->kind() != prim::Constant) {
+        if (node->inputs().quarisma(i)->node()->kind() != prim::Constant) {
           return false;
         }
       }
@@ -1030,8 +1030,8 @@ class TensorExprFuser {
 
     if (node->kind() == aten::_autocast_to_reduced_precision ||
         node->kind() == aten::_autocast_to_full_precision) {
-      for (auto i : xsigma::irange(1, node->inputs().size())) {
-        if (node->inputs().xsigma(i)->node()->kind() != prim::Constant) {
+      for (auto i : quarisma::irange(1, node->inputs().size())) {
+        if (node->inputs().quarisma(i)->node()->kind() != prim::Constant) {
           return false;
         }
       }
@@ -1055,14 +1055,14 @@ class TensorExprFuser {
 
         bool is_cpu = device->is_cpu();
 
-        if (*st != xsigma::kFloat && is_reduced_precision && is_cpu) {
+        if (*st != quarisma::kFloat && is_reduced_precision && is_cpu) {
           // Regarding CPU, aten would do nothing if the data type is
           // float. Then the aten performance is better than NNC. So NNC
           // does not pull it into its fusion group.
           return false;
         }
 
-        if (*st != xsigma::kBFloat16 && is_full_precision && is_cpu) {
+        if (*st != quarisma::kBFloat16 && is_full_precision && is_cpu) {
           // Regarding CPU, aten would do nothing if the data type is
           // BFloat16. Then the aten performance is better than NNC. So NNC
           // does not pull it into its fusion group.
@@ -1121,7 +1121,7 @@ class TensorExprFuser {
           // All tensor types should be known.
           return false;
         }
-        if (xsigma::isComplexType(*st) || xsigma::isQIntType(*st)) {
+        if (quarisma::isComplexType(*st) || quarisma::isQIntType(*st)) {
           return false;
         }
       }
@@ -1301,7 +1301,7 @@ class TensorExprFuser {
   // 'PYTORCH_TENSOREXPR_DONT_FUSE="clamp:mul:add"' disables fusion on
   // aten::clamp, aten::mul and aten::add.
   void parseTENotFuseOption() {
-    const auto option = xsigma::utils::get_env("PYTORCH_TENSOREXPR_DONT_FUSE");
+    const auto option = quarisma::utils::get_env("PYTORCH_TENSOREXPR_DONT_FUSE");
     std::stringstream in_ss;
     if (option.has_value()) {
       in_ss << option.value();
@@ -1312,7 +1312,7 @@ class TensorExprFuser {
       if (line.empty()) {
         continue;
       }
-      operators_not_to_fuse.insert(xsigma::Symbol::aten(line));
+      operators_not_to_fuse.insert(quarisma::Symbol::aten(line));
     }
   }
 
@@ -1365,7 +1365,7 @@ static Operation createTensorExprOp(const Node* node) {
     auto kernel =
         std::make_shared<tensorexpr::TensorExprKernel>(node->g(attr::Subgraph));
     return [kernel](Stack& stack) {
-      RECORD_FUNCTION(kernel->getKernelName(), std::vector<xsigma::IValue>());
+      RECORD_FUNCTION(kernel->getKernelName(), std::vector<quarisma::IValue>());
       kernel->run(stack);
       return 0;
     };
@@ -1382,7 +1382,7 @@ static Operation createTensorExprOp(const Node* node) {
     allow_stack_outputs = node->i(attr::allow_stack_outputs) == 1;
   }
 
-  std::unordered_map<xsigma::Symbol, tensorexpr::NNCLoweringFunction>
+  std::unordered_map<quarisma::Symbol, tensorexpr::NNCLoweringFunction>
       custom_lowerings;
   auto subgraph = node->g(attr::Subgraph);
   IValue sym_strides = node->ival(attr::striding_inputs_desc);
@@ -1412,8 +1412,8 @@ static Operation createTensorExprOp(const Node* node) {
   std::vector<std::string> output_desc =
       node->ival(attr::striding_outputs_desc).to<std::vector<std::string>>();
   for (size_t i = 0; i < subgraph->outputs().size(); ++i) {
-    stride_map[subgraph->outputs().xsigma(i)] = {
-        strideInputFromString(output_desc.xsigma(i))};
+    stride_map[subgraph->outputs().quarisma(i)] = {
+        strideInputFromString(output_desc.quarisma(i))};
   }
 
   std::shared_ptr<tensorexpr::TensorExprKernel> kernel =
@@ -1426,14 +1426,14 @@ static Operation createTensorExprOp(const Node* node) {
 
   auto num_subgraph_inputs = subgraph->inputs().size();
   return [kernel, num_subgraph_inputs, allow_stack_outputs](Stack& stack) {
-    RECORD_FUNCTION(kernel->getKernelName(), std::vector<xsigma::IValue>());
+    RECORD_FUNCTION(kernel->getKernelName(), std::vector<quarisma::IValue>());
 
     // Stack contents:
     //   [<outputs>] <inputs>
     //
     // If the number of graph inputs is same as the stack size, then no
     // outputs are being passed in. Otherwise, output tensors are passed in
-    // xsigma the bottom of the stack. So, we call the appropriate run function
+    // quarisma the bottom of the stack. So, we call the appropriate run function
     // in TensorExprKernel.
     if (num_subgraph_inputs == stack.size() || !allow_stack_outputs) {
       kernel->run(stack);

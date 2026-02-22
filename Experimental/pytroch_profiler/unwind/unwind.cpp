@@ -8,34 +8,34 @@
 
 #if !defined(__linux__) || !defined(__x86_64__) || !defined(__has_include) || \
     !__has_include("ext/stdio_filebuf.h")
-namespace xsigma::unwind
+namespace quarisma::unwind
 {
 std::vector<void*> unwind()
 {
-    XSIGMA_LOG_WARNING("record_context_cpp is not support on non-linux non-x86_64 platforms");
+    QUARISMA_LOG_WARNING("record_context_cpp is not support on non-linux non-x86_64 platforms");
     return {};
 }
 
-std::optional<std::pair<std::string, uint64_t>> libraryFor(XSIGMA_UNUSED void* addr)
+std::optional<std::pair<std::string, uint64_t>> libraryFor(QUARISMA_UNUSED void* addr)
 {
-    XSIGMA_LOG_WARNING("record_context_cpp is not support on non-linux non-x86_64 platforms");
+    QUARISMA_LOG_WARNING("record_context_cpp is not support on non-linux non-x86_64 platforms");
     return {};
 }
 
 std::vector<Frame> symbolize(
-    XSIGMA_UNUSED const std::vector<void*>& frames, XSIGMA_UNUSED Mode mode)
+    QUARISMA_UNUSED const std::vector<void*>& frames, QUARISMA_UNUSED Mode mode)
 {
-    XSIGMA_LOG_WARNING("record_context_cpp is not support on non-linux non-x86_64 platforms");
+    QUARISMA_LOG_WARNING("record_context_cpp is not support on non-linux non-x86_64 platforms");
     return {};
 }
 
 Stats stats()
 {
-    XSIGMA_LOG_WARNING("record_context_cpp is not support on non-linux non-x86_64 platforms");
+    QUARISMA_LOG_WARNING("record_context_cpp is not support on non-linux non-x86_64 platforms");
     return {};
 }
 
-}  // namespace xsigma::unwind
+}  // namespace quarisma::unwind
 
 #else
 
@@ -62,9 +62,9 @@ Stats stats()
 extern "C" void unwind_c(std::vector<void*>* result, int64_t rsp, int64_t rbp);
 extern "C" void unwind_entry(std::vector<void*>* result);
 
-namespace xsigma::unwind
+namespace quarisma::unwind
 {
-class XSIGMA_VISIBILITY UpgradeExclusive
+class QUARISMA_VISIBILITY UpgradeExclusive
 {
     UpgradeExclusive(std::shared_lock<std::shared_timed_mutex>& rdlock) : rdlock_(rdlock)
     {
@@ -86,7 +86,7 @@ private:
     std::shared_lock<std::shared_timed_mutex>& rdlock_;
 };
 
-class XSIGMA_VISIBILITY LibraryInfo
+class QUARISMA_VISIBILITY LibraryInfo
 {
     LibraryInfo(std::string name, uint64_t load_bias, uint64_t last_addr, void* eh_frame_hdr_ptr_)
         : name_(std::move(name)),
@@ -121,19 +121,19 @@ static const char* process_name()
     if (*name == '\0')
     {
         ssize_t len = readlink("/proc/self/exe", name, PATH_MAX);
-        XSIGMA_CHECK(len != -1, "can't get path to exe")
+        QUARISMA_CHECK(len != -1, "can't get path to exe")
         name[len] = '\0';
     }
     return name;
 }
 
-class XSIGMA_VISIBILITY Version
+class QUARISMA_VISIBILITY Version
 {
     uint64_t adds_ = LLONG_MAX;
     uint64_t subs_ = LLONG_MAX;
 };
 
-class XSIGMA_VISIBILITY UnwindCache
+class QUARISMA_VISIBILITY UnwindCache
 {
     Version currentVersion()
     {
@@ -160,7 +160,7 @@ class XSIGMA_VISIBILITY UnwindCache
                 auto     self      = (UnwindCache*)data;
                 uint64_t last_addr = 0;
                 auto     segments  = (Elf64_Phdr*)info->dlpi_phdr;
-                for (auto i : xsigma::irange(info->dlpi_phnum))
+                for (auto i : quarisma::irange(info->dlpi_phnum))
                 {
                     if (segments[i].p_type == PT_LOAD)
                     {
@@ -225,7 +225,7 @@ class XSIGMA_VISIBILITY UnwindCache
         {
             // because unwinders are cached this will only print
             // once per frame that cannot be unwound.
-            XSIGMA_WARN("Unsupported unwinding pattern: ", err.what());
+            QUARISMA_WARN("Unsupported unwinding pattern: ", err.what());
         }
         auto r = ip_cache_.insert_or_assign(addr, unwinder);
         return r.first->second;
@@ -259,7 +259,7 @@ class XSIGMA_VISIBILITY UnwindCache
         {
             for ([[maybe_unused]] const auto& l : libraries_with_no_unwind_)
             {
-                XSIGMA_WARN("Did not find a PT_GNU_EH_FRAME segment for ", l);
+                QUARISMA_WARN("Did not find a PT_GNU_EH_FRAME segment for ", l);
             }
             libraries_with_no_unwind_.clear();
             throw UnwindError("addr not in range of known libraries");
@@ -267,7 +267,7 @@ class XSIGMA_VISIBILITY UnwindCache
         return *r;
     }
 
-    xsigma::unwind::Stats stats() { return stats_; }
+    quarisma::unwind::Stats stats() { return stats_; }
 
 private:
     const LibraryInfo* searchFor(uint64_t addr)
@@ -300,9 +300,9 @@ private:
 
     // sorted by load_bias
     std::vector<LibraryInfo>                  all_libraries_;
-    xsigma::flat_hash_map<uint64_t, Unwinder> ip_cache_;
+    quarisma::flat_hash_map<uint64_t, Unwinder> ip_cache_;
 
-    xsigma::unwind::Stats stats_;
+    quarisma::unwind::Stats stats_;
 
     // to keep track of whether we need to refresh this info
     Version last_version_;
@@ -346,16 +346,16 @@ static std::string dladdr_lookup(void* addr)
     return funcname;
 }
 
-class XSIGMA_VISIBILITY Symbolizer
+class QUARISMA_VISIBILITY Symbolizer
 {
     Symbolizer()
     {
-        auto envar = xsigma::utils::get_env("XSIGMA_ADDR2LINE_BINARY");
+        auto envar = quarisma::utils::get_env("QUARISMA_ADDR2LINE_BINARY");
         if (envar.has_value())
         {
             // currently we take user's input as is without checking
             addr2line_binary_ = std::move(envar.value());
-            XSIGMA_WARN("Use custom addr2line binary: ", addr2line_binary_);
+            QUARISMA_WARN("Use custom addr2line binary: ", addr2line_binary_);
         }
         else
         {
@@ -428,8 +428,8 @@ private:
         std::vector<void*>           queried;
         size_t                       completed = 0;
     };
-    xsigma::flat_hash_map<std::string, Entry> entries_;
-    xsigma::flat_hash_map<void*, Frame>       frame_map_;
+    quarisma::flat_hash_map<std::string, Entry> entries_;
+    quarisma::flat_hash_map<void*, Frame>       frame_map_;
     bool                                      has_pending_results_ = true;
 
     Entry& getOrCreate(const std::string& name)
@@ -469,7 +469,7 @@ private:
 static std::vector<Frame> symbolize_fast(const std::vector<void*>& frames, Mode mode)
 {
     static std::mutex                                         cache_mutex;
-    static std::array<xsigma::flat_hash_map<void*, Frame>, 2> frame_maps;
+    static std::array<quarisma::flat_hash_map<void*, Frame>, 2> frame_maps;
     auto& frame_map = frame_maps[mode == Mode::fast ? 0 : 1];
 
     std::vector<uint32_t> indices_to_lookup;
@@ -477,7 +477,7 @@ static std::vector<Frame> symbolize_fast(const std::vector<void*>& frames, Mode 
     results.reserve(frames.size());
     {
         std::lock_guard<std::mutex> lock(cache_mutex);
-        for (auto i : xsigma::irange(frames.size()))
+        for (auto i : quarisma::irange(frames.size()))
         {
             void* f  = frames.at(i);
             auto  it = frame_map.find(f);
@@ -563,25 +563,25 @@ Stats stats()
     return unwind_cache.stats();
 }
 
-}  // namespace xsigma::unwind
+}  // namespace quarisma::unwind
 
-extern "C" XSIGMA_USED void unwind_c(std::vector<void*>* result, int64_t rsp, int64_t rbp)
+extern "C" QUARISMA_USED void unwind_c(std::vector<void*>* result, int64_t rsp, int64_t rbp)
 {
-    std::shared_lock            lock(xsigma::unwind::cache_mutex_);
-    xsigma::unwind::UnwindState state{};
+    std::shared_lock            lock(quarisma::unwind::cache_mutex_);
+    quarisma::unwind::UnwindState state{};
     // NOLINTNEXTLINE(performance-no-int-to-ptr)
     state.rip = *(int64_t*)(rsp);
     // +8 because we saved rsp after the return address was already pushed
     // to the stack
     state.rsp = rsp + 8;
     state.rbp = rbp;
-    xsigma::unwind::unwind_cache.checkRefresh(lock);
+    quarisma::unwind::unwind_cache.checkRefresh(lock);
     while (true)
     {  // unwind for _start sets rip as being undefined
         // NOLINTNEXTLINE(performance-no-int-to-ptr)
         result->push_back((void*)state.rip);
-        const xsigma::unwind::Unwinder& uw =
-            xsigma::unwind::unwind_cache.unwinderFor(state.rip, lock);
+        const quarisma::unwind::Unwinder& uw =
+            quarisma::unwind::unwind_cache.unwinderFor(state.rip, lock);
         if (uw.terminator())
         {
             if (uw.isUnknown())

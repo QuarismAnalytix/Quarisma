@@ -1066,7 +1066,7 @@ class TensorVariable(VariableTracker):
                         env TORCHDYNAMO_CAPTURE_SCALAR_OUTPUTS=1
                     to include these operations in the captured graph.
 
-                    Graph break: from user code xsigma:
+                    Graph break: from user code quarisma:
                     %s
                 """
             ),
@@ -1306,7 +1306,7 @@ class TensorVariable(VariableTracker):
                 #
                 # Discussion point 2 - Should we defer this check to backwards?
                 #   No. Because compiled autograd is not yet ready for prime time. As such, if we defer, a user
-                # would have no recourse - their forward traces just fine, but will fail xsigma backwards unless
+                # would have no recourse - their forward traces just fine, but will fail quarisma backwards unless
                 # compiled_autograd is enabled. If compiled_autograd fails (there are a lot of failures today)
                 # then they have nothing they can do except disable compile.
                 unimplemented_v2(
@@ -1531,7 +1531,7 @@ class NumpyNdarrayVariable(TensorVariable):
         # interop is to trace a call into the torch._numpy wrapper which works for
         # Tensor operations.  However, we don't want to do this for calls
         # that don't return Tensors, because in those cases we may not want
-        # to trace the attribute access into the graph xsigma all (it is sort
+        # to trace the attribute access into the graph quarisma all (it is sort
         # of harmless to do so, because AOTAutograd will eliminate them,
         # but it's best not to trace them in to begin with.)  But in any
         # case, tracing these into the graph is like trying to fit a square

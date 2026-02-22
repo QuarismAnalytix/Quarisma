@@ -2,9 +2,9 @@
 
 ## Overview
 
-This documentation suite explains how the **Kineto Profiler** works in XSigma, including its architecture, entry points, classes, and functions required to run the profiler.
+This documentation suite explains how the **Kineto Profiler** works in Quarisma, including its architecture, entry points, classes, and functions required to run the profiler.
 
-Kineto is XSigma's high-performance profiling system that captures detailed execution traces of CPU and GPU operations. XSigma integrates Kineto to provide comprehensive performance profiling capabilities.
+Kineto is Quarisma's high-performance profiling system that captures detailed execution traces of CPU and GPU operations. Quarisma integrates Kineto to provide comprehensive performance profiling capabilities.
 
 ---
 
@@ -84,11 +84,11 @@ Implementation-level details:
 ### Basic Profiling Example
 
 ```cpp
-#include <xsigma/csrc/autograd/profiler_kineto.h>
+#include <quarisma/csrc/autograd/profiler_kineto.h>
 
 // 1. Configure profiler
-xsigma::profiler::impl::ProfilerConfig config(
-    xsigma::profiler::impl::ProfilerState::KINETO,
+quarisma::profiler::impl::ProfilerConfig config(
+    quarisma::profiler::impl::ProfilerState::KINETO,
     true,   // report_input_shapes
     true,   // profile_memory
     true,   // with_stack
@@ -97,18 +97,18 @@ xsigma::profiler::impl::ProfilerConfig config(
 );
 
 // 2. Specify activities to profile
-std::set<xsigma::profiler::impl::ActivityType> activities{
-    xsigma::profiler::impl::ActivityType::CPU
+std::set<quarisma::profiler::impl::ActivityType> activities{
+    quarisma::profiler::impl::ActivityType::CPU
 };
 
 // 3. Start profiling
-xsigma::autograd::profiler::enableProfiler(config, activities);
+quarisma::autograd::profiler::enableProfiler(config, activities);
 
 // 4. Run code to profile
 // ... your code here ...
 
 // 5. Stop profiling and get results
-auto result = xsigma::autograd::profiler::disableProfiler();
+auto result = quarisma::autograd::profiler::disableProfiler();
 
 // 6. Save trace
 result->save("profile_trace.json");
@@ -275,7 +275,7 @@ Library/Core/profiler/pytroch_profiler/
 **Viewable in:**
 - Chrome DevTools (chrome://tracing)
 - Perfetto (ui.perfetto.dev)
-- XSigma TensorBoard plugin
+- Quarisma TensorBoard plugin
 
 ---
 
@@ -286,7 +286,7 @@ Library/Core/profiler/pytroch_profiler/
 ✅ **Memory Tracking** - Allocation/deallocation events  
 ✅ **Stack Traces** - Optional call stack capture  
 ✅ **Tensor Metadata** - Shapes, dtypes, concrete inputs  
-✅ **Module Hierarchy** - XSigma module structure  
+✅ **Module Hierarchy** - Quarisma module structure  
 ✅ **Correlation IDs** - Link CPU and GPU events  
 ✅ **Thread-Safe** - Per-thread and global profiling modes  
 ✅ **Extensible** - Custom backend support (PrivateUse1)  
@@ -383,8 +383,8 @@ auto result = disableProfiler();
 
 ## Related Resources
 
-- **XSigma Kineto:** https://github.com/pytorch/kineto
+- **Quarisma Kineto:** https://github.com/pytorch/kineto
 - **Chrome Tracing:** https://www.chromium.org/developers/how-tos/trace-event-profiling-tool
 - **Perfetto:** https://ui.perfetto.dev
-- **XSigma Profiler API:** `Library/Core/profiler/profiler_api.h`
+- **Quarisma Profiler API:** `Library/Core/profiler/profiler_api.h`
 

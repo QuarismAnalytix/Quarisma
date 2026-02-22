@@ -1,27 +1,27 @@
-# ============================================================================= XSigma Faster Linker
+# ============================================================================= Quarisma Faster Linker
 # Configuration Module
 # =============================================================================
 # Configures faster linker selection for improved build performance. Supports mold, lld, gold, and
 # lld-link linkers across different platforms.
 #
-# NOTE: Linker flags are applied ONLY to the xsigmabuild interface target. This ensures that
-# third-party dependencies use their default linker settings and are not affected by XSigma's linker
+# NOTE: Linker flags are applied ONLY to the quarismabuild interface target. This ensures that
+# third-party dependencies use their default linker settings and are not affected by Quarisma's linker
 # choices.
 # =============================================================================
 
 # Include guard to prevent multiple inclusions
 include_guard(GLOBAL)
 
-if(XSIGMA_ENABLE_COVERAGE)
+if(QUARISMA_ENABLE_COVERAGE)
   return()
 endif()
 # Determine which linker to use based on platform and compiler
-set(XSIGMA_LINKER_CHOICE "default" CACHE STRING "Linker to use: default, lld, mold, gold, lld-link")
-mark_as_advanced(XSIGMA_LINKER_CHOICE)
+set(QUARISMA_LINKER_CHOICE "default" CACHE STRING "Linker to use: default, lld, mold, gold, lld-link")
+mark_as_advanced(QUARISMA_LINKER_CHOICE)
 
-set_property(CACHE XSIGMA_LINKER_CHOICE PROPERTY STRINGS default lld mold gold lld-link)
+set_property(CACHE QUARISMA_LINKER_CHOICE PROPERTY STRINGS default lld mold gold lld-link)
 
-function(xsigma_find_linker)
+function(quarisma_find_linker)
   set(LINKER_FOUND FALSE)
   set(LINKER_NAME "")
   set(LINKER_FLAGS)
@@ -97,7 +97,7 @@ function(xsigma_find_linker)
     endif()
   endif()
 
-  # Apply linker flags to xsigmabuild target if found
+  # Apply linker flags to quarismabuild target if found
   if(LINKER_FOUND)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       # For Clang and GCC, use -fuse-ld flag Extract just the linker name (e.g., "mold" from
@@ -109,11 +109,11 @@ function(xsigma_find_linker)
       string(REPLACE "ld." "" LINKER_SHORTNAME "${LINKER_BASENAME}")
       set(LINKER_FLAGS "-fuse-ld=${LINKER_SHORTNAME}")
 
-      if(TARGET xsigmabuild)
-        target_link_options(xsigmabuild INTERFACE ${LINKER_FLAGS})
-        message("Applied linker flag to xsigmabuild: ${LINKER_FLAGS}")
+      if(TARGET quarismabuild)
+        target_link_options(quarismabuild INTERFACE ${LINKER_FLAGS})
+        message("Applied linker flag to quarismabuild: ${LINKER_FLAGS}")
       else()
-        message(WARNING "xsigmabuild target not found - linker flag will not be applied")
+        message(WARNING "quarismabuild target not found - linker flag will not be applied")
       endif()
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND LINKER_NAME MATCHES "lld-link")
       # For MSVC with lld-link, set the linker directly
@@ -126,9 +126,9 @@ function(xsigma_find_linker)
 endfunction()
 
 # Call the linker detection function
-xsigma_find_linker()
+quarisma_find_linker()
 
-# if(XSIGMA_ENABLE_GOLD_LINKER) if(USE_DISTRIBUTED AND USE_MPI) # Same issue as here with default
+# if(QUARISMA_ENABLE_GOLD_LINKER) if(USE_DISTRIBUTED AND USE_MPI) # Same issue as here with default
 # MPI on Ubuntu # https://bugs.launchpad.net/ubuntu/+source/deal.ii/+bug/1841577 message(WARNING
 # "Refusing to use gold when USE_MPI=1") else() execute_process( COMMAND "${CMAKE_C_COMPILER}"
 # -fuse-ld=gold -Wl,--version ERROR_QUIET OUTPUT_VARIABLE LD_VERSION) if(NOT "${LD_VERSION}" MATCHES
@@ -142,5 +142,5 @@ xsigma_find_linker()
 # Summary
 # ============================================================================
 
-message("  - Faster linker: Automatically detected and applied to xsigmabuild target")
+message("  - Faster linker: Automatically detected and applied to quarismabuild target")
 message("  - Third-party dependencies: Not affected by linker configuration")

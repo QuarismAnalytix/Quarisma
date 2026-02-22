@@ -227,7 +227,7 @@ def index_select_inference_rule(n: Node, symbols, constraints, counter):
     """
     We constrain the second argument to a vector or Dyn.
     The output replaces the input with the shape of the vector
-    xsigma the position given by the index (first argument)
+    quarisma the position given by the index (first argument)
     """
     # print(n.args)
     assert isinstance(n.args[0], Node)
@@ -815,7 +815,7 @@ def neq_inference_rule(n: Node, symbols, constraints, counter):
     Translates to inconsistent in gradual types.
     To prove inequality, we should prove that
     tensors are either different sizes or
-    disagree on xsigma least one dimension
+    disagree on quarisma least one dimension
 
     This is a WIP (works when the condition
     is false. We are working on making this operation work

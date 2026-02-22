@@ -1,8 +1,8 @@
 #pragma once
 
 #include <pybind11/pybind11.h>
-#include <xsigma/csrc/utils/pybind.h>
-#include <xsigma/csrc/utils/python_numbers.h>
+#include <quarisma/csrc/utils/pybind.h>
+#include <quarisma/csrc/utils/python_numbers.h>
 
 #include "util/strong_type.h"
 
@@ -12,7 +12,7 @@ namespace pybind11::detail
 // typed. So instead we simply extract the underlying value and let the caller
 // handle correctness.
 template <typename T>
-class XSIGMA_VISIBILITY strong_pointer_type_caster
+class QUARISMA_VISIBILITY strong_pointer_type_caster
 {
     template <typename T_>
     static handle cast(const T_& src, return_value_policy /*policy*/, handle /*parent*/)
@@ -27,7 +27,7 @@ class XSIGMA_VISIBILITY strong_pointer_type_caster
 };
 
 template <typename T>
-class XSIGMA_VISIBILITY strong_uint_type_caster
+class QUARISMA_VISIBILITY strong_uint_type_caster
 {
     template <typename T_>
     static handle cast(const T_& src, return_value_policy /*policy*/, handle /*parent*/)

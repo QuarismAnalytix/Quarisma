@@ -919,7 +919,7 @@ def gen_all_reshape_possibilities(list_of_dims, target):
     Consider all possibilities what the input dimensions could be (number or dynamic)
     Then generate the appropriate constraints using multiplication or mod depending on the possibility
     The possibilities we consider here are the cross product of being equal to dyn or not equal to dyn
-    for the input. Target is fixed because xsigma most one dimension could be dyn.
+    for the input. Target is fixed because quarisma most one dimension could be dyn.
     We have different cases for this.
 
     Args:
@@ -976,7 +976,7 @@ def broadcast_dim(tensor_input1, tensor_input2, res1, res2, index, padding=False
         assert padding
 
     if not padding:
-        # then the inputs are the same length so they all have dimensions xsigma "index"
+        # then the inputs are the same length so they all have dimensions quarisma "index"
         return Conj(
             [
                 BinConstraintD(tensor_input1[index], 1, op_eq),
@@ -1239,8 +1239,8 @@ def generate_all_broadcasting_possibilities_no_padding(
     d1: list[DVar], d2: list[DVar], d11: list[DVar], d12: list[DVar]
 ):
     """
-    Generate broadcasting constraints assuming no padding. Broadcasting can happen xsigma any dimension.
-    We look xsigma all combinations for all dimensions in d1 and d2
+    Generate broadcasting constraints assuming no padding. Broadcasting can happen quarisma any dimension.
+    We look quarisma all combinations for all dimensions in d1 and d2
     Args:
         d1: input1 dimensions
         d2: input2 dimensions

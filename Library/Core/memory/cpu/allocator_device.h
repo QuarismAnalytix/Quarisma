@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -22,10 +22,10 @@
 #include <cstddef>  // for size_t
 #include <string>   // for string
 
-#include "common/export.h"         // for XSIGMA_API
+#include "common/export.h"         // for QUARISMA_API
 #include "memory/cpu/allocator.h"  // for Allocator, allocator_memory_enum
 
-namespace xsigma
+namespace quarisma
 {
 /**
  * @brief High-performance device-aware memory allocator for pinned CPU memory.
@@ -65,7 +65,7 @@ namespace xsigma
  * }
  * ```
  */
-class XSIGMA_VISIBILITY allocator_device : public Allocator
+class QUARISMA_VISIBILITY allocator_device : public Allocator
 {
 public:
     /**
@@ -97,7 +97,7 @@ public:
      * **Thread Safety**: Thread-safe
      * **Exception Safety**: noexcept
      */
-    XSIGMA_API std::string Name() const override;
+    QUARISMA_API std::string Name() const override;
 
     /**
      * @brief Allocates pinned CPU memory with specified alignment.
@@ -127,7 +127,7 @@ public:
      * void* ptr = allocator->allocate_raw(64, 4096);  // 4KB pinned memory
      * ```
      */
-    XSIGMA_API void* allocate_raw(size_t alignment, size_t num_bytes) override;
+    QUARISMA_API void* allocate_raw(size_t alignment, size_t num_bytes) override;
 
     /**
      * @brief Deallocates previously allocated pinned memory.
@@ -149,7 +149,7 @@ public:
      * **Error Handling**: Logs errors but continues execution to maintain
      * exception safety in destructors and cleanup code.
      */
-    XSIGMA_API void deallocate_raw(void* ptr) override;
+    QUARISMA_API void deallocate_raw(void* ptr) override;
 
     /**
      * @brief Returns the memory type managed by this allocator.
@@ -160,7 +160,7 @@ public:
      * **Thread Safety**: Thread-safe
      * **Exception Safety**: noexcept
      */
-    XSIGMA_API allocator_memory_enum GetMemoryType() const noexcept override;
+    QUARISMA_API allocator_memory_enum GetMemoryType() const noexcept override;
 };
 
-}  // namespace xsigma
+}  // namespace quarisma

@@ -2,21 +2,21 @@
 #include <torch/csrc/autograd/variable.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/ones_like.h>
+#include <Quarisma/ops/ones_like.h>
 #endif
 
 #include <torch/csrc/autograd/edge.h>
 #include <torch/csrc/autograd/engine.h>
 #include <torch/csrc/autograd/function.h>
 #include <torch/csrc/autograd/functions/basic_ops.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::autograd
 {
 
-// NB: This code duplicates existing logic xsigma torch/autograd/__init__.py and
+// NB: This code duplicates existing logic quarisma torch/autograd/__init__.py and
 // torch._C._EngineBase.run_backward in torch/csrc/autograd/python_engine.cpp
 // This is a purely C++ API for Autograd without any dependencies on python
 // it can be exposed in PyTorch C++ API and TorchScript. We will need to
@@ -35,26 +35,26 @@ static variable_list _make_grads(const variable_list& outputs, const variable_li
         {
             if (output.requires_grad())
             {
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     output.numel() == 1, "grad can be implicitly created only for scalar outputs");
-                XSIGMA_CHECK(
-                    xsigma::isFloatingType(output.scalar_type()),
+                QUARISMA_CHECK(
+                    quarisma::isFloatingType(output.scalar_type()),
                     "grad can be computed only for real scalar outputs but got ",
                     output.scalar_type());
-                new_grads.emplace_back(xsigma::ones_like(output, LEGACY_CONTIGUOUS_MEMORY_FORMAT));
+                new_grads.emplace_back(quarisma::ones_like(output, LEGACY_CONTIGUOUS_MEMORY_FORMAT));
             }
         }
     }
     else
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             num_tensors == num_gradients,
             "got ",
             num_tensors,
             " tensors and ",
             num_gradients,
             " gradients");
-        for (const auto i : xsigma::irange(outputs.size()))
+        for (const auto i : quarisma::irange(outputs.size()))
         {
             const Variable& output      = outputs[i];
             const Variable& grad_output = grad_outputs[i];
@@ -62,20 +62,20 @@ static variable_list _make_grads(const variable_list& outputs, const variable_li
             {
                 if (output.requires_grad())
                 {
-                    XSIGMA_CHECK(
+                    QUARISMA_CHECK(
                         output.numel() == 1,
                         "grad can be implicitly created only for scalar outputs");
-                    XSIGMA_CHECK(
-                        xsigma::isFloatingType(output.scalar_type()),
+                    QUARISMA_CHECK(
+                        quarisma::isFloatingType(output.scalar_type()),
                         "grad can be computed only for real scalar outputs but got ",
                         output.scalar_type());
                     new_grads.emplace_back(
-                        xsigma::ones_like(output, LEGACY_CONTIGUOUS_MEMORY_FORMAT));
+                        quarisma::ones_like(output, LEGACY_CONTIGUOUS_MEMORY_FORMAT));
                 }
             }
             else
             {
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     grad_output.is_complex() == output.is_complex(),
                     "For complex Tensors, both grad_output and output are required ",
                     "to have the same dtype. Mismatch in dtype: grad_output[",
@@ -106,11 +106,11 @@ static variable_list run_backward(
     size_t    num_tensors = outputs.size();
     edge_list roots;
     roots.reserve(num_tensors);
-    for (const auto i : xsigma::irange(num_tensors))
+    for (const auto i : quarisma::irange(num_tensors))
     {
         const Variable& output        = outputs[i];
         auto            gradient_edge = impl::gradient_edge(output);
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             gradient_edge.function,
             "element ",
             i,
@@ -123,7 +123,7 @@ static variable_list run_backward(
     {
         size_t num_inputs = inputs.size();
         output_edges.reserve(num_inputs);
-        for (const auto i : xsigma::irange(num_inputs))
+        for (const auto i : quarisma::irange(num_inputs))
         {
             const Variable& input     = inputs[i];
             const auto      output_nr = input.output_nr();
@@ -136,7 +136,7 @@ static variable_list run_backward(
             {
                 input.retain_grad();
             }
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 input.requires_grad(),
                 "element ",
                 i,
@@ -159,9 +159,9 @@ static variable_list run_backward(
     if (!inputs.empty() && !allow_unused)
     {
         size_t num_inputs = inputs.size();
-        for (const auto i : xsigma::irange(num_inputs))
+        for (const auto i : quarisma::irange(num_inputs))
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 grad_inputs[i].defined(),
                 "element ",
                 i,

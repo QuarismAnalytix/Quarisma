@@ -1,8 +1,8 @@
-#include <XSigma/Backtrace.h>
-#include <XSigma/ScalarOps.h>
-#include <XSigma/TracerMode.h>
-#include <XSigma/core/Dict.h>
-#include <XSigma/core/functional.h>
+#include <Quarisma/Backtrace.h>
+#include <Quarisma/ScalarOps.h>
+#include <Quarisma/TracerMode.h>
+#include <Quarisma/core/Dict.h>
+#include <Quarisma/core/functional.h>
 #include <torch/csrc/autograd/engine.h>
 #include <torch/csrc/autograd/function.h>
 #include <torch/csrc/autograd/variable.h>
@@ -18,7 +18,7 @@
 #include <torch/csrc/jit/passes/remove_expands.h>
 #include <torch/csrc/utils/variadic.h>
 #include <torch/custom_class.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <memory>
 #include <sstream>
@@ -61,10 +61,10 @@ static void genericAddOptionalInput(Node* n, const char* name, const std::option
 template <typename T>
 static void badArgType(const T& v)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         false,
         "Found an unsupported argument type in the JIT tracer: ",
-        xsigma::demangle_type<T>(),
+        quarisma::demangle_type<T>(),
         ". File a bug report.");
 }
 
@@ -92,9 +92,9 @@ void delValueTrace(const IValue& var)
 }
 void TracingState::delValue(const IValue& var)
 {
-    for (const auto i : xsigma::irange(env_stack.size()))
+    for (const auto i : quarisma::irange(env_stack.size()))
     {
-        auto& value_map = env_stack.xsigma(env_stack.size() - 1 - i);
+        auto& value_map = env_stack.quarisma(env_stack.size() - 1 - i);
         auto  it        = value_map.find(var);
         if (it == value_map.end())
         {
@@ -122,7 +122,7 @@ Value* getValueTrace(const IValue& var)
 {
     return getTracingState()->getValue(var);
 }
-static Value* getOptTensorValueTrace(const std::optional<xsigma::Tensor>& var)
+static Value* getOptTensorValueTrace(const std::optional<quarisma::Tensor>& var)
 {
     return getValueTrace(IValue(var));
 }
@@ -168,9 +168,9 @@ Value* TracingState::getValue(const IValue& var)
             Node* n = graph->createNone();
             return graph->insertNode(n)->output();
         }
-        for (const auto i : xsigma::irange(env_stack.size()))
+        for (const auto i : quarisma::irange(env_stack.size()))
         {
-            auto& value_map = env_stack.xsigma(env_stack.size() - 1 - i);
+            auto& value_map = env_stack.quarisma(env_stack.size() - 1 - i);
             auto  it        = value_map.find(var);
             if (it == value_map.end())
             {
@@ -191,7 +191,7 @@ Value* TracingState::getValue(const IValue& var)
         if (ten.requires_grad())
         {
             pauseTracing();
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 false,
                 "Cannot insert a Tensor that requires grad as a constant. ",
                 "Consider making it a parameter or input, or detaching the gradient\n",
@@ -207,9 +207,9 @@ Value* TracingState::getValue(const IValue& var)
     }
     else if (var.isFuture() || var.isObject())
     {
-        for (const auto i : xsigma::irange(env_stack.size()))
+        for (const auto i : quarisma::irange(env_stack.size()))
         {
-            auto& future_map = env_stack.xsigma(env_stack.size() - 1 - i);
+            auto& future_map = env_stack.quarisma(env_stack.size() - 1 - i);
             auto  it         = future_map.find(var);
             if (it == future_map.end())
             {
@@ -227,9 +227,9 @@ Value* TracingState::getValue(const IValue& var)
             if (custom_class_type)
             {
                 auto capsule = var.toObject()->getAttr("capsule");
-                for (const auto i : xsigma::irange(env_stack.size()))
+                for (const auto i : quarisma::irange(env_stack.size()))
                 {
-                    auto& value_map = env_stack.xsigma(env_stack.size() - 1 - i);
+                    auto& value_map = env_stack.quarisma(env_stack.size() - 1 - i);
                     auto  it        = value_map.find(capsule);
                     if (it == value_map.end())
                     {
@@ -242,12 +242,12 @@ Value* TracingState::getValue(const IValue& var)
 
         if (var.isFuture())
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 false, "Tried to trace Future or Object that the tracer was not aware of.");
         }
         else
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 false,
                 "Tried to trace ",
                 var,
@@ -265,7 +265,7 @@ Value* TracingState::getValue(const IValue& var)
             recordSourceLocation(constant.value()->node());
             return *constant;
         }
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false,
             "Tracer cannot get value trace for type ",
             var.tagKind(),
@@ -290,7 +290,7 @@ Value* TracingState::getOutput(const IValue& iv, size_t i)
     bool tracing_mode_strict = getTracingState()->strict;
     if (iv.isTensor())
     {
-        const xsigma::Tensor& var = iv.toTensor();
+        const quarisma::Tensor& var = iv.toTensor();
         if (!var.defined())
         {
             Node* n = graph->createNone();
@@ -299,7 +299,7 @@ Value* TracingState::getOutput(const IValue& iv, size_t i)
 
         auto& value_map = getTracingState()->env_stack.back();
         auto  it        = value_map.find(iv);
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             it != value_map.end(),
             "output ",
             i,
@@ -313,7 +313,7 @@ Value* TracingState::getOutput(const IValue& iv, size_t i)
     {
         if (tracing_mode_strict)
         {
-            tracer::warn("Encountering a list xsigma the output of the tracer", STRICT_TRACER_MSG);
+            tracer::warn("Encountering a list quarisma the output of the tracer", STRICT_TRACER_MSG);
         }
         return graph
             ->insertNode(graph->createList(
@@ -331,9 +331,9 @@ Value* TracingState::getOutput(const IValue& iv, size_t i)
     }
     else if (iv.isGenericDict())
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !tracing_mode_strict,
-            "Encountering a dict xsigma the output of the tracer",
+            "Encountering a dict quarisma the output of the tracer",
             STRICT_TRACER_MSG);
         auto    dict       = iv.toGenericDict();
         TypePtr key_type   = dict.keyType();
@@ -356,7 +356,7 @@ Value* TracingState::getOutput(const IValue& iv, size_t i)
                 }
             }
         }
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             key_type_valid && value_type_valid,
             "output ",
             i,
@@ -378,14 +378,14 @@ Value* TracingState::getOutput(const IValue& iv, size_t i)
     }
     else
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false,
             "Only tensors, lists, tuples of tensors, or dictionary of tensors can be output from "
             "traced functions");
     }
 }
 
-Node* TracingState::createNode(xsigma::Symbol op_name, size_t num_outputs)
+Node* TracingState::createNode(quarisma::Symbol op_name, size_t num_outputs)
 {
     return graph->create(op_name, num_outputs);
 }
@@ -427,10 +427,10 @@ static IValue addInput(
         const auto& elems       = tuple->elements();
         size_t      num_elems   = elems.size();
         AT_ASSERT(elem_values.size() == num_elems && elem_types.size() == num_elems);
-        for (const auto i : xsigma::irange(num_elems))
+        for (const auto i : quarisma::irange(num_elems))
         {
             tuple->unsafeSetElement(
-                i, addInput(state, elems.xsigma(i), elem_types[i], elem_values[i]));
+                i, addInput(state, elems.quarisma(i), elem_types[i], elem_values[i]));
         }
         return tuple;
     }
@@ -463,7 +463,7 @@ static IValue addInput(
         if (input.isTensorList())
         {
             auto elems = input.toTensorList();
-            for (const auto i : xsigma::irange(num_elems))
+            for (const auto i : quarisma::irange(num_elems))
             {
                 elems[i] =
                     addInput(state, elems.get(i), list_type->getElementType(), unpack_outputs[i])
@@ -474,7 +474,7 @@ static IValue addInput(
         else
         {
             auto elems = input.toList();
-            for (const auto i : xsigma::irange(num_elems))
+            for (const auto i : quarisma::irange(num_elems))
             {
                 elems[i] =
                     addInput(state, elems.get(i), list_type->getElementType(), unpack_outputs[i]);
@@ -484,7 +484,7 @@ static IValue addInput(
     }
     else
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false,
             "Only tensors or (possibly nested) dict or tuples of tensors can be "
             "inputs to traced functions. Got ",
@@ -547,7 +547,7 @@ std::pair<std::shared_ptr<TracingState>, Stack> trace(
         // will be treated as constants.
         if (isTracing())
         {
-            XSIGMA_CHECK(false, "Tracing can't be nested");
+            QUARISMA_CHECK(false, "Tracing can't be nested");
         }
         auto state = std::make_shared<TracingState>();
         setTracingState(state);
@@ -653,7 +653,7 @@ void TracingState::setValue(const IValue& v, Value* value)
     {
         auto  outputs     = v.toTensorList();
         Node* unpack_node = graph->insertNode(graph->createListUnpack(value, outputs.size()));
-        for (const auto i : xsigma::irange(outputs.size()))
+        for (const auto i : quarisma::irange(outputs.size()))
         {
             setValue(outputs.get(i), unpack_node->outputs()[i]);
         }
@@ -662,7 +662,7 @@ void TracingState::setValue(const IValue& v, Value* value)
     {
         const auto& outputs     = v.toTupleRef().elements();
         Node*       unpack_node = graph->insertNode(graph->createTupleUnpack(value));
-        for (const auto i : xsigma::irange(outputs.size()))
+        for (const auto i : quarisma::irange(outputs.size()))
         {
             setValue(outputs[i], unpack_node->outputs()[i]);
         }
@@ -671,7 +671,7 @@ void TracingState::setValue(const IValue& v, Value* value)
     {
         auto  elements    = v.toListRef();
         Node* unpack_node = graph->insertNode(graph->createListUnpack(value, elements.size()));
-        for (const auto i : xsigma::irange(elements.size()))
+        for (const auto i : quarisma::irange(elements.size()))
         {
             setValue(elements[i], unpack_node->outputs()[i]);
         }
@@ -699,7 +699,7 @@ void TracingState::setValue(const IValue& v, Value* value)
     }
     else
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false,
             "Tracer cannot set value trace for type ",
             v.tagKind(),
@@ -721,7 +721,7 @@ void addInputs(Node* n, const char* name, int64_t value)
     }
 }
 
-void addInputs(Node* n, const char* name, const xsigma::SymInt& value)
+void addInputs(Node* n, const char* name, const quarisma::SymInt& value)
 {
     addInputs(n, name, value.guard_int(__FILE__, __LINE__));
 }
@@ -761,7 +761,7 @@ void addInputs(Node* n, const char* name, const std::optional<double>& value)
 {
     detail::genericAddOptionalInput(n, name, value);
 }
-void addInputs(Node* n, const char* name, const xsigma::Scalar& value)
+void addInputs(Node* n, const char* name, const quarisma::Scalar& value)
 {
     using ArgumentStash = jit::tracer::ArgumentStash;
     if (ArgumentStash::hasValue(name))
@@ -774,7 +774,7 @@ void addInputs(Node* n, const char* name, const xsigma::Scalar& value)
         detail::genericAddInput(n, value);
     }
 }
-void addInputs(Node* n, const char* name, const std::optional<xsigma::Scalar>& value)
+void addInputs(Node* n, const char* name, const std::optional<quarisma::Scalar>& value)
 {
     detail::genericAddOptionalInput(n, name, value);
 }
@@ -786,15 +786,15 @@ void addInputs(Node* n, const char* name, const std::optional<std::string_view>&
 {
     detail::genericAddOptionalInput(n, name, value);
 }
-void addInputs(Node* n, const char* name, const xsigma::Tensor& value)
+void addInputs(Node* n, const char* name, const quarisma::Tensor& value)
 {
     n->addInput(getValueTrace(value));
 }
-void addInputs(Node* n, const char* name, const std::optional<xsigma::Tensor>& value)
+void addInputs(Node* n, const char* name, const std::optional<quarisma::Tensor>& value)
 {
     detail::genericAddOptionalInput(n, name, value);
 }
-void addInputs(Node* n, const char* name, const std::optional<xsigma::Generator>& value)
+void addInputs(Node* n, const char* name, const std::optional<quarisma::Generator>& value)
 {
     Graph* g = n->owningGraph();
 
@@ -808,57 +808,57 @@ void addInputs(Node* n, const char* name, const std::optional<xsigma::Generator>
         n->addInput(undef_gen);
     }
 }
-void addInputs(Node* n, const char* name, xsigma::Device value)
+void addInputs(Node* n, const char* name, quarisma::Device value)
 {
     detail::genericAddInput(n, value);
 }
-void addInputs(Node* n, const char* name, xsigma::Stream stream)
+void addInputs(Node* n, const char* name, quarisma::Stream stream)
 {
-    detail::genericAddInput(n, xsigma::IValue(stream));
+    detail::genericAddInput(n, quarisma::IValue(stream));
 }
-void addInputs(Node* n, const char* name, xsigma::Layout value)
-{
-    detail::genericAddInput(n, static_cast<int64_t>(value));
-}
-void addInputs(Node* n, const char* name, xsigma::ScalarType value)
+void addInputs(Node* n, const char* name, quarisma::Layout value)
 {
     detail::genericAddInput(n, static_cast<int64_t>(value));
 }
-void addInputs(Node* n, const char* name, xsigma::MemoryFormat value)
+void addInputs(Node* n, const char* name, quarisma::ScalarType value)
 {
     detail::genericAddInput(n, static_cast<int64_t>(value));
 }
-void addInputs(Node* n, const char* name, const std::optional<xsigma::MemoryFormat>& value)
+void addInputs(Node* n, const char* name, quarisma::MemoryFormat value)
+{
+    detail::genericAddInput(n, static_cast<int64_t>(value));
+}
+void addInputs(Node* n, const char* name, const std::optional<quarisma::MemoryFormat>& value)
 {
     detail::genericAddOptionalInput(n, name, value);
 }
-void addInputs(Node* n, const char* name, const std::optional<xsigma::Layout>& value)
+void addInputs(Node* n, const char* name, const std::optional<quarisma::Layout>& value)
 {
     detail::genericAddOptionalInput(n, name, value);
 }
-void addInputs(Node* n, const char* name, const std::optional<xsigma::Device>& value)
+void addInputs(Node* n, const char* name, const std::optional<quarisma::Device>& value)
 {
     detail::genericAddOptionalInput(n, name, value);
 }
-void addInputs(Node* n, const char* name, std::optional<xsigma::DimnameList> value)
+void addInputs(Node* n, const char* name, std::optional<quarisma::DimnameList> value)
 {
-    XSIGMA_CHECK(false, "NYI: Named tensors are not supported with the tracer");
+    QUARISMA_CHECK(false, "NYI: Named tensors are not supported with the tracer");
 }
-void addInputs(Node* n, const char* name, const std::optional<xsigma::ScalarType>& value)
+void addInputs(Node* n, const char* name, const std::optional<quarisma::ScalarType>& value)
 {
     detail::genericAddOptionalInput(n, name, value);
 }
 void addInputs(
-    Node* n, const char* name, xsigma::ArrayRef<xsigma::Tensor> value, bool allow_undefined)
+    Node* n, const char* name, quarisma::ArrayRef<quarisma::Tensor> value, bool allow_undefined)
 {
-    addInputs(n, name, xsigma::ITensorListRef(value), allow_undefined);
+    addInputs(n, name, quarisma::ITensorListRef(value), allow_undefined);
 }
 void addInputs(
-    Node* n, const char* name, const std::vector<xsigma::Tensor>& value, bool allow_undefined)
+    Node* n, const char* name, const std::vector<quarisma::Tensor>& value, bool allow_undefined)
 {
-    addInputs(n, name, xsigma::ITensorListRef(value), allow_undefined);
+    addInputs(n, name, quarisma::ITensorListRef(value), allow_undefined);
 }
-void addInputs(Node* n, const char* name, xsigma::ITensorListRef value, bool allow_undefined)
+void addInputs(Node* n, const char* name, quarisma::ITensorListRef value, bool allow_undefined)
 {
     Graph* g         = n->owningGraph();
     Node*  list_node = nullptr;
@@ -875,7 +875,7 @@ void addInputs(Node* n, const char* name, xsigma::ITensorListRef value, bool all
     n->addInput(list_node->output());
 }
 TORCH_API void addInputs(
-    Node* n, const char* name, const List<std::optional<xsigma::Tensor>>& value)
+    Node* n, const char* name, const List<std::optional<quarisma::Tensor>>& value)
 {
     Graph* g         = n->owningGraph();
     Node*  list_node = nullptr;
@@ -886,7 +886,7 @@ TORCH_API void addInputs(
 void addInputs(
     Node*                                                   n,
     const char*                                             name,
-    ArrayRef<xsigma::intrusive_ptr<xsigma::ivalue::Object>> value,
+    ArrayRef<quarisma::intrusive_ptr<quarisma::ivalue::Object>> value,
     const ClassTypePtr&                                     class_type)
 {
     Graph* g         = n->owningGraph();
@@ -894,7 +894,7 @@ void addInputs(
     n->addInput(list_node->output());
 }
 
-void addInputs(Node* n, const char* name, xsigma::IntArrayRef value)
+void addInputs(Node* n, const char* name, quarisma::IntArrayRef value)
 {
     using ArgumentStash      = jit::tracer::ArgumentStash;
     std::vector<Value*> info = ArgumentStash::hasIntArrayRef(name)
@@ -902,7 +902,7 @@ void addInputs(Node* n, const char* name, xsigma::IntArrayRef value)
                                    : ArgumentStash::IntArrayRefTrace(value.size());
 
     auto& g = getTracingState()->graph;
-    for (const auto i : xsigma::irange(info.size()))
+    for (const auto i : quarisma::irange(info.size()))
     {
         if (info[i] != nullptr)
             continue;
@@ -911,7 +911,7 @@ void addInputs(Node* n, const char* name, xsigma::IntArrayRef value)
     }
     for (jit::Value* v : info)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             *v->type() == *jit::IntType::get(),
             "Type mismatch in setposattr for IntArrayRef. Check that your program "
             "is valid without tracing, and please file a bug report if it is.");
@@ -919,12 +919,12 @@ void addInputs(Node* n, const char* name, xsigma::IntArrayRef value)
     n->addInput(g->insertNode(g->createList(jit::IntType::get(), info))->output());
 }
 
-void addInputs(Node* n, const char* name, xsigma::SymIntArrayRef value)
+void addInputs(Node* n, const char* name, quarisma::SymIntArrayRef value)
 {
-    addInputs(n, name, XSIGMA_AS_INTARRAYREF_SLOW(value));
+    addInputs(n, name, QUARISMA_AS_INTARRAYREF_SLOW(value));
 }
 
-void addInputs(Node* n, const char* name, std::optional<xsigma::SymInt> value)
+void addInputs(Node* n, const char* name, std::optional<quarisma::SymInt> value)
 {
     addInputs(
         n,
@@ -933,12 +933,12 @@ void addInputs(Node* n, const char* name, std::optional<xsigma::SymInt> value)
                           : std::nullopt);
 }
 
-void addInputs(Node* n, const char* name, const std::optional<xsigma::IntArrayRef>& opt_value)
+void addInputs(Node* n, const char* name, const std::optional<quarisma::IntArrayRef>& opt_value)
 {
     detail::genericAddOptionalInput(n, name, opt_value);
 }
 
-void addInputs(Node* n, const char* name, const xsigma::OptionalIntArrayRef& opt_value)
+void addInputs(Node* n, const char* name, const quarisma::OptionalIntArrayRef& opt_value)
 {
     if (opt_value.has_value())
     {
@@ -952,7 +952,7 @@ void addInputs(Node* n, const char* name, const xsigma::OptionalIntArrayRef& opt
     }
 }
 
-void addInputs(Node* n, const char* name, const xsigma::OptionalSymIntArrayRef& opt_value)
+void addInputs(Node* n, const char* name, const quarisma::OptionalSymIntArrayRef& opt_value)
 {
     if (opt_value.has_value())
     {
@@ -978,23 +978,23 @@ void addInputs(Node* n, const char* name, ArrayRef<double> value)
     n->addInput(g->insertNode(g->createList(jit::FloatType::get(), info))->output());
 }
 
-void addInputs(Node* n, const char* name, const std::optional<xsigma::ArrayRef<double>>& opt_value)
+void addInputs(Node* n, const char* name, const std::optional<quarisma::ArrayRef<double>>& opt_value)
 {
     detail::genericAddOptionalInput(n, name, opt_value);
 }
 
-void addInputs(Node* n, const char* name, const xsigma::intrusive_ptr<xsigma::ivalue::Object>& obj)
+void addInputs(Node* n, const char* name, const quarisma::intrusive_ptr<quarisma::ivalue::Object>& obj)
 {
     Value* v = getValueTrace(obj);
     n->addInput(v);
 }
 
-void addOutput(Node* node, const xsigma::Tensor& output)
+void addOutput(Node* node, const quarisma::Tensor& output)
 {
     setOutput(node->addOutput(), output);
 }
 
-void setOutput(Value* value, const xsigma::Tensor& output)
+void setOutput(Value* value, const quarisma::Tensor& output)
 {
     if (output.defined())
     {
@@ -1003,12 +1003,12 @@ void setOutput(Value* value, const xsigma::Tensor& output)
     }
 }
 
-void addOutput(Node* node, const std::vector<xsigma::Tensor>& outputs)
+void addOutput(Node* node, const std::vector<quarisma::Tensor>& outputs)
 {
     Value* value      = node->addOutput()->setType(ListType::ofTensors());
     Graph* graph      = node->owningGraph();
     Node* unpack_node = graph->insertNode(graph->create(prim::ListUnpack, {value}, outputs.size()));
-    for (const auto i : xsigma::irange(outputs.size()))
+    for (const auto i : quarisma::irange(outputs.size()))
     {
         Value* output_val = unpack_node->outputs()[i];
         output_val->inferTypeFrom(outputs[i]);
@@ -1016,12 +1016,12 @@ void addOutput(Node* node, const std::vector<xsigma::Tensor>& outputs)
     }
 }
 
-void addOutput(Node* node, const xsigma::List<xsigma::Tensor>& outputs)
+void addOutput(Node* node, const quarisma::List<quarisma::Tensor>& outputs)
 {
     return addOutput(node, outputs.vec());
 }
 
-void addOutput(Node* node, const xsigma::intrusive_ptr<xsigma::ivalue::Object>& output)
+void addOutput(Node* node, const quarisma::intrusive_ptr<quarisma::ivalue::Object>& output)
 {
     Value* output_val = node->addOutput();
     output_val->inferTypeFrom(output);
@@ -1035,7 +1035,7 @@ const std::shared_ptr<TracingState>& getTracingState()
 
 void setTracingState(std::shared_ptr<TracingState> state)
 {
-    xsigma::tracer::impl::set_dispatch_enabled(state != nullptr);
+    quarisma::tracer::impl::set_dispatch_enabled(state != nullptr);
     detail::tracing_state = std::move(state);
 }
 
@@ -1051,8 +1051,8 @@ autograd::Variable getSizeOf(const autograd::Variable& var, int64_t dim)
     Variable size_var;
     {
         // Make sure this scalar to tensor isn't traced!
-        xsigma::AutoDispatchBelowADInplaceOrView guard;
-        size_var = scalar_to_tensor(xsigma::Scalar(var.size(dim)));
+        quarisma::AutoDispatchBelowADInplaceOrView guard;
+        size_var = scalar_to_tensor(quarisma::Scalar(var.size(dim)));
     }
     auto* value   = getValueTrace(var);
     auto  dim_val = graph->insertConstant(dim);
@@ -1074,8 +1074,8 @@ autograd::Variable getNumelOf(const autograd::Variable& var)
     Variable numel_var;
     {
         // Make sure this scalar to tensor isn't traced!
-        xsigma::AutoDispatchBelowADInplaceOrView guard;
-        numel_var = scalar_to_tensor(xsigma::Scalar(var.numel()));
+        quarisma::AutoDispatchBelowADInplaceOrView guard;
+        numel_var = scalar_to_tensor(quarisma::Scalar(var.numel()));
     }
     auto* value = getValueTrace(var);
     auto* node  = graph->insertNode(graph->create(Symbol::aten("numel"), {value}));
@@ -1087,7 +1087,7 @@ autograd::Variable getNumelOf(const autograd::Variable& var)
     return numel_var;
 }
 
-void ensureUniqueIfOutOfPlaced(const char* name, const xsigma::Tensor& tensor)
+void ensureUniqueIfOutOfPlaced(const char* name, const quarisma::Tensor& tensor)
 {
     auto& state = getTracingState();
     if (state && state->force_outplace == false)
@@ -1110,9 +1110,9 @@ void ensureUniqueIfOutOfPlaced(const char* name, const xsigma::Tensor& tensor)
         warn(ss.str().c_str());
     }
 }
-void ensureUniqueIfOutOfPlaced(const char* name, const std::optional<xsigma::Tensor>& tensor)
+void ensureUniqueIfOutOfPlaced(const char* name, const std::optional<quarisma::Tensor>& tensor)
 {
-    ensureUniqueIfOutOfPlaced(name, tensor.has_value() ? *tensor : xsigma::Tensor());
+    ensureUniqueIfOutOfPlaced(name, tensor.has_value() ? *tensor : quarisma::Tensor());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1210,7 +1210,7 @@ const char* WARN_CONSTRUCTOR =
     "that would be the same every time you call this function. In any other case, "
     "this might cause the trace to be incorrect.";
 const char* WARN_RESIZE =
-    " can't be represented in the JIT xsigma the moment, so we won't connect any uses of "
+    " can't be represented in the JIT quarisma the moment, so we won't connect any uses of "
     "this value with its current trace. If you happen to use it again, it will show "
     "up as a constant in the graph. Consider using `view` or `reshape` to make "
     "it traceable.";

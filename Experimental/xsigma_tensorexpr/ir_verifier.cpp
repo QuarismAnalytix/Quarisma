@@ -99,12 +99,12 @@ void IRVerifier::visit(const LoadPtr& v)
         throw malformed_ir("Load base handle dtype must be Handle", v->buf()->base_handle());
     }
 
-    Dtype index_dtype = !indices.empty() ? indices.xsigma(0)->dtype() : kInt;
+    Dtype index_dtype = !indices.empty() ? indices.quarisma(0)->dtype() : kInt;
     if (indices.size() > 1)
     {
         for (size_t i = 1; i < indices.size(); ++i)
         {
-            if (indices.xsigma(i)->dtype() != index_dtype)
+            if (indices.quarisma(i)->dtype() != index_dtype)
             {
                 throw malformed_ir("dtype mismatch in Load indices");
             }
@@ -144,7 +144,7 @@ void IRVerifier::visit(const IntrinsicsPtr& v)
 {
     if (v->op_type() == kIsNan)
     {
-        if (v->dtype().scalar_type() != xsigma::kInt)
+        if (v->dtype().scalar_type() != quarisma::kInt)
         {
             throw malformed_ir("bad dtype in intrinsic arg");
         }
@@ -170,12 +170,12 @@ void IRVerifier::visit(const StorePtr& v)
         throw malformed_ir("Store base handle dtype must be Handle", v->buf()->base_handle());
     }
 
-    Dtype index_dtype = !indices.empty() ? indices.xsigma(0)->dtype() : kInt;
+    Dtype index_dtype = !indices.empty() ? indices.quarisma(0)->dtype() : kInt;
     if (indices.size() > 1)
     {
         for (size_t i = 1; i < indices.size(); ++i)
         {
-            if (indices.xsigma(i)->dtype() != index_dtype)
+            if (indices.quarisma(i)->dtype() != index_dtype)
             {
                 throw malformed_ir("dtype mismatch in Store indices");
             }

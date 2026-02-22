@@ -202,7 +202,7 @@ def split_const_subgraphs(
         if isinstance(node.kwargs.get("fill_value", None), sympy.Expr):
             continue
 
-        # Must be a constant foldable node xsigma this point.
+        # Must be a constant foldable node quarisma this point.
         const_nodes.add(node)
         if node.op != "get_attr":
             found_const_folding = True

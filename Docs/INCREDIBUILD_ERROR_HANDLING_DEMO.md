@@ -9,7 +9,7 @@ This document demonstrates the error handling when IncrediBuild is enabled but X
 
 ### Command Executed
 ```bash
-cd c:\dev\XSigma\Scripts
+cd c:\dev\Quarisma\Scripts
 python setup.py config.build.incredibuild
 ```
 
@@ -27,7 +27,7 @@ python setup.py config.build.incredibuild
 ```
 [INFO] Starting build configuration for Windows
 ================= Windows platform =================
-[INFO] Build directory: C:\dev\XSigma\build_ninja
+[INFO] Build directory: C:\dev\Quarisma\build_ninja
 [INFO] Configuring build...
 build enum: Release
 ```
@@ -83,7 +83,7 @@ Call Stack (most recent call first):
 # Flag recognized and enabled
 self.__value["incredibuild"] = "ON"
 # CMake mapping applied
-cmake_flags.append("-DXSIGMA_ENABLE_INCREDIBUILD=ON")
+cmake_flags.append("-DQUARISMA_ENABLE_INCREDIBUILD=ON")
 ```
 
 ### Step 2: CMake Configuration (CMakeLists.txt:50)
@@ -94,9 +94,9 @@ include(incredibuild)
 
 ### Step 3: Module Inclusion (Cmake/tools/incredibuild.cmake:23-44)
 ```cmake
-option(XSIGMA_ENABLE_INCREDIBUILD "Enable IncrediBuild distributed compilation (Windows only)" OFF)
+option(QUARISMA_ENABLE_INCREDIBUILD "Enable IncrediBuild distributed compilation (Windows only)" OFF)
 
-if(NOT XSIGMA_ENABLE_INCREDIBUILD)
+if(NOT QUARISMA_ENABLE_INCREDIBUILD)
   return()  # Early return if disabled
 endif()
 
@@ -132,7 +132,7 @@ python setup.py config.build.incredibuild
 ```
 [INFO] Starting build configuration for Windows
 ================= Windows platform =================
-[INFO] Build directory: C:\dev\XSigma\build_ninja
+[INFO] Build directory: C:\dev\Quarisma\build_ninja
 [INFO] Configuring build...
 build enum: Release
 -- IncrediBuild XGE found: C:/Program Files/IncrediBuild/xge.exe

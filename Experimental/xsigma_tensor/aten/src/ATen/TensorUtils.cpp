@@ -1,6 +1,6 @@
-#include <XSigma/Config.h>
-#include <XSigma/TensorUtils.h>
-#include <XSigma/XSigma.h>
+#include <Quarisma/Config.h>
+#include <Quarisma/TensorUtils.h>
+#include <Quarisma/Quarisma.h>
 #include <c10/util/accumulate.h>
 #include <c10/util/irange.h>
 

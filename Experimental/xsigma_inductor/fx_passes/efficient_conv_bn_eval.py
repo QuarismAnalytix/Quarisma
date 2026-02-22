@@ -24,7 +24,7 @@ def efficient_conv_bn_eval(
     i.e., normalize (weight conv feature) = (normalize weight) conv feature.
     It works for Eval mode of ConvBN blocks during validation, and can be used
     for **training** as well, but only if one sets `bn.training=False`. It
-     reduces memory footprint and computation cost, xsigma the cost of slightly
+     reduces memory footprint and computation cost, quarisma the cost of slightly
      reduced numerical stability.
     Args:
         bn (nn.modules.batchnorm._BatchNorm): a BatchNorm module.
@@ -56,7 +56,7 @@ def efficient_conv_bn_eval(
     # shape of [C_out, 1, 1, 1] in Conv2d
     target_shape = [-1] + [1] * (conv.weight.ndim - 1)
     if isinstance(conv, nn.modules.conv._ConvTransposeNd):
-        # for transposed conv, the C_out dimension should xsigma index 1.
+        # for transposed conv, the C_out dimension should quarisma index 1.
         target_shape[:2] = [target_shape[1], target_shape[0]]
     weight_coeff = torch.rsqrt(bn.running_var + bn.eps).reshape(target_shape)
     # shape of [C_out, 1, 1, 1] in Conv2d
@@ -94,7 +94,7 @@ def efficient_conv_bn_eval_decomposed(
     i.e., normalize (weight conv feature) = (normalize weight) conv feature.
     It works for Eval mode of ConvBN blocks during validation, and can be used
     for **training** as well, but only if one sets `bn.training=False`. It
-     reduces memory footprint and computation cost, xsigma the cost of slightly
+     reduces memory footprint and computation cost, quarisma the cost of slightly
      reduced numerical stability.
     Args:
     """
@@ -117,7 +117,7 @@ def efficient_conv_bn_eval_decomposed(
     # shape of [C_out, 1, 1, 1] in Conv2d
     target_shape = [-1] + [1] * (conv_weight.ndim - 1)
     if "conv_transpose" in conv.__str__():
-        # for transposed conv, the C_out dimension should xsigma index 1.
+        # for transposed conv, the C_out dimension should quarisma index 1.
         target_shape[:2] = [target_shape[1], target_shape[0]]
     weight_coeff = torch.rsqrt(bn_running_var + bn_eps).reshape(target_shape)
     # shape of [C_out, 1, 1, 1] in Conv2d

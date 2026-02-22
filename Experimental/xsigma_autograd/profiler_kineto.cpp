@@ -1,10 +1,10 @@
 #include <cstring>
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
-#include <xsigma/macros/Export.h>
-#include <xsigma/util/ApproximateClock.h>
-#include <xsigma/util/flat_hash_map.h>
-#include <xsigma/util/irange.h>
-#include <xsigma/util/overloaded.h>
+#include <quarisma/macros/Export.h>
+#include <quarisma/util/ApproximateClock.h>
+#include <quarisma/util/flat_hash_map.h>
+#include <quarisma/util/irange.h>
+#include <quarisma/util/overloaded.h>
 
 #include <stdexcept>
 #include <utility>
@@ -23,7 +23,7 @@
 #include "profiler/pytorch_profiler/util.h"
 #include "util/exception.h"
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 #include <ApproximateClock.h>
 #include <libkineto.h>
 #include <time_since_epoch.h>
@@ -39,12 +39,12 @@ extern "C"
     __attribute__((weak)) int acc_get_device_type();
     __attribute__((weak)) int acc_get_device_type()
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false, "Dummy implementation of acc_get_device_type is not supposed to be called!");
     }
 }  // extern "C"
 #endif  // _MSC_VER
-#endif  // XSIGMA_HAS_KINETO
+#endif  // QUARISMA_HAS_KINETO
 
 namespace torch
 {
@@ -55,11 +55,11 @@ namespace
 {
 inline int64_t getTimeNs()
 {
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
     return libkineto::timeSinceEpoch(std::chrono::system_clock::now());
 #else
-    return xsigma::getTime();
-#endif  // XSIGMA_HAS_KINETO
+    return quarisma::getTime();
+#endif  // QUARISMA_HAS_KINETO
 }
 
 using torch::profiler::impl::ActiveProfilerType;
@@ -84,7 +84,7 @@ struct OpArgData
     bool                              hasData;
     std::vector<shape>                shapes;
     std::vector<std::string>          dtypes;
-    std::vector<xsigma::IValue>       concreteInputs;
+    std::vector<quarisma::IValue>       concreteInputs;
     std::vector<std::vector<int64_t>> shapesForKinetoEvent;
     std::vector<shape>                strides;
 };
@@ -102,12 +102,12 @@ auto parseArgData(
     std::vector<std::vector<int64_t>> shapesForKinetoEvent(input_shapes.size());
 
     std::vector<std::string>    dtypes(input_shapes.size());
-    std::vector<xsigma::IValue> concrete_inputs_list;
+    std::vector<quarisma::IValue> concrete_inputs_list;
 
-    for (const auto& i : xsigma::irange(input_shapes.size()))
+    for (const auto& i : quarisma::irange(input_shapes.size()))
     {
         std::visit(
-            xsigma::overloaded(
+            quarisma::overloaded(
                 [&](const TensorMetadata& t)
                 {
                     shapes[i]               = t.sizes_;
@@ -130,7 +130,7 @@ auto parseArgData(
                     strides[i] = stride;
                     dtypes[i]  = "TensorList";
                 },
-                [&](const xsigma::IValue&) { dtypes[i] = "Scalar"; },
+                [&](const quarisma::IValue&) { dtypes[i] = "Scalar"; },
                 [&](const auto&) {}),
             input_shapes[i]);
     }
@@ -140,16 +140,16 @@ auto parseArgData(
     {
         concrete_inputs_list.resize(input_shapes.size());
 
-        for (const auto& i : xsigma::irange(input_shapes.size()))
+        for (const auto& i : quarisma::irange(input_shapes.size()))
         {
             std::visit(
-                xsigma::overloaded(
-                    [&](const xsigma::IValue& val) { concrete_inputs_list[i] = val; },
+                quarisma::overloaded(
+                    [&](const quarisma::IValue& val) { concrete_inputs_list[i] = val; },
                     [&](const auto&) {}),
                 input_shapes[i]);
             std::visit(
-                xsigma::overloaded(
-                    [&](const xsigma::IValue& val)
+                quarisma::overloaded(
+                    [&](const quarisma::IValue& val)
                     {
                         concrete_inputs_list[i] = val;
                         dtypes[i]               = "ScalarList";
@@ -301,7 +301,7 @@ struct AddGenericMetadata : public MetadataBase
                 isStringList = std::all_of(
                     list.begin(),
                     list.end(),
-                    [](const xsigma::IValue& item) { return item.isString(); });
+                    [](const quarisma::IValue& item) { return item.isString(); });
             }
 
             if (!isValidType && !isStringList)
@@ -316,7 +316,7 @@ struct AddGenericMetadata : public MetadataBase
             {
                 // For list of strings, use ivalueListToStr
                 auto                        list = val.toListRef();
-                std::vector<xsigma::IValue> stringList(list.begin(), list.end());
+                std::vector<quarisma::IValue> stringList(list.begin(), list.end());
                 addMetadata(key, ivalueListToStr(stringList));
             }
             else
@@ -334,7 +334,7 @@ struct AddGenericMetadata : public MetadataBase
         if (config_ && !config_->experimental_config.performance_events.empty())
         {
             auto& event_names = config_->experimental_config.performance_events;
-            for (const auto i : xsigma::irange(op_event.perf_event_counters_->size()))
+            for (const auto i : quarisma::irange(op_event.perf_event_counters_->size()))
             {
                 addMetadata(event_names[i], std::to_string((*op_event.perf_event_counters_)[i]));
             }
@@ -402,7 +402,7 @@ struct KinetoThreadLocalState : public ProfilerStateBase
     static KinetoThreadLocalState* get(bool global)
     {
         auto* state = ProfilerStateBase::get(/*global=*/global);
-        XSIGMA_CHECK_DEBUG(state == nullptr || state->profilerType() == ActiveProfilerType::KINETO);
+        QUARISMA_CHECK_DEBUG(state == nullptr || state->profilerType() == ActiveProfilerType::KINETO);
         return static_cast<KinetoThreadLocalState*>(state);
     }
 
@@ -412,7 +412,7 @@ struct KinetoThreadLocalState : public ProfilerStateBase
     {
         if (!config_.disabled())
         {
-            recordQueue.getSubqueue()->emplace_vulkan_event(xsigma::getApproximateTime(), id);
+            recordQueue.getSubqueue()->emplace_vulkan_event(quarisma::getApproximateTime(), id);
         }
     }
 
@@ -421,12 +421,12 @@ struct KinetoThreadLocalState : public ProfilerStateBase
         int64_t        alloc_size,
         size_t         total_allocated,
         size_t         total_reserved,
-        xsigma::Device device) override
+        quarisma::Device device) override
     {
         if (config_.profile_memory && !config_.disabled())
         {
             recordQueue.getSubqueue()->emplace_allocation_event(
-                xsigma::getApproximateTime(),
+                quarisma::getApproximateTime(),
                 ptr,
                 alloc_size,
                 total_allocated,
@@ -440,12 +440,12 @@ struct KinetoThreadLocalState : public ProfilerStateBase
         int64_t        alloc_size,
         size_t         total_allocated,
         size_t         total_reserved,
-        xsigma::Device device) override
+        quarisma::Device device) override
     {
         if (config_.profile_memory && !config_.disabled())
         {
             recordQueue.getSubqueue()->emplace_ooms_event(
-                xsigma::getApproximateTime(),
+                quarisma::getApproximateTime(),
                 alloc_size,
                 total_allocated,
                 total_reserved,
@@ -467,7 +467,7 @@ struct KinetoThreadLocalState : public ProfilerStateBase
 
         std::lock_guard<std::mutex> guard(state_mutex_);
         auto                        converter = clockConverter.makeConverter();
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
         libkineto::get_time_converter() = converter;
 #endif
         auto records_and_trace = recordQueue.getRecords(std::move(converter), startTime, end_time);
@@ -499,7 +499,7 @@ struct KinetoThreadLocalState : public ProfilerStateBase
     {
         for (auto& e : events)
         {
-            if (e->parent_.expired() && e->deviceType() == xsigma::DeviceType::CPU)
+            if (e->parent_.expired() && e->deviceType() == quarisma::DeviceType::CPU)
             {
                 eventTree.push_back(e);
             }
@@ -507,7 +507,7 @@ struct KinetoThreadLocalState : public ProfilerStateBase
             if (e->finished_)
             {
                 e->visit(
-                    xsigma::overloaded(
+                    quarisma::overloaded(
                         [this](ExtraFields<EventType::TorchOp>& i) { invokeCallback(i); },
                         [this](ExtraFields<EventType::Backend>& i) { invokeCallback(i); },
                         [](auto&) {}));
@@ -523,7 +523,7 @@ struct KinetoThreadLocalState : public ProfilerStateBase
     }
 
     uint64_t                                    startTime;
-    xsigma::ApproximateClockToUnixTimeConverter clockConverter;
+    quarisma::ApproximateClockToUnixTimeConverter clockConverter;
     torch::profiler::impl::RecordQueue          recordQueue;
     std::vector<KinetoEvent>                    kinetoEvents;
     std::vector<experimental_event_t>           eventTree;
@@ -532,7 +532,7 @@ struct KinetoThreadLocalState : public ProfilerStateBase
 };
 
 template <bool use_global_state_ptr = false>
-std::unique_ptr<xsigma::ObserverContext> onFunctionEnter(const xsigma::record_function& fn)
+std::unique_ptr<quarisma::ObserverContext> onFunctionEnter(const quarisma::record_function& fn)
 {
     auto state_ptr = KinetoThreadLocalState::get(use_global_state_ptr);
     if (!state_ptr)
@@ -544,7 +544,7 @@ std::unique_ptr<xsigma::ObserverContext> onFunctionEnter(const xsigma::record_fu
 
 // @lint-ignore CLANGTIDY clang-diagnostic-unused-parameter
 template <bool use_global_state_ptr = false>
-void onFunctionExit(const xsigma::record_function& fn, xsigma::ObserverContext* ctx_ptr)
+void onFunctionExit(const quarisma::record_function& fn, quarisma::ObserverContext* ctx_ptr)
 {
     auto state_ptr = KinetoThreadLocalState::get(use_global_state_ptr);
     if (!state_ptr)
@@ -554,13 +554,13 @@ void onFunctionExit(const xsigma::record_function& fn, xsigma::ObserverContext* 
     const auto& config   = state_ptr->config();
     auto* kineto_ctx_ptr = static_cast<torch::profiler::impl::KinetoObserverContext*>(ctx_ptr);
     TORCH_INTERNAL_ASSERT(kineto_ctx_ptr != nullptr);
-    kineto_ctx_ptr->event_->end_time_ = xsigma::getApproximateTime();
+    kineto_ctx_ptr->event_->end_time_ = quarisma::getApproximateTime();
     if (!config.experimental_config.performance_events.empty())
     {
         state_ptr->recordQueue.getSubqueue()->disable_perf_profiler(
             *kineto_ctx_ptr->event_->counters_);
     }
-    kineto_ctx_ptr->event_->basic_fields_.end_tid_ = xsigma::record_function::currentThreadId();
+    kineto_ctx_ptr->event_->basic_fields_.end_tid_ = quarisma::record_function::currentThreadId();
     if (fn.isNcclMeta())
     {
         auto& extra_meta = *(kineto_ctx_ptr->event_->extra_nccl_meta_);
@@ -593,7 +593,7 @@ void onFunctionExit(const xsigma::record_function& fn, xsigma::ObserverContext* 
 
     if (!config.experimental_config.disable_external_correlation)
     {
-        if (fn.scope() == xsigma::RecordScope::USER_SCOPE)
+        if (fn.scope() == quarisma::RecordScope::USER_SCOPE)
         {
             torch::profiler::impl::kineto::popUserCorrelationId();
         }
@@ -605,12 +605,12 @@ void onFunctionExit(const xsigma::record_function& fn, xsigma::ObserverContext* 
 }
 
 template <bool use_global_callback = false>
-void pushProfilingCallbacks(const std::unordered_set<xsigma::RecordScope>& scopes)
+void pushProfilingCallbacks(const std::unordered_set<quarisma::RecordScope>& scopes)
 {
     auto registration_state_ptr = KinetoThreadLocalState::get(use_global_callback);
     TORCH_INTERNAL_ASSERT(registration_state_ptr, "Expected profiler state set");
     auto recordFunctionCallback =
-        xsigma::RecordFunctionCallback(
+        quarisma::RecordFunctionCallback(
             onFunctionEnter<use_global_callback>, onFunctionExit<use_global_callback>)
             .needsInputs(registration_state_ptr->config().report_input_shapes)
             .scopes(scopes);
@@ -618,19 +618,19 @@ void pushProfilingCallbacks(const std::unordered_set<xsigma::RecordScope>& scope
     if constexpr (use_global_callback)
     {
         registration_state_ptr->setCallbackHandle(
-            xsigma::addGlobalCallback(recordFunctionCallback));
+            quarisma::addGlobalCallback(recordFunctionCallback));
     }
     else
     {
         registration_state_ptr->setCallbackHandle(
-            xsigma::addThreadLocalCallback(recordFunctionCallback));
+            quarisma::addThreadLocalCallback(recordFunctionCallback));
     }
 }
 
 struct ProfilerStateInfo
 {
     std::shared_ptr<KinetoThreadLocalState> state_ptr;
-    std::unordered_set<xsigma::RecordScope> scopes;
+    std::unordered_set<quarisma::RecordScope> scopes;
 };
 std::shared_ptr<ProfilerStateInfo> profiler_state_info_ptr{nullptr};
 
@@ -640,7 +640,7 @@ void reportBackendEventToActiveKinetoProfiler(
     const int64_t             start_time_us,
     const int64_t             end_time_us,
     const int64_t             debug_handle,
-    const xsigma::RecordScope scope,
+    const quarisma::RecordScope scope,
     const std::string&        event_name,
     const std::string&        backend_name)
 {
@@ -673,15 +673,15 @@ void prepareProfiler(
     {
         return;
     }
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         config.state == profiler_state_enum::KINETO ||
             config.state == profiler_state_enum::KINETO_GPU_FALLBACK ||
             config.state == profiler_state_enum::KINETO_PRIVATEUSE1_FALLBACK,
         "Supported only in Kineto profiler");
     torch::profiler::impl::kineto::prepareTrace(
         /*cpuOnly=*/!(
-            xsigma::hasCUDA() || xsigma::hasXPU() || xsigma::hasMTIA() ||
-            xsigma::get_privateuse1_backend() != "privateuseone"),
+            quarisma::hasCUDA() || quarisma::hasXPU() || quarisma::hasMTIA() ||
+            quarisma::get_privateuse1_backend() != "privateuseone"),
         activities,
         config.experimental_config,
         config.trace_id);
@@ -689,14 +689,14 @@ void prepareProfiler(
     if (!config.experimental_config.performance_events.empty())
     {
         /* For now only CPU activity is supported */
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             activities.count(torch::autograd::profiler::activity_type_enum::CPU),
             "Cannot run cpu hardware profiler without CPU activities, please only use CPU activity "
             "type");
         /*
      * Sending a warning and passing the non-standard event to the backend
      * Backend can abort if the event is not supported.
-     * TODO Should we gracefully drop the invalid event if we have xsigma least one
+     * TODO Should we gracefully drop the invalid event if we have quarisma least one
      * valid?
      */
         auto is_standard_event = [](const std::string& event) -> bool
@@ -818,12 +818,12 @@ void enableProfilerWithEventPostProcess(
     const torch::profiler::impl::profiler_config&              config,
     const std::set<torch::profiler::impl::activity_type_enum>& activities,
     post_process_t&&                                           cb,
-    const std::unordered_set<xsigma::RecordScope>&             scopes)
+    const std::unordered_set<quarisma::RecordScope>&             scopes)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         config.state != profiler_state_enum::NVTX,
         "NVTX does not support post processing callback.");
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         config.state != profiler_state_enum::ITT, "ITT does not support post processing callback.");
     TORCH_INTERNAL_ASSERT(
         KinetoThreadLocalState::get(/*global=*/true) == nullptr,
@@ -837,10 +837,10 @@ void enableProfilerWithEventPostProcess(
 void enableProfiler(
     const torch::profiler::impl::profiler_config&              config,
     const std::set<torch::profiler::impl::activity_type_enum>& activities,
-    const std::unordered_set<xsigma::RecordScope>&             scopes)
+    const std::unordered_set<quarisma::RecordScope>&             scopes)
 {
     const auto has_cpu = activities.count(activity_type_enum::CPU);
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         KinetoThreadLocalState::get(/*global=*/config.global()) == nullptr,
         "Profiler is already enabled",
         (config.global() ? "." : " on this thread."));
@@ -861,11 +861,11 @@ void enableProfiler(
         return;
     }
 
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         config.state == profiler_state_enum::KINETO ||
         config.state == profiler_state_enum::KINETO_GPU_FALLBACK ||
         config.state == profiler_state_enum::KINETO_PRIVATEUSE1_FALLBACK || config.global());
-    XSIGMA_CHECK(!activities.empty(), "No activities specified.");
+    QUARISMA_CHECK(!activities.empty(), "No activities specified.");
     TORCH_INTERNAL_ASSERT(
         has_cpu || !config.global(), "Ondemand profiling must enable CPU tracing");
 
@@ -900,8 +900,8 @@ bool isProfilerEnabledInMainThread()
 void enableProfilerInChildThread()
 {
     auto state_info_ptr = profiler_state_info_ptr;
-    XSIGMA_CHECK(state_info_ptr, "Profiler is not enabled in main thread.");
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(state_info_ptr, "Profiler is not enabled in main thread.");
+    QUARISMA_CHECK(
         KinetoThreadLocalState::get(/*global=*/false) == nullptr,
         "Profiler is already enabled in this thread.");
 
@@ -912,7 +912,7 @@ void enableProfilerInChildThread()
 void disableProfilerInChildThread()
 {
     auto state_ptr = ProfilerStateBase::pop();
-    XSIGMA_CHECK(state_ptr, "Can't disable Kineto profiler when it's not running in this thread");
+    QUARISMA_CHECK(state_ptr, "Can't disable Kineto profiler when it's not running in this thread");
     state_ptr->removeCallback();
 }
 
@@ -923,7 +923,7 @@ std::unique_ptr<ProfilerResult> disableProfiler()
 
     auto        state_ptr = ProfilerStateBase::pop();
     const auto& config    = state_ptr->config();
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         state_ptr && (config.state == profiler_state_enum::KINETO ||
                       config.state == profiler_state_enum::KINETO_GPU_FALLBACK ||
                       config.state == profiler_state_enum::KINETO_PRIVATEUSE1_FALLBACK ||
@@ -1028,7 +1028,7 @@ bool KinetoEvent::hasShapes() const
     return !shapes_.empty();
 }
 
-const xsigma::ArrayRef<std::vector<int64_t>> KinetoEvent::shapes() const
+const quarisma::ArrayRef<std::vector<int64_t>> KinetoEvent::shapes() const
 {
     return shapes_;
 }
@@ -1038,7 +1038,7 @@ bool KinetoEvent::hasTypes() const
     return !dtypes_.empty();
 }
 
-const xsigma::ArrayRef<std::string> KinetoEvent::dtypes() const
+const quarisma::ArrayRef<std::string> KinetoEvent::dtypes() const
 {
     return dtypes_;
 }
@@ -1048,7 +1048,7 @@ bool KinetoEvent::hasConcreteInputs() const
     return !concrete_inputs_.empty();
 }
 
-const xsigma::ArrayRef<xsigma::IValue> KinetoEvent::concreteInputs() const
+const quarisma::ArrayRef<quarisma::IValue> KinetoEvent::concreteInputs() const
 {
     return concrete_inputs_;
 }
@@ -1063,12 +1063,12 @@ bool KinetoEvent::isHiddenEvent() const
     return result_ && result_->hidden_;
 }
 
-const std::unordered_map<std::string, xsigma::IValue> KinetoEvent::kwinputs() const
+const std::unordered_map<std::string, quarisma::IValue> KinetoEvent::kwinputs() const
 {
     return kwinputs_;
 }
 
-const xsigma::ArrayRef<std::string> KinetoEvent::stack() const
+const quarisma::ArrayRef<std::string> KinetoEvent::stack() const
 {
     auto get = [&](const auto& i) -> auto&
     { return !i.jit_stack_.empty() ? i.jit_stack_ : python_stack_; };
@@ -1085,7 +1085,7 @@ const xsigma::ArrayRef<std::string> KinetoEvent::stack() const
     return python_stack_;
 }
 
-const xsigma::ArrayRef<std::string> KinetoEvent::moduleHierarchy() const
+const quarisma::ArrayRef<std::string> KinetoEvent::moduleHierarchy() const
 {
     auto const& extra_fields = result_->extra_fields_;
     if (auto p = std::get_if<ExtraFields<EventType::TorchOp>>(&extra_fields))
@@ -1112,7 +1112,7 @@ uint64_t KinetoEvent::durationNs() const
 int64_t KinetoEvent::debugHandle() const
 {
     return result_->visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [](const ExtraFields<EventType::TorchOp>& i) { return i.debug_handle_; },
             [](const ExtraFields<EventType::Backend>& i) { return i.debug_handle_; },
             [](const auto&) -> int64_t { return -1; }));
@@ -1121,7 +1121,7 @@ int64_t KinetoEvent::debugHandle() const
 int KinetoEvent::deviceIndex() const
 {
     return result_->visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [](const ExtraFields<EventType::Allocation>& i)
             { return static_cast<int>(i.device_index_); },
             [](const ExtraFields<EventType::OutOfMemory>& i)
@@ -1170,7 +1170,7 @@ int64_t KinetoEvent::privateuse1ElapsedUs() const
 void KinetoEvent::getPerfEventCounters(std::vector<uint64_t>& in) const
 {
     return result_->visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [&in](const ExtraFields<EventType::TorchOp>& e) -> void
             {
                 const size_t n = e.perf_event_counters_->size();
@@ -1190,7 +1190,7 @@ void KinetoEvent::getPerfEventCounters(std::vector<uint64_t>& in) const
 std::string KinetoEvent::metadataJson() const
 {
     return result_->visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             [](const ExtraFields<EventType::TorchOp>& op) -> std::string
             { return op.metadata_json_; },
             [](const ExtraFields<EventType::Kineto>& op) -> std::string
@@ -1224,7 +1224,7 @@ FORWARD_FROM_RESULT(deviceResourceId, kineto_info_.resource)
     {                                                                                            \
         using out_t = decltype(std::declval<KinetoEvent>().method_name());                       \
         return result_->visit(                                                                   \
-            xsigma::overloaded(                                                                  \
+            quarisma::overloaded(                                                                  \
                 [](const ExtraFields<EventType::event_type>& e) -> out_t { return expression; }, \
                 [](const auto&) -> out_t { return default_value; }));                            \
     }

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "profiler/native/tracing/traceme_recorder.h"
@@ -50,11 +50,11 @@
 #endif
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 static inline std::string get_thread_name()
 {
-    return xsigma::logger::GetThreadName();
+    return quarisma::logger::GetThreadName();
 }
 
 namespace internal
@@ -62,8 +62,8 @@ namespace internal
 
 // DLL imported variables cannot be initialized on Windows. This file is
 // included only on DLL exports.
-XSIGMA_API std::atomic<int> g_trace_level(traceme_recorder::kTracingDisabled);
-XSIGMA_API std::atomic<uint64_t> g_trace_filter_bitmap{(std::numeric_limits<uint64_t>::max)()};
+QUARISMA_API std::atomic<int> g_trace_level(traceme_recorder::kTracingDisabled);
+QUARISMA_API std::atomic<uint64_t> g_trace_filter_bitmap{(std::numeric_limits<uint64_t>::max)()};
 
 // g_trace_level implementation must be lock-free for faster execution of the
 // TraceMe API. This can be commented (if compilation is failing) but execution
@@ -88,13 +88,13 @@ class SplitEventTracker
 public:
     void AddStart(traceme_recorder::Event&& event)
     {
-        XSIGMA_CHECK(event.is_start(), "event is not a start event");
+        QUARISMA_CHECK(event.is_start(), "event is not a start event");
         start_events_.emplace(event.activity_id(), std::move(event));
     }
 
     void AddEnd(traceme_recorder::Event* event)
     {
-        XSIGMA_CHECK(event->is_end(), "event is not an end event");
+        QUARISMA_CHECK(event->is_end(), "event is not an end event");
         if (!FindStartAndMerge(event))
         {
             end_events_.push_back(event);
@@ -127,7 +127,7 @@ private:
 
     // Start events are collected from each ThreadLocalRecorder::Consume() call.
     // Their data is merged into end_events.
-    xsigma_map<int64_t, traceme_recorder::Event> start_events_;
+    quarisma_map<int64_t, traceme_recorder::Event> start_events_;
 
     // End events are stored in the output of TraceMeRecorder::Consume().
     std::vector<traceme_recorder::Event*> end_events_;
@@ -166,7 +166,7 @@ public:
         info_.name = get_thread_name();
     }
 
-    XSIGMA_NODISCARD const traceme_recorder::ThreadInfo& Info() const { return info_; }
+    QUARISMA_NODISCARD const traceme_recorder::ThreadInfo& Info() const { return info_; }
 
     // Record is only called from the producer thread.
     void Record(traceme_recorder::Event&& event) { queue_.push(std::move(event)); }
@@ -176,7 +176,7 @@ public:
     void Clear() { queue_.clear(); }
 
     // Consume is called from the control thread when tracing stops.
-    XSIGMA_NODISCARD std::deque<traceme_recorder::Event> Consume(
+    QUARISMA_NODISCARD std::deque<traceme_recorder::Event> Consume(
         SplitEventTracker* split_event_tracker)
     {
         std::deque<traceme_recorder::Event>    events;
@@ -288,4 +288,4 @@ private:
     return static_cast<int64_t>(thread_id) << 32 | per_thread_activity_id++;
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

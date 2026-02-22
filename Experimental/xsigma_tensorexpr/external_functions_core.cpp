@@ -3,7 +3,7 @@
 namespace torch::jit::tensorexpr
 {
 
-#ifdef XSIGMA_MOBILE
+#ifdef QUARISMA_MOBILE
 extern "C"
 {
 #endif
@@ -15,7 +15,7 @@ extern "C"
         try
         {
             ParallelCallee callee = reinterpret_cast<ParallelCallee>(func);
-            xsigma::parallel_for(
+            quarisma::parallel_for(
                 start,
                 stop,
                 1,
@@ -34,13 +34,13 @@ extern "C"
 
     void nnc_aten_free(size_t bufs_num, void** ptrs) noexcept
     {
-        for (const auto i : xsigma::irange(bufs_num))
+        for (const auto i : quarisma::irange(bufs_num))
         {
-            xsigma::raw::intrusive_ptr::decref((xsigma::TensorImpl*)ptrs[i]);
+            quarisma::raw::intrusive_ptr::decref((quarisma::TensorImpl*)ptrs[i]);
         }
     }
 
-#ifdef XSIGMA_MOBILE
+#ifdef QUARISMA_MOBILE
 }  // extern "C"
 #endif
 

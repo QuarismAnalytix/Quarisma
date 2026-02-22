@@ -11,7 +11,7 @@
 #include "common/export.h"
 #include "common/macros.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace security
 {
@@ -29,7 +29,7 @@ namespace security
  * - Provides secure hashing with SHA-256
  * - All functions are designed to prevent timing attacks
  */
-class XSIGMA_VISIBILITY crypto
+class QUARISMA_VISIBILITY crypto
 {
 public:
     // ========================================================================
@@ -46,7 +46,7 @@ public:
      * - Linux/macOS: /dev/urandom or getrandom()
      * - Windows: BCryptGenRandom or RtlGenRandom
      */
-    static XSIGMA_API bool generate_random_bytes(uint8_t* buffer, size_t size);
+    static QUARISMA_API bool generate_random_bytes(uint8_t* buffer, size_t size);
 
     /**
      * @brief Generates a cryptographically secure random integer
@@ -102,7 +102,7 @@ public:
      * @param charset Character set to use (default: alphanumeric)
      * @return Random string
      */
-    static XSIGMA_API std::optional<std::string> generate_random_string(
+    static QUARISMA_API std::optional<std::string> generate_random_string(
         size_t           length,
         std::string_view charset =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
@@ -117,14 +117,14 @@ public:
      * @param size Size of input data
      * @return 32-byte SHA-256 hash
      */
-    static XSIGMA_API std::array<uint8_t, 32> sha256(const uint8_t* data, size_t size);
+    static QUARISMA_API std::array<uint8_t, 32> sha256(const uint8_t* data, size_t size);
 
     /**
      * @brief Computes SHA-256 hash of string
      * @param str Input string
      * @return 32-byte SHA-256 hash
      */
-    static XSIGMA_API std::array<uint8_t, 32> sha256(std::string_view str);
+    static QUARISMA_API std::array<uint8_t, 32> sha256(std::string_view str);
 
     /**
      * @brief Computes SHA-256 hash and returns as hex string
@@ -132,14 +132,14 @@ public:
      * @param size Size of input data
      * @return 64-character hex string
      */
-    static XSIGMA_API std::string sha256_hex(const uint8_t* data, size_t size);
+    static QUARISMA_API std::string sha256_hex(const uint8_t* data, size_t size);
 
     /**
      * @brief Computes SHA-256 hash of string and returns as hex string
      * @param str Input string
      * @return 64-character hex string
      */
-    static XSIGMA_API std::string sha256_hex(std::string_view str);
+    static QUARISMA_API std::string sha256_hex(std::string_view str);
 
     // ========================================================================
     // Secure Comparison
@@ -155,7 +155,7 @@ public:
      * Uses constant-time comparison to prevent timing attacks.
      * Always compares all bytes regardless of differences.
      */
-    static XSIGMA_API bool constant_time_compare(const uint8_t* a, const uint8_t* b, size_t size);
+    static QUARISMA_API bool constant_time_compare(const uint8_t* a, const uint8_t* b, size_t size);
 
     /**
      * @brief Constant-time comparison of two strings
@@ -163,7 +163,7 @@ public:
      * @param b Second string
      * @return true if strings are equal, false otherwise
      */
-    static XSIGMA_API bool constant_time_compare(std::string_view a, std::string_view b);
+    static QUARISMA_API bool constant_time_compare(std::string_view a, std::string_view b);
 
     // ========================================================================
     // Utility Functions
@@ -175,14 +175,14 @@ public:
      * @param size Size of input data
      * @return Hexadecimal string representation
      */
-    static XSIGMA_API std::string bytes_to_hex(const uint8_t* data, size_t size);
+    static QUARISMA_API std::string bytes_to_hex(const uint8_t* data, size_t size);
 
     /**
      * @brief Converts hexadecimal string to byte array
      * @param hex Hexadecimal string
      * @return Byte array, or nullopt if hex string is invalid
      */
-    static XSIGMA_API std::optional<std::vector<uint8_t>> hex_to_bytes(std::string_view hex);
+    static QUARISMA_API std::optional<std::vector<uint8_t>> hex_to_bytes(std::string_view hex);
 
     /**
      * @brief Securely zeros memory
@@ -192,7 +192,7 @@ public:
      * Uses platform-specific secure zeroing to prevent compiler optimization.
      * Ensures sensitive data is actually cleared from memory.
      */
-    static XSIGMA_API void secure_zero_memory(void* ptr, size_t size);
+    static QUARISMA_API void secure_zero_memory(void* ptr, size_t size);
 
 private:
     // Internal SHA-256 implementation
@@ -210,4 +210,4 @@ private:
 };
 
 }  // namespace security
-}  // namespace xsigma
+}  // namespace quarisma

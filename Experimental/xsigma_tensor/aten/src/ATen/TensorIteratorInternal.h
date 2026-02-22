@@ -1,5 +1,5 @@
 #pragma once
-#include <XSigma/native/TensorIterator.h>
+#include <Quarisma/native/TensorIterator.h>
 #include <c10/util/SmallBuffer.h>
 #include <c10/util/irange.h>
 

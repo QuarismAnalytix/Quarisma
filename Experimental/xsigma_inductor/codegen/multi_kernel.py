@@ -234,7 +234,7 @@ class MultiKernel:
             V.graph.wrapper_code.generate_workspace_allocation(ws)
 
         if V.graph.cpp_wrapper:
-            # We have already selected the best kernel xsigma compile time
+            # We have already selected the best kernel quarisma compile time
             # so we only have one set of call args. NB: this currently
             # doesn't work with MultiTemplateBuffer kernels. @bobrenjc93
             # will add it in a subsequent PR.
@@ -288,7 +288,7 @@ class MultiKernel:
 
 class MultiKernelCall:
     """
-    This class is called xsigma run time to actually run the kernel
+    This class is called quarisma run time to actually run the kernel
     """
 
     def __init__(self, multi_kernel_name, kernels, arg_index):
@@ -392,7 +392,7 @@ class MultiKernelCall:
         arguments for that specific kernel.
         """
 
-        # This is sometimes invoked xsigma runtime where V.graph is
+        # This is sometimes invoked quarisma runtime where V.graph is
         # a NullHandler
         if hasattr(V.graph, "cpp_wrapper") and V.graph.cpp_wrapper:
             # for cpp-wrapper, we should not filter the args since

@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <utility>
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 #include <libkineto.h>
 #endif
 
@@ -24,22 +24,22 @@
 #include "util/irange.h"
 #include "util/overloaded.h"
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 using result_ptr_t = std::shared_ptr<Result>;
-using trace_ptr_t  = std::unique_ptr<xsigma::profiler::impl::kineto::ActivityTraceWrapper>;
+using trace_ptr_t  = std::unique_ptr<quarisma::profiler::impl::kineto::ActivityTraceWrapper>;
 
-RawTensorMetadataBase::RawTensorMetadataBase(const xsigma::Tensor& t)
+RawTensorMetadataBase::RawTensorMetadataBase(const quarisma::Tensor& t)
     : data_{nullptr},
       dtype_{t.scalar_type()},
       layout_{t.layout()},
       size_dim_{static_cast<uint32_t>(t.sizes().size())}
 {
-    XSIGMA_CHECK_DEBUG(
+    QUARISMA_CHECK_DEBUG(
         t.sizes().size() <= std::numeric_limits<uint32_t>::max(),
         "Cannot profile Tensors of size > uint32 max. Got dim: ",
         t.sizes().size());
-    XSIGMA_CHECK_DEBUG(
+    QUARISMA_CHECK_DEBUG(
         t.sizes().size() == t.strides().size(),
         "Tensor has mismatching sizes and strides. Sizes: ",
         t.sizes().size(),
@@ -47,7 +47,7 @@ RawTensorMetadataBase::RawTensorMetadataBase(const xsigma::Tensor& t)
         t.strides().size());
 }
 
-RawTensorMetadata::RawTensorMetadata(const xsigma::Tensor& t)
+RawTensorMetadata::RawTensorMetadata(const quarisma::Tensor& t)
     : RawTensorMetadataBase(t),
       weak_self_{WeakTensor(t)},
       device_type_{t.device().type()},
@@ -59,7 +59,7 @@ TensorMetadata::TensorMetadata(
     const RawTensorMetadata& r, std::vector<int64_t> sizes, std::vector<int64_t> strides)
     // NOLINTNEXTLINE(cppcoreguidelines-slicing)
     : RawTensorMetadataBase(r),
-      weak_self_{r.weak_self_.value_or(WeakTensor(xsigma::Tensor()))},
+      weak_self_{r.weak_self_.value_or(WeakTensor(quarisma::Tensor()))},
       device_{r.device_type_, r.device_index_},
       sizes_{std::move(sizes)},
       strides_{std::move(strides)}
@@ -68,7 +68,7 @@ TensorMetadata::TensorMetadata(
 }
 
 // ============================================================================
-// == XSigma Ops =============================================================
+// == Quarisma Ops =============================================================
 // ============================================================================
 
 namespace
@@ -106,7 +106,7 @@ constexpr InputOutputEncoder::IOType tagToIOType(InputOutputEncoder::Tag tag)
 // ----------------------------
 // |  Input / Output encoder  |
 // ----------------------------
-void InputOutputEncoder::push(xsigma::array_ref<const xsigma::IValue> values)
+void InputOutputEncoder::push(quarisma::array_ref<const quarisma::IValue> values)
 {
     // Disabled: IValue methods (isTensor, toTensor, isScalar, isTensorList, toTensorList) not available in profiler-only build.
     for (const auto& value : values)
@@ -151,7 +151,7 @@ void InputOutputEncoder::push(xsigma::array_ref<const xsigma::IValue> values)
     tags_.emplace_back(Tag::TERMINATOR);
 }
 
-void InputOutputEncoder::push(const xsigma::Tensor& t)
+void InputOutputEncoder::push(const quarisma::Tensor& t)
 {
     // TODO fix nested and symbolic sizes
     if (t.defined() && !t.is_nested() && !t.unsafeGetTensorImpl()->has_symbolic_sizes_strides())
@@ -159,7 +159,7 @@ void InputOutputEncoder::push(const xsigma::Tensor& t)
         tags_.emplace_back(Tag::Tensor);
         tensor_metadata_.emplace_back(t);
         tensor_sizes_strides_.copy(t.sizes());
-        if (t.layout() == xsigma::kStrided)
+        if (t.layout() == quarisma::kStrided)
         {
             // Only Strided layout tensors have strides
             tensor_sizes_strides_.copy(t.strides());
@@ -173,7 +173,7 @@ void InputOutputEncoder::push(const xsigma::Tensor& t)
 
 #if 0
 // Disabled: IValue methods (isList, toListRef, isScalar) not available in profiler-only build.
-bool InputOutputEncoder::isSupportedScalarList(const xsigma::IValue& list_candidate)
+bool InputOutputEncoder::isSupportedScalarList(const quarisma::IValue& list_candidate)
 {
     // Scalar list can be very long. If a list is too long, we shouldn't
     // collect it. This function checks whether the list is a scalar list
@@ -189,15 +189,15 @@ bool InputOutputEncoder::isSupportedScalarList(const xsigma::IValue& list_candid
         return false;
     }
     auto list_ref = list_candidate.toListRef();
-    if XSIGMA_UNLIKELY(list_ref.empty())
+    if QUARISMA_UNLIKELY(list_ref.empty())
     {
         return true;
     }
-    if XSIGMA_UNLIKELY(!list_ref[0].isScalar())
+    if QUARISMA_UNLIKELY(!list_ref[0].isScalar())
     {
         return false;
     }
-    if XSIGMA_UNLIKELY(list_ref.size() > SCALAR_LIST_LENGTH_LIMIT)
+    if QUARISMA_UNLIKELY(list_ref.size() > SCALAR_LIST_LENGTH_LIMIT)
     {
         return false;
     }
@@ -205,14 +205,14 @@ bool InputOutputEncoder::isSupportedScalarList(const xsigma::IValue& list_candid
 }
 #else
 // Stub implementation when IValue methods are not available
-bool InputOutputEncoder::isSupportedScalarList(const xsigma::IValue& /*list_candidate*/)
+bool InputOutputEncoder::isSupportedScalarList(const quarisma::IValue& /*list_candidate*/)
 {
     return false;
 }
 #endif
 
 #if 0
-// Disabled: This function uses many IValue methods and xsigma::irange that are not available in profiler-only build.
+// Disabled: This function uses many IValue methods and quarisma::irange that are not available in profiler-only build.
 // This function returns a lambda which is a custom-iterator-like getter.
 // Each invocation of the lambda returns input values for one op.
 //
@@ -240,7 +240,7 @@ auto InputOutputEncoder::getIValueGenerator(const IOType& io_type)
                 return {RawTensorMetadata(), sizes, strides};
             }
             const auto& raw_metadata = *tensor_metadata_it++;
-            for ([[maybe_unused]] const auto _ : xsigma::irange(raw_metadata.size_dim_))
+            for ([[maybe_unused]] const auto _ : quarisma::irange(raw_metadata.size_dim_))
             {
                 if (tensor_size_strides_it.exhausted())
                 {
@@ -250,9 +250,9 @@ auto InputOutputEncoder::getIValueGenerator(const IOType& io_type)
                 }
                 sizes.push_back(*tensor_size_strides_it++);
             }
-            if (raw_metadata.layout_ == xsigma::kStrided)
+            if (raw_metadata.layout_ == quarisma::kStrided)
             {
-                for ([[maybe_unused]] const auto _ : xsigma::irange(raw_metadata.size_dim_))
+                for ([[maybe_unused]] const auto _ : quarisma::irange(raw_metadata.size_dim_))
                 {
                     if (tensor_size_strides_it.exhausted())
                     {
@@ -299,7 +299,7 @@ auto InputOutputEncoder::getIValueGenerator(const IOType& io_type)
                         found_undefined = true;
                         continue;
                     }
-                    XSIGMA_CHECK(*tag_it == Tag::Tensor, (int)(*tag_it));
+                    QUARISMA_CHECK(*tag_it == Tag::Tensor, (int)(*tag_it));
                     arg.emplace_back(decode_tensor());
                 }
                 if (found_undefined)
@@ -390,7 +390,7 @@ template <typename T, size_t ChunkSize>
 uint64_t ThreadLocalSubqueue::TorchOpStorage::EventBlock<T, ChunkSize>::correlation_id(
     const T* ptr) const
 {
-    XSIGMA_CHECK_DEBUG(ptr >= this->data() && ptr < this->data() + ChunkSize);
+    QUARISMA_CHECK_DEBUG(ptr >= this->data() && ptr < this->data() + ChunkSize);
     return id_start_ + (ptr - this->data());
 }
 
@@ -398,12 +398,12 @@ uint64_t ThreadLocalSubqueue::TorchOpStorage::EventBlock<T, ChunkSize>::correlat
 // |  Collection (Observer logic)  |
 // ---------------------------------
 std::unique_ptr<KinetoObserverContext> ThreadLocalSubqueue::begin_op(
-    const xsigma::RecordFunction& fn)
+    const quarisma::RecordFunction& fn)
 {
     const auto* overload_name =
         config_.experimental_config.capture_overload_names ? fn.overload_name() : "";
     auto [event, corr_id] = torch_ops_.op_events_.emplace_back(
-        xsigma::profiler::impl::TorchOpBasicFields{
+        quarisma::profiler::impl::TorchOpBasicFields{
             fn.seqNr(),
             fn.forwardThreadId(),
             fn.scope(),
@@ -420,27 +420,27 @@ std::unique_ptr<KinetoObserverContext> ThreadLocalSubqueue::begin_op(
     }
     if (!config_.experimental_config.disable_external_correlation)
     {
-        if (fn.scope() == xsigma::RecordScope::USER_SCOPE)
+        if (fn.scope() == quarisma::RecordScope::USER_SCOPE)
         {
-            xsigma::profiler::impl::kineto::pushUserCorrelationId(corr_id);
+            quarisma::profiler::impl::kineto::pushUserCorrelationId(corr_id);
         }
         else
         {
-            xsigma::profiler::impl::kineto::pushCorrelationId(corr_id);
+            quarisma::profiler::impl::kineto::pushCorrelationId(corr_id);
         }
     }
 
-#if !defined BUILD_LITE_INTERPRETER && !defined XSIGMA_MOBILE
+#if !defined BUILD_LITE_INTERPRETER && !defined QUARISMA_MOBILE
     // backward nodes source range corresponds to the forward node
     // TODO: consider using C++ stack trace
 #if 0
     // Disabled: jit::currentCallstack() and jit::currentModuleHierarchy() not available in profiler-only build
-    if (config_.with_stack && fn.scope() != xsigma::RecordScope::BACKWARD_FUNCTION)
+    if (config_.with_stack && fn.scope() != quarisma::RecordScope::BACKWARD_FUNCTION)
     {
-        auto cs = xsigma::profiler::impl::prepareCallstack(jit::currentCallstack());
+        auto cs = quarisma::profiler::impl::prepareCallstack(jit::currentCallstack());
         torch_ops_.jit_stack_.emplace_back(callstackStr(cs));
     }
-    if (config_.with_modules && fn.scope() != xsigma::RecordScope::BACKWARD_FUNCTION)
+    if (config_.with_modules && fn.scope() != quarisma::RecordScope::BACKWARD_FUNCTION)
     {
         torch_ops_.jit_modules_.emplace_back(jit::currentModuleHierarchy());
     }
@@ -448,7 +448,7 @@ std::unique_ptr<KinetoObserverContext> ThreadLocalSubqueue::begin_op(
 #endif
     if (config_.with_flops)
     {
-        torch_ops_.extra_args_.emplace_back(xsigma::profiler::impl::saveExtraArgs(fn));
+        torch_ops_.extra_args_.emplace_back(quarisma::profiler::impl::saveExtraArgs(fn));
     }
 
     auto out = std::make_unique<KinetoObserverContext>(event);
@@ -457,9 +457,9 @@ std::unique_ptr<KinetoObserverContext> ThreadLocalSubqueue::begin_op(
         // Record NCCL metadata for specific CPU ops, switch off output
         // introspection in this begin_op callback, we will do that in exit callback
         // if needed.
-        xsigma::profiler::impl::SaveNcclMetaConfig const ncclMetaConfig{true, true, true, false};
+        quarisma::profiler::impl::SaveNcclMetaConfig const ncclMetaConfig{true, true, true, false};
         out->event_->extra_nccl_meta_ = torch_ops_.extra_meta_.emplace_back(
-            xsigma::profiler::impl::saveNcclMeta(fn, ncclMetaConfig));
+            quarisma::profiler::impl::saveNcclMeta(fn, ncclMetaConfig));
     }
     else
     {
@@ -469,22 +469,22 @@ std::unique_ptr<KinetoObserverContext> ThreadLocalSubqueue::begin_op(
     if (config_.state == ProfilerState::KINETO_GPU_FALLBACK)
     {
         out->fallback_ = torch_ops_.device_fallback_.emplace_back();
-        xsigma::profiler::impl::cudaStubs()->record(
+        quarisma::profiler::impl::cudaStubs()->record(
             nullptr, &out->fallback_->device_event_start_, nullptr);
     }
     else if (config_.state == ProfilerState::KINETO_PRIVATEUSE1_FALLBACK)
     {
         out->fallback_ = torch_ops_.device_fallback_.emplace_back();
-        xsigma::profiler::impl::privateuse1Stubs()->record(
+        quarisma::profiler::impl::privateuse1Stubs()->record(
             nullptr, &out->fallback_->device_event_start_, nullptr);
     }
 
-    event->start_time_ = xsigma::getApproximateTime();
+    event->start_time_ = quarisma::getApproximateTime();
 #if 0
-    // Disabled: xsigma::globalContext() not available in profiler-only build
-    event->allow_tf32_cublas_ = xsigma::globalContext().float32Precision(
-                                    xsigma::Float32Backend::CUDA, xsigma::Float32Op::MATMUL) ==
-                                xsigma::Float32Precision::TF32;
+    // Disabled: quarisma::globalContext() not available in profiler-only build
+    event->allow_tf32_cublas_ = quarisma::globalContext().float32Precision(
+                                    quarisma::Float32Backend::CUDA, quarisma::Float32Op::MATMUL) ==
+                                quarisma::Float32Precision::TF32;
 #else
     event->allow_tf32_cublas_ = false;
 #endif
@@ -535,7 +535,7 @@ static constexpr std::string_view profilerStepString = "ProfilerStep#";
 void ThreadLocalSubqueue::TorchOpStorage::materialize(
     std::vector<std::shared_ptr<Result>>& /*out*/,
     std::vector<ProfilerStepInfo>& /*step_info*/,
-    const std::function<xsigma::time_t(xsigma::approx_time_t)>& /*time_converter*/,
+    const std::function<quarisma::time_t(quarisma::approx_time_t)>& /*time_converter*/,
     const uint64_t /*tid*/,
     const kineto::DeviceAndResource& /*kineto_info*/)
 {
@@ -544,12 +544,12 @@ void ThreadLocalSubqueue::TorchOpStorage::materialize(
     // Plumb Autograd info to the top level annotation.
     auto it = op_events_.begin();
     for ([[maybe_unused]] const auto _ :
-         xsigma::irange(static_cast<int64_t>(op_events_.size()) - 1))
+         quarisma::irange(static_cast<int64_t>(op_events_.size()) - 1))
     {
         auto& first  = it->basic_fields_;
         auto& second = (++it)->basic_fields_;
-        if (first.scope_ == xsigma::RecordScope::FUNCTION &&
-            second.scope_ == xsigma::RecordScope::BACKWARD_FUNCTION &&
+        if (first.scope_ == quarisma::RecordScope::FUNCTION &&
+            second.scope_ == quarisma::RecordScope::BACKWARD_FUNCTION &&
             first.name_.rfind("autograd::engine::evaluate_function: ", 0) == 0)
         {
             first.sequence_number_ = second.sequence_number_;
@@ -559,9 +559,9 @@ void ThreadLocalSubqueue::TorchOpStorage::materialize(
 #endif
 
     // `AccumulateGrad` is an important marker for profile analysis; however the
-    // annotation relies on `xsigma::demangle` which is platform dependent. In
+    // annotation relies on `quarisma::demangle` which is platform dependent. In
     // particular, Windows will add a "struct " prefix.
-    const std::string accumulate_grad = "xsigma::autograd::AccumulateGrad";
+    const std::string accumulate_grad = "quarisma::autograd::AccumulateGrad";
     const std::string windows_pattern = std::string("struct ") + accumulate_grad;
     for (auto& event : op_events_)
     {
@@ -618,19 +618,19 @@ void ThreadLocalSubqueue::TorchOpStorage::materialize(
 }
 
 #if 0
-// Disabled: xsigma::profiler::impl::vulkan not available in profiler-only build
+// Disabled: quarisma::profiler::impl::vulkan not available in profiler-only build
 template <size_t BlockSize>
 static void materialize_vulkan(
     std::vector<std::shared_ptr<Result>>&                                   out,
     AppendOnlyList<ExtraFields<EventType::Vulkan>::raw_event_t, BlockSize>& raw_events,
-    const std::function<xsigma::time_t(xsigma::approx_time_t)>&             time_converter,
+    const std::function<quarisma::time_t(quarisma::approx_time_t)>&             time_converter,
     const uint64_t                                                          tid,
     const kineto::DeviceAndResource&                                        kineto_info)
 {
     for (const auto& i : raw_events)
     {
         const auto name_and_duration_ns =
-            xsigma::profiler::impl::vulkan::getShaderNameAndDurationNs(i.second);
+            quarisma::profiler::impl::vulkan::getShaderNameAndDurationNs(i.second);
 
         out.emplace_back(
             Result::create(
@@ -652,7 +652,7 @@ template <size_t BlockSize>
 static void materialize_vulkan(
     std::vector<std::shared_ptr<Result>>& /*out*/,
     AppendOnlyList<ExtraFields<EventType::Vulkan>::raw_event_t, BlockSize>& raw_events,
-    const std::function<xsigma::time_t(xsigma::approx_time_t)>& /*time_converter*/,
+    const std::function<quarisma::time_t(quarisma::approx_time_t)>& /*time_converter*/,
     const uint64_t /*tid*/,
     const kineto::DeviceAndResource& /*kineto_info*/)
 {
@@ -701,9 +701,9 @@ std::string toString(const ExtraFields<EventType::PyCall>& /*e*/)
 }
 #endif
 
-auto scopeToType(xsigma::RecordScope scope)
+auto scopeToType(quarisma::RecordScope scope)
 {
-    return scope == xsigma::RecordScope::USER_SCOPE ? libkineto::ActivityType::USER_ANNOTATION
+    return scope == quarisma::RecordScope::USER_SCOPE ? libkineto::ActivityType::USER_ANNOTATION
                                                     : libkineto::ActivityType::CPU_OP;
 }
 
@@ -712,7 +712,7 @@ int64_t torchOpEndNS(
     const bool                             finished,
     const std::weak_ptr<Result>&           parent)
 {
-    if (finished && e.end_time_ns_ == std::numeric_limits<xsigma::time_t>::min())
+    if (finished && e.end_time_ns_ == std::numeric_limits<quarisma::time_t>::min())
     {
         auto p = parent.lock();
         if (p)
@@ -747,7 +747,7 @@ auto kinetoEventCorrelationID(
 std::string Result::name() const
 {
     return visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             ATTRIBUTE(Vulkan, std::string(e.name_)),
             ATTRIBUTE(Allocation, std::string("[memory]")),
             ATTRIBUTE(OutOfMemory, std::string("[OutOfMemory]")),
@@ -761,7 +761,7 @@ std::string Result::name() const
 std::string Result::name() const
 {
     return visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             ATTRIBUTE(Vulkan, std::string(e.name_)),
             ATTRIBUTE(Allocation, std::string("[memory]")),
             ATTRIBUTE(OutOfMemory, std::string("[OutOfMemory]")),
@@ -773,7 +773,7 @@ std::string Result::name() const
 std::string Result::overload_name() const
 {
     return visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             ATTRIBUTE(TorchOp, std::string(e.overload_name_)),
             [](const auto& /*e*/) -> std::string { return ""; }));
 }
@@ -781,7 +781,7 @@ std::string Result::overload_name() const
 libkineto::ActivityType Result::kinetoType() const
 {
     return visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             ATTRIBUTE(TorchOp, scopeToType(e.scope_)),
             ATTRIBUTE(Backend, scopeToType(e.scope_)),
             ATTRIBUTE(Vulkan, libkineto::ActivityType::CPU_OP),
@@ -796,7 +796,7 @@ libkineto::ActivityType Result::kinetoType() const
 uint64_t Result::correlationID() const
 {
     return visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             ATTRIBUTE(TorchOp, e.correlation_id_),
             ATTRIBUTE(Kineto, kinetoEventCorrelationID(e, parent_)),
             [&](const auto&) -> uint64_t { return 0; }));
@@ -805,7 +805,7 @@ uint64_t Result::correlationID() const
 int64_t Result::endTimeNS() const
 {
     auto end_time_ns = visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             ATTRIBUTE(TorchOp, torchOpEndNS(e, finished_, parent_)),
             ATTRIBUTE(Backend, e.end_time_us_ * 1000),
             ATTRIBUTE(Vulkan, start_time_ns_ + (e.in_tree_building_ ? 0 : e.duration_ns_)),
@@ -826,29 +826,29 @@ int64_t Result::endTimeNS() const
 uint64_t Result::endTID() const
 {
     return visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             ATTRIBUTE(TorchOp, e.end_tid_), [&](const auto&) -> uint64_t { return start_tid_; }));
 }
 
-xsigma::device_enum Result::deviceType() const
+quarisma::device_enum Result::deviceType() const
 {
-    using xsigma::autograd::profiler::deviceTypeFromActivity;
+    using quarisma::autograd::profiler::deviceTypeFromActivity;
     return visit(
-        xsigma::overloaded(
+        quarisma::overloaded(
             ATTRIBUTE(Allocation, e.device_type_),
             ATTRIBUTE(OutOfMemory, e.device_type_),
             ATTRIBUTE(Kineto, deviceTypeFromActivity(e.activity_type_)),
-            [&](const auto&) { return xsigma::device_enum::CPU; }));
+            [&](const auto&) { return quarisma::device_enum::CPU; }));
 }
 #undef ATTRIBUTE
 
 ThreadLocalSubqueue::ThreadLocalSubqueue(const uint64_t tid, ProfilerConfig config)
     : tid_{tid}, config_{std::move(config)}, kineto_info_{kineto::kineto_ids()}
 {
-    xsigma::profiler::impl::kineto::recordThreadInfo();
+    quarisma::profiler::impl::kineto::recordThreadInfo();
     if (!config_.experimental_config.performance_events.empty())
     {
-        perf_profiler_ = std::make_unique<xsigma::profiler::impl::linux_perf::PerfProfiler>();
+        perf_profiler_ = std::make_unique<quarisma::profiler::impl::linux_perf::PerfProfiler>();
         perf_profiler_->Configure(config_.experimental_config.performance_events);
     }
 }
@@ -891,7 +891,7 @@ ThreadLocalSubqueue* RecordQueue::getSubqueue()
         return sub_queue_cache_.ref_;
     }
 
-    const auto             tid = xsigma::RecordFunction::currentThreadId();
+    const auto             tid = quarisma::RecordFunction::currentThreadId();
     std::scoped_lock const guard(sub_queue_mutex_);
     auto                   it = sub_queues_.find(tid);
     if (it == sub_queues_.end())
@@ -923,12 +923,12 @@ namespace
 {
 void mark_finished(const std::shared_ptr<Result>& r)
 {
-    //XSIGMA_CHECK(!r->finished_, r->name());
+    //QUARISMA_CHECK(!r->finished_, r->name());
     r->finished_ = true;
-    //XSIGMA_CHECK(r->endTimeNS() >= r->start_time_ns_, r->name());
+    //QUARISMA_CHECK(r->endTimeNS() >= r->start_time_ns_, r->name());
 }
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 // Assumption: Total threads number will not exceed 2^16-1, and total ops will
 // not exceed 2^48 -1.
 uint64_t getForwardThreadKey(uint64_t tid, uint64_t seqNr)
@@ -980,7 +980,7 @@ void generateForwardBackwardLink(
         {
             // Now the sequence number is only incremented on creating a "Node"
             // object for backward pass, by calling
-            // "xsigma::sequence_number::get_and_increment()". Among all ops with same
+            // "quarisma::sequence_number::get_and_increment()". Among all ops with same
             // sequence number, the one with biggest startTime is the one launching
             // backward op.
             if (activity.startTime >= iter->second->startTime)
@@ -990,16 +990,16 @@ void generateForwardBackwardLink(
         }
     }
 }
-#endif  // XSIGMA_HAS_KINETO
+#endif  // QUARISMA_HAS_KINETO
 
 void generateForwardBackwardLinks(
-    const std::unique_ptr<xsigma::profiler::impl::kineto::trace_t>& cpu_trace,
+    const std::unique_ptr<quarisma::profiler::impl::kineto::trace_t>& cpu_trace,
     const std::vector<std::shared_ptr<Result>>&                     results)
 {
-#ifndef XSIGMA_HAS_KINETO
+#ifndef QUARISMA_HAS_KINETO
 }
-#else   // XSIGMA_HAS_KINETO
-    XSIGMA_CHECK(cpu_trace->activities.size() == results.size());
+#else   // QUARISMA_HAS_KINETO
+    QUARISMA_CHECK(cpu_trace->activities.size() == results.size());
 
     // startThreadId_seqNum to pointer of activity.
     // Low-16bits of startThreadId and low-48bits seqNum are concatenated into
@@ -1011,7 +1011,7 @@ void generateForwardBackwardLinks(
     using result_activity_t = std::pair<Result*, libkineto::GenericTraceActivity*>;
     std::vector<result_activity_t> torch_events;
 
-    for (const auto idx : xsigma::irange(cpu_trace->activities.size()))
+    for (const auto idx : quarisma::irange(cpu_trace->activities.size()))
     {
         const auto& profiler_result = results[idx];
         auto&       activity        = cpu_trace->activities[idx];
@@ -1048,7 +1048,7 @@ void generateForwardBackwardLinks(
         generateForwardBackwardLink(*profiler_result, fwd_bwd_link_id, *activity, tidSeq2activity);
     }
 }
-#endif  // XSIGMA_HAS_KINETO
+#endif  // QUARISMA_HAS_KINETO
 
 constexpr const char* indexKey = "Ev Idx";
 
@@ -1058,11 +1058,11 @@ void passEventsToKineto(
     uint64_t                                    end_time_ns,
     const ProfilerConfig&                       config)
 {
-    using namespace xsigma::profiler::impl::kineto;
-    TraceWrapper cpu_trace(static_cast<int64_t>(start_time_ns), "XSigma Profiler");
+    using namespace quarisma::profiler::impl::kineto;
+    TraceWrapper cpu_trace(static_cast<int64_t>(start_time_ns), "Quarisma Profiler");
 
-    // Generate Kineto events for each event recorded by the XSigma profiler.
-    for (const auto i : xsigma::irange(results.size()))
+    // Generate Kineto events for each event recorded by the Quarisma profiler.
+    for (const auto i : quarisma::irange(results.size()))
     {
         const auto& e = results[i];
         // Here we are essentially setting the duration to -1 if the event never
@@ -1109,7 +1109,7 @@ void passEventsToKineto(
     cpu_trace.transferCpuTrace(static_cast<int64_t>(end_time_ns));
 }
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 // There are two mechanisms that we use to connect Profiler and Kineto events.
 // The first is the correlation ID. The profiler pushes a unique integer at the
 // start of an op and pops it at the end. Kineto then associates the events
@@ -1117,14 +1117,14 @@ void passEventsToKineto(
 // the events that it collected to point to the profiler op.
 //
 // However, this is not a sufficient description because it does not retain
-// dependency information between kineto ops. Consider a call to `xsigma.add`.
+// dependency information between kineto ops. Consider a call to `quarisma.add`.
 // Three events will be collected:
 //   `aten::add`          (TorchOp, collected by profiler)
 //   `cudaLaunchKernel`   (CUDA runtime event, collected by Kineto)
-//   `xsigma::vectorized_...` (GPU kernel, collected by Kineto)
+//   `quarisma::vectorized_...` (GPU kernel, collected by Kineto)
 // If we only relied on correlation IDs we would set both Kineto events as
-// children of the `xsigma::add`, rather than the correct
-//   `xsigma::add -> cudaLaunchKernel -> xsigma::vectorized_...`
+// children of the `quarisma::add`, rather than the correct
+//   `quarisma::add -> cudaLaunchKernel -> quarisma::vectorized_...`
 //
 // Kineto surfaces this information through a second concept called a "flow".
 // In this example, the `cudaLaunchKernel` event is the start of a flow and the
@@ -1137,7 +1137,7 @@ void passEventsToKineto(
 class TransferEvents
 {
     using itrace_t   = libkineto::ITraceActivity;
-    using activity_t = xsigma::profiler::impl::kineto::activity_t;
+    using activity_t = quarisma::profiler::impl::kineto::activity_t;
 
 public:
     TransferEvents(
@@ -1147,7 +1147,7 @@ public:
         : results_{results}, config_{config}
     {
         const auto* trace_activities_ptr = trace->get()->activities();
-        XSIGMA_CHECK(trace_activities_ptr != nullptr);
+        QUARISMA_CHECK(trace_activities_ptr != nullptr);
         trace_activities_ = *trace_activities_ptr;
         reassociate();
         extractEventsFromTrace();
@@ -1201,17 +1201,17 @@ private:
         // relationship between `libkineto::ITraceActivity` and `Result`.
         for (const auto* activity : trace_activities_)
         {
-            XSIGMA_CHECK(activity != nullptr);
+            QUARISMA_CHECK(activity != nullptr);
             auto e = lookup(activity);
             if (e != nullptr)
             {
-                XSIGMA_CHECK(e->kineto_activity_ == nullptr);
+                QUARISMA_CHECK(e->kineto_activity_ == nullptr);
                 e->kineto_activity_ = static_cast<const activity_t*>(activity);
             }
         }
         /*if (results_.get().size() != kineto_events_.size())
         {
-            XSIGMA_LOG_WARNING(
+            QUARISMA_LOG_WARNING(
                 fmt::format(
                     "Failed to recover relationship between all profiler and kineto events: "
                     "{} vs. {}  reassociated.",
@@ -1222,17 +1222,17 @@ private:
 
     static bool isHiddenEvent(const itrace_t* activity)
     {
-        XSIGMA_CHECK(activity != nullptr);
+        QUARISMA_CHECK(activity != nullptr);
         // Kineto uses "hidden" metadata to mark events that should be hidden.
         return activity->getMetadataValue("hidden") == "1";
     }
 
     static std::shared_ptr<Result> resultFromActivity(const itrace_t* activity)
     {
-        XSIGMA_CHECK(activity != nullptr);
+        QUARISMA_CHECK(activity != nullptr);
 
         // Kineto is inconsistent with types, so we have to cast to int32.
-        xsigma::profiler::impl::kineto::DeviceAndResource const device_and_resource{
+        quarisma::profiler::impl::kineto::DeviceAndResource const device_and_resource{
             static_cast<int32_t>(activity->deviceId()),
             static_cast<int32_t>(activity->resourceId())};
 
@@ -1268,13 +1268,13 @@ private:
                              type == libkineto::ActivityType::USER_ANNOTATION ||
                              type == libkineto::ActivityType::PYTHON_FUNCTION))
         {
-            XSIGMA_LOG_WARNING(
-                "Detected an event which was likely passed to kineto by the XSigma "
+            QUARISMA_LOG_WARNING(
+                "Detected an event which was likely passed to kineto by the Quarisma "
                 "profiler, but is not present in the set of known events: ",
                 activity->name(),
                 " This most likely means that Kineto has not "
                 "maintained address stability for this event. Please report this to "
-                "the XSigma team.");
+                "the Quarisma team.");
             return nullptr;
         }
 
@@ -1297,7 +1297,7 @@ private:
                 if (config_.experimental_config.expose_kineto_event_metadata)
                 {
                     e->visit(
-                        xsigma::overloaded(
+                        quarisma::overloaded(
                             [&](ExtraFields<EventType::TorchOp>& i)
                             { i.metadata_json_ = activity->metadataJson(); },
                             [&](ExtraFields<EventType::Kineto>& i)
@@ -1308,10 +1308,10 @@ private:
                 if (linked_activity != nullptr)
                 {
                     e->visit(
-                        xsigma::overloaded(
+                        quarisma::overloaded(
                             [&](ExtraFields<EventType::Kineto>& i)
                             { i.linked_activity_ = toResult(linked_activity); },
-                            [](auto&) { XSIGMA_CHECK(false); }));
+                            [](auto&) { QUARISMA_CHECK(false); }));
                 }
             }
         }
@@ -1320,12 +1320,12 @@ private:
     void setKinetoTID(std::shared_ptr<Result>& r, std::shared_ptr<Result> parent)
     {
         r->visit(
-            xsigma::overloaded(
+            quarisma::overloaded(
                 [&]([[maybe_unused]] ExtraFields<EventType::Kineto>& i)
                 {
-                    XSIGMA_CHECK(r->start_tid_ == noTID);
+                    QUARISMA_CHECK(r->start_tid_ == noTID);
                     r->start_tid_ =
-                        parent ? parent->start_tid_ : xsigma::RecordFunction::currentThreadId();
+                        parent ? parent->start_tid_ : quarisma::RecordFunction::currentThreadId();
                 },
                 [](auto&) {}));
 
@@ -1338,28 +1338,28 @@ private:
     void setParents()
     {
         // First pass: Collect start events and set parent to linked event.
-        xsigma::flat_hash_map<uint32_t, std::shared_ptr<Result>> flow_map;
+        quarisma::flat_hash_map<uint32_t, std::shared_ptr<Result>> flow_map;
         for (auto& e : results_.get())
         {
-            XSIGMA_CHECK(e != nullptr);
+            QUARISMA_CHECK(e != nullptr);
             e->visit(
-                xsigma::overloaded(
+                quarisma::overloaded(
                     [&](const ExtraFields<EventType::Kineto>& i)
                     {
                         if (i.flow.type == libkineto::kLinkAsyncCpuGpu && i.flow.start)
                         {
                             auto inserted = flow_map.insert({i.flow.id, e});
-#ifdef XSIGMA_USE_ROCM
+#ifdef QUARISMA_USE_ROCM
                             if (inserted.second)
                             {
-                                XSIGMA_LOG_WARNING(
+                                QUARISMA_LOG_WARNING(
                                     "ROCTracer produced duplicate flow start: ", i.flow.id);
                             }
-#else   // XSIGMA_USE_ROCM
-                            XSIGMA_CHECK(inserted.second);
-#endif  // XSIGMA_USE_ROCM
+#else   // QUARISMA_USE_ROCM
+                            QUARISMA_CHECK(inserted.second);
+#endif  // QUARISMA_USE_ROCM
                         }
-                        XSIGMA_CHECK(e->parent_.expired());
+                        QUARISMA_CHECK(e->parent_.expired());
                         e->parent_ = i.linked_activity_;
                     },
                     [](const auto&) {}));
@@ -1369,7 +1369,7 @@ private:
         for (auto& e : results_.get())
         {
             e->visit(
-                xsigma::overloaded(
+                quarisma::overloaded(
                     [&](const ExtraFields<EventType::Kineto>& i)
                     {
                         // Flow takes priority over linked event.
@@ -1406,7 +1406,7 @@ private:
     std::reference_wrapper<std::vector<std::shared_ptr<Result>>>    results_;
     const ProfilerConfig&                                           config_;
     std::vector<const itrace_t*>                                    trace_activities_;
-    xsigma::flat_hash_map<const itrace_t*, std::shared_ptr<Result>> kineto_events_;
+    quarisma::flat_hash_map<const itrace_t*, std::shared_ptr<Result>> kineto_events_;
 };
 #else
 class TransferEvents
@@ -1425,7 +1425,7 @@ trace_ptr_t addKinetoEvents(
     uint64_t                              end_time_ns,
     const ProfilerConfig&                 config)
 {
-    using namespace xsigma::profiler::impl::kineto;
+    using namespace quarisma::profiler::impl::kineto;
     passEventsToKineto(results, start_time_ns, end_time_ns, config);
 
     // In on demand mode kineto is directly controlled by other machinery.
@@ -1435,7 +1435,7 @@ trace_ptr_t addKinetoEvents(
     }
 
     auto trace = std::make_unique<ActivityTraceWrapper>(stopTrace());
-    //XSIGMA_CHECK(trace || !kKinetoAvailable);
+    //QUARISMA_CHECK(trace || !kKinetoAvailable);
     // TransferEvents constructor has side effects (transfers Kineto events to results)
     // cppcheck-suppress unreadVariable
     TransferEvents const transfer{results, trace, config};
@@ -1455,7 +1455,7 @@ void set_in_tree_building(const std::vector<result_ptr_t>& results, const bool v
     for (result_ptr_t const& r : results)
     {
         r->visit(
-            xsigma::overloaded(
+            quarisma::overloaded(
                 [value](ExtraFields<EventType::Vulkan>& i) { i.in_tree_building_ = value; },
                 [&](auto&)
                 {
@@ -1469,7 +1469,7 @@ void build_tree(std::vector<std::shared_ptr<Result>>& sorted_events)
     set_in_tree_building(sorted_events, true);
 
     using op_fields = ExtraFields<EventType::TorchOp>;
-    xsigma::flat_hash_map<uint64_t, std::shared_ptr<Result>>                    stacks;
+    quarisma::flat_hash_map<uint64_t, std::shared_ptr<Result>>                    stacks;
     std::priority_queue<result_ptr_t, std::vector<result_ptr_t>, ResultGreater> end_events_;
 
     auto push_event = [&stacks, &end_events_](std::shared_ptr<Result>& event)
@@ -1484,18 +1484,18 @@ void build_tree(std::vector<std::shared_ptr<Result>>& sorted_events)
             return;
         }
 
-        XSIGMA_CHECK(event->parent_.expired());
+        QUARISMA_CHECK(event->parent_.expired());
         for (const auto& child : event->children_)
         {
-            XSIGMA_CHECK(child->finished_);
+            QUARISMA_CHECK(child->finished_);
         }
-        XSIGMA_CHECK(!event->finished_);
+        QUARISMA_CHECK(!event->finished_);
 
         auto parent_it = stacks.find(event->start_tid_);
         if (parent_it == stacks.end())
         {
             auto fwd_tid = event->visit(
-                xsigma::overloaded(
+                quarisma::overloaded(
                     [](const op_fields& i) { return i.forward_tid_; },
                     [](const auto&) -> uint64_t { return 0; }));
             if (fwd_tid)
@@ -1515,7 +1515,7 @@ void build_tree(std::vector<std::shared_ptr<Result>>& sorted_events)
             stacks[event->start_tid_] = event;
             end_events_.push(event);
         }
-        else if (event->endTimeNS() == std::numeric_limits<xsigma::time_t>::min())
+        else if (event->endTimeNS() == std::numeric_limits<quarisma::time_t>::min())
         {
             // We use min time to indicate the lack of a termination event, so if we
             // encounter such a case we don't push to `end_events_`.
@@ -1540,9 +1540,9 @@ void build_tree(std::vector<std::shared_ptr<Result>>& sorted_events)
 
         while (frame.get() != event.get())
         {
-            XSIGMA_CHECK(frame != nullptr);
+            QUARISMA_CHECK(frame != nullptr);
             mark_finished(frame);
-            XSIGMA_CHECK(!frame->parent_.expired());
+            QUARISMA_CHECK(!frame->parent_.expired());
             frame = frame->parent_.lock();
         }
 
@@ -1596,7 +1596,7 @@ int64_t adjust_durations_dfs(std::shared_ptr<Result>& r)
         if (children_total_duration > original_duration)
         {
             r->visit(
-                xsigma::overloaded(
+                quarisma::overloaded(
                     [&r, &children_total_duration](ExtraFields<EventType::TorchOp>& i)
                     { i.end_time_ns_ = r->start_time_ns_ + children_total_duration; },
                     [&children_total_duration](ExtraFields<EventType::Vulkan>& i)
@@ -1636,7 +1636,7 @@ int64_t adjust_timestamps_dfs(std::shared_ptr<Result>& r, int64_t new_start_time
         {
             // Adjust start time (keeping duration constant)
             r->visit(
-                xsigma::overloaded(
+                quarisma::overloaded(
                     [&r, &new_start_time](ExtraFields<EventType::TorchOp>& i)
                     { i.end_time_ns_ = new_start_time + (i.end_time_ns_ - r->start_time_ns_); },
                     []([[maybe_unused]] ExtraFields<EventType::Vulkan>& i)
@@ -1705,16 +1705,16 @@ void adjust_timestamps(std::vector<std::shared_ptr<Result>>& out)
 
 std::pair<
     std::vector<std::shared_ptr<Result>>,
-    std::unique_ptr<xsigma::profiler::impl::kineto::ActivityTraceWrapper>>
+    std::unique_ptr<quarisma::profiler::impl::kineto::ActivityTraceWrapper>>
 RecordQueue::getRecords(
-    std::function<xsigma::time_t(xsigma::approx_time_t)> time_converter,
+    std::function<quarisma::time_t(quarisma::approx_time_t)> time_converter,
     uint64_t                                             start_time_ns,
     uint64_t                                             end_time_ns)
 {
-    auto converter = [&](xsigma::approx_time_t t)
+    auto converter = [&](quarisma::approx_time_t t)
     {
-        return t == std::numeric_limits<xsigma::approx_time_t>::min()
-                   ? std::numeric_limits<xsigma::time_t>::min()
+        return t == std::numeric_limits<quarisma::approx_time_t>::min()
+                   ? std::numeric_limits<quarisma::time_t>::min()
                    : time_converter(t);
     };
 
@@ -1736,7 +1736,7 @@ RecordQueue::getRecords(
         {
             for (auto& i : events)
             {
-                xsigma::time_t start_time_ns = 0;
+                quarisma::time_t start_time_ns = 0;
                 if constexpr (std::is_same_v<
                                   std::remove_reference_t<decltype(i)>,
                                   ExtraFields<EventType::Backend>>)
@@ -1815,11 +1815,11 @@ RecordQueue::getRecords(
 
     if (python_tracer_)
     {
-        std::vector<std::shared_ptr<xsigma::profiler::impl::Result>> ev;
+        std::vector<std::shared_ptr<quarisma::profiler::impl::Result>> ev;
         try
         {
             ev = python_tracer_->getEvents(
-                converter, python_enters, static_cast<xsigma::time_t>(end_time_ns));
+                converter, python_enters, static_cast<quarisma::time_t>(end_time_ns));
         }
         catch (std::exception&)
         {
@@ -1827,7 +1827,7 @@ RecordQueue::getRecords(
             // exception happens here then the events will never be stopped and future
             // runs will be broken - so make sure to stopTrace() if we see an
             // exception.
-            xsigma::profiler::impl::kineto::stopTrace();
+            quarisma::profiler::impl::kineto::stopTrace();
             throw;
         }
         // Placeholder for if we run out of ProfilerStep annotations
@@ -1995,4 +1995,4 @@ void set_record_tensor_addrs_enabled_val(bool val)
 {
     record_tensor_addrs_enabled() = [val]() { return val; };
 }
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl

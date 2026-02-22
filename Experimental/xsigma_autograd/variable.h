@@ -1,8 +1,8 @@
 #pragma once
 
-#include <XSigma/NamedTensorUtils.h>
-#include <XSigma/core/Tensor.h>
-#include <XSigma/core/VariableHooksInterface.h>
+#include <Quarisma/NamedTensorUtils.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/core/VariableHooksInterface.h>
 #include <torch/csrc/Export.h>
 #include <torch/csrc/autograd/cpp_hook.h>
 #include <torch/csrc/autograd/edge.h>
@@ -23,13 +23,13 @@ namespace torch::autograd
 {
 
 /// `Variable` is exactly the same as `Tensor` (i.e. we have `using Variable =
-/// xsigma::Tensor`). This means you can perform all the usual mathematical and
+/// quarisma::Tensor`). This means you can perform all the usual mathematical and
 /// other operations you can perform on `Tensor`s also on `Variable`s.
 ///
 /// The only reason we are keeping the `Variable` class is backward
 /// compatibility with external user's legacy C++ frontend code. Our intention
 /// is to eliminate the `Variable` class in the near future.
-using Variable = xsigma::Tensor;
+using Variable = quarisma::Tensor;
 
 }  // namespace torch::autograd
 
@@ -43,10 +43,10 @@ namespace torch::autograd
 {
 
 /// Check if this type is supported by the autograd engine.
-/// If you change this, update the doc xsigma the top of the
+/// If you change this, update the doc quarisma the top of the
 /// torch/autograd/__init__.py file and
 /// "test_set_requires_grad_only_for_continuous_types" in test/test_autograd.py
-inline bool isDifferentiableType(xsigma::ScalarType t)
+inline bool isDifferentiableType(quarisma::ScalarType t)
 {
     return isFloatingType(t) || isComplexType(t);
 }
@@ -68,7 +68,7 @@ struct Node;
 /// that don't require gradients as Tensors (since none of the autograd
 /// machinery for Variables applies).  Historically, Variables and Tensors
 /// were separate concepts, but now they are exactly the same (i.e. we have
-/// `using Variable = xsigma::Tensor`).
+/// `using Variable = quarisma::Tensor`).
 ///
 ///                              Gradient Edges
 ///~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -87,7 +87,7 @@ struct Node;
 /// Another major feature of `Variable`s are *versions*. Versions are
 /// incremented when an in-place mutation of a variable occurs. Versions are
 /// useful when constructing `SavedVariable`s, which take a snapshot of a
-/// `Variable` xsigma a certain version. You can retrieve a `Variable`'s version
+/// `Variable` quarisma a certain version. You can retrieve a `Variable`'s version
 /// through its `current_version()` method.
 ///
 ///                                 Views
@@ -111,15 +111,15 @@ namespace impl
 
 // WARNING: This may return a nullptr.  If you require AutogradMeta to return
 // a materialized structure, use materialize_autograd_meta instead.
-TORCH_API AutogradMeta* get_autograd_meta(const xsigma::TensorBase& /*self*/);
+TORCH_API AutogradMeta* get_autograd_meta(const quarisma::TensorBase& /*self*/);
 
 // WARNING: This will return a nullptr if the Tensor is not a view.
-TORCH_API DifferentiableViewMeta* get_view_autograd_meta(const xsigma::TensorBase& /*self*/);
+TORCH_API DifferentiableViewMeta* get_view_autograd_meta(const quarisma::TensorBase& /*self*/);
 
 // Returns the current autograd meta, materializing it if it was previously
 // none.  This counts as a *mutating* operation, so do not call it on
 // "read-only" operators; in particular, this is NOT thread safe
-TORCH_API AutogradMeta* materialize_autograd_meta(const xsigma::TensorBase& /*self*/);
+TORCH_API AutogradMeta* materialize_autograd_meta(const quarisma::TensorBase& /*self*/);
 
 /// Set the gradient accumulator of the `Variable`. This is only applicable to
 /// leaf variables. Interior variables should call `set_gradient_edge()`.
@@ -129,7 +129,7 @@ TORCH_API void set_grad_accumulator(const Variable& /*self*/, std::weak_ptr<Node
 /// if it still exists. If the gradient accumulator function has been
 /// destroyed, returns a `nullptr`.
 TORCH_API std::shared_ptr<Node> try_get_grad_accumulator(const Variable& /*self*/);
-TORCH_API std::shared_ptr<Node> try_get_grad_accumulator(const xsigma::TensorBase& /*self*/);
+TORCH_API std::shared_ptr<Node> try_get_grad_accumulator(const quarisma::TensorBase& /*self*/);
 
 /// Gets the gradient accumulator of the `Variable` if it has one, or else
 /// create one on the fly and return it.
@@ -170,23 +170,23 @@ TORCH_API Node* grad_fn_unsafe(const Variable& /*self*/);
 /// Increments the version count of this `Variable`.
 TORCH_API void bump_version(const Variable& /*self*/);
 TORCH_API void set_version_counter(
-    const Variable& /*self*/, const xsigma::VariableVersion& version_counter);
+    const Variable& /*self*/, const quarisma::VariableVersion& version_counter);
 
 /// Retrieves this `Variable`s version counter.
-TORCH_API const xsigma::VariableVersion& version_counter(const Variable& /*self*/);
+TORCH_API const quarisma::VariableVersion& version_counter(const Variable& /*self*/);
 
 TORCH_API void set_name(const Variable& /*self*/, const std::string& name);
 
-TORCH_API void add_hook(const xsigma::TensorBase& /*self*/, std::unique_ptr<FunctionPreHook> hook);
+TORCH_API void add_hook(const quarisma::TensorBase& /*self*/, std::unique_ptr<FunctionPreHook> hook);
 TORCH_API std::vector<std::unique_ptr<FunctionPreHook>>& hooks(const Variable& /*self*/);
-TORCH_API void clear_hooks(const xsigma::TensorBase& /*self*/);
+TORCH_API void clear_hooks(const quarisma::TensorBase& /*self*/);
 
 TORCH_API void set_post_acc_grad_hooks(
-    const xsigma::TensorBase& /*self*/, std::unique_ptr<PostAccumulateGradHook> dict);
+    const quarisma::TensorBase& /*self*/, std::unique_ptr<PostAccumulateGradHook> dict);
 TORCH_API std::unique_ptr<PostAccumulateGradHook>& post_acc_grad_hooks(const Variable& /*self*/);
 
 TORCH_API void create_cpp_hook(
-    const xsigma::TensorBase& /*self*/, bool is_retains_grad_hooks = false);
+    const quarisma::TensorBase& /*self*/, bool is_retains_grad_hooks = false);
 }  // namespace impl
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -198,7 +198,7 @@ TORCH_API void create_cpp_hook(
 /// history. As an optimization, a Variable may store a nullptr, in lieu of a
 /// default constructed AutogradMeta.
 
-struct TORCH_API AutogradMeta : public xsigma::AutogradMetaInterface
+struct TORCH_API AutogradMeta : public quarisma::AutogradMetaInterface
 {
     std::string name_;
 
@@ -251,7 +251,7 @@ struct TORCH_API AutogradMeta : public xsigma::AutogradMetaInterface
     uint32_t output_nr_;
 
     // The dtype of the grad field; when nullopt, defaults to tensor's dtype.
-    std::optional<xsigma::ScalarType> grad_dtype_;
+    std::optional<quarisma::ScalarType> grad_dtype_;
 
     // When true, allows gradient dtype to be different from tensor dtype,
     // bypassing dtype casting and validation in the autograd engine.
@@ -267,11 +267,11 @@ struct TORCH_API AutogradMeta : public xsigma::AutogradMetaInterface
     /// Sets the `requires_grad` property of `Variable`. This should be true for
     /// leaf variables that want to accumulate gradients, and false for all other
     /// variables.
-    void set_requires_grad(bool requires_grad, xsigma::TensorImpl* self_impl) final
+    void set_requires_grad(bool requires_grad, quarisma::TensorImpl* self_impl) final
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !requires_grad ||
-                isDifferentiableType(xsigma::typeMetaToScalarType(self_impl->dtype())),
+                isDifferentiableType(quarisma::typeMetaToScalarType(self_impl->dtype())),
             "Only Tensors of floating point and complex dtype can require gradients");
         requires_grad_ = requires_grad;
     }
@@ -283,21 +283,21 @@ struct TORCH_API AutogradMeta : public xsigma::AutogradMetaInterface
 
     const Variable& grad() const override { return grad_; }
 
-    const Variable& fw_grad(uint64_t level, const xsigma::TensorBase& self) const override;
+    const Variable& fw_grad(uint64_t level, const quarisma::TensorBase& self) const override;
 
     void set_fw_grad(
-        const xsigma::TensorBase& new_grad,
-        const xsigma::TensorBase& self,
+        const quarisma::TensorBase& new_grad,
+        const quarisma::TensorBase& self,
         uint64_t                  level,
         bool                      is_inplace_op) override;
 
-    std::optional<xsigma::ScalarType> grad_dtype(const xsigma::TensorBase& self) const;
+    std::optional<quarisma::ScalarType> grad_dtype(const quarisma::TensorBase& self) const;
 
     void set_grad_dtype(
-        const std::optional<xsigma::ScalarType>& grad_dtype, const xsigma::TensorBase& self);
+        const std::optional<quarisma::ScalarType>& grad_dtype, const quarisma::TensorBase& self);
 
     AutogradMeta(
-        xsigma::TensorImpl* self_impl     = nullptr,
+        quarisma::TensorImpl* self_impl     = nullptr,
         bool                requires_grad = false,
         Edge                gradient_edge = Edge())
         : grad_fn_(std::move(gradient_edge.function)),
@@ -310,7 +310,7 @@ struct TORCH_API AutogradMeta : public xsigma::AutogradMetaInterface
             TORCH_INTERNAL_ASSERT(self_impl);
             set_requires_grad(requires_grad, self_impl);
         }
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !grad_fn_ || !requires_grad_, "requires_grad should be false if grad_fn is set");
     }
 
@@ -338,32 +338,32 @@ struct TORCH_API ViewFunc
 {
     virtual ~ViewFunc() = default;
     /// Returns any SymInts in the saved state.
-    virtual std::vector<xsigma::SymInt> get_symints() const { return {}; }
+    virtual std::vector<quarisma::SymInt> get_symints() const { return {}; }
     /// Returns the number of SymInts in the saved state.
     virtual size_t num_symints() const { return 0; }
     /// Returns any tensors in the saved state.
-    virtual std::vector<xsigma::Tensor> get_tensors() const { return {}; }
+    virtual std::vector<quarisma::Tensor> get_tensors() const { return {}; }
     /// Returns the number of tensors in the saved state.
     virtual size_t num_tensors() const { return 0; }
     /// Reapplies the view on the given base using the saved state.
-    virtual xsigma::Tensor operator()(const xsigma::Tensor&) const = 0;
+    virtual quarisma::Tensor operator()(const quarisma::Tensor&) const = 0;
     /// Returns a clone of this ViewFunc, optionally with the specified saved
     /// state.
     virtual std::unique_ptr<ViewFunc> clone_and_set(
-        std::optional<std::vector<xsigma::SymInt>> = std::nullopt,
-        std::optional<std::vector<xsigma::Tensor>> = std::nullopt) const = 0;
+        std::optional<std::vector<quarisma::SymInt>> = std::nullopt,
+        std::optional<std::vector<quarisma::Tensor>> = std::nullopt) const = 0;
 
 protected:
     /// Sets the values of any SymInts in the saved state. The input vector size
     /// must match the number of SymInts in the saved state (i.e. the size of the
     /// list returned by get_symints()).
     /// NOLINTNEXTLINE(performance-unnecessary-value-param)
-    virtual void set_symints(std::vector<xsigma::SymInt> /*unused*/) {}
+    virtual void set_symints(std::vector<quarisma::SymInt> /*unused*/) {}
     /// Sets the values of any Tensors in the saved state. The input vector size
     /// must match the number of Tensors in the saved state (i.e. the size of the
     /// list returned by get_tensors()).
     /// NOLINTNEXTLINE(performance-unnecessary-value-param)
-    virtual void set_tensors(std::vector<xsigma::Tensor> /*unused*/) {}
+    virtual void set_tensors(std::vector<quarisma::Tensor> /*unused*/) {}
 };
 
 /// ViewFunc that represents a chain of two ViewFuncs.
@@ -374,14 +374,14 @@ struct ChainedViewFunc : public ViewFunc
     {
     }
     ~ChainedViewFunc() override = default;
-    std::vector<xsigma::SymInt> get_symints() const override;
+    std::vector<quarisma::SymInt> get_symints() const override;
     size_t num_symints() const override { return first->num_symints() + second->num_symints(); }
-    std::vector<xsigma::Tensor> get_tensors() const override;
+    std::vector<quarisma::Tensor> get_tensors() const override;
     size_t num_tensors() const override { return first->num_tensors() + second->num_tensors(); }
-    xsigma::Tensor operator()(const xsigma::Tensor& /*input_base*/ /*unused*/) const override;
+    quarisma::Tensor operator()(const quarisma::Tensor& /*input_base*/ /*unused*/) const override;
     std::unique_ptr<ViewFunc> clone_and_set(
-        std::optional<std::vector<xsigma::SymInt>> /*symints*/ /*unused*/ = std::nullopt,
-        std::optional<std::vector<xsigma::Tensor>> /*tensors*/ /*unused*/ =
+        std::optional<std::vector<quarisma::SymInt>> /*symints*/ /*unused*/ = std::nullopt,
+        std::optional<std::vector<quarisma::Tensor>> /*tensors*/ /*unused*/ =
             std::nullopt) const override;
 
 private:
@@ -394,13 +394,13 @@ struct ErroringViewFunc : public ViewFunc
 {
     ErroringViewFunc(std::string error_msg) : error_msg(std::move(error_msg)) {}
     ~ErroringViewFunc() override = default;
-    xsigma::Tensor operator()(const xsigma::Tensor& /*unused*/) const override
+    quarisma::Tensor operator()(const quarisma::Tensor& /*unused*/) const override
     {
-        XSIGMA_CHECK(false, error_msg);
+        QUARISMA_CHECK(false, error_msg);
     }
     std::unique_ptr<ViewFunc> clone_and_set(
-        std::optional<std::vector<xsigma::SymInt>> /*unused*/ = std::nullopt,
-        std::optional<std::vector<xsigma::Tensor>> /*unused*/ = std::nullopt) const override
+        std::optional<std::vector<quarisma::SymInt>> /*unused*/ = std::nullopt,
+        std::optional<std::vector<quarisma::Tensor>> /*unused*/ = std::nullopt) const override
     {
         return std::make_unique<ErroringViewFunc>(error_msg);
     }
@@ -434,13 +434,13 @@ struct TORCH_API ViewInfo
 
     const ViewFunc& view_fn() const
     {
-        XSIGMA_CHECK(has_view_fn(), "Can only access the view function if it exists.");
+        QUARISMA_CHECK(has_view_fn(), "Can only access the view function if it exists.");
         return *view_fn_;
     }
 
     std::function<Variable(const Variable&)> rev_view_fn() const
     {
-        XSIGMA_CHECK(has_view_fn(), "Can only access the reverse view function if it exists.");
+        QUARISMA_CHECK(has_view_fn(), "Can only access the reverse view function if it exists.");
         return rev_view_fn_;
     }
 
@@ -464,7 +464,7 @@ struct TORCH_API ViewInfo
         std::function<Variable(const Variable&)> rev_view_fn)
         : base_(std::move(base)), view_fn_(std::move(view_fn)), rev_view_fn_(std::move(rev_view_fn))
     {
-        XSIGMA_CHECK(base_.defined(), "base is undefined");
+        QUARISMA_CHECK(base_.defined(), "base is undefined");
     }
 };
 
@@ -700,7 +700,7 @@ private:
     /// The two following fields are extra information that we track to ensure
     /// that any operation on this backward view is valid.
 
-    /// The value of the version_counter xsigma the time grad_fn was created. The
+    /// The value of the version_counter quarisma the time grad_fn was created. The
     /// grad_fn field is stale if attr_version_ !=
     /// version_counter.current_version().
     uint32_t     attr_version_;
@@ -721,32 +721,32 @@ public:
 
     const ViewInfo& get_backward_view() const
     {
-        XSIGMA_CHECK(has_bw_view(), "backward view info can only exist for backward views.");
+        QUARISMA_CHECK(has_bw_view(), "backward view info can only exist for backward views.");
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         return backward_info_.value();
     }
 
     uint32_t get_attr_version() const
     {
-        XSIGMA_CHECK(has_bw_view(), "attr_version can only exist for backward views.");
+        QUARISMA_CHECK(has_bw_view(), "attr_version can only exist for backward views.");
         return attr_version_;
     }
 
     void set_attr_version(uint32_t new_attr_version)
     {
-        XSIGMA_CHECK(has_bw_view(), "attr_version can only exist for backward views.");
+        QUARISMA_CHECK(has_bw_view(), "attr_version can only exist for backward views.");
         attr_version_ = new_attr_version;
     }
 
     CreationMeta get_creation_meta() const
     {
-        XSIGMA_CHECK(has_bw_view(), "creation_meta can only exist for backward views.");
+        QUARISMA_CHECK(has_bw_view(), "creation_meta can only exist for backward views.");
         return creation_meta_;
     }
 
     void set_creation_meta(CreationMeta new_creation_meta)
     {
-        XSIGMA_CHECK(has_bw_view(), "creation_meta can only exist for backward views.");
+        QUARISMA_CHECK(has_bw_view(), "creation_meta can only exist for backward views.");
         creation_meta_ = new_creation_meta;
     }
 
@@ -754,8 +754,8 @@ public:
 
     const ViewInfo& get_forward_view() const
     {
-        XSIGMA_CHECK(has_fw_view(), "forward view info can only exist for forward views.");
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(has_fw_view(), "forward view info can only exist for forward views.");
+        QUARISMA_CHECK(
             !shared_view_info_ || has_bw_view(),
             "forward view info can only exist for forward views.");
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
@@ -763,7 +763,7 @@ public:
     }
 
     DifferentiableViewMeta(
-        xsigma::TensorImpl*     self_impl,
+        quarisma::TensorImpl*     self_impl,
         std::optional<ViewInfo> backward_info,
         std::optional<ViewInfo> forward_info,
         bool                    shared_view_info,
@@ -793,7 +793,7 @@ public:
 // See NOTE [ Autograd View Variables ] for details.
 // Differentiable view. Track history with DifferentiableViewMeta.
 inline Variable make_variable_differentiable_view(
-    const xsigma::Tensor&   data,
+    const quarisma::Tensor&   data,
     std::optional<ViewInfo> backward_info,
     std::optional<ViewInfo> forward_info,
     bool                    shared_view_info,
@@ -802,7 +802,7 @@ inline Variable make_variable_differentiable_view(
 {
     if (data.defined())
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             data.getIntrusivePtr()->autograd_meta() == nullptr,
             "Attempted to make a tensor into a differentiable view, but the "
             "tensor already had autograd metadata associated with it.  If you are "
@@ -813,7 +813,7 @@ inline Variable make_variable_differentiable_view(
             "must be wrapped into fresh tensors that serve as the output.  If you "
             "are not using wrappers, you probably don't need reentrant dispatch.  "
             "If this doesn't seem applicable, please file a bug to PyTorch.");
-        xsigma::TensorImpl* data_impl = data.unsafeGetTensorImpl();
+        quarisma::TensorImpl* data_impl = data.unsafeGetTensorImpl();
         data_impl->set_allow_tensor_metadata_change(allow_tensor_metadata_change);
         data_impl->set_autograd_meta(
             std::make_unique<DifferentiableViewMeta>(
@@ -831,7 +831,7 @@ inline Variable make_variable_differentiable_view(
 // Non-differentiable view. Just share version counter.
 inline Variable make_variable_non_differentiable_view(
     const Variable&       base,
-    const xsigma::Tensor& data,
+    const quarisma::Tensor& data,
     bool                  allow_tensor_metadata_change = true,
     bool                  is_fresh_tensor              = false)
 {
@@ -867,7 +867,7 @@ inline Variable make_variable_non_differentiable_view(
 /// more clearly as detach() or a no-op in most call sites (especially when
 /// there is only one use of the variable).
 inline Variable make_variable(
-    xsigma::Tensor data, bool requires_grad = false, bool allow_tensor_metadata_change = true)
+    quarisma::Tensor data, bool requires_grad = false, bool allow_tensor_metadata_change = true)
 {
     if (data.defined())
     {
@@ -911,7 +911,7 @@ inline Variable make_variable(
 /// specifying the function in the autograd graph, and what particular input of
 /// that function, this variable is connected to.
 inline Variable make_variable(
-    const xsigma::Tensor& data, Edge gradient_edge, bool allow_tensor_metadata_change = true)
+    const quarisma::Tensor& data, Edge gradient_edge, bool allow_tensor_metadata_change = true)
 {
     if (data.defined())
     {
@@ -925,43 +925,43 @@ inline Variable make_variable(
     return Variable();
 }
 
-struct VariableHooks final : xsigma::impl::VariableHooksInterface
+struct VariableHooks final : quarisma::impl::VariableHooksInterface
 {
-    xsigma::TensorBase tensor_data(const xsigma::TensorBase& /*self*/ /*unused*/) const override;
-    xsigma::TensorBase variable_data(const xsigma::TensorBase& /*self*/ /*unused*/) const override;
+    quarisma::TensorBase tensor_data(const quarisma::TensorBase& /*self*/ /*unused*/) const override;
+    quarisma::TensorBase variable_data(const quarisma::TensorBase& /*self*/ /*unused*/) const override;
     const std::shared_ptr<torch::autograd::Node>& grad_fn(
-        const xsigma::TensorBase& /*self*/ /*unused*/) const override;
+        const quarisma::TensorBase& /*self*/ /*unused*/) const override;
     unsigned _register_hook(
-        const xsigma::TensorBase& /*self*/ /*unused*/,
-        std::function<xsigma::TensorBase(const xsigma::TensorBase&)> hook) const override;
-    void remove_hook(const xsigma::TensorBase& /*self*/ /*unused*/, unsigned pos) const override;
-    bool is_view(const xsigma::TensorBase& /*self*/ /*unused*/) const override;
-    const xsigma::TensorBase& base(const xsigma::TensorBase& /*self*/ /*unused*/) const override;
-    const std::string&        name(const xsigma::TensorBase& /*self*/ /*unused*/) const override;
-    bool                      is_leaf(const xsigma::TensorBase& /*self*/ /*unused*/) const override;
-    int64_t output_nr(const xsigma::TensorBase& /*self*/ /*unused*/) const override;
+        const quarisma::TensorBase& /*self*/ /*unused*/,
+        std::function<quarisma::TensorBase(const quarisma::TensorBase&)> hook) const override;
+    void remove_hook(const quarisma::TensorBase& /*self*/ /*unused*/, unsigned pos) const override;
+    bool is_view(const quarisma::TensorBase& /*self*/ /*unused*/) const override;
+    const quarisma::TensorBase& base(const quarisma::TensorBase& /*self*/ /*unused*/) const override;
+    const std::string&        name(const quarisma::TensorBase& /*self*/ /*unused*/) const override;
+    bool                      is_leaf(const quarisma::TensorBase& /*self*/ /*unused*/) const override;
+    int64_t output_nr(const quarisma::TensorBase& /*self*/ /*unused*/) const override;
     void    set_data(
-           const xsigma::TensorBase& self, const xsigma::TensorBase& new_data) const override;
-    xsigma::TensorBase data(const xsigma::TensorBase& self) const override;
-    int64_t            _version(const xsigma::TensorBase& self) const override;
-    void               retain_grad(const xsigma::TensorBase& self) const override;
-    bool               retains_grad(const xsigma::TensorBase& self) const override;
+           const quarisma::TensorBase& self, const quarisma::TensorBase& new_data) const override;
+    quarisma::TensorBase data(const quarisma::TensorBase& self) const override;
+    int64_t            _version(const quarisma::TensorBase& self) const override;
+    void               retain_grad(const quarisma::TensorBase& self) const override;
+    bool               retains_grad(const quarisma::TensorBase& self) const override;
     void               _backward(
-                      const xsigma::Tensor&                self,
-                      xsigma::TensorList                   inputs,
-                      const std::optional<xsigma::Tensor>& gradient,
+                      const quarisma::Tensor&                self,
+                      quarisma::TensorList                   inputs,
+                      const std::optional<quarisma::Tensor>& gradient,
                       std::optional<bool>                  keep_graph,
                       bool                                 create_graph) const override;
-    void requires_grad_(const xsigma::TensorBase& self, bool _requires_grad) const override;
+    void requires_grad_(const quarisma::TensorBase& self, bool _requires_grad) const override;
     void basic_autograd_not_implemented_fallback(
-        const xsigma::OperatorHandle& op,
-        xsigma::DispatchKeySet        dispatch_keys,
+        const quarisma::OperatorHandle& op,
+        quarisma::DispatchKeySet        dispatch_keys,
         torch::jit::Stack*            stack) const override;
-    std::optional<xsigma::ScalarType> grad_dtype(
-        const xsigma::TensorBase& /*self*/ /*unused*/) const override;
+    std::optional<quarisma::ScalarType> grad_dtype(
+        const quarisma::TensorBase& /*self*/ /*unused*/) const override;
     void set_grad_dtype(
-        const xsigma::TensorBase& /*self*/ /*unused*/,
-        const std::optional<xsigma::ScalarType>& /*grad_dtype*/ /*unused*/) const override;
+        const quarisma::TensorBase& /*self*/ /*unused*/,
+        const std::optional<quarisma::ScalarType>& /*grad_dtype*/ /*unused*/) const override;
 };
 
 namespace utils

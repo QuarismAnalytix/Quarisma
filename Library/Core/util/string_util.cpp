@@ -3,7 +3,7 @@
  * @brief Implementation of high-performance string utility functions
  *
  * This file contains optimized implementations of string manipulation,
- * conversion, and utility functions for the XSigma Core library.
+ * conversion, and utility functions for the Quarisma Core library.
  *
  * Key design principles:
  * - Performance-first approach for financial computing applications
@@ -11,7 +11,7 @@
  * - Locale-independent behavior for consistent results
  * - Robust error handling with clear failure modes
  *
- * @author XSigma Development Team
+ * @author Quarisma Development Team
  * @version 2.0
  * @date 2024
  */
@@ -24,22 +24,22 @@
 #include <string>   // for char_traits, string, operator<<, allocator, operator==, oper...
 #include <string_view>
 
-#include "common/macros.h"   // for XSIGMA_UNUSED, XSIGMA_HAS_CXA_DEMANGLE
-#include "util/exception.h"  // for XSIGMA_CHECK_DEBUG, XSIGMA_CHECK, XSIGMA_CHECK_VALUE
+#include "common/macros.h"   // for QUARISMA_UNUSED, QUARISMA_HAS_CXA_DEMANGLE
+#include "util/exception.h"  // for QUARISMA_CHECK_DEBUG, QUARISMA_CHECK, QUARISMA_CHECK_VALUE
 
 // =============================================================================
 // PLATFORM-SPECIFIC CONFIGURATION
 // =============================================================================
 
-#if XSIGMA_HAS_CXA_DEMANGLE
+#if QUARISMA_HAS_CXA_DEMANGLE
 #include <cxxabi.h>
 #endif
 
 // =============================================================================
-// MAIN XSIGMA STRING UTILITIES IMPLEMENTATION
+// MAIN QUARISMA STRING UTILITIES IMPLEMENTATION
 // =============================================================================
 
-namespace xsigma
+namespace quarisma
 {
 // Constants for cleaning up demangled names
 constexpr std::string_view CLASS_NAME = "class ";  ///< C++ class prefix to remove
@@ -100,8 +100,8 @@ std::string demangle(const char* name)
 size_t replace_all(std::string& s, const char* from, const char* to)
 {
     // Validate input parameters
-    XSIGMA_CHECK(from && *from, "Source string cannot be null or empty");
-    XSIGMA_CHECK(to, "Replacement string cannot be null");
+    QUARISMA_CHECK(from && *from, "Source string cannot be null or empty");
+    QUARISMA_CHECK(to, "Replacement string cannot be null");
 
     size_t     numReplaced = 0;
     const auto lenFrom     = std::strlen(from);
@@ -133,9 +133,9 @@ void erase_all_sub_string(std::string& mainStr, std::string_view const& toErase)
         mainStr.erase(pos, toErase.length());
     }
 }
-}  // namespace xsigma
+}  // namespace quarisma
 
-namespace xsigma
+namespace quarisma
 {
 
 // C++20 compatibility utility for std::string_view::starts_with()
@@ -160,4 +160,4 @@ bool ends_with(std::string_view str, std::string_view suffix)
 #endif
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

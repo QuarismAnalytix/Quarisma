@@ -6,7 +6,7 @@
 #include <torch/csrc/jit/passes/onnx/remove_inplace_ops_for_onnx.h>
 #include <torch/csrc/jit/passes/remove_inplace_ops.h>
 #include <torch/csrc/jit/passes/remove_mutation.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit
 {
@@ -14,11 +14,11 @@ namespace torch::jit
 namespace
 {
 
-const std::set<xsigma::Symbol> inplace_ops = {
+const std::set<quarisma::Symbol> inplace_ops = {
     aten::append, aten::index_put_, aten::pop, aten::insert, aten::Delete};
 
 // InplaceConverter defines a set of functions that together enables the
-// conversion from prim::GetAttr, prim::SetAttr, and XSigma in-place operators to
+// conversion from prim::GetAttr, prim::SetAttr, and Quarisma in-place operators to
 // ONNX out-place operators.
 struct InplaceConverter
 {
@@ -224,13 +224,13 @@ std::pair<Value*, Value*> PrepareInplaceOpsInBlocksForONNX(Node* node)
         return {};
 
     auto name       = node->schema().name();
-    bool inplace_op = name.xsigma(name.size() - 1) == '_';
+    bool inplace_op = name.quarisma(name.size() - 1) == '_';
     if (!inplace_op)
         return {};
 
     auto new_schema = name.substr(0, name.size() - 1);
 
-    Node* input_node = node->inputs().xsigma(0)->node();
+    Node* input_node = node->inputs().quarisma(0)->node();
 
     auto graph    = node->owningGraph();
     auto new_node = graph->create(Symbol::fromQualString(new_schema), 1);
@@ -251,7 +251,7 @@ std::pair<Value*, Value*> PrepareInplaceOpsInBlocksForONNX(Node* node)
         auto            false_val_ = graph->insertConstant(false);
 
         auto new_copy = graph->create(aten::copy_, 1);
-        new_copy->addInput(new_node->inputs().xsigma(0));
+        new_copy->addInput(new_node->inputs().quarisma(0));
         new_copy->addInput(new_node->output());
         new_copy->addInput(false_val_);
         new_copy->insertAfter(new_node);
@@ -284,7 +284,7 @@ static std::pair<Value*, Value*> PrepareListPopForONNX(Node* n)
     getitem_node->insertBefore(n);
     getitem_node->copyMetadata(n);
     n->output()->replaceAllUsesWith(getitem_node->output());
-    n->output()->setType(n->inputs().xsigma(0)->type());
+    n->output()->setType(n->inputs().quarisma(0)->type());
 
     return std::make_pair(n->input(0), n->output());
 }
@@ -293,7 +293,7 @@ static std::pair<Value*, Value*> PrepareListDeleteForONNX(Node* n)
 {
     TORCH_INTERNAL_ASSERT(n->kind() == aten::Delete);
     n->addOutput();
-    n->output()->setType(n->inputs().xsigma(0)->type());
+    n->output()->setType(n->inputs().quarisma(0)->type());
 
     return std::make_pair(n->input(0), n->output());
 }
@@ -304,7 +304,7 @@ static std::pair<Value*, Value*> PrepareListAppendAndInsertForONNX(Node* n)
     if (n->outputs().empty())
     {
         n->addOutput();
-        n->output()->setType(n->inputs().xsigma(0)->type());
+        n->output()->setType(n->inputs().quarisma(0)->type());
     }
     return std::make_pair(n->input(0), n->output());
 }
@@ -318,7 +318,7 @@ static std::pair<Value*, Value*> PrepareSetItemForONNX(Node* n)
     if (n->outputs().empty())
     {
         n->addOutput();
-        n->output()->setType(n->inputs().xsigma(0)->type());
+        n->output()->setType(n->inputs().quarisma(0)->type());
     }
     return std::make_pair(n->input(0), n->output());
 }
@@ -394,7 +394,7 @@ static void PrepareForRemoveMutations(const std::shared_ptr<Graph>& graph)
 // findSubModuleAttr function chases getAttr chains backwards to locate the
 // submodules. For example: module M {
 //   attributes {
-//     A = <SubModule xsigma ...>
+//     A = <SubModule quarisma ...>
 //   }
 //   ...
 //   %A = prim::GetAttr[name="A"](%self)
@@ -414,7 +414,7 @@ std::deque<std::string> findSubModuleAttr(
 
     auto selfNode = graph->nodes().begin();
     auto n        = *selfNode;
-    while (node->outputs().xsigma(0)->type() != n->output()->type())
+    while (node->outputs().quarisma(0)->type() != n->output()->type())
     {
         if (node->kind() == prim::GetAttr)
         {
@@ -622,10 +622,10 @@ void InplaceConverter::correctAliasReferences(Node* n)
     }
 }
 
-// Find the correct alias representing Value v xsigma Node n.
+// Find the correct alias representing Value v quarisma Node n.
 Value* InplaceConverter::ValueTracker::findAliasForValueAtNode(Value* v, const Node* n) const
 {
-    GRAPH_UPDATE("Finding alias for value:", v->debugName(), " xsigma node ", *n);
+    GRAPH_UPDATE("Finding alias for value:", v->debugName(), " quarisma node ", *n);
     if (alias_to_value_.find(v) == alias_to_value_.end())
     {
         // This value was not affected by any inplace operator.
@@ -689,7 +689,7 @@ void InplaceConverter::gatherAttrNameInitialValueMap(
         auto   attrModule = *module_;
         Value* paramConst = nullptr;
 
-        auto moduleNames = findSubModuleAttr(n->inputs().xsigma(0), name, attrModule, graph_);
+        auto moduleNames = findSubModuleAttr(n->inputs().quarisma(0), name, attrModule, graph_);
 
         std::string fullName;
         for (auto& name : moduleNames)
@@ -751,7 +751,7 @@ void InplaceConverter::gatherAttrNameInitialValueMap(
     }
 }
 
-// Replace prim::GetAttr and prim::SetAttr with XSigma inplace operators.
+// Replace prim::GetAttr and prim::SetAttr with Quarisma inplace operators.
 // Example graph:
 // clang-format off
 //  Before graph(%x.1 : Float(12, strides=[1], requires_grad=0, device=cpu)):
@@ -831,7 +831,7 @@ void InplaceConverter::replaceAttrWithInplaceOps(
         else if (n->kind() == prim::GetAttr)
         {
             // Replace use of GetAttr with first seen alias (usually initial value) of
-            // that particular value. Correct alias xsigma point of this node will be
+            // that particular value. Correct alias quarisma point of this node will be
             // discovered and assigned in later pass.
             n->output()->replaceAllUsesWith(find_init_val->second);
         }
@@ -939,7 +939,7 @@ void InplaceConverter::convertInplaceOpsAndTrackAlias()
 
 void InplaceConverter::convertMutationForONNX()
 {
-    // First pass to convert all prim::GetAttr and prim::SetAttr to XSigma inplace
+    // First pass to convert all prim::GetAttr and prim::SetAttr to Quarisma inplace
     // operators.
     convertGetSetAttrToInplaceOps(graph_->block());
     GRAPH_UPDATE("Graph after convertGetSetAttrToInplaceOps", graph_->toString());

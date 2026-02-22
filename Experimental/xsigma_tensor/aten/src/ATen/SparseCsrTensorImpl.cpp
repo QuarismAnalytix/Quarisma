@@ -1,10 +1,10 @@
-#include <XSigma/InitialTensorOptions.h>
-#include <XSigma/SparseCsrTensorImpl.h>
-#include <XSigma/SparseCsrTensorUtils.h>
-#include <XSigma/SparseTensorImpl.h>
-#include <XSigma/XSigma.h>
-#include <XSigma/core/LegacyTypeDispatch.h>
-#include <XSigma/native/Resize.h>
+#include <Quarisma/InitialTensorOptions.h>
+#include <Quarisma/SparseCsrTensorImpl.h>
+#include <Quarisma/SparseCsrTensorUtils.h>
+#include <Quarisma/SparseTensorImpl.h>
+#include <Quarisma/Quarisma.h>
+#include <Quarisma/core/LegacyTypeDispatch.h>
+#include <Quarisma/native/Resize.h>
 
 namespace at
 {

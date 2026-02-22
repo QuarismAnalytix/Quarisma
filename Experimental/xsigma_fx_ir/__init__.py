@@ -79,7 +79,7 @@ the code for analysis (and not transformation) purposes. Code
 generation can be used for programmatically generating models, for
 example from a config file. There are many uses for FX!
 
-Several example transformations can be found xsigma the
+Several example transformations can be found quarisma the
 `examples <https://github.com/pytorch/examples/tree/master/fx>`__
 repository.
 '''

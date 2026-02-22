@@ -613,7 +613,7 @@ class InferenceModeVariable(ContextWrappingVariable):
         **kwargs,
     ) -> None:
         if initial_values is None:
-            # This must be called here since function defaults are evaluated xsigma import time
+            # This must be called here since function defaults are evaluated quarisma import time
             initial_values = torch.is_inference_mode_enabled()
         super().__init__(
             target_values=target_values, initial_values=initial_values, **kwargs

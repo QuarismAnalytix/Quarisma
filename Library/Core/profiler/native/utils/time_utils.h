@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -32,15 +32,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef XSIGMA_PROFILER_UTILS_TIME_UTILS_H_
-#define XSIGMA_PROFILER_UTILS_TIME_UTILS_H_
+#ifndef QUARISMA_PROFILER_UTILS_TIME_UTILS_H_
+#define QUARISMA_PROFILER_UTILS_TIME_UTILS_H_
 
 #include <cstdint>
 
 #include "common/macros.h"
 #include "profiler/native/utils/math_utils.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace profiler
 {
@@ -53,14 +53,14 @@ namespace profiler
  *
  * @return Current time in nanoseconds since an arbitrary epoch
  */
-XSIGMA_API int64_t get_current_time_nanos();
+QUARISMA_API int64_t get_current_time_nanos();
 
 /**
  * @brief Sleep for the specified duration in nanoseconds.
  *
  * @param ns Duration to sleep in nanoseconds
  */
-XSIGMA_API void sleep_for_nanos(int64_t ns);
+QUARISMA_API void sleep_for_nanos(int64_t ns);
 
 /**
  * @brief Sleep for the specified duration in microseconds.
@@ -104,7 +104,7 @@ inline void sleep_for_seconds(int64_t s)
  *
  * @param ns Duration to spin in nanoseconds
  */
-XSIGMA_API void spin_for_nanos(int64_t ns);
+QUARISMA_API void spin_for_nanos(int64_t ns);
 
 /**
  * @brief Spin (busy-wait) for the specified duration in microseconds.
@@ -117,6 +117,6 @@ inline void spin_for_micros(int64_t us)
 }
 
 }  // namespace profiler
-}  // namespace xsigma
+}  // namespace quarisma
 
-#endif  // XSIGMA_PROFILER_UTILS_TIME_UTILS_H_
+#endif  // QUARISMA_PROFILER_UTILS_TIME_UTILS_H_

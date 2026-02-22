@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2020 The OpenXLA Authors.
@@ -42,7 +42,7 @@ limitations under the License.
 #include "profiler/native/core/profiler_interface.h"
 #include "profiler/native/exporters/xplane/xplane.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace profiler
 {
@@ -77,33 +77,33 @@ python_tracer::~python_tracer()
 }  // NOLINT
 
 bool python_tracer::start()
-{  // XSIGMA_STATUS_OK
+{  // QUARISMA_STATUS_OK
     if (recording_)
     {
         return tsl::errors::Internal("PythonTracer already started");
     }
-    XSIGMA_LOG_INFO( __FUNCTION__);
+    QUARISMA_LOG_INFO( __FUNCTION__);
     recording_ = true;
     PythonHooks::GetSingleton()->Start(options_);
     return true;
 }
 
 bool PythonTracer::Stop()
-{  // XSIGMA_STATUS_OK
+{  // QUARISMA_STATUS_OK
     if (!recording_)
     {
         return tsl::errors::Internal("PythonTracer not started");
     }
-    XSIGMA_LOG_INFO( __FUNCTION__);
+    QUARISMA_LOG_INFO( __FUNCTION__);
     context_   = PythonHooks::GetSingleton()->Stop();
     recording_ = false;
     return true;
 }
 
-bool PythonTracer::CollectData(  // XSIGMA_STATUS_OK
+bool PythonTracer::CollectData(  // QUARISMA_STATUS_OK
     XSpace* space)
 {
-    XSIGMA_LOG_INFO( "Collecting data to XSpace from PythonTracer.");
+    QUARISMA_LOG_INFO( "Collecting data to XSpace from PythonTracer.");
     if (context_)
     {
         context_->Finalize(space);
@@ -129,5 +129,5 @@ std::unique_ptr<ProfilerInterface> CreatePythonTracer(
 }
 
 }  // namespace profiler
-}  // namespace xsigma
+}  // namespace quarisma
 #endif

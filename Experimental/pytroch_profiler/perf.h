@@ -12,7 +12,7 @@
 #include "events.h"
 #include "util/exception.h"
 
-namespace xsigma::profiler::impl::linux_perf
+namespace quarisma::profiler::impl::linux_perf
 {
 
 /*
@@ -34,7 +34,7 @@ struct PerfCounter
 /*
  * Basic perf event handler for Android and Linux
  */
-class XSIGMA_VISIBILITY PerfEvent
+class QUARISMA_VISIBILITY PerfEvent
 {
 public:
     explicit PerfEvent(std::string& name) : name_(name) {}
@@ -80,7 +80,7 @@ private:
     int fd_ = -1;
 };
 
-class XSIGMA_VISIBILITY PerfProfiler
+class QUARISMA_VISIBILITY PerfProfiler
 {
 public:
     /* Configure all the events and track them as individual PerfEvent */
@@ -101,4 +101,4 @@ private:
     std::vector<PerfEvent>      events_;
     std::stack<perf_counters_t> start_values_;
 };
-}  // namespace xsigma::profiler::impl::linux_perf
+}  // namespace quarisma::profiler::impl::linux_perf

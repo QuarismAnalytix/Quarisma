@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
@@ -45,7 +45,7 @@ limitations under the License.
 #include "util/exception.h"
 #include "util/flat_hash.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace
 {
@@ -121,15 +121,15 @@ typename Collection::value_type::second_type* FindOrNull(
     return &it->second;
 }
 
-XSIGMA_UNUSED constexpr int kNumHostEventTypes =
+QUARISMA_UNUSED constexpr int kNumHostEventTypes =
     HostEventType::kLastHostEventType - HostEventType::kFirstHostEventType + 1;
 
-XSIGMA_UNUSED constexpr int kNumStatTypes = StatType::kLastStatType - StatType::kFirstStatType + 1;
+QUARISMA_UNUSED constexpr int kNumStatTypes = StatType::kLastStatType - StatType::kFirstStatType + 1;
 
-XSIGMA_UNUSED constexpr int kNumMegaScaleStatTypes =
+QUARISMA_UNUSED constexpr int kNumMegaScaleStatTypes =
     MegaScaleStatType::kLastMegaScaleStatType - MegaScaleStatType::kFirstMegaScaleStatType + 1;
 
-XSIGMA_UNUSED constexpr int kNumLineIdTypes =
+QUARISMA_UNUSED constexpr int kNumLineIdTypes =
     LineIdType::kLastLineIdType - LineIdType::kFirstLineIdType + 1;
 
 using HostEventTypeMap        = flat_hash_map<std::string_view, HostEventType>;
@@ -237,7 +237,7 @@ const HostEventTypeMap& GetHostEventTypeMap()
         {"tpu::System::TransferFromDevice=>IssueEvent=>Done", kTransferFromDeviceDone},
         {"tpu::System::Execute", kTpuSystemExecute},
     });
-    XSIGMA_CHECK_DEBUG(host_event_type_map->size() == kNumHostEventTypes);
+    QUARISMA_CHECK_DEBUG(host_event_type_map->size() == kNumHostEventTypes);
     return *host_event_type_map;
 }
 
@@ -386,7 +386,7 @@ const StatTypeMap& GetStatTypeMap()
          {"source_stack", kSourceStack},
          {"device_offset_ps", kDeviceOffsetPs},
          {"device_duration_ps", kDeviceDurationPs}});
-    XSIGMA_CHECK_DEBUG(stat_type_map->size() == kNumStatTypes);
+    QUARISMA_CHECK_DEBUG(stat_type_map->size() == kNumStatTypes);
     return *stat_type_map;
 }
 
@@ -416,7 +416,7 @@ const MegaScaleStatTypeMap& GetMegaScaleStatTypeMap()
         {"graph_protos", kMegaScaleGraphProtos},
         {"network_transport_latency_us", kMegaScaleNetworkTransportLatency},
     });
-    XSIGMA_CHECK_DEBUG(stat_type_map->size() == kNumMegaScaleStatTypes);
+    QUARISMA_CHECK_DEBUG(stat_type_map->size() == kNumMegaScaleStatTypes);
     return *stat_type_map;
 }
 
@@ -427,7 +427,7 @@ const LineIdTypeMap& GetLineIdTypeMap()
         {"DcnHostTraffic", kDcnHostTraffic},
         {"DcnCollectiveTraffic", kDcnCollectiveTraffic},
     });
-    XSIGMA_CHECK_DEBUG(line_id_type_map->size() == kNumLineIdTypes);
+    QUARISMA_CHECK_DEBUG(line_id_type_map->size() == kNumLineIdTypes);
     return *line_id_type_map;
 }
 
@@ -462,7 +462,7 @@ const LineIdTypeStrMap& GetLineIdTypeStrMap()
 using TaskEnvStatTypeMap    = flat_hash_map<std::string_view, TaskEnvStatType>;
 using TaskEnvStatTypeStrMap = flat_hash_map<TaskEnvStatType, std::string_view>;
 
-XSIGMA_UNUSED constexpr int kNumTaskEnvStatTypes =
+QUARISMA_UNUSED constexpr int kNumTaskEnvStatTypes =
     TaskEnvStatType::kLastTaskEnvStatType - TaskEnvStatType::kFirstTaskEnvStatType + 1;
 
 const TaskEnvStatTypeMap& GetTaskEnvStatTypeMap()
@@ -471,7 +471,7 @@ const TaskEnvStatTypeMap& GetTaskEnvStatTypeMap()
         {"profile_start_time", kEnvProfileStartTime},
         {"profile_stop_time", kEnvProfileStopTime},
     });
-    XSIGMA_CHECK_DEBUG(task_env_stat_type_map->size() == kNumTaskEnvStatTypes);
+    QUARISMA_CHECK_DEBUG(task_env_stat_type_map->size() == kNumTaskEnvStatTypes);
     return *task_env_stat_type_map;
 }
 
@@ -498,7 +498,7 @@ std::optional<int64_t> FindHostEventType(std::string_view event_name)
     return std::nullopt;
 }
 
-std::optional<int64_t> FindTfOpEventType(XSIGMA_UNUSED std::string_view event_name)
+std::optional<int64_t> FindTfOpEventType(QUARISMA_UNUSED std::string_view event_name)
 {
 // TF op names.
 #if 0
@@ -668,4 +668,4 @@ const std::string_view kThreadpoolListenerRecord      = "ThreadpoolListener::Rec
 const std::string_view kThreadpoolListenerStartRegion = "ThreadpoolListener::StartRegion";
 const std::string_view kThreadpoolListenerStopRegion  = "ThreadpoolListener::StopRegion";
 const std::string_view kThreadpoolListenerRegion      = "ThreadpoolListener::Region";
-}  // namespace xsigma
+}  // namespace quarisma

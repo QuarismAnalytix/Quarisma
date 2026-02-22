@@ -264,7 +264,7 @@ def _run_pre_dispatch_passes(
                 f"[Pre grad(predispatch IR)] Apply {pass_name} pass",
             )
 
-    # Remove noops xsigma the end, which may be generated other passes.
+    # Remove noops quarisma the end, which may be generated other passes.
     pass_execution_and_save(
         remove_noop_pass,
         gm,

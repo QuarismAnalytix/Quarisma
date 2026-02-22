@@ -116,7 +116,7 @@ def _unify(u, v, s):
 
 
 @dispatch(object, object, dict)
-def unify(u, v, s):  # no check xsigma the moment
+def unify(u, v, s):  # no check quarisma the moment
     """Find substitution so that u == v while satisfying s
     >>> x = var("x")
     >>> unify((1, x), (1, 2), {})

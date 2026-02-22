@@ -10,7 +10,7 @@
 // ERROR HANDLING UTILITIES
 // =============================================================================
 
-namespace xsigma
+namespace quarisma
 {
 namespace utils
 {
@@ -61,4 +61,4 @@ inline std::string str_error(int err_num)
 }
 
 }  // namespace utils
-}  // namespace xsigma
+}  // namespace quarisma

@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
@@ -11,23 +11,23 @@
 #include <thread>
 
 #include "profiler/native/utils/time_utils.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-using namespace xsigma;
-using namespace xsigma::profiler;
+using namespace quarisma;
+using namespace quarisma::profiler;
 
 // ============================================================================
 // Time Utilities Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, get_current_time_nanos_returns_positive)
+QUARISMATEST(Profiler, get_current_time_nanos_returns_positive)
 {
     int64_t time1 = get_current_time_nanos();
 
     EXPECT_GT(time1, 0);
 }
 
-XSIGMATEST(Profiler, get_current_time_nanos_monotonic)
+QUARISMATEST(Profiler, get_current_time_nanos_monotonic)
 {
     int64_t time1 = get_current_time_nanos();
     int64_t time2 = get_current_time_nanos();
@@ -35,7 +35,7 @@ XSIGMATEST(Profiler, get_current_time_nanos_monotonic)
     EXPECT_GE(time2, time1);
 }
 
-XSIGMATEST(Profiler, get_current_time_nanos_increasing)
+QUARISMATEST(Profiler, get_current_time_nanos_increasing)
 {
     int64_t time1 = get_current_time_nanos();
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -44,7 +44,7 @@ XSIGMATEST(Profiler, get_current_time_nanos_increasing)
     EXPECT_GT(time2, time1);
 }
 
-XSIGMATEST(Profiler, sleep_for_nanos_basic)
+QUARISMATEST(Profiler, sleep_for_nanos_basic)
 {
     int64_t time1 = get_current_time_nanos();
     sleep_for_nanos(1000000);  // 1ms
@@ -54,7 +54,7 @@ XSIGMATEST(Profiler, sleep_for_nanos_basic)
     EXPECT_GE(elapsed, 500000);  // At least 0.5ms
 }
 
-XSIGMATEST(Profiler, sleep_for_nanos_zero)
+QUARISMATEST(Profiler, sleep_for_nanos_zero)
 {
     int64_t time1 = get_current_time_nanos();
     sleep_for_nanos(0);
@@ -64,7 +64,7 @@ XSIGMATEST(Profiler, sleep_for_nanos_zero)
     EXPECT_GE(time2, time1);
 }
 
-XSIGMATEST(Profiler, sleep_for_micros_basic)
+QUARISMATEST(Profiler, sleep_for_micros_basic)
 {
     int64_t time1 = get_current_time_nanos();
     sleep_for_micros(1000);  // 1ms
@@ -74,7 +74,7 @@ XSIGMATEST(Profiler, sleep_for_micros_basic)
     EXPECT_GE(elapsed, 500000);  // At least 0.5ms
 }
 
-XSIGMATEST(Profiler, sleep_for_millis_basic)
+QUARISMATEST(Profiler, sleep_for_millis_basic)
 {
     int64_t time1 = get_current_time_nanos();
     sleep_for_millis(1);
@@ -84,7 +84,7 @@ XSIGMATEST(Profiler, sleep_for_millis_basic)
     EXPECT_GE(elapsed, 500000);  // At least 0.5ms
 }
 
-XSIGMATEST(Profiler, sleep_for_seconds_basic)
+QUARISMATEST(Profiler, sleep_for_seconds_basic)
 {
     int64_t time1 = get_current_time_nanos();
     sleep_for_millis(1);  // 1ms
@@ -94,7 +94,7 @@ XSIGMATEST(Profiler, sleep_for_seconds_basic)
     EXPECT_GE(elapsed, 500000);  // At least 0.5ms
 }
 
-XSIGMATEST(Profiler, spin_for_nanos_basic)
+QUARISMATEST(Profiler, spin_for_nanos_basic)
 {
     int64_t time1 = get_current_time_nanos();
     spin_for_nanos(100000);  // 0.1ms
@@ -104,7 +104,7 @@ XSIGMATEST(Profiler, spin_for_nanos_basic)
     EXPECT_GE(elapsed, 50000);  // At least 0.05ms
 }
 
-XSIGMATEST(Profiler, spin_for_nanos_zero)
+QUARISMATEST(Profiler, spin_for_nanos_zero)
 {
     int64_t time1 = get_current_time_nanos();
     spin_for_nanos(0);
@@ -114,7 +114,7 @@ XSIGMATEST(Profiler, spin_for_nanos_zero)
     EXPECT_GE(time2, time1);
 }
 
-XSIGMATEST(Profiler, spin_for_micros_basic)
+QUARISMATEST(Profiler, spin_for_micros_basic)
 {
     int64_t time1 = get_current_time_nanos();
     spin_for_micros(100);  // 0.1ms
@@ -124,7 +124,7 @@ XSIGMATEST(Profiler, spin_for_micros_basic)
     EXPECT_GE(elapsed, 50000);  // At least 0.05ms
 }
 
-XSIGMATEST(Profiler, multiple_sleeps_cumulative)
+QUARISMATEST(Profiler, multiple_sleeps_cumulative)
 {
     int64_t time1 = get_current_time_nanos();
     sleep_for_millis(1);
@@ -136,7 +136,7 @@ XSIGMATEST(Profiler, multiple_sleeps_cumulative)
     EXPECT_GE(elapsed, 1500000);  // At least 1.5ms
 }
 
-XSIGMATEST(Profiler, time_measurement_consistency)
+QUARISMATEST(Profiler, time_measurement_consistency)
 {
     int64_t time1 = get_current_time_nanos();
     int64_t time2 = get_current_time_nanos();
@@ -146,7 +146,7 @@ XSIGMATEST(Profiler, time_measurement_consistency)
     EXPECT_GE(time3, time2);
 }
 
-XSIGMATEST(Profiler, large_sleep_duration)
+QUARISMATEST(Profiler, large_sleep_duration)
 {
     int64_t time1 = get_current_time_nanos();
     sleep_for_millis(10);
@@ -156,7 +156,7 @@ XSIGMATEST(Profiler, large_sleep_duration)
     EXPECT_GE(elapsed, 5000000);  // At least 5ms
 }
 
-XSIGMATEST(Profiler, spin_vs_sleep_accuracy)
+QUARISMATEST(Profiler, spin_vs_sleep_accuracy)
 {
     // Spin should be more accurate for short durations
     int64_t spin_time1 = get_current_time_nanos();
@@ -175,7 +175,7 @@ XSIGMATEST(Profiler, spin_vs_sleep_accuracy)
     EXPECT_GE(sleep_elapsed, 25000);
 }
 
-XSIGMATEST(Profiler, get_current_time_nanos_high_resolution)
+QUARISMATEST(Profiler, get_current_time_nanos_high_resolution)
 {
     // Verify we're getting nanosecond precision
     int64_t time1 = get_current_time_nanos();
@@ -185,4 +185,4 @@ XSIGMATEST(Profiler, get_current_time_nanos_high_resolution)
     int64_t diff = time2 - time1;
     EXPECT_LT(diff, 1000000000);  // Less than 1 second
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

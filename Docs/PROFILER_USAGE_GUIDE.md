@@ -1,8 +1,8 @@
-# XSigma Profiler - Enhanced Metadata Usage Guide
+# Quarisma Profiler - Enhanced Metadata Usage Guide
 
 ## Overview
 
-The XSigma profiler now captures comprehensive metadata for all profiled operations. This guide shows how to enable and use the enhanced profiling capabilities.
+The Quarisma profiler now captures comprehensive metadata for all profiled operations. This guide shows how to enable and use the enhanced profiling capabilities.
 
 ---
 
@@ -14,8 +14,8 @@ The XSigma profiler now captures comprehensive metadata for all profiled operati
 #include "profiler/kineto/profiler_kineto.h"
 
 // Configure profiler with enhanced metadata
-xsigma::profiler::impl::ProfilerConfig config(
-    xsigma::profiler::impl::ProfilerState::KINETO
+quarisma::profiler::impl::ProfilerConfig config(
+    quarisma::profiler::impl::ProfilerState::KINETO
 );
 
 // Enable input shape reporting
@@ -25,13 +25,13 @@ config.report_input_shapes = true;
 config.experimental_config.verbose = true;
 
 // Enable activities (CPU, CUDA, etc.)
-std::set<xsigma::profiler::impl::ActivityType> activities = {
-    xsigma::profiler::impl::ActivityType::CPU,
-    xsigma::profiler::impl::ActivityType::CUDA
+std::set<quarisma::profiler::impl::ActivityType> activities = {
+    quarisma::profiler::impl::ActivityType::CPU,
+    quarisma::profiler::impl::ActivityType::CUDA
 };
 
 // Start profiling
-xsigma::profiler::impl::enableProfiler(
+quarisma::profiler::impl::enableProfiler(
     config,
     activities,
     {} // scopes - empty means all scopes
@@ -40,7 +40,7 @@ xsigma::profiler::impl::enableProfiler(
 // ... Your code to profile ...
 
 // Stop profiling and get results
-auto profiler_result = xsigma::profiler::impl::disableProfiler();
+auto profiler_result = quarisma::profiler::impl::disableProfiler();
 
 // Save trace to file (Chrome Trace format)
 profiler_result->save("trace.json");
@@ -78,7 +78,7 @@ For detailed debugging, capture actual input values (WARNING: can be verbose):
 
 ```cpp
 // Enable globally
-xsigma::profiler::impl::set_record_concrete_inputs_enabled(true);
+quarisma::profiler::impl::set_record_concrete_inputs_enabled(true);
 
 // Now profiler will capture:
 // - Actual tensor values (not just shapes)
@@ -207,7 +207,7 @@ result->save("training_trace.json");
 ```cpp
 // Add custom metadata to operations
 RECORD_FUNCTION_WITH_SCOPE(
-    xsigma::RecordScope::USER_SCOPE,
+    quarisma::RecordScope::USER_SCOPE,
     "my_custom_operation",
     inputs
 );
@@ -403,4 +403,4 @@ See the following examples in the codebase:
 ---
 
 **Last Updated:** 2025-11-30
-**XSigma Version:** Current (with enhanced metadata)
+**Quarisma Version:** Current (with enhanced metadata)

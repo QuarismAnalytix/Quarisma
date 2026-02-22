@@ -9,7 +9,7 @@ or 'module.function'). The results are cached in a two-level dictionary mapping:
     filename -> (line_number -> fully_qualified_name)
 
 Example usage:
-    name = get_funcname("myfile.py", 42)  # Returns name of function/class xsigma line 42
+    name = get_funcname("myfile.py", 42)  # Returns name of function/class quarisma line 42
     clearcache()  # Clear the cache if file contents have changed
 
 The parsing is done lazily when a file is first accessed. Invalid Python files or

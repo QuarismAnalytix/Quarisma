@@ -1,11 +1,11 @@
-#include <XSigma/InitialTensorOptions.h>
+#include <Quarisma/InitialTensorOptions.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
 #include <torch/csrc/jit/passes/onnx/fixup_onnx_controlflow.h>
 #include <torch/csrc/jit/passes/onnx/helper.h>
 #include <torch/csrc/jit/passes/onnx/peephole.h>
 #include <torch/csrc/jit/passes/onnx/shape_type_inference.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit
 {
@@ -17,7 +17,7 @@ const int ONNX_TYPE_BOOL = 9;
 
 Node* CreateCastToBoolNode(Value* val, Graph* graph)
 {
-    Node* cast_node = graph->create(xsigma::onnx::Cast);
+    Node* cast_node = graph->create(quarisma::onnx::Cast);
     cast_node->addInput(val);
     cast_node->i_(attr::to, ONNX_TYPE_BOOL);
     cast_node->output()->setType(BoolType::get());
@@ -47,7 +47,7 @@ bool IsCondCastRequired(Value* cond_val)
     {
         if (auto scalar_type = tt->scalarType())
         {
-            return *scalar_type != xsigma::kBool;
+            return *scalar_type != quarisma::kBool;
         }
     }
     return !type->isSubtypeOf(*BoolType::get());
@@ -60,7 +60,7 @@ bool IsErasableSequence(const Node* loop_node, size_t i)
     auto* seq_node  = sub_block->outputs()[i - 1]->node();
     auto* in_val    = sub_block->inputs()[i];
 
-    if (seq_node->kind() != ::xsigma::onnx::SequenceInsert)
+    if (seq_node->kind() != ::quarisma::onnx::SequenceInsert)
     {
         return false;
     }
@@ -79,8 +79,8 @@ bool IsErasableSequence(const Node* loop_node, size_t i)
 
     const auto* init_seq_node      = loop_node->inputs()[i]->node();
     const auto  init_seq_node_kind = init_seq_node->kind();
-    if ((init_seq_node_kind != ::xsigma::onnx::SequenceEmpty) &&
-        (init_seq_node_kind != ::xsigma::prim::ListConstruct || !init_seq_node->inputs().empty()))
+    if ((init_seq_node_kind != ::quarisma::onnx::SequenceEmpty) &&
+        (init_seq_node_kind != ::quarisma::prim::ListConstruct || !init_seq_node->inputs().empty()))
     {
         // Initial sequence must be empty.
         return false;
@@ -119,7 +119,7 @@ bool IsErasableSequence(const Node* loop_node, size_t i)
 //  return (%res_seq)
 std::vector<Value*> ConvertSequenceDependencies(Node* node, int opset_version)
 {
-    if (node->kind() != ::xsigma::onnx::Loop)
+    if (node->kind() != ::quarisma::onnx::Loop)
     {
         return node->outputs().vec();
     }
@@ -154,7 +154,7 @@ std::vector<Value*> ConvertSequenceDependencies(Node* node, int opset_version)
 
             // Split the added scan_output back to expected tensor sequence.
             auto  loop_output = loop_node->output(i - 2);
-            Node* split_node  = loop_node->owningGraph()->create(xsigma::onnx::SplitToSequence);
+            Node* split_node  = loop_node->owningGraph()->create(quarisma::onnx::SplitToSequence);
             loop_output->replaceAllUsesWith(split_node->output());
             split_node->i_(attr::keepdims, 0);
             split_node->addInput(loop_output);
@@ -163,7 +163,7 @@ std::vector<Value*> ConvertSequenceDependencies(Node* node, int opset_version)
             split_node->copyMetadata(loop_node);
 
             // Update loop output type.
-            loop_output->setType(xsigma::unshapedType(inserted_value->type()));
+            loop_output->setType(quarisma::unshapedType(inserted_value->type()));
 
             // The node that produces sequence should be safe to remove now.
             seq_node->destroy();
@@ -178,7 +178,7 @@ std::vector<Value*> ConvertSequenceDependencies(Node* node, int opset_version)
     }
 
     // Remove sequence outputs, and replace with scan outputs.
-    for (const auto i : xsigma::irange(idx_to_remove.size()))
+    for (const auto i : quarisma::irange(idx_to_remove.size()))
     {
         size_t idx = idx_to_remove[i] - i;
 
@@ -186,12 +186,12 @@ std::vector<Value*> ConvertSequenceDependencies(Node* node, int opset_version)
         loop_node->removeInput(idx);
 
         // Swap output order. Move all scan outputs to the back.
-        sub_block->return_node()->addInput(sub_block->return_node()->inputs().xsigma(idx - 1));
+        sub_block->return_node()->addInput(sub_block->return_node()->inputs().quarisma(idx - 1));
         sub_block->return_node()->removeInput(idx - 1);
 
         auto loop_out = loop_node->addOutput();
-        loop_out->copyMetadata(loop_node->outputs().xsigma(idx - 2));
-        loop_node->outputs().xsigma(idx - 2)->replaceAllUsesWith(loop_out);
+        loop_out->copyMetadata(loop_node->outputs().quarisma(idx - 2));
+        loop_node->outputs().quarisma(idx - 2)->replaceAllUsesWith(loop_out);
         loop_node->eraseOutput(idx - 2);
     }
 
@@ -202,7 +202,7 @@ Node* ONNXOptionalNode(const OptionalTypePtr& opt_type, Graph* g)
 {
     TORCH_INTERNAL_ASSERT(opt_type);
     TypePtr elem_type = opt_type->getElementType();
-    Node*   opt_node  = g->create(::xsigma::onnx::Optional, 1);
+    Node*   opt_node  = g->create(::quarisma::onnx::Optional, 1);
     opt_node->ty_(Symbol::attr("type"), elem_type);
     opt_node->output()->setType(OptionalType::create(elem_type));
     return opt_node;
@@ -219,7 +219,7 @@ void ReplaceBlockOutputWithOptional(const OptionalTypePtr& opt_type, Block* bloc
 {
     Node* opt_node = ONNXOptionalNode(opt_type, block->owningGraph());
     opt_node->insertBefore(block->return_node());
-    Value* block_output = block->outputs().xsigma(i);
+    Value* block_output = block->outputs().quarisma(i);
     // replace only the last value as Optional type only affects
     // the value right before output
     block_output->replaceAllUsesAfterNodeWith(opt_node, opt_node->output());
@@ -247,11 +247,11 @@ void FixupONNXSubblockOutputs(Node* n)
                 // ONNX shape inference doesn't handle None.
                 if (output->type()->cast<NoneType>())
                 {
-                    id_node = block->owningGraph()->create(xsigma::onnx::Optional);
+                    id_node = block->owningGraph()->create(quarisma::onnx::Optional);
                 }
                 else
                 {
-                    id_node = block->owningGraph()->create(xsigma::onnx::Identity);
+                    id_node = block->owningGraph()->create(quarisma::onnx::Identity);
                     id_node->addInput(output);
                 }
                 id_node->insertBefore(block->return_node());
@@ -268,16 +268,16 @@ void FixupONNXLoopBlockInputs(Node* n)
 {
     for (Block* block : n->blocks())
     {
-        for (const auto i : xsigma::irange(1, block->inputs().size()))
+        for (const auto i : quarisma::irange(1, block->inputs().size()))
         {
             // input i corresponds to output i until we run FixupONNXLoopNodeInputs.
-            Value* input_i = block->inputs().xsigma(i);
+            Value* input_i = block->inputs().quarisma(i);
             if (input_i->type()->cast<OptionalType>() &&
-                !block->outputs().xsigma(i)->type()->cast<OptionalType>())
+                !block->outputs().quarisma(i)->type()->cast<OptionalType>())
             {
                 auto [merged_type, inferred] = MergeInferredType(
                     input_i->type()->cast<OptionalType>()->getElementType(),
-                    block->outputs().xsigma(i)->type());
+                    block->outputs().quarisma(i)->type());
                 if (inferred)
                 {
                     input_i->setType(OptionalType::create(merged_type));
@@ -293,20 +293,20 @@ void FixupONNXLoopBlockOutputs(Node* n)
     for (Block* block : n->blocks())
     {
         // output 0 is continue_condition, never None.
-        for (const auto i : xsigma::irange(1, block->outputs().size()))
+        for (const auto i : quarisma::irange(1, block->outputs().size()))
         {
             // Two conditions that we need to replace block output with optional
             // 1. output is NoneType
             // 2. input is optional but output type is not
-            if ((block->outputs().xsigma(i)->type()->cast<NoneType>()) ||
-                (block->inputs().xsigma(i + 1)->type()->cast<OptionalType>() &&
-                 !block->outputs().xsigma(i)->type()->cast<OptionalType>()))
+            if ((block->outputs().quarisma(i)->type()->cast<NoneType>()) ||
+                (block->inputs().quarisma(i + 1)->type()->cast<OptionalType>() &&
+                 !block->outputs().quarisma(i)->type()->cast<OptionalType>()))
             {
                 ReplaceBlockOutputWithOptional(
                     // Output 0 is continue_condition.
                     // Inputs (0, 1) are (loop_counter, cond). So input i + 1
                     // corresponds to output i.
-                    block->inputs().xsigma(i + 1)->type()->cast<OptionalType>(),
+                    block->inputs().quarisma(i + 1)->type()->cast<OptionalType>(),
                     block,
                     i);
             }
@@ -317,7 +317,7 @@ void FixupONNXLoopBlockOutputs(Node* n)
 
 void FixupONNXLoopNodeInputs(Node* node, int opset_version)
 {
-    if (node->kind() != ::xsigma::onnx::Loop)
+    if (node->kind() != ::quarisma::onnx::Loop)
     {
         return;
     }
@@ -334,15 +334,15 @@ void FixupONNXLoopNodeInputs(Node* node, int opset_version)
 
     // Setup Loop input cond and i.
     TORCH_INTERNAL_ASSERT(node->blocks().size() == 1);
-    auto*  sub_block = node->blocks().xsigma(0);
+    auto*  sub_block = node->blocks().quarisma(0);
     Value* cond      = sub_block->insertInput(1, "cond");
     cond->setType(BoolType::get());
 
-    Value* i = sub_block->inputs().xsigma(0);
+    Value* i = sub_block->inputs().quarisma(0);
     i->setType(TensorType::fromNumberType(*IntType::get()));
 
     // add cast to condition input inside the loop.
-    Value* next_cond_val = sub_block->outputs().xsigma(0);
+    Value* next_cond_val = sub_block->outputs().quarisma(0);
     if (IsCondCastRequired(next_cond_val))
     {
         auto* cast_node =
@@ -352,11 +352,11 @@ void FixupONNXLoopNodeInputs(Node* node, int opset_version)
 
     // Inputs (0, 1) are (max_trip_count, start_condition). Skip them
     // since they're never None or Optional.
-    for (const auto i : xsigma::irange(2, node->inputs().size()))
+    for (const auto i : quarisma::irange(2, node->inputs().size()))
     {
-        Value*          input = node->inputs().xsigma(i);
+        Value*          input = node->inputs().quarisma(i);
         OptionalTypePtr sub_block_input_optional =
-            sub_block->inputs().xsigma(i)->type()->cast<OptionalType>();
+            sub_block->inputs().quarisma(i)->type()->cast<OptionalType>();
         // If loop input is not optional but block input is, wrap loop input with
         // Optional. Happens when the loop takes in None and outputs not-None, or
         // vice-versa.
@@ -369,7 +369,7 @@ void FixupONNXLoopNodeInputs(Node* node, int opset_version)
                 if (inferred)
                 {
                     sub_block_input_optional = OptionalType::create(merged_type);
-                    sub_block->inputs().xsigma(i)->setType(sub_block_input_optional);
+                    sub_block->inputs().quarisma(i)->setType(sub_block_input_optional);
                 }
             }
             Node* opt_node = ONNXOptionalNode(sub_block_input_optional, graph);
@@ -408,7 +408,7 @@ static std::vector<Value*> FixupONNXLoopNode(Node* node, int opset_version)
 // or output of prim::Uninitialized->onnx::Identity
 static bool IsUninitializedNode(Node* n)
 {
-    if (n->kind() == ::xsigma::onnx::Identity &&
+    if (n->kind() == ::quarisma::onnx::Identity &&
         n->inputs()[0]->node()->kind() == prim::Uninitialized)
         return true;
     if (n->kind() == prim::Uninitialized)
@@ -425,26 +425,26 @@ static void InferShapeTypeForUninitializedOutput(
     Node* const_node = nullptr;
     if (auto output_type = other_output->type()->cast<TensorType>())
     {
-        auto elem_type = xsigma::initialTensorOptions().dtype(output_type->scalarType());
-        const_node     = graph->create(::xsigma::onnx::Constant, 1);
+        auto elem_type = quarisma::initialTensorOptions().dtype(output_type->scalarType());
+        const_node     = graph->create(::quarisma::onnx::Constant, 1);
 
         if (output_type->sizes().concrete_sizes().has_value())
         {
             auto size = output_type->sizes().concrete_sizes().value();
-            const_node->t_(attr::value, xsigma::zeros(size, elem_type));
+            const_node->t_(attr::value, quarisma::zeros(size, elem_type));
             const_node->output()->setType(other_output->type());
         }
         else
         {
-            const_node->t_(attr::value, xsigma::zeros({}, elem_type));
+            const_node->t_(attr::value, quarisma::zeros({}, elem_type));
             const_node->output()->setType(
-                TensorType::create(output_type->scalarType(), xsigma::kCPU, {}, {}));
+                TensorType::create(output_type->scalarType(), quarisma::kCPU, {}, {}));
         }
     }
     else if (auto output_type = other_output->type()->cast<ListType>())
     {
         TypePtr elem = output_type->getElementType();
-        const_node   = graph->create(::xsigma::onnx::SequenceEmpty, 1);
+        const_node   = graph->create(::quarisma::onnx::SequenceEmpty, 1);
         if (elem->cast<TensorType>() && elem->cast<TensorType>()->scalarType().has_value())
         {
             auto scalar_type = elem->cast<TensorType>()->scalarType().value();
@@ -454,7 +454,7 @@ static void InferShapeTypeForUninitializedOutput(
         }
         else if (elem->cast<IntType>())
         {
-            auto scalar_type = xsigma::kLong;
+            auto scalar_type = quarisma::kLong;
             auto onnx_type   = ATenTypeToOnnxType(scalar_type);
             const_node->i_(attr::dtype, onnx_type);
             const_node->output()->setType(other_output->type());
@@ -469,7 +469,7 @@ static void InferShapeTypeForUninitializedOutput(
     {
         const_node = ONNXOptionalNode(output_type, graph);
     }
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         const_node,
         "Inferring type for prim::Uninitialized node from " + other_output->type()->repr_str() +
             " not supported.")
@@ -504,7 +504,7 @@ static void InferShapeTypeForUninitializedOutput(
 
 static void ONNXFixupUninitializedOutput(Node* node, int opset_version)
 {
-    if (node->kind() != ::xsigma::onnx::If)
+    if (node->kind() != ::quarisma::onnx::If)
     {
         return;
     }
@@ -526,14 +526,14 @@ static void ONNXFixupUninitializedOutput(Node* node, int opset_version)
 
     // Infer shape and type for subblock outputs
     TORCH_INTERNAL_ASSERT(then_block->outputs().size() == else_block->outputs().size())
-    for (const auto i : xsigma::irange(else_block->outputs().size()))
+    for (const auto i : quarisma::irange(else_block->outputs().size()))
     {
         Value* then_block_output = then_block->outputs()[i];
         Value* else_block_output = else_block->outputs()[i];
 
         // If both subblocks have an uninitialized output, shape and type cannot
         // be inferred.
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !(IsUninitializedNode(then_block_output->node()) &&
               IsUninitializedNode(else_block_output->node())),
             "Cannot infer shape and type for ONNX If with uninitialized output in both subblocks. "
@@ -556,19 +556,19 @@ static void ONNXFixupUninitializedOutput(Node* node, int opset_version)
 
 static void ONNXMergeIfBlockOutputShapes(Node* node)
 {
-    TORCH_INTERNAL_ASSERT(node->kind() == ::xsigma::onnx::If);
-    Block* then_block = node->blocks().xsigma(0);
-    Block* else_block = node->blocks().xsigma(1);
+    TORCH_INTERNAL_ASSERT(node->kind() == ::quarisma::onnx::If);
+    Block* then_block = node->blocks().quarisma(0);
+    Block* else_block = node->blocks().quarisma(1);
 
     TORCH_INTERNAL_ASSERT(then_block->outputs().size() == else_block->outputs().size())
 
-    auto findCommonShape = [](const ::xsigma::SymbolicShape& a,
-                              const ::xsigma::SymbolicShape& b) -> ::xsigma::SymbolicShape
+    auto findCommonShape = [](const ::quarisma::SymbolicShape& a,
+                              const ::quarisma::SymbolicShape& b) -> ::quarisma::SymbolicShape
     {
-        std::vector<::xsigma::ShapeSymbol> dims;
+        std::vector<::quarisma::ShapeSymbol> dims;
         if (a.rank() && b.rank() && a.rank() == b.rank())
         {
-            for (const auto j : xsigma::irange(a.rank().value()))
+            for (const auto j : quarisma::irange(a.rank().value()))
             {
                 if (a[j] == b[j])
                 {
@@ -576,10 +576,10 @@ static void ONNXMergeIfBlockOutputShapes(Node* node)
                 }
                 else
                 {
-                    dims.emplace_back(::xsigma::ShapeSymbol::newSymbol());
+                    dims.emplace_back(::quarisma::ShapeSymbol::newSymbol());
                 }
             }
-            return ::xsigma::SymbolicShape(dims);
+            return ::quarisma::SymbolicShape(dims);
         }
         if (a.rank() && a.rank().value() > 0)
         {
@@ -590,7 +590,7 @@ static void ONNXMergeIfBlockOutputShapes(Node* node)
             return b;
         }
 
-        return ::xsigma::SymbolicShape();
+        return ::quarisma::SymbolicShape();
     };
 
     auto mergeTensorType = [&findCommonShape](TensorTypePtr a, TensorTypePtr b) -> TensorTypePtr
@@ -679,11 +679,11 @@ static void ONNXMergeIfBlockOutputShapes(Node* node)
         return nullptr;
     };
 
-    for (const auto i : xsigma::irange(else_block->outputs().size()))
+    for (const auto i : quarisma::irange(else_block->outputs().size()))
     {
         Value* output_i           = node->output(i);
-        auto   then_type          = then_block->outputs().xsigma(i)->type();
-        auto   else_type          = else_block->outputs().xsigma(i)->type();
+        auto   then_type          = then_block->outputs().quarisma(i)->type();
+        auto   else_type          = else_block->outputs().quarisma(i)->type();
         auto   then_tensor_type   = then_type->cast<TensorType>();
         auto   else_tensor_type   = else_type->cast<TensorType>();
         auto   then_list_type     = then_type->cast<ListType>();
@@ -746,7 +746,7 @@ static void ONNXMergeIfBlockOutputShapes(Node* node)
 
 static std::vector<Value*> FixupONNXIfNode(Node* node, int opset_version)
 {
-    if (node->kind() != ::xsigma::onnx::If)
+    if (node->kind() != ::quarisma::onnx::If)
     {
         return node->outputs().vec();
     }
@@ -763,11 +763,11 @@ std::vector<Value*> FixupONNXControlflowNode(Node* n, int opset_version)
 {
     switch (n->kind())
     {
-    case ::xsigma::onnx::Loop:
+    case ::quarisma::onnx::Loop:
     {
         return FixupONNXLoopNode(n, opset_version);
     }
-    case ::xsigma::onnx::If:
+    case ::quarisma::onnx::If:
     {
         return FixupONNXIfNode(n, opset_version);
     }
@@ -780,18 +780,18 @@ void FixupONNXControlflowNodeOutputs(Node* n)
 {
     switch (n->kind())
     {
-    case ::xsigma::onnx::Loop:
+    case ::quarisma::onnx::Loop:
     {
-        Block* loop_block = n->blocks().xsigma(0);
+        Block* loop_block = n->blocks().quarisma(0);
         // inputs (0, 1) are (i, cond), remainder are carried outputs.
         size_t loop_carried_output_size = loop_block->inputs().size() - 2;
 
-        for (auto i : xsigma::irange(n->outputs().size()))
+        for (auto i : quarisma::irange(n->outputs().size()))
         {
             if (i < loop_carried_output_size)
             {
-                const TypePtr block_input_type  = loop_block->inputs().xsigma(i + 2)->type();
-                const TypePtr block_output_type = loop_block->outputs().xsigma(i + 1)->type();
+                const TypePtr block_input_type  = loop_block->inputs().quarisma(i + 2)->type();
+                const TypePtr block_output_type = loop_block->outputs().quarisma(i + 1)->type();
                 TypePtr       type              = block_output_type;
                 // Handle the case where a block input is Optional but the
                 // output is not (i.e. if the loop executes > 0 times, the
@@ -806,14 +806,14 @@ void FixupONNXControlflowNodeOutputs(Node* n)
             else
             {
                 // scan output, should be a Tensor type
-                TypePtr type = loop_block->outputs().xsigma(i + 1)->type();
+                TypePtr type = loop_block->outputs().quarisma(i + 1)->type();
                 if (auto t_type = type->cast<TensorType>())
                 {
                     auto sizes = t_type->symbolic_sizes().sizes();
                     if (sizes.has_value())
                     {
                         sizes.value().emplace(
-                            sizes.value().begin(), xsigma::ShapeSymbol::newSymbol());
+                            sizes.value().begin(), quarisma::ShapeSymbol::newSymbol());
                         type = t_type->withSymbolicShapes(sizes.value());
                     }
                 }
@@ -822,7 +822,7 @@ void FixupONNXControlflowNodeOutputs(Node* n)
         }
         break;
     }
-    case ::xsigma::onnx::If:
+    case ::quarisma::onnx::If:
     {
         ONNXMergeIfBlockOutputShapes(n);
         break;

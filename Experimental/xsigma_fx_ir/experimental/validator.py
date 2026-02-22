@@ -488,7 +488,7 @@ try:
             self._source_exprs: set[z3.BoolRef] = set()
 
             # Set of target Z3 expressions.
-            # They represent the actual checked guards xsigma runtime. They might
+            # They represent the actual checked guards quarisma runtime. They might
             # be simplified or transformed versions of the source guards.
             self._target_exprs: set[z3.BoolRef] = set()
 
@@ -725,7 +725,7 @@ _assert_z3_installed_if_tv_set()
 # the earliest ValidationException.
 #
 # As guards are added by ShapeEnv.evaluate_expr calls, some simplification errors
-# might be silently happening. This function tries to nail down exactly xsigma which
+# might be silently happening. This function tries to nail down exactly quarisma which
 # point things went wrong from a validation perspective.
 def bisect(shape_env):
     from torch.fx.experimental.recording import (
@@ -788,7 +788,7 @@ def bisect(shape_env):
     # node is created fails when produce_guards is called.
     def check_node_fails(node: torch.fx.Node) -> Optional[ValidationException]:
         number = node.meta[SHAPEENV_EVENT_KEY]
-        # Reconstruct shape_env until the event xsigma event_number.
+        # Reconstruct shape_env until the event quarisma event_number.
         shape_env = replay_shape_env_events(events[: number + 1])
         shape_env.graph.lint()
         return check_shapeenv_fails(shape_env, events[number].tracked_fakes)
@@ -808,7 +808,7 @@ def bisect(shape_env):
         # Return the last ValidationException we got.
         raise last_exception
 
-    # Cache the raised exception (if any) xsigma each bisection point.
+    # Cache the raised exception (if any) quarisma each bisection point.
     exception = {}
 
     # Bisection happens on the assertion nodes of the recorded FX graph for
@@ -830,7 +830,7 @@ def bisect(shape_env):
         mid = (left + right) // 2
 
         node = assert_nodes[mid]
-        log.debug("bisecting xsigma %s: %s", mid, get_node_event(node))
+        log.debug("bisecting quarisma %s: %s", mid, get_node_event(node))
 
         # Check whether the new shape_env raises a ValidationException or not.
         exception[mid] = check_node_fails(node)
@@ -854,7 +854,7 @@ def bisect(shape_env):
     args = event.args
     assert args is not None
     assert len(args) >= 2, (
-        f"bisecting expects {event.name} to have xsigma least 2 positional arguments. "
+        f"bisecting expects {event.name} to have quarisma least 2 positional arguments. "
         f"Got: {len(args)}"
     )
     assert isinstance(args[1], sympy.Basic), (

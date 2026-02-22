@@ -17,7 +17,7 @@ namespace torch::jit
 // values are used for closed over values.
 static void liftClosure(Node* closure)
 {
-    auto block    = closure->blocks().xsigma(0);
+    auto block    = closure->blocks().quarisma(0);
     auto subgraph = std::make_shared<Graph>();
     // closures/forks can be nested, so use closure owning graph
     auto   g            = closure->owningGraph();

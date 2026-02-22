@@ -1,4 +1,4 @@
-# ============================================================================= XSigma Clang-Tidy
+# ============================================================================= Quarisma Clang-Tidy
 # Static Analysis Configuration Module
 # =============================================================================
 # This module configures clang-tidy for static code analysis and automated fixes. It enables code
@@ -10,19 +10,19 @@ include_guard(GLOBAL)
 
 # Clang-Tidy Static Analysis Flag Controls whether clang-tidy static analysis is enabled during
 # compilation. When enabled, performs comprehensive code quality checks on all targets.
-option(XSIGMA_ENABLE_CLANGTIDY "enable clangtidy check" OFF)
-mark_as_advanced(XSIGMA_ENABLE_CLANGTIDY)
+option(QUARISMA_ENABLE_CLANGTIDY "enable clangtidy check" OFF)
+mark_as_advanced(QUARISMA_ENABLE_CLANGTIDY)
 
 # Clang-Tidy Auto-Fix Flag Controls whether clang-tidy automatically fixes detected errors. WARNING:
 # This modifies source files. Use with caution in version control.
-option(XSIGMA_ENABLE_FIX "Enable clang-tidy fix-errors and fix options" OFF)
-mark_as_advanced(XSIGMA_ENABLE_FIX)
+option(QUARISMA_ENABLE_FIX "Enable clang-tidy fix-errors and fix options" OFF)
+mark_as_advanced(QUARISMA_ENABLE_FIX)
 
-if(NOT XSIGMA_ENABLE_CLANGTIDY)
+if(NOT QUARISMA_ENABLE_CLANGTIDY)
   return()
 endif()
 
-# XSigma ClangTidy Configuration
+# Quarisma ClangTidy Configuration
 find_program(CLANG_TIDY_PATH NAMES clang-tidy DOC "Path to clang-tidy.")
 
 if(NOT CLANG_TIDY_PATH)
@@ -31,8 +31,8 @@ endif()
 set(CLANG_TIDY_FOUND ON CACHE BOOL "Found clang-tidy.")
 mark_as_advanced(CLANG_TIDY_FOUND)
 
-function(xsigma_target_clang_tidy target_name)
-  if(XSIGMA_ENABLE_FIX)
+function(quarisma_target_clang_tidy target_name)
+  if(QUARISMA_ENABLE_FIX)
     message(WARNING "Applying clang-tidy fix to target: ${target_name}")
     set_target_properties(
       ${target_name}

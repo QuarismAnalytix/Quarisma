@@ -1,10 +1,10 @@
-#include <XSigma/core/symbol.h>
+#include <Quarisma/core/symbol.h>
 #include <torch/csrc/jit/ir/ir.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/specialize_autogradzero.h>
 #include <torch/csrc/jit/runtime/graph_executor.h>
 #include <torch/csrc/jit/runtime/profiling_record.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include "util/exception.h"
 
@@ -26,7 +26,7 @@ static void insertProfileNodesForSpecializeAutogradZero(Block* block, ProfilingR
     for (auto it = block->nodes().begin(); it != block->nodes().end(); ++it)
     {
         auto n = *it;
-        for (const auto offset : xsigma::irange(n->inputs().size()))
+        for (const auto offset : quarisma::irange(n->inputs().size()))
         {
             auto i = n->input(offset);
             if (i->type()->cast<OptionalType>() && hasGradSumToSizeUses(i))
@@ -36,7 +36,7 @@ static void insertProfileNodesForSpecializeAutogradZero(Block* block, ProfilingR
                 // immutable
                 auto opt_pn = pr->createProfileIValueNode(i);
 
-                xsigma::Dict<std::string, int64_t> noneCountsDict;
+                quarisma::Dict<std::string, int64_t> noneCountsDict;
                 noneCountsDict.insert("num_none", 0);
                 noneCountsDict.insert("num_present", 0);
                 IValue init_val(noneCountsDict);
@@ -53,18 +53,18 @@ static void insertProfileNodesForSpecializeAutogradZero(Block* block, ProfilingR
                     pop(stack, frame_id);
 
                     const auto& counts_attr = opt_pn->ival(countsAttribute);
-                    auto        noneCounts  = xsigma::impl::toTypedDict<std::string, int64_t>(
+                    auto        noneCounts  = quarisma::impl::toTypedDict<std::string, int64_t>(
                         counts_attr.toGenericDict());
                     IValue value;
                     pop(stack, value);
                     if (value.isNone())
                     {
-                        noneCounts.insert_or_assign("num_none", noneCounts.xsigma("num_none") + 1);
+                        noneCounts.insert_or_assign("num_none", noneCounts.quarisma("num_none") + 1);
                     }
                     else
                     {
                         noneCounts.insert_or_assign(
-                            "num_present", noneCounts.xsigma("num_present") + 1);
+                            "num_present", noneCounts.quarisma("num_present") + 1);
                     }
                     push(stack, value);
                 };
@@ -143,11 +143,11 @@ private:
     {
         TORCH_INTERNAL_ASSERT(graph_->inputs().size() == b->inputs().size());
         size_t num_inputs = graph_->inputs().size();
-        for (const auto i : xsigma::irange(num_inputs))
+        for (const auto i : quarisma::irange(num_inputs))
         {
-            b->inputs().xsigma(i)->replaceAllUsesWith(graph_->inputs().xsigma(i));
+            b->inputs().quarisma(i)->replaceAllUsesWith(graph_->inputs().quarisma(i));
         }
-        for (const auto i : xsigma::irange(num_inputs))
+        for (const auto i : quarisma::irange(num_inputs))
         {
             b->eraseInput(num_inputs - (1 + i));
         }
@@ -273,8 +273,8 @@ private:
                 TORCH_INTERNAL_ASSERT(profile_ivalue_node->hasAttribute(countsAttribute));
                 const auto& counts_attr =
                     profile_ivalue_node->ival(countsAttribute).toGenericDict();
-                auto num_present = counts_attr.xsigma(IValue{"num_present"}).toInt();
-                auto num_none    = counts_attr.xsigma(IValue{"num_none"}).toInt();
+                auto num_present = counts_attr.quarisma(IValue{"num_present"}).toInt();
+                auto num_none    = counts_attr.quarisma(IValue{"num_none"}).toInt();
                 if (num_present == 0 && num_none != 0)
                 {
                     auto check = graph_->insert(aten::__is__, {inp, none_val})->node();
@@ -347,7 +347,7 @@ private:
         graph_->insertNode(versioning_if);
 
         auto ret = graph_->return_node();
-        for (const auto i : xsigma::irange(ret->inputs().size()))
+        for (const auto i : quarisma::irange(ret->inputs().size()))
         {
             auto ogo = ret->input(i);
             auto ngo = versioning_if->output(i);
@@ -483,10 +483,10 @@ private:
                         break;
                     }
 
-                    specializeGradSumToSize(n->blocks().xsigma(0));
+                    specializeGradSumToSize(n->blocks().quarisma(0));
                     if (all_nonzeros)
                     {
-                        auto body = n->blocks().xsigma(0);
+                        auto body = n->blocks().quarisma(0);
                         // hoist the nodes in the GradOf body to be before the linear
                         // block
                         for (auto it = body->nodes().begin(); it != body->nodes().end();)
@@ -497,8 +497,8 @@ private:
 
                         for (size_t i = 0; i < n->outputs().size(); ++i)
                         {
-                            n->outputs().xsigma(i)->replaceAllUsesWith(body->outputs().xsigma(i));
-                            state_[body->outputs().xsigma(i)] = State::Nonzero;
+                            n->outputs().quarisma(i)->replaceAllUsesWith(body->outputs().quarisma(i));
+                            state_[body->outputs().quarisma(i)] = State::Nonzero;
                         }
                         it.destroyCurrent();
                         break;

@@ -1,9 +1,9 @@
-#include <XSigma/core/Tensor.h>
+#include <Quarisma/core/Tensor.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/roll.h>
+#include <Quarisma/ops/roll.h>
 #endif
 
 #include <c10/util/Exception.h>

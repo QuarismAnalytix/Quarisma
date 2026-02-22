@@ -9,22 +9,22 @@ namespace torch::autograd
 namespace
 {
 
-MetadataShape compute_variant_shape(const xsigma::Tensor& input)
+MetadataShape compute_variant_shape(const quarisma::Tensor& input)
 {
     if (input.is_nested() && !input.unsafeGetTensorImpl()->is_python_dispatch())
     {
         auto nested_size = input._nested_tensor_size();
-        return MetadataShape{std::in_place_type<xsigma::Tensor>, nested_size};
+        return MetadataShape{std::in_place_type<quarisma::Tensor>, nested_size};
     }
     return MetadataShape{std::in_place_type<SymIntSmallVec>, input.sym_sizes()};
 }
 
-bool is_python_dispatch(const xsigma::Tensor& tensor)
+bool is_python_dispatch(const quarisma::Tensor& tensor)
 {
     return tensor.unsafeGetTensorImpl()->is_python_dispatch();
 }
 
-bool is_cpp_nested_tensor(const xsigma::Tensor& tensor)
+bool is_cpp_nested_tensor(const quarisma::Tensor& tensor)
 {
     return tensor.is_nested() && !is_python_dispatch(tensor);
 }
@@ -32,11 +32,11 @@ bool is_cpp_nested_tensor(const xsigma::Tensor& tensor)
 }  // namespace
 
 InputMetadata::InputMetadata(
-    const xsigma::TensorOptions&      options,
+    const quarisma::TensorOptions&      options,
     MetadataShape                     input_shape,
     bool                              is_tensor_subclass,
     bool                              is_nested,
-    std::optional<xsigma::ScalarType> grad_dtype)
+    std::optional<quarisma::ScalarType> grad_dtype)
     : options_{options},
       shape_{std::move(input_shape)},
       is_tensor_subclass_{is_tensor_subclass},
@@ -45,10 +45,10 @@ InputMetadata::InputMetadata(
       grad_dtype_{grad_dtype}
 {
     auto device_ = options.device();
-    stream_      = xsigma::impl::getDeviceGuardImpl(device_.type())->getStream(device_);
+    stream_      = quarisma::impl::getDeviceGuardImpl(device_.type())->getStream(device_);
 }
 
-InputMetadata::InputMetadata(const xsigma::Tensor& t)
+InputMetadata::InputMetadata(const quarisma::Tensor& t)
     : InputMetadata(
           t.options(),
           compute_variant_shape(t),
@@ -58,25 +58,25 @@ InputMetadata::InputMetadata(const xsigma::Tensor& t)
 {
 }
 
-xsigma::Tensor InputMetadata::zeros_like() const
+quarisma::Tensor InputMetadata::zeros_like() const
 {
-    XSIGMA_CHECK(!is_nested_, "Zeros is not currently supported for nested tensors.")
-    return xsigma::zeros_symint(shape_as_dim_vector(), options_);
+    QUARISMA_CHECK(!is_nested_, "Zeros is not currently supported for nested tensors.")
+    return quarisma::zeros_symint(shape_as_dim_vector(), options_);
 }
 
-xsigma::Tensor InputMetadata::maybe_reduce(
+quarisma::Tensor InputMetadata::maybe_reduce(
     const size_t                                          i,
-    xsigma::Tensor                                        grad,
+    quarisma::Tensor                                        grad,
     const std::function<std::string(const std::string&)>& format_error) const
 {
     auto fail = [&]()
     {
         const auto message = incompatible_shape_error_message(i, grad);
-        XSIGMA_CHECK(false, format_error(message.str()));
+        QUARISMA_CHECK(false, format_error(message.str()));
     };
 
     // Nested tensor makes my brain explode, so I've just hard-coded the logic
-    // for this case, xsigma risk of code duplication.  This logic does NOT do the
+    // for this case, quarisma risk of code duplication.  This logic does NOT do the
     // careful oblivious logic as seen below
     if (is_nested_ || is_cpp_nested_tensor() || grad.is_nested() ||
         ::torch::autograd::is_cpp_nested_tensor(grad))
@@ -108,7 +108,7 @@ xsigma::Tensor InputMetadata::maybe_reduce(
         fail();
     }
     bool needs_reduce = false;
-    for (const auto i : xsigma::irange(ndim))
+    for (const auto i : quarisma::irange(ndim))
     {
         const auto& size   = shape[ndim - i - 1];
         const auto& target = desired[target_dim - i - 1];
@@ -118,7 +118,7 @@ xsigma::Tensor InputMetadata::maybe_reduce(
         {
             // NB: we could short circuit this once needs_reduce is true but there's
             // no point since the reduction function will guard on this anyway
-            if (!xsigma::guard_or_false(size.sym_eq(target), __FILE__, __LINE__))
+            if (!quarisma::guard_or_false(size.sym_eq(target), __FILE__, __LINE__))
             {
                 needs_reduce = true;
             }
@@ -146,7 +146,7 @@ xsigma::Tensor InputMetadata::maybe_reduce(
     }
 }
 
-bool InputMetadata::is_same_shape(const xsigma::Tensor& grad) const
+bool InputMetadata::is_same_shape(const quarisma::Tensor& grad) const
 {
     if (!is_nestedness_same(grad))
     {
@@ -159,27 +159,27 @@ bool InputMetadata::is_same_shape(const xsigma::Tensor& grad) const
     return grad.sym_sizes().equals(shape_as_dim_vector());
 }
 
-bool InputMetadata::is_expandable_to_shape(const xsigma::Tensor& grad) const
+bool InputMetadata::is_expandable_to_shape(const quarisma::Tensor& grad) const
 {
     if (!maybe_expandable_to(grad))
     {
         return false;
     }
-    return xsigma::is_expandable_to(shape_as_dim_vector(), grad.sym_sizes());
+    return quarisma::is_expandable_to(shape_as_dim_vector(), grad.sym_sizes());
 }
 
-xsigma::Tensor InputMetadata::reduce_grad(xsigma::Tensor& grad) const
+quarisma::Tensor InputMetadata::reduce_grad(quarisma::Tensor& grad) const
 {
     // reduce_grad should only be called if is_expandable_to_shape returns true.
     TORCH_INTERNAL_ASSERT(maybe_expandable_to(grad));
-    return xsigma::sum_to(std::move(grad), shape_as_dim_vector());
+    return quarisma::sum_to(std::move(grad), shape_as_dim_vector());
 }
 
 std::stringstream InputMetadata::incompatible_shape_error_message(
-    const size_t index, const xsigma::Tensor& grad) const
+    const size_t index, const quarisma::Tensor& grad) const
 {
     std::stringstream ss{};
-    ss << "invalid gradient xsigma index " << index << " - got ";
+    ss << "invalid gradient quarisma index " << index << " - got ";
     if (::torch::autograd::is_cpp_nested_tensor(grad))
     {
         ss << grad._nested_tensor_size();
@@ -202,15 +202,15 @@ std::stringstream InputMetadata::incompatible_shape_error_message(
 
 bool InputMetadata::is_cpp_nested_tensor() const
 {
-    bool ret = std::holds_alternative<xsigma::Tensor>(shape_);
+    bool ret = std::holds_alternative<quarisma::Tensor>(shape_);
     TORCH_INTERNAL_ASSERT(ret == (is_nested_ && !is_tensor_subclass_))
     return ret;
 }
 
-xsigma::SymIntArrayRef InputMetadata::shape_as_dim_vector() const
+quarisma::SymIntArrayRef InputMetadata::shape_as_dim_vector() const
 {
     const auto& dim_shape = std::get<SymIntSmallVec>(shape_);
-    return xsigma::SymIntArrayRef(dim_shape.data(), dim_shape.size());
+    return quarisma::SymIntArrayRef(dim_shape.data(), dim_shape.size());
 }
 
 // Danger: not thread safe, caller must protect with lock
@@ -219,19 +219,19 @@ SymIntSmallVec& InputMetadata::mutable_shape_as_dim_vector()
     return std::get<SymIntSmallVec>(shape_);
 }
 
-bool InputMetadata::is_nestedness_same(const xsigma::Tensor& grad) const
+bool InputMetadata::is_nestedness_same(const quarisma::Tensor& grad) const
 {
     return (
         grad.is_nested() == is_nested_ &&
         ::torch::autograd::is_cpp_nested_tensor(grad) == is_cpp_nested_tensor());
 }
 
-xsigma::Tensor InputMetadata::shape_as_tensor() const
+quarisma::Tensor InputMetadata::shape_as_tensor() const
 {
-    return std::get<xsigma::Tensor>(shape_);
+    return std::get<quarisma::Tensor>(shape_);
 }
 
-bool InputMetadata::maybe_expandable_to(const xsigma::Tensor& grad) const
+bool InputMetadata::maybe_expandable_to(const quarisma::Tensor& grad) const
 {
     // This is the initial step to determine whether or not the tensor represented
     // by input_metadata is expandable to grad based on is-nestedness information

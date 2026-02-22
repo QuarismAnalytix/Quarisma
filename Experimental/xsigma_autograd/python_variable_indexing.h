@@ -4,16 +4,16 @@
 #include <torch/csrc/python_headers.h>
 #include <torch/csrc/utils/pybind.h>
 #include <torch/csrc/utils/python_symnode.h>
-#include <xsigma/core/SymInt.h>
+#include <quarisma/core/SymInt.h>
 
 namespace torch::autograd
 {
 
 struct UnpackedSlice
 {
-    xsigma::SymInt start;
-    xsigma::SymInt stop;
-    xsigma::SymInt step;
+    quarisma::SymInt start;
+    quarisma::SymInt stop;
+    quarisma::SymInt step;
 };
 
 // This mirrors Cpython's PySlice_Unpack method
@@ -22,11 +22,11 @@ inline UnpackedSlice __PySlice_Unpack(PyObject* _r)
     PySliceObject* r = (PySliceObject*)_r;
     /* this is harder to get right than you might think */
 
-    xsigma::SymInt start_sym, stop_sym, step_sym;
+    quarisma::SymInt start_sym, stop_sym, step_sym;
 
     auto clip_val = [](Py_ssize_t val)
     {
-        if (val < xsigma::SymInt::min_representable_int())
+        if (val < quarisma::SymInt::min_representable_int())
         {
             auto r = PyErr_WarnEx(
                 PyExc_UserWarning,
@@ -38,20 +38,20 @@ inline UnpackedSlice __PySlice_Unpack(PyObject* _r)
             {
                 throw python_error();
             }
-            return (Py_ssize_t)(xsigma::SymInt::min_representable_int());
+            return (Py_ssize_t)(quarisma::SymInt::min_representable_int());
         }
         return val;
     };
 
     if (r->step == Py_None)
     {
-        step_sym = xsigma::SymInt(1);
+        step_sym = quarisma::SymInt(1);
     }
     else
     {
         if (torch::is_symint(r->step))
         {
-            step_sym = py::handle(r->step).cast<xsigma::SymInt>();
+            step_sym = py::handle(r->step).cast<quarisma::SymInt>();
         }
         else
         {
@@ -66,17 +66,17 @@ inline UnpackedSlice __PySlice_Unpack(PyObject* _r)
             }
 
             step     = clip_val(step);
-            step_sym = xsigma::SymInt(step);
+            step_sym = quarisma::SymInt(step);
         }
     }
 
     if (torch::is_symint(r->start))
     {
-        start_sym = py::handle(r->start).cast<xsigma::SymInt>();
+        start_sym = py::handle(r->start).cast<quarisma::SymInt>();
     }
     else if (r->start == Py_None)
     {
-        start_sym = xsigma::SymInt(step_sym < 0 ? PY_SSIZE_T_MAX : 0);
+        start_sym = quarisma::SymInt(step_sym < 0 ? PY_SSIZE_T_MAX : 0);
     }
     else
     {
@@ -86,17 +86,17 @@ inline UnpackedSlice __PySlice_Unpack(PyObject* _r)
             throw python_error();
         }
         start     = clip_val(start);
-        start_sym = xsigma::SymInt(start);
+        start_sym = quarisma::SymInt(start);
     }
 
     if (torch::is_symint(r->stop))
     {
-        stop_sym = py::handle(r->stop).cast<xsigma::SymInt>();
+        stop_sym = py::handle(r->stop).cast<quarisma::SymInt>();
     }
     else if (r->stop == Py_None)
     {
         stop_sym =
-            xsigma::SymInt(step_sym < 0 ? xsigma::SymInt::min_representable_int() : PY_SSIZE_T_MAX);
+            quarisma::SymInt(step_sym < 0 ? quarisma::SymInt::min_representable_int() : PY_SSIZE_T_MAX);
     }
     else
     {
@@ -106,7 +106,7 @@ inline UnpackedSlice __PySlice_Unpack(PyObject* _r)
             throw python_error();
         }
         stop     = clip_val(stop);
-        stop_sym = xsigma::SymInt(stop);
+        stop_sym = quarisma::SymInt(stop);
     }
 
     return UnpackedSlice{std::move(start_sym), std::move(stop_sym), std::move(step_sym)};
@@ -117,6 +117,6 @@ PyObject*  THPVariable_getitem(PyObject* self, PyObject* index);
 int        THPVariable_setitem(PyObject* self, PyObject* index, PyObject* value);
 
 Variable valueToTensor(
-    xsigma::TensorOptions options, PyObject* value, const xsigma::Device& device);
+    quarisma::TensorOptions options, PyObject* value, const quarisma::Device& device);
 
 }  // namespace torch::autograd

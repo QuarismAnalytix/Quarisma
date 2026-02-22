@@ -43,9 +43,9 @@ log = logging.getLogger(__name__)
 # To support all different mechanisms with optimal results, we aim to satisfy
 # the strictest requirement for this family of optimizations - we ensures that
 # every collective op invocation is guaranteed to operate on the same
-# allocation, xsigma the same offset, in every iteration.
+# allocation, quarisma the same offset, in every iteration.
 #
-# For eligible collective ops, we identify communication buffers xsigma lowering
+# For eligible collective ops, we identify communication buffers quarisma lowering
 # time and optionally choose to lower the op to a different kernel
 # (ommunication libraries like NCCL handle both registered and non-registered
 # buffers transparently within the same op, though some may require different

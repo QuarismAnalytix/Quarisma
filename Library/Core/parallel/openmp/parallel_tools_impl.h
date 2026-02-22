@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * Portions of this code are based on VTK (Visualization Toolkit):
 
@@ -29,16 +29,16 @@
 #include "common/export.h"
 #include "parallel/common/parallel_tools_impl.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace detail
 {
 namespace parallel
 {
 
-int XSIGMA_API  number_of_threads_openmp();
-bool XSIGMA_API single_thread_openmp();
-void XSIGMA_API parallel_tools_impl_for_openmp(
+int QUARISMA_API  number_of_threads_openmp();
+bool QUARISMA_API single_thread_openmp();
+void QUARISMA_API parallel_tools_impl_for_openmp(
     size_t                   first,
     size_t                   last,
     size_t                   grain,
@@ -49,7 +49,7 @@ void XSIGMA_API parallel_tools_impl_for_openmp(
 //------------------------------------------------------------------------------
 // Address the static initialization order 'fiasco' by implementing
 // the schwarz counter idiom.
-class XSIGMA_VISIBILITY parallel_tools_impl_openmp_initialize
+class QUARISMA_VISIBILITY parallel_tools_impl_openmp_initialize
 {
 public:
     parallel_tools_impl_openmp_initialize();
@@ -113,22 +113,22 @@ void parallel_tools_impl<backend_type::OpenMP>::parallel_for(
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API void parallel_tools_impl<backend_type::OpenMP>::initialize(int);
+QUARISMA_API void parallel_tools_impl<backend_type::OpenMP>::initialize(int);
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int parallel_tools_impl<backend_type::OpenMP>::estimated_number_of_threads();
+QUARISMA_API int parallel_tools_impl<backend_type::OpenMP>::estimated_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API int parallel_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads();
+QUARISMA_API int parallel_tools_impl<backend_type::OpenMP>::estimated_default_number_of_threads();
 
 //--------------------------------------------------------------------------------
 template <>
-XSIGMA_API bool parallel_tools_impl<backend_type::OpenMP>::single_thread();
+QUARISMA_API bool parallel_tools_impl<backend_type::OpenMP>::single_thread();
 
 }  // namespace parallel
 }  // namespace detail
-}  // namespace xsigma
+}  // namespace quarisma
 
 #endif

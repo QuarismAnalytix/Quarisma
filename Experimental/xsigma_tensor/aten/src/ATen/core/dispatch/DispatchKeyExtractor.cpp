@@ -1,4 +1,4 @@
-#include <XSigma/core/dispatch/DispatchKeyExtractor.h>
+#include <Quarisma/core/dispatch/DispatchKeyExtractor.h>
 #include <c10/util/irange.h>
 
 #include <sstream>

@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This document summarizes the recommendations for integrating `cmake-format` into the XSigma project to enforce consistent CMake code formatting alongside the existing `cmakelint` linter.
+This document summarizes the recommendations for integrating `cmake-format` into the Quarisma project to enforce consistent CMake code formatting alongside the existing `cmakelint` linter.
 
 ## Current State
 
@@ -209,8 +209,8 @@ cmake-format -i --config-file=.cmake-format.yaml CMakeLists.txt
 
 - [cmake-format Documentation](https://cmake-format.readthedocs.io/)
 - [cmakelang GitHub](https://github.com/cheshirekow/cmake_format)
-- [XSigma Linter Documentation](readme/linter.md)
-- [XSigma Coding Standards](.augment/rules/coding.md)
+- [Quarisma Linter Documentation](readme/linter.md)
+- [Quarisma Coding Standards](.augment/rules/coding.md)
 
 ## Questions & Support
 
@@ -222,6 +222,6 @@ For questions or issues:
 
 ## Conclusion
 
-The integration of `cmake-format` into XSigma is straightforward and low-risk. The implementation follows established patterns (similar to clang-format integration) and provides significant benefits for code consistency and developer experience.
+The integration of `cmake-format` into Quarisma is straightforward and low-risk. The implementation follows established patterns (similar to clang-format integration) and provides significant benefits for code consistency and developer experience.
 
 **Recommendation**: Proceed with Phase 2 implementation to format the codebase and integrate into CI/CD.

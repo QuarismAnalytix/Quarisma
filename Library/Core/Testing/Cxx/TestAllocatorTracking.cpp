@@ -23,9 +23,9 @@
 #include "memory/backend/allocator_tracking.h"
 #include "memory/cpu/allocator_cpu.h"
 #include "memory/helper/memory_allocator.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 namespace
 {
@@ -94,7 +94,7 @@ void cleanup_tracking_allocator(allocator_tracking* tracking_allocator)
 /**
  * @brief Test basic allocation tracking functionality
  */
-XSIGMATEST(AllocatorTracking, basic_allocation_tracking)
+QUARISMATEST(AllocatorTracking, basic_allocation_tracking)
 {
     auto [tracking_allocator, underlying_ptr] = create_test_tracking_allocator();
 
@@ -121,7 +121,7 @@ XSIGMATEST(AllocatorTracking, basic_allocation_tracking)
 /**
  * @brief Test allocation size tracking capabilities
  */
-XSIGMATEST(AllocatorTracking, allocation_size_tracking)
+QUARISMATEST(AllocatorTracking, allocation_size_tracking)
 {
     auto [tracking_allocator, underlying_ptr] = create_test_tracking_allocator();
 
@@ -149,7 +149,7 @@ XSIGMATEST(AllocatorTracking, allocation_size_tracking)
 /**
  * @brief Test statistics collection and monitoring
  */
-XSIGMATEST(AllocatorTracking, statistics_collection)
+QUARISMATEST(AllocatorTracking, statistics_collection)
 {
     auto [tracking_allocator, underlying_ptr] = create_test_tracking_allocator();
 
@@ -198,7 +198,7 @@ XSIGMATEST(AllocatorTracking, statistics_collection)
 /**
  * @brief Test enhanced tracking features
  */
-XSIGMATEST(AllocatorTracking, enhanced_tracking_features)
+QUARISMATEST(AllocatorTracking, enhanced_tracking_features)
 {
     auto [tracking_allocator, underlying_ptr] = create_test_tracking_allocator();
 
@@ -232,7 +232,7 @@ XSIGMATEST(AllocatorTracking, enhanced_tracking_features)
 /**
  * @brief Test logging level configuration
  */
-XSIGMATEST(AllocatorTracking, logging_level_configuration)
+QUARISMATEST(AllocatorTracking, logging_level_configuration)
 {
     auto [tracking_allocator, underlying_ptr] = create_test_tracking_allocator();
 
@@ -256,7 +256,7 @@ XSIGMATEST(AllocatorTracking, logging_level_configuration)
 /**
  * @brief Test timing statistics reset
  */
-XSIGMATEST(AllocatorTracking, timing_statistics_reset)
+QUARISMATEST(AllocatorTracking, timing_statistics_reset)
 {
     auto [tracking_allocator, underlying_ptr] = create_test_tracking_allocator();
 
@@ -291,7 +291,7 @@ XSIGMATEST(AllocatorTracking, timing_statistics_reset)
 /**
  * @brief Test allocator properties delegation
  */
-XSIGMATEST(AllocatorTracking, allocator_properties_delegation)
+QUARISMATEST(AllocatorTracking, allocator_properties_delegation)
 {
     auto [tracking_allocator, underlying_ptr] = create_test_tracking_allocator();
 
@@ -308,7 +308,7 @@ XSIGMATEST(AllocatorTracking, allocator_properties_delegation)
 /**
  * @brief Test zero-size allocation handling
  */
-XSIGMATEST(AllocatorTracking, zero_size_allocation)
+QUARISMATEST(AllocatorTracking, zero_size_allocation)
 {
     auto [tracking_allocator, underlying_ptr] = create_test_tracking_allocator();
 
@@ -324,7 +324,7 @@ XSIGMATEST(AllocatorTracking, zero_size_allocation)
 /**
  * @brief Test null pointer deallocation
  */
-XSIGMATEST(AllocatorTracking, null_pointer_deallocation)
+QUARISMATEST(AllocatorTracking, null_pointer_deallocation)
 {
     auto [tracking_allocator, underlying_ptr] = create_test_tracking_allocator();
 
@@ -349,24 +349,24 @@ TEST(AllocatorTracking, local_size_tracking)
     public:
         void* allocate_raw(size_t alignment, size_t num_bytes) override
         {
-            return xsigma::cpu::memory_allocator::allocate(num_bytes, alignment);
+            return quarisma::cpu::memory_allocator::allocate(num_bytes, alignment);
         }
 
         void* allocate_raw(
             size_t                                     alignment,
             size_t                                     num_bytes,
-            XSIGMA_UNUSED const allocation_attributes& attrs) override
+            QUARISMA_UNUSED const allocation_attributes& attrs) override
         {
             return allocate_raw(alignment, num_bytes);
         }
 
-        void deallocate_raw(void* ptr) override { xsigma::cpu::memory_allocator::free(ptr); }
+        void deallocate_raw(void* ptr) override { quarisma::cpu::memory_allocator::free(ptr); }
 
         bool tracks_allocation_sizes() const noexcept override { return false; }
 
-        size_t  RequestedSize(XSIGMA_UNUSED const void* ptr) const noexcept override { return 0; }
-        size_t  AllocatedSize(XSIGMA_UNUSED const void* ptr) const noexcept override { return 0; }
-        int64_t AllocationId(XSIGMA_UNUSED const void* ptr) const override { return 0; }
+        size_t  RequestedSize(QUARISMA_UNUSED const void* ptr) const noexcept override { return 0; }
+        size_t  AllocatedSize(QUARISMA_UNUSED const void* ptr) const noexcept override { return 0; }
+        int64_t AllocationId(QUARISMA_UNUSED const void* ptr) const override { return 0; }
 
         std::optional<allocator_stats> GetStats() const override { return std::nullopt; }
         std::string                    Name() const override { return "non_tracking_allocator"; }
@@ -553,7 +553,7 @@ TEST(AllocatorTracking, reference_counting)
 }
 
 // Test allocator_tracking functionality
-XSIGMATEST(AllocatorTracking, BasicTracking)
+QUARISMATEST(AllocatorTracking, BasicTracking)
 {
     // Create a base allocator
     auto base_allocator = util::make_ptr_unique_mutable<basic_cpu_allocator>(
@@ -566,7 +566,7 @@ XSIGMATEST(AllocatorTracking, BasicTracking)
         "base_pool");
 
     // Create tracking allocator (use pointer due to protected destructor)
-    auto tracker = new xsigma::allocator_tracking(pool.get(), true);
+    auto tracker = new quarisma::allocator_tracking(pool.get(), true);
 
     // Test basic allocation tracking
     void* ptr1 = tracker->allocate_raw(64, 1024);

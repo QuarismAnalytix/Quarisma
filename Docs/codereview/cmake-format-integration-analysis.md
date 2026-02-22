@@ -1,8 +1,8 @@
-# CMake Linting & Formatting Integration Analysis for XSigma
+# CMake Linting & Formatting Integration Analysis for Quarisma
 
 ## Executive Summary
 
-This document provides a comprehensive analysis of the current CMake linting configuration in XSigma and detailed recommendations for integrating `cmake-format` as a formatter alongside the existing `cmakelint` linter.
+This document provides a comprehensive analysis of the current CMake linting configuration in Quarisma and detailed recommendations for integrating `cmake-format` as a formatter alongside the existing `cmakelint` linter.
 
 ---
 
@@ -84,7 +84,7 @@ filter=-convention/filename,-linelength,-package/consistency,-readability/logic,
 
 **Advantages**:
 1. **Complementary to cmakelint**: Handles formatting while cmakelint handles linting
-2. **Consistent with XSigma's approach**: Similar to how clang-format complements clang-tidy
+2. **Consistent with Quarisma's approach**: Similar to how clang-format complements clang-tidy
 3. **Cross-platform**: Works on Windows, Linux, macOS
 4. **Configurable**: YAML-based configuration for fine-grained control
 5. **Active maintenance**: Part of the cmakelang project
@@ -95,7 +95,7 @@ filter=-convention/filename,-linelength,-package/consistency,-readability/logic,
 - **cmake-format**: Formatting only (complementary)
 - **cmakelang**: Provides both cmake-format and cmake-lint
 
-### 2.2 Benefits for XSigma
+### 2.2 Benefits for Quarisma
 
 1. **Consistency**: Enforces uniform CMake code style across the project
 2. **Maintainability**: Reduces manual formatting effort
@@ -109,10 +109,10 @@ filter=-convention/filename,-linelength,-package/consistency,-readability/logic,
 
 ### 3.1 `.cmake-format.yaml` Configuration
 
-Create a new file at the project root with settings aligned to XSigma's C++ standards:
+Create a new file at the project root with settings aligned to Quarisma's C++ standards:
 
 ```yaml
-# cmake-format configuration for XSigma
+# cmake-format configuration for Quarisma
 # Aligns with .clang-format and project coding standards
 
 format:
@@ -401,5 +401,5 @@ Test on:
 
 - [cmake-format Documentation](https://cmake-format.readthedocs.io/)
 - [cmakelang GitHub](https://github.com/cheshirekow/cmake_format)
-- [XSigma .clang-format](../.clang-format)
-- [XSigma Linter Documentation](readme/linter.md)
+- [Quarisma .clang-format](../.clang-format)
+- [Quarisma Linter Documentation](readme/linter.md)

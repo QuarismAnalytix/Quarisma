@@ -1,7 +1,7 @@
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/canonicalize_graph_fuser_ops.h>
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit
 {
@@ -34,7 +34,7 @@ static std::optional<std::vector<ChunkOutput>> getChunkOutputs(Node* chunk)
                 return std::nullopt;
             }
             auto unpack_outputs = list_use.user->outputs();
-            for (const auto i : xsigma::irange(unpack_outputs.size()))
+            for (const auto i : quarisma::irange(unpack_outputs.size()))
             {
                 outputs.emplace_back(unpack_outputs[i], i);
             }
@@ -59,7 +59,7 @@ static void CanonicalizeOps(Block* block)
             it->matches("aten::div(Tensor self, Tensor other) -> Tensor"))
         {
             // Replace rank 0 Tensor constants with scalar constants.
-            if (auto other = it->get<xsigma::Tensor>(attr::other))
+            if (auto other = it->get<quarisma::Tensor>(attr::other))
             {
                 if (other->dim() == 0)
                 {
@@ -67,7 +67,7 @@ static void CanonicalizeOps(Block* block)
                     auto                graph     = it->owningGraph();
                     auto                new_other = graph->insertConstant(other->item());
                     std::vector<Value*> inputs    = it->inputs().vec();
-                    inputs.xsigma(1)              = new_other;
+                    inputs.quarisma(1)              = new_other;
                     Value* new_output =
                         graph->insertNode(graph->create(it->kind(), inputs))->output();
                     new_output->node()->copyMetadata(*it);

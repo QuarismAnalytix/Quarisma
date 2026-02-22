@@ -7,11 +7,11 @@ from time import perf_counter_ns
 from typing import Any, Optional
 from warnings import warn
 
-import xsigma
-import xsigma.cuda
-from xsigma._C import _get_privateuse1_backend_name
-from xsigma._C._profiler import _ExperimentalConfig
-from xsigma.autograd import (
+import quarisma
+import quarisma.cuda
+from quarisma._C import _get_privateuse1_backend_name
+from quarisma._C._profiler import _ExperimentalConfig
+from quarisma.autograd import (
     _disable_profiler,
     _enable_profiler,
     _kineto_step,
@@ -25,7 +25,7 @@ from xsigma.autograd import (
     ProfilerConfig,
     ProfilerState,
 )
-from xsigma.autograd.profiler_util import (
+from quarisma.autograd.profiler_util import (
     _filter_name,
     _filter_stack_entry,
     _rewrite_name,
@@ -35,7 +35,7 @@ from xsigma.autograd.profiler_util import (
     MemRecordsAcc,
     OUT_OF_MEMORY_EVENT_NAME,
 )
-from xsigma.futures import Future
+from quarisma.futures import Future
 
 
 __all__ = [
@@ -109,7 +109,7 @@ class profile:
     """Context manager that manages autograd profiler state and holds a summary of results.
 
     .. note::
-        This is the backend, most people should use :mod:`xsigma.profiler` instead.
+        This is the backend, most people should use :mod:`quarisma.profiler` instead.
 
     Under the hood it just records events of functions being executed in C++ and
     exposes those events to Python. You can wrap any code into it and it will
@@ -180,9 +180,9 @@ class profile:
 
     Example:
         >>> # xdoctest: +SKIP
-        >>> # xdoctest: +REQUIRES(env:XSIGMA_DOCTEST_AUTOGRAD_PROFILER)
-        >>> x = xsigma.randn((1, 1), requires_grad=True)
-        >>> with xsigma.autograd.profiler.profile() as prof:
+        >>> # xdoctest: +REQUIRES(env:QUARISMA_DOCTEST_AUTOGRAD_PROFILER)
+        >>> x = quarisma.randn((1, 1), requires_grad=True)
+        >>> with quarisma.autograd.profiler.profile() as prof:
         >>>     for _ in range(100):  # any normal python code, really!
         >>>         y = x ** 2
         >>>         y.backward()
@@ -194,8 +194,8 @@ class profile:
         mul                                  32.048ms         32.048ms         200
         pow                                  27.041ms         27.041ms         200
         PowBackward0                         9.727ms          55.483ms         100
-        xsigma::autograd::AccumulateGrad      9.148ms          9.148ms          100
-        xsigma::autograd::GraphRoot           691.816us        691.816us        100
+        quarisma::autograd::AccumulateGrad      9.148ms          9.148ms          100
+        quarisma::autograd::GraphRoot           691.816us        691.816us        100
         -----------------------------------  ---------------  ---------------  ---------------
 
     """
@@ -270,17 +270,17 @@ class profile:
                 )
                 self.use_device = None
 
-            if self.use_device == "cuda" and not xsigma.cuda.is_available():
+            if self.use_device == "cuda" and not quarisma.cuda.is_available():
                 warn("CUDA is not available, disabling CUDA profiling", stacklevel=2)
                 self.use_cuda = False
                 self.use_device = None
 
-            if self.use_device == "xpu" and not xsigma.xpu.is_available():
+            if self.use_device == "xpu" and not quarisma.xpu.is_available():
                 warn("XPU is not available, disabling XPU profiling", stacklevel=2)
                 self.use_device = None
 
             if self.use_device == "hpu" and not (
-                hasattr(xsigma, "hpu") and xsigma.hpu.is_available()
+                hasattr(quarisma, "hpu") and quarisma.hpu.is_available()
             ):
                 warn("HPU is not available, disabling HPU profiling", stacklevel=2)
                 self.use_device = None
@@ -386,8 +386,8 @@ class profile:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if not self.enabled:
             return
-        if self.use_device and hasattr(xsigma, self.use_device):
-            device_module = getattr(xsigma, self.use_device)
+        if self.use_device and hasattr(quarisma, self.use_device):
+            device_module = getattr(quarisma, self.use_device)
             if hasattr(device_module, "synchronize"):
                 device_module.synchronize()
 
@@ -419,14 +419,14 @@ class profile:
         if self._needs_processing:
             self._ensure_function_events()
         if self._function_events is None:
-            return "<unfinished xsigma.autograd.profile>"
+            return "<unfinished quarisma.autograd.profile>"
         return repr(self._function_events)
 
     def __str__(self):
         if self._needs_processing:
             self._ensure_function_events()
         if self._function_events is None:
-            return "<unfinished xsigma.autograd.profile>"
+            return "<unfinished quarisma.autograd.profile>"
         return str(self._function_events)
 
     def _ensure_function_events(self):
@@ -593,7 +593,7 @@ class profile:
         # Here 2 function events are created:
         # all_function_events contains all events associated with each kineto event from result
         all_function_events = []
-        # frontend_function_events contains the events in aten or xsigma frontend level,
+        # frontend_function_events contains the events in aten or quarisma frontend level,
         # whose correlation id is 0
         frontend_function_events = []
         device_corr_map: dict[int, list[FunctionEvent]] = {}
@@ -757,11 +757,11 @@ class record_function(_ContextDecorator):
         non-distributed cases.
 
     Example:
-        >>> # xdoctest: +REQUIRES(env:XSIGMA_DOCTEST_AUTOGRAD_PROFILER)
-        >>> x = xsigma.randn((1, 1), requires_grad=True)
-        >>> with xsigma.autograd.profiler.profile() as prof:
+        >>> # xdoctest: +REQUIRES(env:QUARISMA_DOCTEST_AUTOGRAD_PROFILER)
+        >>> x = quarisma.randn((1, 1), requires_grad=True)
+        >>> with quarisma.autograd.profiler.profile() as prof:
         ...     y = x**2
-        ...     with xsigma.autograd.profiler.record_function(
+        ...     with quarisma.autograd.profiler.record_function(
         ...         "label-z"
         ...     ):  # label the block
         ...         z = y**3
@@ -775,9 +775,9 @@ class record_function(_ContextDecorator):
         pow                                  60.77%           47.470us         3
         mul                                  21.73%           25.465us         2
         PowBackward0                         12.03%           121.891us        1
-        xsigma::autograd::AccumulateGrad      2.70%            6.324us          1
+        quarisma::autograd::AccumulateGrad      2.70%            6.324us          1
         label-z                              2.13%            12.421us         1
-        xsigma::autograd::GraphRoot           0.64%            1.503us          1
+        quarisma::autograd::GraphRoot           0.64%            1.503us          1
         -----------------------------------  ---------------  ---------------  ---------------
         Self CPU time total: 234.344us
         CUDA time total: 0.000us
@@ -790,15 +790,15 @@ class record_function(_ContextDecorator):
         # Whether or not we should run record function's end callbacks when exiting.
         self.run_callbacks_on_exit: bool = True
         # TODO: TorchScript ignores standard type annotation here
-        # self.record: Optional["xsigma.classes.profiler._RecordFunction"] = None
-        self.record = xsigma.jit.annotate(
+        # self.record: Optional["quarisma.classes.profiler._RecordFunction"] = None
+        self.record = quarisma.jit.annotate(
             # pyrefly: ignore [not-a-type]
-            Optional["xsigma.classes.profiler._RecordFunction"],
+            Optional["quarisma.classes.profiler._RecordFunction"],
             None,
         )
 
     def __enter__(self):
-        self.record = xsigma.ops.profiler._record_function_enter_new(
+        self.record = quarisma.ops.profiler._record_function_enter_new(
             self.name, self.args
         )
         return self
@@ -814,11 +814,11 @@ class record_function(_ContextDecorator):
 
         # TODO: Too slow with __torch_function__ handling enabled
         # See https://github.com/pytorch/pytorch/issues/76410
-        if not xsigma.jit.is_scripting():
-            with xsigma._C.DisableTorchFunctionSubclass():
-                xsigma.ops.profiler._record_function_exit._RecordFunction(record)
+        if not quarisma.jit.is_scripting():
+            with quarisma._C.DisableTorchFunctionSubclass():
+                quarisma.ops.profiler._record_function_exit._RecordFunction(record)
         else:
-            xsigma.ops.profiler._record_function_exit(record)
+            quarisma.ops.profiler._record_function_exit(record)
 
     def _call_end_callbacks_on_future(self, fut: Future[Any]) -> Future[Any]:
         """Use for profiling async calls that return a future.
@@ -829,7 +829,7 @@ class record_function(_ContextDecorator):
         will throw if called multiple times.
 
         Args:
-            fut: (xsigma._C.Future): future for which to schedule
+            fut: (quarisma._C.Future): future for which to schedule
             callback for.
 
         Returns:
@@ -852,15 +852,15 @@ class record_function(_ContextDecorator):
 
         # TODO: Too slow with __torch_function__ handling enabled
         # See https://github.com/pytorch/pytorch/issues/76410
-        if not xsigma.jit.is_scripting():
-            with xsigma._C.DisableTorchFunctionSubclass():
+        if not quarisma.jit.is_scripting():
+            with quarisma._C.DisableTorchFunctionSubclass():
                 profiled_future = (
-                    xsigma.ops.profiler._call_end_callbacks_on_jit_fut._RecordFunction(
+                    quarisma.ops.profiler._call_end_callbacks_on_jit_fut._RecordFunction(
                         record, fut
                     )
                 )
         else:
-            profiled_future = xsigma.ops.profiler._call_end_callbacks_on_jit_fut(
+            profiled_future = quarisma.ops.profiler._call_end_callbacks_on_jit_fut(
                 record, fut
             )
         return profiled_future
@@ -897,8 +897,8 @@ class emit_itt:
 
     Example:
         >>> # xdoctest: +SKIP("Undefined variables")
-        >>> # xdoctest: +REQUIRES(env:XSIGMA_DOCTEST_AUTOGRAD_PROFILER)
-        >>> with xsigma.autograd.profiler.emit_itt():
+        >>> # xdoctest: +REQUIRES(env:QUARISMA_DOCTEST_AUTOGRAD_PROFILER)
+        >>> with quarisma.autograd.profiler.emit_itt():
         ...     model(x)
 
     """
@@ -948,7 +948,7 @@ class emit_nvtx:
     to disk, so for CUDA profiling one has to use this context manager to annotate
     nvprof traces and wait for the process to exit before inspecting them.
     Then, either NVIDIA Visual Profiler (nvvp) can be used to visualize the timeline, or
-    :func:`xsigma.autograd.profiler.load_nvprof` can load the results for inspection
+    :func:`quarisma.autograd.profiler.load_nvprof` can load the results for inspection
     e.g. in Python REPL.
 
     .. warning:
@@ -970,10 +970,10 @@ class emit_nvtx:
 
     Example:
         >>> # xdoctest: +SKIP("undefined variables")
-        >>> # xdoctest: +REQUIRES(env:XSIGMA_DOCTEST_AUTOGRAD_PROFILER)
-        >>> with xsigma.cuda.profiler.profile():
+        >>> # xdoctest: +REQUIRES(env:QUARISMA_DOCTEST_AUTOGRAD_PROFILER)
+        >>> with quarisma.cuda.profiler.profile():
         ...     model(x)  # Warmup CUDA memory allocator and profiler
-        ...     with xsigma.autograd.profiler.emit_nvtx():
+        ...     with quarisma.autograd.profiler.emit_nvtx():
         ...         model(x)
 
     **Forward-backward correlation**
@@ -1033,7 +1033,7 @@ class emit_nvtx:
         if self.entered:
             raise RuntimeError("NVTX annotation context manager is not reentrant")
         self.entered = True
-        xsigma.cuda.synchronize()
+        quarisma.cuda.synchronize()
         _run_on_profiler_start()
         _enable_profiler(
             ProfilerConfig(
@@ -1052,7 +1052,7 @@ class emit_nvtx:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if not self.enabled:
             return
-        xsigma.cuda.synchronize()
+        quarisma.cuda.synchronize()
         _disable_profiler()
         _run_on_profiler_stop()
         return False
@@ -1091,7 +1091,7 @@ def parse_nvprof_trace(path):
     # Parse strings table
     strings = {}
     for r in conn.execute("SELECT _id_ as id, value FROM StringTable"):
-        strings[r["id"]] = xsigma._C._demangle(r["value"])
+        strings[r["id"]] = quarisma._C._demangle(r["value"])
 
     # First, find all functions and create FunctionEvents for them
     marker_query = """

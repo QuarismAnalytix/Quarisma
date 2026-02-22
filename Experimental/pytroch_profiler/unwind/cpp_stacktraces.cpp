@@ -6,18 +6,18 @@
 #include "util/env.h"
 #include "util/exception.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace
 {
 bool compute_cpp_stack_traces_enabled()
 {
-    return xsigma::utils::check_env("XSIGMA_SHOW_CPP_STACKTRACES") == true;
+    return quarisma::utils::check_env("QUARISMA_SHOW_CPP_STACKTRACES") == true;
 }
 
 bool compute_disable_addr2line()
 {
-    return xsigma::utils::check_env("XSIGMA_DISABLE_ADDR2LINE") == true;
+    return quarisma::utils::check_env("QUARISMA_DISABLE_ADDR2LINE") == true;
 }
 }  // namespace
 
@@ -27,9 +27,9 @@ bool get_cpp_stacktraces_enabled()
     return enabled;
 }
 
-static xsigma::unwind::Mode compute_symbolize_mode()
+static quarisma::unwind::Mode compute_symbolize_mode()
 {
-    auto envar_c = xsigma::utils::get_env("XSIGMA_SYMBOLIZE_MODE");
+    auto envar_c = quarisma::utils::get_env("QUARISMA_SYMBOLIZE_MODE");
     if (envar_c.has_value())
     {
         if (envar_c == "dladdr")
@@ -46,9 +46,9 @@ static xsigma::unwind::Mode compute_symbolize_mode()
         }
         else
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 false,
-                "expected {dladdr, addr2line, fast} for XSIGMA_SYMBOLIZE_MODE, got ",
+                "expected {dladdr, addr2line, fast} for QUARISMA_SYMBOLIZE_MODE, got ",
                 envar_c.value());
         }
     }
@@ -64,4 +64,4 @@ unwind::Mode get_symbolize_mode()
     return mode;
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

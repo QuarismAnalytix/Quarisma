@@ -21,7 +21,7 @@
 #include <unistd.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace security
 {
@@ -397,4 +397,4 @@ void crypto::secure_zero_memory(void* ptr, size_t size)
 }
 
 }  // namespace security
-}  // namespace xsigma
+}  // namespace quarisma

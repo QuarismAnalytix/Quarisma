@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2018 The OpenXLA Authors.
@@ -52,7 +52,7 @@ limitations under the License.
 #include "profiler/native/tracing/traceme.h"
 #include "profiler/native/tracing/traceme_recorder.h"
 
-namespace xsigma::profiler
+namespace quarisma::profiler
 {
 namespace
 {
@@ -107,7 +107,7 @@ profiler_status host_tracer::start()
 {
     if (recording_)
     {
-        XSIGMA_LOG_ERROR("TraceMeRecorder already started");
+        QUARISMA_LOG_ERROR("TraceMeRecorder already started");
         return profiler_status::Error("TraceMeRecorder already started");
     }
 
@@ -118,7 +118,7 @@ profiler_status host_tracer::start()
     recording_          = traceme_recorder::start(host_trace_level_, filter_mask_);
     if (!recording_)
     {
-        XSIGMA_LOG_ERROR("Failed to start TraceMeRecorder");
+        QUARISMA_LOG_ERROR("Failed to start TraceMeRecorder");
         return profiler_status::Error("Failed to start TraceMeRecorder");
     }
     return profiler_status::Ok();
@@ -128,7 +128,7 @@ profiler_status host_tracer::stop()
 {
     if (!recording_)
     {
-        XSIGMA_LOG_ERROR("TraceMeRecorder not started");
+        QUARISMA_LOG_ERROR("TraceMeRecorder not started");
         return profiler_status::Error("TraceMeRecorder not started");
     }
     events_    = traceme_recorder::stop();
@@ -138,10 +138,10 @@ profiler_status host_tracer::stop()
 
 profiler_status host_tracer::collect_data(x_space* space)
 {
-    XSIGMA_LOG_INFO("Collecting data to x_space from host_tracer.");  // NOLINT
+    QUARISMA_LOG_INFO("Collecting data to x_space from host_tracer.");  // NOLINT
     if (recording_)
     {
-        XSIGMA_LOG_ERROR("traceme_recorder not stopped");
+        QUARISMA_LOG_ERROR("traceme_recorder not stopped");
         return profiler_status::Error("TraceMeRecorder not stopped");
     }
     if (events_.empty())
@@ -151,7 +151,7 @@ profiler_status host_tracer::collect_data(x_space* space)
     xplane* plane = find_or_add_mutable_plane_with_name(space, kHostThreadsPlaneName);
     if (plane == nullptr)
     {
-        XSIGMA_LOG_ERROR("Failed to obtain host threads XPlane.");
+        QUARISMA_LOG_ERROR("Failed to obtain host threads XPlane.");
         return profiler_status::Error("Failed to obtain host threads XPlane.");
     }
 
@@ -178,4 +178,4 @@ std::unique_ptr<profiler_interface> create_host_tracer(const host_tracer_options
     }
     return std::make_unique<profiler_collection>(std::move(profilers));
 }
-}  // namespace xsigma::profiler
+}  // namespace quarisma::profiler

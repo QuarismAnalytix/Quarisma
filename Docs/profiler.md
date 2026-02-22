@@ -1,4 +1,4 @@
-# XSigma Profiler System - Complete User Guide
+# Quarisma Profiler System - Complete User Guide
 
 ## Table of Contents
 1. [Overview](#overview)
@@ -10,7 +10,7 @@
 7. [Usage Examples](#usage-examples)
 8. [Output Formats and Visualization](#output-formats-and-visualization)
 9. [Intel ITT API Integration](#intel-itt-api-integration)
-10. [XSigma Kineto Integration](#pytorch-kineto-integration)
+10. [Quarisma Kineto Integration](#pytorch-kineto-integration)
 11. [Best Practices](#best-practices)
 12. [Troubleshooting](#troubleshooting)
 
@@ -18,7 +18,7 @@
 
 ## Overview
 
-The XSigma Profiler System is a comprehensive, modular performance analysis framework designed for high-performance applications. It provides:
+The Quarisma Profiler System is a comprehensive, modular performance analysis framework designed for high-performance applications. It provides:
 
 - **High-precision timing measurements** with nanosecond accuracy
 - **Memory usage tracking** with allocation/deallocation monitoring
@@ -28,7 +28,7 @@ The XSigma Profiler System is a comprehensive, modular performance analysis fram
 - **Multiple output formats** (console, JSON, CSV, XML, Chrome Trace)
 - **Minimal performance overhead** designed for production use
 - **Intel ITT API integration** for Intel VTune profiling
-- **XSigma Kineto integration** for comprehensive GPU/CPU profiling
+- **Quarisma Kineto integration** for comprehensive GPU/CPU profiling
 
 ### Key Features
 
@@ -52,7 +52,7 @@ The XSigma Profiler System is a comprehensive, modular performance analysis fram
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Application Layer                        │
-│  (User Code with XSIGMA_PROFILE_SCOPE macros)             │
+│  (User Code with QUARISMA_PROFILE_SCOPE macros)             │
 └─────────────────────────────────────────────────────────────┘
                               │
 ┌─────────────────────────────────────────────────────────────┐
@@ -98,7 +98,7 @@ The XSigma Profiler System is a comprehensive, modular performance analysis fram
 - **statistical_analyzer.***: Statistical analysis
 - **chrome_trace_exporter.***: Chrome Trace format export
 - **xplane.***: XPlane format support
-- **kineto_shim.***: XSigma Kineto integration
+- **kineto_shim.***: Quarisma Kineto integration
 - **itt_wrapper.***: Intel ITT API integration
 
 ---
@@ -110,7 +110,7 @@ The XSigma Profiler System is a comprehensive, modular performance analysis fram
 ```cpp
 #include "profiler/session/profiler.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 int main() {
     // Create profiler session with builder pattern
@@ -127,14 +127,14 @@ int main() {
 
     // Profile a function
     {
-        XSIGMA_PROFILE_FUNCTION();
+        QUARISMA_PROFILE_FUNCTION();
 
         // Your code here
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         // Profile nested operations
         {
-            XSIGMA_PROFILE_SCOPE("nested_operation");
+            QUARISMA_PROFILE_SCOPE("nested_operation");
             std::vector<int> data(1000, 42);
             // More work...
         }
@@ -172,7 +172,7 @@ auto session = profiler_session_builder()
 
 ## Displaying Profiler Output
 
-XSigma provides multiple ways to display and visualize profiler data, from simple console output to advanced visualization tools.
+Quarisma provides multiple ways to display and visualize profiler data, from simple console output to advanced visualization tools.
 
 ### 1. Console Output
 
@@ -394,7 +394,7 @@ merge_sort,25.15,524288,0x7f8a1c000000,2
 
 ```cpp
 // Enable verbose logging for debugging
-xsigma::profiler::ProfilerConfig config;
+quarisma::profiler::ProfilerConfig config;
 config.verbose = true;  // Enables detailed logging
 
 // Or for native profiler
@@ -446,8 +446,8 @@ RAII-based scope profiler that automatically tracks entry and exit.
 
 **Macros:**
 ```cpp
-XSIGMA_PROFILE_SCOPE("scope_name");  // Profile named scope
-XSIGMA_PROFILE_FUNCTION();           // Profile current function
+QUARISMA_PROFILE_SCOPE("scope_name");  // Profile named scope
+QUARISMA_PROFILE_FUNCTION();           // Profile current function
 ```
 
 ### profiler_report
@@ -496,10 +496,10 @@ Fluent builder interface for creating profiler sessions.
 
 ```cpp
 // Profile current scope
-XSIGMA_PROFILE_SCOPE("scope_name");
+QUARISMA_PROFILE_SCOPE("scope_name");
 
 // Profile current function
-XSIGMA_PROFILE_FUNCTION();
+QUARISMA_PROFILE_FUNCTION();
 ```
 
 ### Configuration Options
@@ -539,14 +539,14 @@ struct profiler_options {
 };
 ```
 
-### XSigma-Compatible Profiler API
+### Quarisma-Compatible Profiler API
 
-XSigma provides a XSigma-compatible profiler API for seamless integration:
+Quarisma provides a Quarisma-compatible profiler API for seamless integration:
 
 ```cpp
 #include "profiler/profiler_api.h"
 
-using namespace xsigma::profiler;
+using namespace quarisma::profiler;
 
 // Configure profiler
 ProfilerConfig config;
@@ -627,7 +627,7 @@ void basic_profiling_example() {
 
     // Profile operations
     {
-        XSIGMA_PROFILE_SCOPE("data_processing");
+        QUARISMA_PROFILE_SCOPE("data_processing");
         std::vector<int> data(1000000);
         std::iota(data.begin(), data.end(), 0);
     }
@@ -650,18 +650,18 @@ void hierarchical_profiling_example() {
     session->start();
 
     {
-        XSIGMA_PROFILE_SCOPE("level_1");
+        QUARISMA_PROFILE_SCOPE("level_1");
 
         {
-            XSIGMA_PROFILE_SCOPE("level_2_a");
+            QUARISMA_PROFILE_SCOPE("level_2_a");
             // Work...
         }
 
         {
-            XSIGMA_PROFILE_SCOPE("level_2_b");
+            QUARISMA_PROFILE_SCOPE("level_2_b");
 
             {
-                XSIGMA_PROFILE_SCOPE("level_3");
+                QUARISMA_PROFILE_SCOPE("level_3");
                 // Nested work...
             }
         }
@@ -686,7 +686,7 @@ void memory_profiling_example() {
     session->start();
 
     {
-        XSIGMA_PROFILE_SCOPE("memory_intensive_operation");
+        QUARISMA_PROFILE_SCOPE("memory_intensive_operation");
 
         // Allocate large buffer
         std::vector<double> large_buffer(10000000);
@@ -714,15 +714,15 @@ void chrome_trace_example() {
     session->start();
 
     {
-        XSIGMA_PROFILE_SCOPE("main_operation");
+        QUARISMA_PROFILE_SCOPE("main_operation");
 
         {
-            XSIGMA_PROFILE_SCOPE("sub_operation_1");
+            QUARISMA_PROFILE_SCOPE("sub_operation_1");
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
         }
 
         {
-            XSIGMA_PROFILE_SCOPE("sub_operation_2");
+            QUARISMA_PROFILE_SCOPE("sub_operation_2");
             std::this_thread::sleep_for(std::chrono::milliseconds(30));
         }
     }
@@ -767,19 +767,19 @@ void chrome_trace_example() {
 
 ## Intel ITT API Integration
 
-XSigma integrates with Intel's Instrumentation and Tracing Technology (ITT) API for use with Intel VTune Profiler.
+Quarisma integrates with Intel's Instrumentation and Tracing Technology (ITT) API for use with Intel VTune Profiler.
 
 ### Building with ITT Support
 
 ```bash
-cd XSigma
+cd Quarisma
 mkdir build && cd build
-cmake -DXSIGMA_ENABLE_PROFILER=ON \
+cmake -DQUARISMA_ENABLE_PROFILER=ON \
       -DUSE_ITT=ON ..
 cmake --build .
 ```
 
-### Using ITT with XSigma
+### Using ITT with Quarisma
 
 ```cpp
 #include "profiler/session/profiler.h"
@@ -787,27 +787,27 @@ cmake --build .
 
 void itt_profiling_example() {
     // Initialize ITT
-    xsigma::profiler::itt_init();
-    bool itt_available = (xsigma::profiler::itt_get_domain() != nullptr);
+    quarisma::profiler::itt_init();
+    bool itt_available = (quarisma::profiler::itt_get_domain() != nullptr);
 
-    // Start XSigma profiler
+    // Start Quarisma profiler
     auto session = profiler_session_builder()
         .with_timing(true)
         .build();
 
     session->start();
 
-    // Profile with both ITT and XSigma
+    // Profile with both ITT and Quarisma
     {
         if (itt_available) {
-            xsigma::profiler::itt_range_push("my_operation");
+            quarisma::profiler::itt_range_push("my_operation");
         }
-        XSIGMA_PROFILE_SCOPE("my_operation");
+        QUARISMA_PROFILE_SCOPE("my_operation");
 
         // Your code here
 
         if (itt_available) {
-            xsigma::profiler::itt_range_pop();
+            quarisma::profiler::itt_range_pop();
         }
     }
 
@@ -835,21 +835,21 @@ void itt_mark_event(const char* name);
 
 ---
 
-## XSigma Kineto Integration
+## Quarisma Kineto Integration
 
-XSigma integrates with XSigma's Kineto profiler for comprehensive CPU and GPU profiling.
+Quarisma integrates with Quarisma's Kineto profiler for comprehensive CPU and GPU profiling.
 
 ### Building with Kineto Support
 
 ```bash
-cd XSigma
+cd Quarisma
 mkdir build && cd build
-cmake -DXSIGMA_ENABLE_PROFILER=ON \
+cmake -DQUARISMA_ENABLE_PROFILER=ON \
       -DUSE_KINETO=ON ..
 cmake --build .
 ```
 
-### Using Kineto with XSigma
+### Using Kineto with Quarisma
 
 ```cpp
 #include "profiler/session/profiler.h"
@@ -857,17 +857,17 @@ cmake --build .
 
 void kineto_profiling_example() {
     // Initialize Kineto
-    xsigma::profiler::kineto_init(false, true);
+    quarisma::profiler::kineto_init(false, true);
 
     // Prepare trace
     std::set<libkineto::ActivityType> activities;
     activities.insert(libkineto::ActivityType::CPU_OP);
     activities.insert(libkineto::ActivityType::CUDA_RUNTIME);
 
-    xsigma::profiler::kineto_prepare_trace(activities);
-    xsigma::profiler::kineto_start_trace();
+    quarisma::profiler::kineto_prepare_trace(activities);
+    quarisma::profiler::kineto_start_trace();
 
-    // Start XSigma profiler
+    // Start Quarisma profiler
     auto session = profiler_session_builder()
         .with_timing(true)
         .build();
@@ -875,7 +875,7 @@ void kineto_profiling_example() {
     session->start();
 
     {
-        XSIGMA_PROFILE_SCOPE("kineto_workload");
+        QUARISMA_PROFILE_SCOPE("kineto_workload");
         // Your code here
     }
 
@@ -884,10 +884,10 @@ void kineto_profiling_example() {
 
     std::unique_ptr<libkineto::ActivityTraceInterface> trace(
         static_cast<libkineto::ActivityTraceInterface*>(
-            xsigma::profiler::kineto_stop_trace()));
+            quarisma::profiler::kineto_stop_trace()));
 
-    // Export XSigma trace
-    session->write_chrome_trace("xsigma_trace.json");
+    // Export Quarisma trace
+    session->write_chrome_trace("quarisma_trace.json");
 
     // Export Kineto trace
     if (trace) {
@@ -905,13 +905,13 @@ void kineto_profiling_example() {
 ```cpp
 // ✓ Good: Profile coarse-grained operations
 {
-    XSIGMA_PROFILE_SCOPE("matrix_multiply");
+    QUARISMA_PROFILE_SCOPE("matrix_multiply");
     result = multiply_large_matrices(a, b);
 }
 
 // ✗ Bad: Profile fine-grained operations
 for (int i = 0; i < 1000000; ++i) {
-    XSIGMA_PROFILE_SCOPE("single_iteration");  // Too much overhead!
+    QUARISMA_PROFILE_SCOPE("single_iteration");  // Too much overhead!
     // ...
 }
 ```
@@ -921,20 +921,20 @@ for (int i = 0; i < 1000000; ++i) {
 ```cpp
 // ✓ Good: Hierarchical structure
 {
-    XSIGMA_PROFILE_SCOPE("data_pipeline");
+    QUARISMA_PROFILE_SCOPE("data_pipeline");
 
     {
-        XSIGMA_PROFILE_SCOPE("load");
+        QUARISMA_PROFILE_SCOPE("load");
         load_data();
     }
 
     {
-        XSIGMA_PROFILE_SCOPE("process");
+        QUARISMA_PROFILE_SCOPE("process");
         process_data();
     }
 
     {
-        XSIGMA_PROFILE_SCOPE("save");
+        QUARISMA_PROFILE_SCOPE("save");
         save_data();
     }
 }
@@ -981,7 +981,7 @@ report->export_csv_report("profile.csv");
 ```bash
 # Build in Release mode for accurate profiling
 cmake -DCMAKE_BUILD_TYPE=Release \
-      -DXSIGMA_ENABLE_PROFILER=ON ..
+      -DQUARISMA_ENABLE_PROFILER=ON ..
 ```
 
 ---
@@ -996,7 +996,7 @@ cmake -DCMAKE_BUILD_TYPE=Release \
 session->start();  // Must call this!
 
 {
-    XSIGMA_PROFILE_SCOPE("my_operation");
+    QUARISMA_PROFILE_SCOPE("my_operation");
     // ...
 }
 
@@ -1061,12 +1061,12 @@ auto report = profiler_report_builder(*session)
 
 ## Summary
 
-The XSigma Profiler System provides comprehensive performance analysis capabilities with:
+The Quarisma Profiler System provides comprehensive performance analysis capabilities with:
 
 - **Multiple output formats**: Console, JSON, CSV, XML, Chrome Trace
 - **Flexible display options**: Print to console, export to files, visualize in browsers
 - **Rich profiling data**: Timing, memory, hierarchical scopes, statistical analysis
-- **Integration options**: Intel ITT API, XSigma Kineto
+- **Integration options**: Intel ITT API, Quarisma Kineto
 - **Low overhead**: Suitable for production use
 - **Easy to use**: Simple macros and builder patterns
 

@@ -569,7 +569,7 @@ class FxGraphCachePickler(pickle.Pickler):
         if is_frozen_param(t) and not GraphLowering.can_inline_constant(t):
             return (_ident, (metadata,))
 
-        # Very large tensors will be expensive to copy to cpu and hash. Let's xsigma least
+        # Very large tensors will be expensive to copy to cpu and hash. Let's quarisma least
         # report any slowness.
         start = time()
         values = t.tolist()
@@ -1771,7 +1771,7 @@ class AotCodeCompiler:
 
         # TODO (benjaminglass1): the CMake packaging path doesn't support linking files
         # built with different flags.  Until that's implemented, append the kernel code
-        # to the wrapper and build everything xsigma max optimization.
+        # to the wrapper and build everything quarisma max optimization.
         if config.aot_inductor.package_cpp_only:
             wrapper_code = "\n".join((wrapper_code, kernel_code))
             kernel_code = ""
@@ -2226,7 +2226,7 @@ end
                 "use_relative_path": use_relative_path,
                 "vec_isa": picked_vec_isa,
             }
-            # If we're packaging via CMake, we build the whole code xsigma max optimization.
+            # If we're packaging via CMake, we build the whole code quarisma max optimization.
             wrapper_build_options = CppTorchDeviceOptions(
                 compile_only=True,
                 min_optimize=not config.aot_inductor.package_cpp_only,
@@ -2768,7 +2768,7 @@ class CppCodeCache:
         _set_gpu_runtime_env()  # cpp_extension consults the env
 
         # Note the distinction between the two booleans.  We do minimal optimization if
-        # the optimized_code argument is present xsigma all, since that's how the user of
+        # the optimized_code argument is present quarisma all, since that's how the user of
         # this function opts in, but we do compilation and linking in one step if the
         # optimized_code argument is empty (as a micro-optimization).
         main_build_option = CppTorchDeviceOptions(
@@ -3058,10 +3058,10 @@ class CppPythonBindingsCodeCache(CppCodeCache):
 
         Args:
             argtypes: The types of args to ENTRY_FUNCTION(), e.g. ["float*", "long"]
-            main_code: C++ source code containing ENTRY_FUNCTION().  Will be built xsigma
+            main_code: C++ source code containing ENTRY_FUNCTION().  Will be built quarisma
                 -O3 if kernel_code is None (to maximize performance in any kernels that
                 are present), or -O1 otherwise (to minimize compile time).
-            kernel_code: If present, C++ source code that will be built xsigma -O3 and
+            kernel_code: If present, C++ source code that will be built quarisma -O3 and
                 linked to main_code.
 
         Returns:
@@ -3181,7 +3181,7 @@ class HalideCodeCache(CppPythonBindingsCodeCache):
         #include <stdexcept>
         #include <cmath>
 
-        namespace xsigma {{
+        namespace quarisma {{
             inline long div_floor_integer(long a, long b) {{
                 if ((a<0) != (b<0)) {{
                     const auto quot = a / b;
@@ -3777,7 +3777,7 @@ def _cuda_lib_options() -> list[str]:
             extra_ldflags.append(f"-L{path}")
             # -rpath ensures the DLL can find its dependencies when loaded, even
             # if the library path is non-standard.
-            # But do not add the stubs folder to rpath as the driver is expected to be found xsigma runtime
+            # But do not add the stubs folder to rpath as the driver is expected to be found quarisma runtime
             if os.path.basename(path) != "stubs":
                 extra_ldflags.extend(["-Xlinker", f"-rpath={path}"])
         extra_ldflags.append("-lcuda")

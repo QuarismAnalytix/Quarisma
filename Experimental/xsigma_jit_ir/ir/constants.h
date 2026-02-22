@@ -1,6 +1,6 @@
 #pragma once
-#include <XSigma/core/ivalue.h>
-#include <XSigma/core/jit_type.h>
+#include <Quarisma/core/ivalue.h>
+#include <Quarisma/core/jit_type.h>
 #include <torch/csrc/Export.h>
 #include <torch/csrc/jit/frontend/source_range.h>
 #include <torch/csrc/jit/ir/scope.h>
@@ -13,7 +13,7 @@
 namespace torch::jit
 {
 
-using ::xsigma::IValue;
+using ::quarisma::IValue;
 
 struct Graph;
 struct Value;

@@ -1,14 +1,14 @@
-#include <XSigma/CachedTensorUtils.h>
-#include <XSigma/LegacyBatchedTensorImpl.h>
-#include <XSigma/SparseCsrTensorUtils.h>
-#include <XSigma/TensorOperators.h>
-#include <XSigma/TensorSubclassLikeUtils.h>
-#include <XSigma/core/grad_mode.h>
-#include <XSigma/native/SparseTensorUtils.h>
+#include <Quarisma/CachedTensorUtils.h>
+#include <Quarisma/LegacyBatchedTensorImpl.h>
+#include <Quarisma/SparseCsrTensorUtils.h>
+#include <Quarisma/TensorOperators.h>
+#include <Quarisma/TensorSubclassLikeUtils.h>
+#include <Quarisma/core/grad_mode.h>
+#include <Quarisma/native/SparseTensorUtils.h>
 #include <torch/csrc/autograd/input_buffer.h>
-#include <xsigma/core/DeviceGuard.h>
-#include <xsigma/core/Event.h>
-#include <xsigma/core/StreamGuard.h>
+#include <quarisma/core/DeviceGuard.h>
+#include <quarisma/core/Event.h>
+#include <quarisma/core/StreamGuard.h>
 
 #include <cstddef>
 #include <optional>
@@ -26,7 +26,7 @@ namespace
 // See https://github.com/pytorch/pytorch/issues/60306
 // TODO: clean this up when https://github.com/pytorch/pytorch/issues/60306 is
 // improved
-void record_stream_any_impl(Variable& var, const xsigma::Stream& stream)
+void record_stream_any_impl(Variable& var, const quarisma::Stream& stream)
 {
     // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
 
@@ -35,11 +35,11 @@ void record_stream_any_impl(Variable& var, const xsigma::Stream& stream)
         return;
     }
 
-    const auto guard = xsigma::impl::VirtualGuardImpl(device_of(var).value().type());
+    const auto guard = quarisma::impl::VirtualGuardImpl(device_of(var).value().type());
 
-    if XSIGMA_UNLIKELY (xsigma::isBatchedTensor(var))
+    if QUARISMA_UNLIKELY (quarisma::isBatchedTensor(var))
     {
-        auto* impl = xsigma::maybeGetBatchedImpl(var);
+        auto* impl = quarisma::maybeGetBatchedImpl(var);
         if (impl)
         {
             guard.recordDataPtrOnStream(impl->value().storage().data_ptr(), stream);
@@ -53,25 +53,25 @@ void record_stream_any_impl(Variable& var, const xsigma::Stream& stream)
     {
         switch (var.layout())
         {
-        case xsigma::kSparseCsr:
-        case xsigma::kSparseCsc:
-        case xsigma::kSparseBsr:
-        case xsigma::kSparseBsc:
+        case quarisma::kSparseCsr:
+        case quarisma::kSparseCsc:
+        case quarisma::kSparseBsr:
+        case quarisma::kSparseBsc:
         {
-            auto* impl = xsigma::sparse_csr::get_sparse_csr_impl(var);
+            auto* impl = quarisma::sparse_csr::get_sparse_csr_impl(var);
             guard.recordDataPtrOnStream(impl->values().storage().data_ptr(), stream);
             guard.recordDataPtrOnStream(impl->compressed_indices().storage().data_ptr(), stream);
             guard.recordDataPtrOnStream(impl->plain_indices().storage().data_ptr(), stream);
             break;
         }
-        case xsigma::kSparse:
+        case quarisma::kSparse:
         {
-            auto* impl = xsigma::sparse::get_sparse_impl(var);
+            auto* impl = quarisma::sparse::get_sparse_impl(var);
             guard.recordDataPtrOnStream(impl->values().storage().data_ptr(), stream);
             guard.recordDataPtrOnStream(impl->indices().storage().data_ptr(), stream);
             break;
         }
-        case xsigma::kStrided:
+        case quarisma::kStrided:
             guard.recordDataPtrOnStream(var.storage().data_ptr(), stream);
             break;
         default:
@@ -84,13 +84,13 @@ bool can_accumulate_inplace(const Variable& v)
 {
     return (
         // `v` is a "vanilla" Tensor
-        !(xsigma::isTensorSubclassLike(v) || v._is_zerotensor() || v.is_nested()) &&
+        !(quarisma::isTensorSubclassLike(v) || v._is_zerotensor() || v.is_nested()) &&
 
         // with a favorable memory layout
         v.is_non_overlapping_and_dense() &&
 
         // and we hold the last reference
-        xsigma::caching::adjusted_use_count(v) == 1 && v.has_storage() &&
+        quarisma::caching::adjusted_use_count(v) == 1 && v.has_storage() &&
         v.storage().use_count() == 1);
 }
 }  // anonymous namespace
@@ -117,12 +117,12 @@ static void accumulate(std::vector<Variable>& buffer, const size_t pos, Variable
     //     it's hard to predict the semantics of arbitrary subclass behavior.
 
     // NOLINTNEXTLINE(bugprone-branch-clone)
-    if (xsigma::GradMode::is_enabled())
+    if (quarisma::GradMode::is_enabled())
     {
         buffer[pos] = old_var + var;
     }
     else if (
-        // XSigma doesn't route sparse additions correctly...
+        // Quarisma doesn't route sparse additions correctly...
         old_var.is_sparse() || old_var.is_sparse_csr())
     {
         if (can_accumulate_inplace(var))
@@ -134,7 +134,7 @@ static void accumulate(std::vector<Variable>& buffer, const size_t pos, Variable
             buffer[pos] = var + old_var;
         }
     }
-    else if (can_accumulate_inplace(old_var) && !xsigma::isTensorSubclassLike(var))
+    else if (can_accumulate_inplace(old_var) && !quarisma::isTensorSubclassLike(var))
     {
         buffer[pos] = old_var.add_(var);
     }
@@ -203,8 +203,8 @@ static void accumulate(std::vector<Variable>& buffer, const size_t pos, Variable
 void InputBuffer::add(
     size_t                               pos,
     Variable&&                           var,
-    const std::optional<xsigma::Stream>& opt_producer_stream_,
-    const std::optional<xsigma::Stream>& opt_consumer_stream_)
+    const std::optional<quarisma::Stream>& opt_producer_stream_,
+    const std::optional<quarisma::Stream>& opt_consumer_stream_)
 {
     TORCH_INTERNAL_ASSERT(pos < buffer.size());
 
@@ -214,7 +214,7 @@ void InputBuffer::add(
     }
     const auto device         = var.device();
     const auto device_type    = device.type();
-    bool       is_accelerator = xsigma::accelerator::isAccelerator(device.type());
+    bool       is_accelerator = quarisma::accelerator::isAccelerator(device.type());
     //
     // Non-accelerator case
     //
@@ -226,27 +226,27 @@ void InputBuffer::add(
         }
         else
         {
-            xsigma::OptionalDeviceGuard device_guard{device};
+            quarisma::OptionalDeviceGuard device_guard{device};
             accumulate(buffer, pos, std::move(var));
         }
         return;
     }
     // Handle the case where var is on an accelerator but producer node has no
     // canonical stream, e.g. this can happen if forward is DtoH
-    const std::optional<xsigma::Stream>& opt_producer_stream =
+    const std::optional<quarisma::Stream>& opt_producer_stream =
         (opt_producer_stream_.has_value()
              ? opt_producer_stream_
-             : std::optional<xsigma::Stream>(
-                   xsigma::accelerator::getCurrentStream(device.index())));
+             : std::optional<quarisma::Stream>(
+                   quarisma::accelerator::getCurrentStream(device.index())));
 
     // opt_consumer_stream is always non-null when is_accelerator is true
     // when InputBuffer is used in the engine. InputBuffer is also called
     // elsewhere however! (e.g. other engine implementations)
-    const std::optional<xsigma::Stream>& opt_consumer_stream =
+    const std::optional<quarisma::Stream>& opt_consumer_stream =
         (opt_consumer_stream_.has_value()
              ? opt_consumer_stream_
-             : std::optional<xsigma::Stream>(
-                   xsigma::accelerator::getCurrentStream(device.index())));
+             : std::optional<quarisma::Stream>(
+                   quarisma::accelerator::getCurrentStream(device.index())));
 
     TORCH_INTERNAL_ASSERT(opt_consumer_stream && opt_producer_stream);
 
@@ -276,7 +276,7 @@ void InputBuffer::add(
         else
         {
             // Case C
-            opt_accum_streams[pos] = xsigma::accelerator::getCurrentStream(device.index());
+            opt_accum_streams[pos] = quarisma::accelerator::getCurrentStream(device.index());
         }
         // 2)
         buffer[pos] = std::move(var);
@@ -288,7 +288,7 @@ void InputBuffer::add(
         {
             // Either the consumer or accum stream waits for the producer
             // stream depending on whether accumulation is needed.
-            auto event = xsigma::Event{device_type};
+            auto event = quarisma::Event{device_type};
             event.record(*opt_producer_stream);
             ready_events[pos] = std::move(event);
         }
@@ -304,7 +304,7 @@ void InputBuffer::add(
         // 1)
         if (*accum_stream != *opt_producer_stream)
         {
-            auto event = xsigma::Event{device_type};
+            auto event = quarisma::Event{device_type};
             event.record(*opt_producer_stream);
             accum_stream->wait(event);
             record_stream_any_impl(var, *accum_stream);
@@ -317,13 +317,13 @@ void InputBuffer::add(
             record_stream_any_impl(buffer[pos], *accum_stream);
         }
         // 2)
-        xsigma::OptionalStreamGuard stream_guard{accum_stream};
+        quarisma::OptionalStreamGuard stream_guard{accum_stream};
         accumulate(buffer, pos, std::move(var));
         // 3)
         if (*opt_consumer_stream != *accum_stream)
         {
             // Only the consumer stream needs to wait for this event
-            auto event = xsigma::Event{device_type};
+            auto event = quarisma::Event{device_type};
             event.record(*accum_stream);
             ready_events[pos] = std::move(event);
         }

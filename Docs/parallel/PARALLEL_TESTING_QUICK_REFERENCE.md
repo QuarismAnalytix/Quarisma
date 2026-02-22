@@ -77,7 +77,7 @@ cd build_ninja
 ### Build with Benchmarks
 ```bash
 cd Scripts
-python3 setup.py config.build.test.ninja.clang.python -DXSIGMA_ENABLE_BENCHMARK=ON
+python3 setup.py config.build.test.ninja.clang.python -DQUARISMA_ENABLE_BENCHMARK=ON
 ```
 
 ### Run All Benchmarks
@@ -126,7 +126,7 @@ cd ../build_ninja
 
 ### Testing Parallel For
 ```cpp
-XSIGMATEST(MyTest, parallel_for_test)
+QUARISMATEST(MyTest, parallel_for_test)
 {
     std::vector<int> data(100, 0);
 
@@ -145,7 +145,7 @@ XSIGMATEST(MyTest, parallel_for_test)
 
 ### Testing Transform
 ```cpp
-XSIGMATEST(MyTest, transform_test)
+QUARISMATEST(MyTest, transform_test)
 {
     std::vector<int> input(100);
     std::iota(input.begin(), input.end(), 0);
@@ -162,7 +162,7 @@ XSIGMATEST(MyTest, transform_test)
 
 ### Testing Thread Safety
 ```cpp
-XSIGMATEST(MyTest, thread_safety_test)
+QUARISMATEST(MyTest, thread_safety_test)
 {
     std::atomic<int> counter{0};
 
@@ -247,7 +247,7 @@ cd build_ninja
 ```bash
 # Rebuild with benchmarks enabled
 cd Scripts
-python3 setup.py config.build.test.ninja.clang.python -DXSIGMA_ENABLE_BENCHMARK=ON
+python3 setup.py config.build.test.ninja.clang.python -DQUARISMA_ENABLE_BENCHMARK=ON
 ```
 
 ---
@@ -258,7 +258,7 @@ python3 setup.py config.build.test.ninja.clang.python -DXSIGMA_ENABLE_BENCHMARK=
 ```bash
 # Build with coverage enabled
 cd Scripts
-python3 setup.py config.build.test.ninja.clang.python -DXSIGMA_ENABLE_COVERAGE=ON
+python3 setup.py config.build.test.ninja.clang.python -DQUARISMA_ENABLE_COVERAGE=ON
 
 # Run tests
 cd ../build_ninja
@@ -304,19 +304,19 @@ llvm-cov show ./bin/CoreCxxTests -instr-profile=default.profdata
 
 ### 2. Write Tests
 ```cpp
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "parallel/tools.h"
 
-namespace xsigma
+namespace quarisma
 {
 
-XSIGMATEST(MyFeature, test_name)
+QUARISMATEST(MyFeature, test_name)
 {
     // Test implementation
     EXPECT_TRUE(true);
 }
 
-}  // namespace xsigma
+}  // namespace quarisma
 ```
 
 ### 3. Build and Run

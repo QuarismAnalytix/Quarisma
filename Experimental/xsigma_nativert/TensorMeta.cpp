@@ -1,107 +1,107 @@
 #include <torch/nativert/graph/TensorMeta.h>
-#include <xsigma/util/Logging.h>
+#include <quarisma/util/Logging.h>
 
 namespace torch::nativert
 {
 
-xsigma::ScalarType convertJsonScalarType(const torch::_export::ScalarType& scalarType)
+quarisma::ScalarType convertJsonScalarType(const torch::_export::ScalarType& scalarType)
 {
     switch (scalarType)
     {
     case torch::_export::ScalarType::UNKNOWN:
-        XSIGMA_CHECK(false, "scalar type is not properly set");
+        QUARISMA_CHECK(false, "scalar type is not properly set");
     case torch::_export::ScalarType::BYTE:
-        return xsigma::ScalarType::Byte;
+        return quarisma::ScalarType::Byte;
     case torch::_export::ScalarType::CHAR:
-        return xsigma::ScalarType::Char;
+        return quarisma::ScalarType::Char;
     case torch::_export::ScalarType::SHORT:
-        return xsigma::ScalarType::Short;
+        return quarisma::ScalarType::Short;
     case torch::_export::ScalarType::INT:
-        return xsigma::ScalarType::Int;
+        return quarisma::ScalarType::Int;
     case torch::_export::ScalarType::LONG:
-        return xsigma::ScalarType::Long;
+        return quarisma::ScalarType::Long;
     case torch::_export::ScalarType::HALF:
-        return xsigma::ScalarType::Half;
+        return quarisma::ScalarType::Half;
     case torch::_export::ScalarType::FLOAT:
-        return xsigma::ScalarType::Float;
+        return quarisma::ScalarType::Float;
     case torch::_export::ScalarType::DOUBLE:
-        return xsigma::ScalarType::Double;
+        return quarisma::ScalarType::Double;
     case torch::_export::ScalarType::COMPLEXHALF:
-        return xsigma::ScalarType::ComplexHalf;
+        return quarisma::ScalarType::ComplexHalf;
     case torch::_export::ScalarType::COMPLEXFLOAT:
-        return xsigma::ScalarType::ComplexFloat;
+        return quarisma::ScalarType::ComplexFloat;
     case torch::_export::ScalarType::COMPLEXDOUBLE:
-        return xsigma::ScalarType::ComplexDouble;
+        return quarisma::ScalarType::ComplexDouble;
     case torch::_export::ScalarType::BOOL:
-        return xsigma::ScalarType::Bool;
+        return quarisma::ScalarType::Bool;
     case torch::_export::ScalarType::BFLOAT16:
-        return xsigma::ScalarType::BFloat16;
+        return quarisma::ScalarType::BFloat16;
     case torch::_export::ScalarType::UINT16:
-        return xsigma::ScalarType::UInt16;
+        return quarisma::ScalarType::UInt16;
     case torch::_export::ScalarType::FLOAT8E4M3FN:
-        return xsigma::ScalarType::Float8_e4m3fn;
+        return quarisma::ScalarType::Float8_e4m3fn;
     case torch::_export::ScalarType::FLOAT8E5M2:
-        return xsigma::ScalarType::Float8_e5m2;
+        return quarisma::ScalarType::Float8_e5m2;
     case torch::_export::ScalarType::FLOAT8E4M3FNUZ:
-        return xsigma::ScalarType::Float8_e4m3fnuz;
+        return quarisma::ScalarType::Float8_e4m3fnuz;
     case torch::_export::ScalarType::FLOAT8E5M2FNUZ:
-        return xsigma::ScalarType::Float8_e5m2fnuz;
+        return quarisma::ScalarType::Float8_e5m2fnuz;
     default:
-        XSIGMA_CHECK(false, "unknown scalar type", static_cast<int>(scalarType));
+        QUARISMA_CHECK(false, "unknown scalar type", static_cast<int>(scalarType));
     }
 }
 
-xsigma::MemoryFormat convertJsonMemoryFormat(const torch::_export::MemoryFormat& memoryFormat)
+quarisma::MemoryFormat convertJsonMemoryFormat(const torch::_export::MemoryFormat& memoryFormat)
 {
     switch (memoryFormat)
     {
     case torch::_export::MemoryFormat::Unknown:
-        XSIGMA_CHECK(false, "got unknown scalar type");
+        QUARISMA_CHECK(false, "got unknown scalar type");
     case torch::_export::MemoryFormat::ContiguousFormat:
-        return xsigma::MemoryFormat::Contiguous;
+        return quarisma::MemoryFormat::Contiguous;
     case torch::_export::MemoryFormat::ChannelsLast:
-        return xsigma::MemoryFormat::ChannelsLast;
+        return quarisma::MemoryFormat::ChannelsLast;
     case torch::_export::MemoryFormat::ChannelsLast3d:
-        return xsigma::MemoryFormat::ChannelsLast3d;
+        return quarisma::MemoryFormat::ChannelsLast3d;
     case torch::_export::MemoryFormat::PreserveFormat:
-        return xsigma::MemoryFormat::Preserve;
+        return quarisma::MemoryFormat::Preserve;
     default:
-        XSIGMA_CHECK(false, "unknown memory format", static_cast<int>(memoryFormat));
+        QUARISMA_CHECK(false, "unknown memory format", static_cast<int>(memoryFormat));
     }
 }
 
-xsigma::Layout convertJsonLayout(const torch::_export::Layout& layout)
+quarisma::Layout convertJsonLayout(const torch::_export::Layout& layout)
 {
     switch (layout)
     {
     case torch::_export::Layout::Unknown:
-        XSIGMA_CHECK(false, "got unknown layout");
+        QUARISMA_CHECK(false, "got unknown layout");
     case torch::_export::Layout::SparseCoo:
         // TODO is this the right translation
-        return xsigma::Layout::Sparse;
+        return quarisma::Layout::Sparse;
     case torch::_export::Layout::SparseCsr:
-        return xsigma::Layout::SparseCsr;
+        return quarisma::Layout::SparseCsr;
     case torch::_export::Layout::SparseCsc:
-        return xsigma::Layout::SparseCsc;
+        return quarisma::Layout::SparseCsc;
     case torch::_export::Layout::SparseBsr:
-        return xsigma::Layout::SparseBsr;
+        return quarisma::Layout::SparseBsr;
     case torch::_export::Layout::SparseBsc:
-        return xsigma::Layout::SparseBsc;
+        return quarisma::Layout::SparseBsc;
     case torch::_export::Layout::_mkldnn:
-        return xsigma::Layout::Mkldnn;
+        return quarisma::Layout::Mkldnn;
     case torch::_export::Layout::Strided:
-        return xsigma::Layout::Strided;
+        return quarisma::Layout::Strided;
     default:
-        XSIGMA_CHECK(false, "unknown layout", static_cast<int>(layout));
+        QUARISMA_CHECK(false, "unknown layout", static_cast<int>(layout));
     }
 }
 
-xsigma::Device convertJsonDevice(const torch::_export::Device& device)
+quarisma::Device convertJsonDevice(const torch::_export::Device& device)
 {
-    xsigma::Device d(device.get_type());
+    quarisma::Device d(device.get_type());
     if (auto index = device.get_index())
     {
-        d.set_index(static_cast<xsigma::DeviceIndex>(*index));
+        d.set_index(static_cast<quarisma::DeviceIndex>(*index));
     }
     return d;
 }

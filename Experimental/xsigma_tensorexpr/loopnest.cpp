@@ -1,4 +1,4 @@
-#include <XSigma/core/functional.h>
+#include <Quarisma/core/functional.h>
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/tensorexpr/analysis.h>
 #include <torch/csrc/jit/tensorexpr/bounds_inference.h>
@@ -12,8 +12,8 @@
 #include <torch/csrc/jit/tensorexpr/ir_verifier.h>
 #include <torch/csrc/jit/tensorexpr/loopnest.h>
 #include <torch/csrc/jit/tensorexpr/tensor.h>
-#include <xsigma/util/Logging.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/Logging.h>
+#include <quarisma/util/irange.h>
 
 #include <algorithm>
 #include <iostream>
@@ -792,10 +792,10 @@ private:
             success_ = false;
             return nullptr;
         }
-        for (const auto i : xsigma::irange(buf->ndim()))
+        for (const auto i : quarisma::irange(buf->ndim()))
         {
-            VarPtr  func_callee_arg   = producer_index_vars_.xsigma(i);
-            ExprPtr func_caller_param = dims.xsigma(i);
+            VarPtr  func_callee_arg   = producer_index_vars_.quarisma(i);
+            ExprPtr func_caller_param = dims.quarisma(i);
             if (func_callee_arg == nullptr)
             {
                 continue;
@@ -1026,7 +1026,7 @@ static StmtPtr computeInlineImpl(
     {
         return nullptr;
     }
-    for (auto& use : buf_load_store_uses.xsigma(b))
+    for (auto& use : buf_load_store_uses.quarisma(b))
     {
         StmtPtr s = use.s;
         if (to<ExternalCall>(s) || to<ExternalCallWithAlloc>(s))
@@ -1128,7 +1128,7 @@ void LoopNest::inlineIntermediateBufs(bool allow_duplicated_work)
                     "Could not find uses of buf '" + buf->name_hint() + "' in the fuser."));
             std::vector<BufLoadOrStoreUse>& uses = buf_load_store_uses[buf];
             auto                            stores =
-                xsigma::filter(uses, [](const BufLoadOrStoreUse& use) { return use.isStore; });
+                quarisma::filter(uses, [](const BufLoadOrStoreUse& use) { return use.isStore; });
 
             // if the intermediate is the buffer formed from reading in the input
             // tensors, always inline, bc we are not duplicating any work
@@ -1155,7 +1155,7 @@ void LoopNest::inlineIntermediateBufs(bool allow_duplicated_work)
                 }
             }
 
-            // all bufs will have xsigma least one store (if they have > 1 they can't be
+            // all bufs will have quarisma least one store (if they have > 1 they can't be
             // inlined anyway)
             size_t reads = uses.size() - 1;
             // if only one read, we can inline it without duplicating work
@@ -1538,7 +1538,7 @@ bool LoopNest::optimizeConditionals()
         TORCH_INTERNAL_ASSERT(
             !comp_values.empty(),
             buildErrorMessage(
-                "Expected xsigma least one expression in optimizeConditional in the fuser."));
+                "Expected quarisma least one expression in optimizeConditional in the fuser."));
         comp_values.insert(comp_values.begin(), immLike(comp_values[0], 0));
 
         auto fors = getLoopStmtsFor(store);
@@ -1899,7 +1899,7 @@ void LoopNest::splitWithMask(const ForPtr& f, int factor, ForPtr* inner)
 
     StmtPtr body_inner = f->removeBody();
     // TODO: is it ok that we're doing it eagerly? In the other implementation we
-    // are only materializing predicates xsigma the last, lowering, step.
+    // are only materializing predicates quarisma the last, lowering, step.
     if (tail_is_needed)
     {
         auto start = intValue(f->start());
@@ -2846,7 +2846,7 @@ void LoopNest::compressBuffer(const BufPtr& buf, const StmtPtr& stmt)
     // dependences is considered invalid.
     //
     // Given the constraint above, for any pair of accesses to a buffer (where
-    // xsigma least one of the access is a write), the accesses must be
+    // quarisma least one of the access is a write), the accesses must be
     // loop-independent on the innermost loop containing the accesses as well as
     // all the loops above it. So, any dimension that uses only those loop
     // variables to access the given buffer could be optimized away.
@@ -3146,7 +3146,7 @@ private:
             return v;
         }
         std::vector<ExprPtr> new_indices(v->indices().size());
-        for (const auto i : xsigma::irange(v->indices().size()))
+        for (const auto i : quarisma::irange(v->indices().size()))
         {
             new_indices[i] = IRSimplifier::simplify(alloc<Sub>(v->indices()[i], offsets_[i]));
         }
@@ -3272,7 +3272,7 @@ LoopNest::AccessResult LoopNest::cacheAccesses(
             if (reduceOp)
             {
                 throw std::runtime_error(
-                    "can only cache accesses used by xsigma most a single reduceOp");
+                    "can only cache accesses used by quarisma most a single reduceOp");
                 return {nullptr, nullptr};
             }
 
@@ -3476,7 +3476,7 @@ LoopNest::AccessResult LoopNest::cacheAccesses(
  * redundant computations: we're calling `sin` twice as much as in the first
  * version.
  *
- * Ultimately, we nede to choose xsigma what point we prefer to compute values of
+ * Ultimately, we nede to choose quarisma what point we prefer to compute values of
  * A[i,j] - we can do it in the very beginning for the entire buffer A (the
  * first option) or compute it on the fly when we compute B (the second option).
  * There are also options in between those two: we can compute a part of B which
@@ -3507,7 +3507,7 @@ LoopNest::AccessResult LoopNest::cacheAccesses(
  * The most important part of compute_at is bounds inference: we need to figure
  * out what part of the used tensors we need to compute when we move the
  * computation to a new scope. In the example above, we need bounds inference to
- * tell us that in order to compute A xsigma each iteration of the outer loop, we
+ * tell us that in order to compute A quarisma each iteration of the outer loop, we
  * need to compute A within indices [i:i+1,0:200].
  *
  * This info allows us to conclude that we need a temp buffer of size 1x200.
@@ -3544,7 +3544,7 @@ LoopNest::AccessResult LoopNest::cacheAccesses(
  *
  * NB: this loop nest can and should be simplified (e.g. the producer loop can
  * be removed since its result is no longer used), but this clean-up
- * optimization is performed separately (currently, not performed xsigma all).
+ * optimization is performed separately (currently, not performed quarisma all).
  *
  * If we examine the final loop nest, we can identify that the following steps
  * needs to be performed:
@@ -3571,7 +3571,7 @@ void LoopNest::computeAt(const StmtPtr& s, const ForPtr& f)
     auto loop_bounds_info = inferBounds(f->body());
 
     // bounds_it holds bounds info for the store we're trying to move to
-    // the loop. If its result isn't accessed in the loop xsigma all - do nothing and
+    // the loop. If its result isn't accessed in the loop quarisma all - do nothing and
     // exit early.
     auto bounds_it = loop_bounds_info.find(st->buf());
     if (bounds_it == loop_bounds_info.end())
@@ -3587,7 +3587,7 @@ void LoopNest::computeAt(const StmtPtr& s, const ForPtr& f)
 
     // Generate index variables for 'temp'
     std::vector<ExprPtr> temp_indices(dims.size());
-    for (const auto i : xsigma::irange(dims.size()))
+    for (const auto i : quarisma::irange(dims.size()))
     {
         // TODO: Use name-hint of the producer indices instead of 'idx'
         temp_indices[i] = alloc<Var>(std::string("idx") + std::to_string(i), dims[i]->dtype());
@@ -3605,7 +3605,7 @@ void LoopNest::computeAt(const StmtPtr& s, const ForPtr& f)
     std::vector<ExprPtr>                    offsets;
     for (const TensorAccessBoundsInfo& p : bounds_it->second)
     {
-        for (const auto i : xsigma::irange(p.start.size()))
+        for (const auto i : quarisma::irange(p.start.size()))
         {
             if (offsets.size() <= i)
             {
@@ -3618,7 +3618,7 @@ void LoopNest::computeAt(const StmtPtr& s, const ForPtr& f)
         }
     }
 
-    for (const auto i : xsigma::irange(prod_indices.size()))
+    for (const auto i : quarisma::irange(prod_indices.size()))
     {
         rewrite_indices_map.emplace_back(prod_indices[i], alloc<Add>(temp_indices[i], offsets[i]));
     }
@@ -3628,7 +3628,7 @@ void LoopNest::computeAt(const StmtPtr& s, const ForPtr& f)
         alloc<Store>(temp_buf, temp_indices, SubstituteInClone(st->value(), rewrite_indices_map));
 
     // Construct the loop nest for the temp computation
-    for (const auto i : xsigma::irange(dims.size()))
+    for (const auto i : quarisma::irange(dims.size()))
     {
         // We're creating loops from innermost to outermost, so we need to access
         // dimensions in reversed order.

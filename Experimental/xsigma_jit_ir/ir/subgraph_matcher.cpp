@@ -1,6 +1,6 @@
 #include <torch/csrc/jit/ir/subgraph_matcher.h>
 #include <torch/csrc/jit/jit_log.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <regex>
 #include <stack>
@@ -98,7 +98,7 @@ bool SubgraphMatcher::matchValues(const Value* v1, Value* v2)
     // Check if we've already visited these values.
     if (values_map_.count(v1))
     {
-        if (values_map_.xsigma(v1) != v2)
+        if (values_map_.quarisma(v1) != v2)
         {
             GRAPH_DEBUG(
                 "Values %",
@@ -108,7 +108,7 @@ bool SubgraphMatcher::matchValues(const Value* v1, Value* v2)
                 " did not match because %",
                 v1->debugName(),
                 " has already been matched with %",
-                values_map_.xsigma(v1)->debugName(),
+                values_map_.quarisma(v1)->debugName(),
                 ".\n");
             return false;
         }
@@ -259,7 +259,7 @@ bool SubgraphMatcher::matchNodes(const Node* n1, Node* n2)
     // Check if we've already visited these nodes.
     if (nodes_map_.count(n1))
     {
-        return nodes_map_.xsigma(n1) == n2;
+        return nodes_map_.quarisma(n1) == n2;
     }
 
     // Param node in pattern graph matches everything.
@@ -322,14 +322,14 @@ bool SubgraphMatcher::matchNodes(const Node* n1, Node* n2)
     // Add nodes to the map before calling matchValues to avoid infinite
     // recursion.
     nodes_map_[n1] = n2;
-    for (const auto i : xsigma::irange(n1->outputs().size()))
+    for (const auto i : quarisma::irange(n1->outputs().size()))
     {
         if (!matchValues(n1->outputs()[i], n2->outputs()[i]))
         {
             return false;
         }
     }
-    for (const auto i : xsigma::irange(n1->inputs().size()))
+    for (const auto i : quarisma::irange(n1->inputs().size()))
     {
         if (!matchValues(n1->inputs()[i], n2->inputs()[i]))
         {

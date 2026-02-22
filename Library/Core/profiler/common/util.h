@@ -14,30 +14,30 @@
 #include "util/TensorImpl.h"
 #include "util/hash.h"
 
-// #include <xsigma/csrc/jit/frontend/source_range.h>
-// These are XSigma-specific headers not available in XSigma
+// #include <quarisma/csrc/jit/frontend/source_range.h>
+// These are Quarisma-specific headers not available in Quarisma
 
 // TODO: replace with pytorch/rfcs#43 when it is ready.
 #define SOFT_ASSERT(cond, ...)                                                   \
     [&]() -> bool                                                                \
     {                                                                            \
-        if XSIGMA_UNLIKELY (!(cond))                                             \
+        if QUARISMA_UNLIKELY (!(cond))                                             \
         {                                                                        \
-            xsigma::profiler::impl::logSoftAssert(                               \
+            quarisma::profiler::impl::logSoftAssert(                               \
                 __func__, __FILE__, static_cast<uint32_t>(__LINE__), #cond, ""); \
             return false;                                                        \
         }                                                                        \
         return true;                                                             \
     }()
 
-namespace xsigma::jit
+namespace quarisma::jit
 {
 struct StackEntry
 {
 };
-}  // namespace xsigma::jit
+}  // namespace quarisma::jit
 
-namespace xsigma::detail
+namespace quarisma::detail
 {
 struct CompileTimeEmptyString
 {
@@ -48,25 +48,25 @@ struct CompileTimeEmptyString
     }
     operator const char*() const { return ""; }
 };
-}  // namespace xsigma::detail
+}  // namespace quarisma::detail
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
-XSIGMA_API bool softAssertRaises();
-XSIGMA_API void setSoftAssertRaises(std::optional<bool> value);
-XSIGMA_API void logSoftAssert(
+QUARISMA_API bool softAssertRaises();
+QUARISMA_API void setSoftAssertRaises(std::optional<bool> value);
+QUARISMA_API void logSoftAssert(
     const char* func, const char* file, uint32_t line, const char* cond, const char* args);
-//TODO: XSigma-specific functions commented out
+//TODO: Quarisma-specific functions commented out
 inline void logSoftAssert(
     const char*                              func,
     const char*                              file,
     uint32_t                                 line,
     const char*                              cond,
-    ::xsigma::detail::CompileTimeEmptyString args)
+    ::quarisma::detail::CompileTimeEmptyString args)
 {
     logSoftAssert(func, file, line, cond, (const char*)args);
 }
-XSIGMA_API void logSoftAssert(
+QUARISMA_API void logSoftAssert(
     const char* func, const char* file, uint32_t line, const char* cond, const std::string& args);
 
 using shape = std::variant<std::vector<int64_t>, std::vector<std::vector<int64_t>>>;
@@ -76,17 +76,17 @@ std::string getNvtxStr(
     const char*                                                    name,
     int64_t                                                        sequence_nr,
     const std::vector<std::vector<int64_t>>&                       shapes,
-    xsigma::RecordFunctionHandle                                   op_id        = 0,
-    const std::list<std::pair<xsigma::RecordFunctionHandle, int>>& input_op_ids = {});
+    quarisma::RecordFunctionHandle                                   op_id        = 0,
+    const std::list<std::pair<quarisma::RecordFunctionHandle, int>>& input_op_ids = {});
 
-struct XSIGMA_VISIBILITY FileLineFunc
+struct QUARISMA_VISIBILITY FileLineFunc
 {
     std::string filename;
     size_t      line;
     std::string funcname;
 };
 
-struct XSIGMA_VISIBILITY SaveNcclMetaConfig
+struct QUARISMA_VISIBILITY SaveNcclMetaConfig
 {
     bool truncate;
     bool introspectMetadata;
@@ -111,36 +111,36 @@ struct XSIGMA_VISIBILITY SaveNcclMetaConfig
     }
 };
 
-XSIGMA_API std::vector<FileLineFunc> prepareCallstack(const std::vector<jit::StackEntry>& cs);
-XSIGMA_API std::vector<std::string> callstackStr(const std::vector<FileLineFunc>& cs);
-XSIGMA_API std::string stacksToStr(const std::vector<std::string>& stacks, const char* delim);
-XSIGMA_API std::vector<std::vector<int64_t>> inputSizes(
-    const xsigma::RecordFunction& fn, const bool flatten_list_enabled = false);
-XSIGMA_API std::string variantShapesToStr(const std::vector<shape>& shapes);
-XSIGMA_API std::string shapesToStr(const std::vector<std::vector<int64_t>>& shapes);
-XSIGMA_API std::string strListToStr(const std::vector<std::string>& types);
-XSIGMA_API std::string inputOpIdsToStr(
-    const std::list<std::pair<xsigma::RecordFunctionHandle, int>>& input_op_ids);
-XSIGMA_API std::string ivalueToStr(const xsigma::IValue& val, bool isString);
-XSIGMA_API std::string ivalueListToStr(const std::vector<xsigma::IValue>& list);
-XSIGMA_API std::vector<std::string> inputTypes(const xsigma::RecordFunction& fn);
+QUARISMA_API std::vector<FileLineFunc> prepareCallstack(const std::vector<jit::StackEntry>& cs);
+QUARISMA_API std::vector<std::string> callstackStr(const std::vector<FileLineFunc>& cs);
+QUARISMA_API std::string stacksToStr(const std::vector<std::string>& stacks, const char* delim);
+QUARISMA_API std::vector<std::vector<int64_t>> inputSizes(
+    const quarisma::RecordFunction& fn, const bool flatten_list_enabled = false);
+QUARISMA_API std::string variantShapesToStr(const std::vector<shape>& shapes);
+QUARISMA_API std::string shapesToStr(const std::vector<std::vector<int64_t>>& shapes);
+QUARISMA_API std::string strListToStr(const std::vector<std::string>& types);
+QUARISMA_API std::string inputOpIdsToStr(
+    const std::list<std::pair<quarisma::RecordFunctionHandle, int>>& input_op_ids);
+QUARISMA_API std::string ivalueToStr(const quarisma::IValue& val, bool isString);
+QUARISMA_API std::string ivalueListToStr(const std::vector<quarisma::IValue>& list);
+QUARISMA_API std::vector<std::string> inputTypes(const quarisma::RecordFunction& fn);
 
-std::unordered_map<std::string, xsigma::IValue> XSIGMA_API
-saveExtraArgs(const xsigma::RecordFunction& fn);
-std::unordered_map<std::string, std::string> XSIGMA_API saveNcclMeta(
-    const xsigma::RecordFunction& fn, const SaveNcclMetaConfig& config = SaveNcclMetaConfig());
-int  getTensorStartHint(const xsigma::Tensor& t);
-bool checkFunctionOutputsForLogging(const xsigma::RecordFunction& fn);
-bool checkFunctionInputsForLogging(const xsigma::RecordFunction& fn);
+std::unordered_map<std::string, quarisma::IValue> QUARISMA_API
+saveExtraArgs(const quarisma::RecordFunction& fn);
+std::unordered_map<std::string, std::string> QUARISMA_API saveNcclMeta(
+    const quarisma::RecordFunction& fn, const SaveNcclMetaConfig& config = SaveNcclMetaConfig());
+int  getTensorStartHint(const quarisma::Tensor& t);
+bool checkFunctionOutputsForLogging(const quarisma::RecordFunction& fn);
+bool checkFunctionInputsForLogging(const quarisma::RecordFunction& fn);
 std::pair<bool, std::variant<int, std::vector<int>>> findStartAddrForTensors(
-    const xsigma::IValue& val);
-uint64_t XSIGMA_API computeFlops(
-    const std::string& op_name, const std::unordered_map<std::string, xsigma::IValue>& extra_args);
+    const quarisma::IValue& val);
+uint64_t QUARISMA_API computeFlops(
+    const std::string& op_name, const std::unordered_map<std::string, quarisma::IValue>& extra_args);
 
 std::string shapeToStr(const std::vector<int64_t>& shape);
 
 template <typename T>
-class XSIGMA_VISIBILITY GlobalStateManager
+class QUARISMA_VISIBILITY GlobalStateManager
 {
 public:
     static GlobalStateManager& singleton()
@@ -181,19 +181,19 @@ struct HashCombine
     template <typename T0, typename T1>
     size_t operator()(const std::pair<T0, T1>& i)
     {
-        return xsigma::get_hash((*this)(i.first), (*this)(i.second));
+        return quarisma::get_hash((*this)(i.first), (*this)(i.second));
     }
 
     template <typename... Args>
     size_t operator()(const std::tuple<Args...>& i)
     {
-        return xsigma::get_hash(i);
+        return quarisma::get_hash(i);
     }
 
     template <typename T>
     size_t operator()(const T& i)
     {
-        return xsigma::get_hash(i);
+        return quarisma::get_hash(i);
     }
 };
 
@@ -217,4 +217,4 @@ constexpr auto kInTensorsStart   = "Input Tensors start";
 constexpr auto kOutTensorsStart  = "Output Tensors start";
 #endif  // USE_DISTRIBUTED
 
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl

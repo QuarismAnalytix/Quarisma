@@ -30,7 +30,7 @@ def make_subclass(
 
         # Calling `as_subclass` because
         # 1. Dynamo knows how to handle it
-        # 2. the C impls match xsigma this point -- both `THPVariable_make_subclass` and
+        # 2. the C impls match quarisma this point -- both `THPVariable_make_subclass` and
         #    `THPVariable_as_subclass` calls `THPVariable_NewWithVar`.
         return data.as_subclass(cls)
 

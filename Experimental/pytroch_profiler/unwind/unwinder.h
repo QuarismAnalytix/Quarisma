@@ -5,7 +5,7 @@
 #include "action.h"
 #include "unwind_error.h"
 
-namespace xsigma::unwind
+namespace quarisma::unwind
 {
 
 struct UnwindState
@@ -92,4 +92,4 @@ private:
     bool     deref_{false};
 };
 
-}  // namespace xsigma::unwind
+}  // namespace quarisma::unwind

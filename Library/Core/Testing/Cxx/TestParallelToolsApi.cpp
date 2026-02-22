@@ -1,5 +1,5 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
@@ -22,11 +22,11 @@
 #include <functional>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "parallel/common/parallel_tools_api.h"
 #include "parallel/parallel.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace detail
 {
@@ -77,7 +77,7 @@ public:
 // Consolidated Test 1: Singleton and Backend Identification
 // ============================================================================
 
-XSIGMATEST(ParallelToolsApi, singleton_and_backend_identification)
+QUARISMATEST(ParallelToolsApi, singleton_and_backend_identification)
 {
     {
         // Test 1: Singleton instance verification
@@ -137,7 +137,7 @@ XSIGMATEST(ParallelToolsApi, singleton_and_backend_identification)
         EXPECT_FALSE(result);
     }
 
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
     {
         parallel_tools_api& api = parallel_tools_api::instance();
 
@@ -148,7 +148,7 @@ XSIGMATEST(ParallelToolsApi, singleton_and_backend_identification)
     }
 #endif
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
     {
         parallel_tools_api& api = parallel_tools_api::instance();
 
@@ -159,7 +159,7 @@ XSIGMATEST(ParallelToolsApi, singleton_and_backend_identification)
     }
 #endif
 
-#if !XSIGMA_HAS_OPENMP && !XSIGMA_HAS_TBB
+#if !QUARISMA_HAS_OPENMP && !QUARISMA_HAS_TBB
     {
         parallel_tools_api& api = parallel_tools_api::instance();
 
@@ -566,4 +566,4 @@ XSIGMATEST(ParallelToolsApi, singleton_and_backend_identification)
 }
 }  // namespace parallel
 }  // namespace detail
-}  // namespace xsigma
+}  // namespace quarisma

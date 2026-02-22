@@ -1189,7 +1189,7 @@ if torch._C._has_mkldnn:
             # doesn't support group_depthwise_conv_transpose.
             if groups > 1 and groups == in_channels:
                 return False
-            # Port from: aten/src/XSigma/native/Convolution.cpp:is_output_padding_big
+            # Port from: aten/src/Quarisma/native/Convolution.cpp:is_output_padding_big
             output_paddings = conv_node.args[-2]
             strides = conv_node.args[3]
             if any(

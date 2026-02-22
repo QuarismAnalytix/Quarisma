@@ -1,7 +1,7 @@
-# XSigma Non-Naive Profiler → PyTorch-Style Output: Executive Summary
+# Quarisma Non-Naive Profiler → PyTorch-Style Output: Executive Summary
 
 ## Goal
-Enable XSigma's Non-Naive Profiler to generate output matching PyTorch's profiler table format with columns for CPU/CUDA timing, percentages, and call counts.
+Enable Quarisma's Non-Naive Profiler to generate output matching PyTorch's profiler table format with columns for CPU/CUDA timing, percentages, and call counts.
 
 ## Current State
 ✅ **What We Have:**

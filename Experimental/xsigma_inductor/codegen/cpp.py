@@ -122,16 +122,16 @@ VECTORIZABLE_RTYPES = OrderedSet(
 )
 
 PYTHON_TO_CPP = {
-    "Tensor": "xsigma::Tensor",
+    "Tensor": "quarisma::Tensor",
     "int": "long",
     "float": "double",
     "bool": "bool",
     "str": "std::string",
-    "ScalarType": "xsigma::ScalarType",
-    "MemoryFormat": "xsigma::MemoryFormat",
-    "Layout": "xsigma::Layout",
-    "Device": "xsigma::Device",
-    "number": "xsigma::Scalar",
+    "ScalarType": "quarisma::ScalarType",
+    "MemoryFormat": "quarisma::MemoryFormat",
+    "Layout": "quarisma::Layout",
+    "Device": "quarisma::Device",
+    "number": "quarisma::Scalar",
 }
 
 CONTAINER_PYTHON_TO_CPP = {
@@ -546,7 +546,7 @@ class OuterLoopFusedSchedulerNode(FusedSchedulerNode):
     def check_outer_fusion_loop_level_attr(
         self, cpp_kernel_proxy_list, outer_loop_fusion_depth
     ):
-        # This function ensures that the same tiling split is applied xsigma each loop level within the outer loop fusion depth.
+        # This function ensures that the same tiling split is applied quarisma each loop level within the outer loop fusion depth.
         # In the fusion stage, we only examine nodes with same vars and reduce.
         # However, for nodes with same vars and reduce, the loops may still have different tile splits.
         # For example (test_expr_vec_non_contiguous in test_cpu_repro.py):
@@ -752,7 +752,7 @@ class CppOverrides(OpOverrides):
     @staticmethod
     def to_dtype_bitcast(x, dtype, src_dtype):
         assert dtype in DTYPE_TO_CPP, f"{dtype} missing from {__name__}.DTYPE_TO_CPP"
-        return f"xsigma::bit_cast<{DTYPE_TO_CPP[dtype]}>({x})"
+        return f"quarisma::bit_cast<{DTYPE_TO_CPP[dtype]}>({x})"
 
     @staticmethod
     def abs(x):
@@ -1535,7 +1535,7 @@ class CppVecOverrides(CppOverrides):
         elif bug == "accuracy":
             return f"{x} + decltype({x})(1)"
         elif bug is None:
-            return f"xsigma::vec::clamp_min({x}, decltype({x})(0))"
+            return f"quarisma::vec::clamp_min({x}, decltype({x})(0))"
         else:
             raise AssertionError(
                 f"unrecognized config cpp.inject_relu_bug_TESTING_ONLY = {bug!r}"
@@ -1585,7 +1585,7 @@ class CppVecOverrides(CppOverrides):
             a_cast, b_cast = unify_mask_base_type(V.kernel.compute, (a, b))
             return f"{a_cast} & {b_cast}"
         else:
-            return f"xsigma::vec::minimum({a}, {b})"
+            return f"quarisma::vec::minimum({a}, {b})"
 
     @staticmethod
     def maximum(a, b):
@@ -1594,7 +1594,7 @@ class CppVecOverrides(CppOverrides):
             a_cast, b_cast = unify_mask_base_type(V.kernel.compute, (a, b))
             return f"{a_cast} | {b_cast}"
         else:
-            return f"xsigma::vec::maximum({a}, {b})"
+            return f"quarisma::vec::maximum({a}, {b})"
 
     @staticmethod
     def square(a):
@@ -1780,14 +1780,14 @@ class CppVecOverrides(CppOverrides):
         mantissa.update_on_args("frexp", (x,), kwargs={})
         n_vec = V.kernel._get_num_vectors(x.dtype)
         mantissa_t = (
-            f"xsigma::vec::Vectorized<{cdtype}>"
+            f"quarisma::vec::Vectorized<{cdtype}>"
             if n_vec == 1
-            else f"xsigma::vec::VectorizedN<{cdtype}, {n_vec}>"
+            else f"quarisma::vec::VectorizedN<{cdtype}, {n_vec}>"
         )
         code.writeline(
-            f"xsigma::vec::Vectorized<int32_t> {exponent};"
+            f"quarisma::vec::Vectorized<int32_t> {exponent};"
             if n_vec == 1
-            else f"xsigma::vec::VectorizedN<int32_t, {n_vec}> {exponent};"
+            else f"quarisma::vec::VectorizedN<int32_t, {n_vec}> {exponent};"
         )
         code.writeline(f"{mantissa_t} {mantissa};")
         code.writeline("[&]()")
@@ -1808,9 +1808,9 @@ class CppVecOverrides(CppOverrides):
                     "tmpbuf_mantissa[i] = std::frexp(tmpbuf[i], &tmpbuf_exponent[i]);"
                 )
             code.writeline(
-                f"{exponent} = xsigma::vec::Vectorized<int32_t>::loadu(tmpbuf_exponent.data(), {cexpr_index(size)});"
+                f"{exponent} = quarisma::vec::Vectorized<int32_t>::loadu(tmpbuf_exponent.data(), {cexpr_index(size)});"
                 if n_vec == 1
-                else f"{exponent} = xsigma::vec::VectorizedN<int32_t, {n_vec}>::loadu(tmpbuf_exponent.data(), {cexpr_index(size)});"
+                else f"{exponent} = quarisma::vec::VectorizedN<int32_t, {n_vec}>::loadu(tmpbuf_exponent.data(), {cexpr_index(size)});"
             )
             code.writeline(
                 f"{mantissa} = {mantissa_t}::loadu(tmpbuf_mantissa.data(), {cexpr_index(size)});"
@@ -1870,13 +1870,13 @@ class CppVecOverrides(CppOverrides):
                 if output_mask:
                     assert not kernel.tail_size
                     load_args = "tmpbuf_out.data()"
-                    load_fn = f"xsigma::vec::VecMask<{cdtype},{n_vec}>::from"
+                    load_fn = f"quarisma::vec::VecMask<{cdtype},{n_vec}>::from"
                 else:
                     load_args = f"tmpbuf_out.data(), {cexpr_index(size)}"
                     if n_vec == 1:
-                        load_fn = f"xsigma::vec::Vectorized<{octype}>::loadu"
+                        load_fn = f"quarisma::vec::Vectorized<{octype}>::loadu"
                     else:
-                        load_fn = f" xsigma::vec::VectorizedN<{octype}, {n_vec}>::loadu"
+                        load_fn = f" quarisma::vec::VectorizedN<{octype}, {n_vec}>::loadu"
                 code.writeline(f"return {load_fn}({load_args});")
             code.writeline("()")
             return code
@@ -2534,7 +2534,7 @@ class CppKernel(Kernel):
         if V.graph.aot_mode:
             return "AOTI_TORCH_CHECK"
         else:
-            return "XSIGMA_CHECK"
+            return "QUARISMA_CHECK"
 
     def decide_parallel_depth(self, max_parallel_depth, threads):
         assert self.call_ranges is not None
@@ -2557,7 +2557,7 @@ class CppKernel(Kernel):
             par *= hint
             seq /= hint
         # if we assume thread number is dynamic, make sure we
-        # have xsigma least one parallel scope and let OMP runtime
+        # have quarisma least one parallel scope and let OMP runtime
         # to manage the serial vs. parallel.
         if config.cpp.dynamic_threads and depth == 0 and len(ranges) > 0:
             depth = 1
@@ -2582,7 +2582,7 @@ class CppKernel(Kernel):
         return CppCSEVariable(*args, **kwargs)
 
     def get_to_dtype_expr(self, src, dtype, src_dtype):
-        return f"xsigma::convert<{DTYPE_TO_CPP[dtype]}>({src})"
+        return f"quarisma::convert<{DTYPE_TO_CPP[dtype]}>({src})"
 
     def cache_dtype_convert(self, dst, dst_dtype, src, src_dtype):
         expr = self.get_to_dtype_expr(src, dst_dtype, src_dtype)
@@ -2688,15 +2688,15 @@ class CppVecKernel(CppKernel):
     def _get_vec_type(self, dtype: torch.dtype) -> str:
         num_vectors = self._get_num_vectors(dtype)
         if num_vectors == 1:
-            return f"xsigma::vec::Vectorized<{DTYPE_TO_CPP[dtype]}>"
+            return f"quarisma::vec::Vectorized<{DTYPE_TO_CPP[dtype]}>"
         else:
-            return f"xsigma::vec::VectorizedN<{DTYPE_TO_CPP[dtype]},{num_vectors}>"
+            return f"quarisma::vec::VectorizedN<{DTYPE_TO_CPP[dtype]},{num_vectors}>"
 
     def _get_mask_type(self, dtype: torch.dtype = torch.float) -> str:
         if dtype == torch.bool:
             return ""
         num_vectors = self._get_num_vectors(dtype)
-        return f"xsigma::vec::VecMask<{DTYPE_TO_CPP[dtype]},{num_vectors}>"
+        return f"quarisma::vec::VecMask<{DTYPE_TO_CPP[dtype]},{num_vectors}>"
 
     def _get_mask_cast(self, mask: CppCSEVariable, dtype: torch.dtype) -> str:
         assert mask.dtype == torch.bool, repr(mask)
@@ -2711,7 +2711,7 @@ class CppVecKernel(CppKernel):
         load_mask: Optional[CppCSEVariable] = None,
     ):
         """
-        Get a load line str that loads a vector from `var` xsigma `index` of type `dtype`.
+        Get a load line str that loads a vector from `var` quarisma `index` of type `dtype`.
         If `load_mask` is not None, we do a masked load accordingly.
         Notes on the `dtype`:
         1. We always load `self.tiling_factor` number of elements regardless of the `dtype`.
@@ -2911,7 +2911,7 @@ class CppVecKernel(CppKernel):
         accu_store: bool = False,
     ):
         """
-        Get a store line buffer that stores `value` into `var` xsigma `index` of `dtype`. It handles
+        Get a store line buffer that stores `value` into `var` quarisma `index` of `dtype`. It handles
         both contiguous and non-contiguous store cases.
         :param value: Vectorized type templaterized on `dtype`.
         :param var: buffer to store into.
@@ -3011,7 +3011,7 @@ class CppVecKernel(CppKernel):
         if reduction_key in self.reduction_cse.reduction_cache:
             return self.reduction_cse.reduction_cache[reduction_key]
 
-        vec_ns = "xsigma::vec"
+        vec_ns = "quarisma::vec"
         vec = f"{vec_ns}::Vectorized<{DTYPE_TO_CPP[dtype]}>"
         acc_type = reduction_acc_type(reduction_type, init_dtype)
         acc_type_vec = self.reduction_acc_type_vec(reduction_type, init_dtype)
@@ -3194,10 +3194,10 @@ class CppVecKernel(CppKernel):
                     + "; }"
                 )
                 is_bool = dtype == torch.bool
-                # we are using xsigma::vec::VecMask<float, N> for bool
+                # we are using quarisma::vec::VecMask<float, N> for bool
                 vec_dtype = torch.float if is_bool else dtype
-                vec = f"xsigma::vec::Vectorized<{DTYPE_TO_CPP[vec_dtype]}>"
-                vec_reduce_all_func = f"xsigma::vec::vec_reduce_all<{DTYPE_TO_CPP[vec_dtype]}, {self._get_num_vectors(vec_dtype)}>"
+                vec = f"quarisma::vec::Vectorized<{DTYPE_TO_CPP[vec_dtype]}>"
+                vec_reduce_all_func = f"quarisma::vec::vec_reduce_all<{DTYPE_TO_CPP[vec_dtype]}, {self._get_num_vectors(vec_dtype)}>"
                 result_vec = f"{acc_vec}"
                 if use_acc_helper:
                     assert reduction_type == "sum"
@@ -3253,11 +3253,11 @@ class CppVecKernel(CppKernel):
                 else:
                     if src_num_vectors == out_num_vectors == 1:
                         convert = (
-                            f"xsigma::vec::convert<{DTYPE_TO_CPP[out_dtype]}>({value})"
+                            f"quarisma::vec::convert<{DTYPE_TO_CPP[out_dtype]}>({value})"
                         )
                     else:
                         convert = (
-                            f"xsigma::vec::convert<{DTYPE_TO_CPP[out_dtype]},"
+                            f"quarisma::vec::convert<{DTYPE_TO_CPP[out_dtype]},"
                             f"{out_num_vectors},{DTYPE_TO_CPP[dtype]},{src_num_vectors}>({value})"
                         )
                 code.writeline(f"auto {converted_value} = {convert};")
@@ -3363,7 +3363,7 @@ class CppVecKernel(CppKernel):
                 return (
                     f"{var} | {next_value}"
                     if is_bool
-                    else f"xsigma::vec::maximum({var}, {next_value})"
+                    else f"quarisma::vec::maximum({var}, {next_value})"
                 )
         elif reduction_type == "min":
             if self.tail_size:
@@ -3372,7 +3372,7 @@ class CppVecKernel(CppKernel):
                 return (
                     f"{var} & {next_value}"
                     if is_bool
-                    else f"xsigma::vec::minimum({var}, {next_value})"
+                    else f"quarisma::vec::minimum({var}, {next_value})"
                 )
         elif reduction_type == "sum":
             if helper_val:
@@ -3498,9 +3498,9 @@ class CppVecKernel(CppKernel):
             expr = f"{src}.to<{dst_cpp_type},{dst_num_vectors}>()"
         elif src_dtype != dtype:
             if src_num_vectors == dst_num_vectors == 1:
-                expr = f"xsigma::vec::convert<{dst_cpp_type}>({src})"
+                expr = f"quarisma::vec::convert<{dst_cpp_type}>({src})"
             else:
-                expr = f"xsigma::vec::convert<{dst_cpp_type},{dst_num_vectors},{src_cpp_type},{src_num_vectors}>({src})"
+                expr = f"quarisma::vec::convert<{dst_cpp_type},{dst_num_vectors},{src_cpp_type},{src_num_vectors}>({src})"
         return expr
 
 
@@ -3519,12 +3519,12 @@ class CppTile2DKernel(CppVecKernel):
         for ...
           for inner_most ...
             // generated by CppTile2DKernel
-            float tmp0[16*16]; xsigma::vec::transpose_mxn<...>(tmp0, in_ptr0 + ..., ...); // into kernel.preloads
+            float tmp0[16*16]; quarisma::vec::transpose_mxn<...>(tmp0, in_ptr0 + ..., ...); // into kernel.preloads
             float tmp1[16*16]; // into kernel.preloads
             for i_inner ... { // the kernel inner loop
               vectorized loads/compute/stores (e.g., load tmp0, store tmp1) // into kernel.loads/compute/stores
             }
-            xsigma::vec::transpose_mxn(out_ptr0 + ..., tmp1, ...) // into kernel.poststores
+            quarisma::vec::transpose_mxn(out_ptr0 + ..., tmp1, ...) // into kernel.poststores
           for inner_most ... (tail)
             // generated by CppVecKernel
             ...
@@ -4177,7 +4177,7 @@ class CppKernelProxy(CppKernel):
                     (ops, value_var, dtype, src_dtype) = _node.args
 
                     # to_dtype_bitcast act as a lowp fp sink:
-                    # xsigma::bit_cast requires the source and target have the same bitwidth. Because the input tensor's
+                    # quarisma::bit_cast requires the source and target have the same bitwidth. Because the input tensor's
                     # dtype could be promoted, e.g. from float16 to float, we have to cast the tensor to its original
                     # source dtype before invoking bit_cast.
                     if src_dtype in DTYPE_LOWP_FP:
@@ -4526,11 +4526,11 @@ class CppKernelProxy(CppKernel):
 
     def gen_body(self, code: Optional[BracesBuffer] = None):
         assert code is not None
-        if_prefix = "XSIGMA_LIKELY"
+        if_prefix = "QUARISMA_LIKELY"
         for kernel in self.kernels:
             with contextlib.ExitStack() as stack:
                 if kernel.codegen_conditions(code, if_prefix):
-                    if_prefix = "XSIGMA_UNLIKELY"
+                    if_prefix = "QUARISMA_UNLIKELY"
                     stack.enter_context(code.indent())
                     code.splice(kernel.gen_body())
 
@@ -4569,13 +4569,13 @@ class CppKernelProxy(CppKernel):
             suffix_buf = BracesBuffer()
             with contextlib.ExitStack() as stack:
                 if main_loop_kernel.codegen_conditions(
-                    suffix_buf, "XSIGMA_LIKELY", outer_loop.var
+                    suffix_buf, "QUARISMA_LIKELY", outer_loop.var
                 ):
                     stack.enter_context(suffix_buf.indent())
                     suffix_buf.splice(main_loop_kernel.reduction_suffix)
             with contextlib.ExitStack() as stack:
                 if tail_loop_kernel.codegen_conditions(
-                    suffix_buf, "XSIGMA_UNLIKELY", outer_loop.var
+                    suffix_buf, "QUARISMA_UNLIKELY", outer_loop.var
                 ):
                     stack.enter_context(suffix_buf.indent())
                     if type(tail_loop_kernel) is self.kernel_cls:
@@ -4817,7 +4817,7 @@ class CppScheduling(BaseScheduling):
         # but different original ranges, for example:
         # {d0: s0, d1: s1, d2: s2} vs {d0: s0*s1*s2}
         # See https://github.com/pytorch/pytorch/pull/120077/files#r1500427848 for more details
-        # TODO: we can fix if it allows us to CSE xsigma least one of the variables
+        # TODO: we can fix if it allows us to CSE quarisma least one of the variables
 
         assert isinstance(node_to_recomp, SchedulerNode)
         if isinstance(node_to_recomp.node, ir.TemplateBuffer):
@@ -5121,9 +5121,9 @@ class CppScheduling(BaseScheduling):
                 for _node in node.get_outer_nodes()
             ):
                 # Ref to the typical case of local buffer in
-                # https://github.com/pytorch/pytorch/blob/1115a25c36340554442f28f9570abd42f0aface2/aten/src/XSigma/native/cpu/SoftMaxKernel.cpp#L159 # noqa: B950
+                # https://github.com/pytorch/pytorch/blob/1115a25c36340554442f28f9570abd42f0aface2/aten/src/Quarisma/native/cpu/SoftMaxKernel.cpp#L159 # noqa: B950
                 # where the buffer is with size of last dim and contiguous.
-                # Only support this typical case xsigma first.
+                # Only support this typical case quarisma first.
                 visited_scheduler_nodes: OrderedSet[str] = OrderedSet()
                 for scheduler_node in node.get_nodes():
                     # all users inside same OuterLoopFusedSchedulerNode
@@ -5521,7 +5521,7 @@ class KernelGroup:
         arg_defs = ",\n".ljust(25).join(arg_defs)
         func_export_decl = get_export_declaration()
         inline_attr = (
-            "XSIGMA_ALWAYS_INLINE_ATTRIBUTE" if config.cpp.force_inline_kernel else ""
+            "QUARISMA_ALWAYS_INLINE_ATTRIBUTE" if config.cpp.force_inline_kernel else ""
         )
         code.writeline(
             f'extern "C" {func_export_decl} void {inline_attr} {kernel_decl_name}({arg_defs})'
@@ -5601,7 +5601,7 @@ class LoopLevel:
     size: Optional[sympy.Expr] = None
     offset: sympy.Expr = sympy.S.Zero
     # Note [tiled_size]
-    # We may do loop-tiling xsigma this loop level.
+    # We may do loop-tiling quarisma this loop level.
     # When var is in [offset, tiled_size), we will perform the vectorization kernel.
     # When var is in [tiled_size, size), we will perform the scalar or masked vectorization kernel.
     # for (var = offset; var < size; var += steps) {
@@ -5685,11 +5685,11 @@ class LoopLevel:
 class LoopNest:
     """
     A loop-nest-like structure. It is built with the `build` method
-    as a loop nest and then will perform loop-tiling xsigma some depth.
+    as a loop nest and then will perform loop-tiling quarisma some depth.
 
     A typical case is for vectorization, where we typically do loop-tiling
-    xsigma the innermost loop level. A more complicated case is when we do
-    2D tiling xsigma both the innermost and outer levels.
+    quarisma the innermost loop level. A more complicated case is when we do
+    2D tiling quarisma both the innermost and outer levels.
     """
 
     loops: Optional[list[LoopLevel]] = None
@@ -5798,7 +5798,7 @@ class LoopNest:
 
     def tile(self, depth, factor):
         """
-        Do loop-tiling xsigma the `depth` level with `factor`.
+        Do loop-tiling quarisma the `depth` level with `factor`.
             for (x0 = 0; x0 < x0_end; x0++)
             ->
             for (x0 = 0; x0 < x0_end; x0 += factor)

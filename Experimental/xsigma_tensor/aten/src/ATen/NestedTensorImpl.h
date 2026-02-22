@@ -1,6 +1,6 @@
 #pragma once
-#include <XSigma/MemoryOverlap.h>
-#include <XSigma/Tensor.h>
+#include <Quarisma/MemoryOverlap.h>
+#include <Quarisma/Tensor.h>
 #include <c10/core/DispatchKey.h>
 #include <c10/core/DispatchKeySet.h>
 #include <c10/core/MemoryFormat.h>

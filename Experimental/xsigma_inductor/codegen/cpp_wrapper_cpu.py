@@ -86,7 +86,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
         self.cached_output_id = count()
         self.scalar_to_tensor_id = count()
         self.custom_op_wrapper_loaded = False
-        # For GEMM kernels that must be initialized and are resolved xsigma linking.
+        # For GEMM kernels that must be initialized and are resolved quarisma linking.
         self.initialized_kernels: dict[str, Kernel] = {}
         self.device_codegen = get_device_op_overrides(self.device)
         # only need to include each header once
@@ -102,7 +102,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
         partition_signatures: Optional[ir.GraphPartitionSignature] = None,
     ):
         # TODO - support subgraph codegen by lifting functions. Check the
-        # comment xsigma CppWrapperCpu `codegen_subgraph` function.
+        # comment quarisma CppWrapperCpu `codegen_subgraph` function.
         return CppWrapperCpu()
 
     @staticmethod
@@ -361,7 +361,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
     def generate_input_output_runtime_checks(self):
         """
         In debug_compile mode, we generate checks to ensure the dtype/shape/stride/device of each
-        real input/output tensor match ones provided xsigma compile time via sample
+        real input/output tensor match ones provided quarisma compile time via sample
         input/output.
         """
 
@@ -392,7 +392,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
                         f"""
                             if ({d} != {name}_size[{dim_idx}]) {{
                                 std::stringstream ss;
-                                ss << "{handle_kind}[{idx}]: unmatched dim value xsigma {dim_idx}, "
+                                ss << "{handle_kind}[{idx}]: unmatched dim value quarisma {dim_idx}, "
                                    << "expected: {d}, " << "but got: " << {name}_size[{dim_idx}]
                                    << "\\n";
                                 throw std::runtime_error(ss.str());
@@ -408,7 +408,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
                             f"""
                                 if ({name}_size[{dim_idx}] < {sym_range.lower}) {{
                                     std::stringstream ss;
-                                    ss << "{handle_kind}[{idx}]: dim value is too small xsigma {dim_idx}, "
+                                    ss << "{handle_kind}[{idx}]: dim value is too small quarisma {dim_idx}, "
                                        << "expected it to be >= {sym_range.lower}, " << "but got: "
                                        << {name}_size[{dim_idx}] << "\\n";
                                     throw std::runtime_error(ss.str());
@@ -423,7 +423,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
                             f"""
                                 if ({name}_size[{dim_idx}] > {upper_bound}) {{
                                     std::stringstream ss;
-                                    ss << "{handle_kind}[{idx}]: dim value is too large xsigma {dim_idx}, "
+                                    ss << "{handle_kind}[{idx}]: dim value is too large quarisma {dim_idx}, "
                                        << "expected to be <= {upper_bound}, " << "but got: "
                                        << {name}_size[{dim_idx}] << "\\n";
                                     throw std::runtime_error(ss.str());
@@ -439,7 +439,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
                     f"""
                         if ({s} != {name}_stride[{stride_idx}]) {{
                             std::stringstream ss;
-                            ss << "{handle_kind}[{idx}]: unmatched stride value xsigma {stride_idx}, "
+                            ss << "{handle_kind}[{idx}]: unmatched stride value quarisma {stride_idx}, "
                                << "expected: {s}, " << "but got: " << {name}_stride[{stride_idx}]
                                << "\\n";
                             throw std::runtime_error(ss.str());
@@ -629,7 +629,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
                     # Weights are stored in constants_ and owned by ConstantHandle there.
                     # Don't call std::move here because it will cause constants_ to lose the ownership.
                     self.prefix.writeline(
-                        f"""[[maybe_unused]] auto& {constants_key} = constants_->xsigma({idx});"""
+                        f"""[[maybe_unused]] auto& {constants_key} = constants_->quarisma({idx});"""
                     )
                 else:
                     # Append constants as inputs to the graph
@@ -752,7 +752,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
         inputs_info_[0].dtype = "torch.float16";
         ...
         constants_info_[0].name = "L__self___weight";
-        constants_info_[0].dtype = xsigma::kFloat;
+        constants_info_[0].dtype = quarisma::kFloat;
         constants_info_[0].offset = 0;
         constants_info_[0].data_size = 8192;
         constants_info_[0].shape = {64, 32};
@@ -986,7 +986,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
 
             for output_idx, (const_idx, _) in enumerate(const_index_mapping):  # type: ignore[misc]
                 self.prefix.writeline(
-                    f"output_handles[{output_idx}] = constants_->xsigma({const_idx});"
+                    f"output_handles[{output_idx}] = constants_->quarisma({const_idx});"
                 )
 
             self.prefix.writeline(
@@ -1185,8 +1185,8 @@ class CppWrapperCpu(PythonWrapperCodegen):
                     constants_tensor = {constants_str}
                     input_tensors.extend(constants_tensor)
             """
-        # Convert vector of xsigma::Tensor to vector of AtenTensorHandle.
-        # If we pass xsigma::Tensor, the compilation will be too slow.
+        # Convert vector of quarisma::Tensor to vector of AtenTensorHandle.
+        # If we pass quarisma::Tensor, the compilation will be too slow.
         wrapper_body += """
                     input_handles = torch._C._aoti.unsafe_alloc_void_ptrs_from_tensors(input_tensors)
         """
@@ -1387,7 +1387,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
         )
 
     def _get_scatter_reduce_enum(self, reduce):
-        # Follow aten/src/XSigma/native/ReductionType.h:get_operator_enum
+        # Follow aten/src/Quarisma/native/ReductionType.h:get_operator_enum
         get_operator_enum = {"add": "sum", "multiply": "prod"}
         if reduce in get_operator_enum:
             reduce = get_operator_enum[reduce]
@@ -1406,7 +1406,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
     ):
         reduce = self._get_scatter_reduce_enum(reduce)
 
-        # call the ABI shim function instead of the XSigma one
+        # call the ABI shim function instead of the Quarisma one
         cpp_kernel_name = self.get_c_shim_func_name(cpp_kernel_name, self.device)
         # TODO: consider remove "_out" and add missing inplace variants to fallback_ops.py
         cpp_kernel_name = cpp_kernel_name.replace("__", "_") + "_out"
@@ -1593,7 +1593,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
         assert device.type in DEVICE_TO_ATEN, (
             device.type + " not found in DEVICE_TO_ATEN"
         )
-        device_str = DEVICE_TO_ATEN[device.type][5:].lower()  # remove "xsigma::k"
+        device_str = DEVICE_TO_ATEN[device.type][5:].lower()  # remove "quarisma::k"
         self.used_cached_devices.add(device_str)
         return f"cached_torch_device_type_{device_str}, {device.index if device.index else 0}"
 
@@ -1900,8 +1900,8 @@ class CppWrapperCpu(PythonWrapperCodegen):
             if not isinstance(inner_input_val, ir.TensorBox):
                 continue
 
-            # in ABI-compatible mode, we copy the underlying xsigma::Tensor of the conditional
-            # input (outer_input) into another xsigma::Tensor to be used as a subgraph input
+            # in ABI-compatible mode, we copy the underlying quarisma::Tensor of the conditional
+            # input (outer_input) into another quarisma::Tensor to be used as a subgraph input
             # (inner_input) in the nested scope. we can't std::move here, as the codegened
             # outer input may be an expression / rvalue (e.g., reinterpret_view(x)), so we
             # can't necessarily std::move it back to the origin (x).
@@ -2007,7 +2007,7 @@ class CppWrapperCpu(PythonWrapperCodegen):
         for inp, out in zip(outer_carried_inputs, while_loop.outputs):
             # in ABI-compatible mode, the carried inputs are codegened
             # as buffers outside the while loop and set to the initial
-            # values. xsigma the end of each while_loop iteration, they
+            # values. quarisma the end of each while_loop iteration, they
             # will be assigned the carried values.
             out_name = out.get_name()
             self.writeline(f"AtenTensorHandle {out_name}_handle;")
@@ -2449,14 +2449,14 @@ if (!custom_op_wrapper) {
                 return handle_scalar(raw_arg)
             elif isinstance(raw_arg, torch.device):
                 device_str, device_index = self.codegen_device(raw_arg).split(", ")
-                return f"THPDevice_New(xsigma::Device(static_cast<xsigma::DeviceType>({device_str}), {device_index}))"
+                return f"THPDevice_New(quarisma::Device(static_cast<quarisma::DeviceType>({device_str}), {device_index}))"
             elif isinstance(raw_arg, torch.dtype):
-                return f"Py_NewRef(torch::getTHPDtype(static_cast<xsigma::ScalarType>({self.codegen_dtype(raw_arg)})))"
+                return f"Py_NewRef(torch::getTHPDtype(static_cast<quarisma::ScalarType>({self.codegen_dtype(raw_arg)})))"
             elif isinstance(raw_arg, torch.layout):
-                return f"Py_NewRef(torch::getTHPLayout(static_cast<xsigma::Layout>({self.codegen_layout(raw_arg)})))"
+                return f"Py_NewRef(torch::getTHPLayout(static_cast<quarisma::Layout>({self.codegen_layout(raw_arg)})))"
             elif isinstance(raw_arg, torch.memory_format):
                 return (
-                    "Py_NewRef(torch::utils::getTHPMemoryFormat(static_cast<xsigma::MemoryFormat>("
+                    "Py_NewRef(torch::utils::getTHPMemoryFormat(static_cast<quarisma::MemoryFormat>("
                     f"{self.codegen_memory_format(raw_arg)})))"
                 )
             else:
@@ -2494,7 +2494,7 @@ if (!custom_op_wrapper) {
         only be called in cpp_wrapper mode, and assumes that the input is a non-None
         OpOverload.
 
-        In the future, we may switch over to directly calling xsigma::Dispatcher if we need
+        In the future, we may switch over to directly calling quarisma::Dispatcher if we need
         to support more datatypes."""
         if raw_outputs:
             declarations_before_scope = [
@@ -2613,7 +2613,7 @@ if (!custom_op_wrapper) {
         OpOverload.
 
         This function calls into Python to dispatch, which allows it to handle datatypes
-        that cannot be contained in StableIValue, xsigma the cost of some performance."""
+        that cannot be contained in StableIValue, quarisma the cost of some performance."""
         self.load_custom_op_wrapper()
 
         num_args = len(raw_args)
@@ -2756,7 +2756,7 @@ if (!custom_op_wrapper) {
             # uint64_t is long on Linux, but long long on MacOS and Windows
             return f"{val}LL" if sys.platform in ["darwin", "win32"] else f"{val}L"
         elif isinstance(val, complex):
-            return f"xsigma::complex<double>{{ {self.generate_float_value(val.real)}, {self.generate_float_value(val.imag)} }}"
+            return f"quarisma::complex<double>{{ {self.generate_float_value(val.real)}, {self.generate_float_value(val.imag)} }}"
         elif isinstance(val, str):
             return f'"{val}"'
         elif isinstance(
@@ -2799,7 +2799,7 @@ if (!custom_op_wrapper) {
                 return "nullptr"
 
             if isinstance(type_, torch.TensorType):
-                # create an empty tensor, the equivalent of xsigma::Tensor()
+                # create an empty tensor, the equivalent of quarisma::Tensor()
                 var_name = f"var_{next(self.arg_var_id)}"
                 self.writeline(f"AtenTensorHandle {var_name}_handle;")
                 self.writeline(

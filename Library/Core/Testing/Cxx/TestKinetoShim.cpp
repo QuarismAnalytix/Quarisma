@@ -8,9 +8,9 @@
  * - GPU backend configuration
  */
 
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-#if XSIGMA_HAS_KINETO && 0
+#if QUARISMA_HAS_KINETO && 0
 
 #include <ActivityTraceInterface.h>
 
@@ -27,13 +27,13 @@
 #include "profiler/common/orchestration/observer.h"
 #include "profiler/kineto/kineto_shim.h"
 
-using namespace xsigma::profiler;
+using namespace quarisma::profiler;
 
 // ============================================================================
 // Kineto Initialization Tests
 // ============================================================================
 
-XSIGMATEST(KinetoShim, Initialization)
+QUARISMATEST(KinetoShim, Initialization)
 {
     // Test Kineto initialization via prepareTrace
     impl::kineto::ActivitySet activities;
@@ -46,7 +46,7 @@ XSIGMATEST(KinetoShim, Initialization)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(KinetoShim, MultipleInitialization)
+QUARISMATEST(KinetoShim, MultipleInitialization)
 {
 #if 0
     // Test that multiple initializations don't cause issues
@@ -65,7 +65,7 @@ XSIGMATEST(KinetoShim, MultipleInitialization)
 // Activity Profiler Tests
 // ============================================================================
 
-XSIGMATEST(KinetoShim, ActivityProfilerAccess)
+QUARISMATEST(KinetoShim, ActivityProfilerAccess)
 {
     // Test accessing the activity profiler
     impl::kineto::ActivitySet activities;
@@ -79,7 +79,7 @@ XSIGMATEST(KinetoShim, ActivityProfilerAccess)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(KinetoShim, PrepareTrace)
+QUARISMATEST(KinetoShim, PrepareTrace)
 {
     // Test preparing a trace with CPU activities
     impl::kineto::ActivitySet activities;
@@ -93,7 +93,7 @@ XSIGMATEST(KinetoShim, PrepareTrace)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(KinetoShim, StartStopTrace)
+QUARISMATEST(KinetoShim, StartStopTrace)
 {
     // Test starting and stopping a trace
     impl::kineto::ActivitySet activities;
@@ -111,7 +111,7 @@ XSIGMATEST(KinetoShim, StartStopTrace)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(KinetoShim, TraceCollection)
+QUARISMATEST(KinetoShim, TraceCollection)
 {
     // Test trace collection with activities
     impl::kineto::ActivitySet activities;
@@ -137,7 +137,7 @@ XSIGMATEST(KinetoShim, TraceCollection)
 // Trace Export Tests
 // ============================================================================
 
-XSIGMATEST(KinetoShim, TraceExport)
+QUARISMATEST(KinetoShim, TraceExport)
 {
     // Test exporting a trace
     impl::kineto::ActivitySet activities;
@@ -158,7 +158,7 @@ XSIGMATEST(KinetoShim, TraceExport)
 // GPU Backend Configuration Tests
 // ============================================================================
 
-XSIGMATEST(KinetoShim, GPUBackendConfiguration)
+QUARISMATEST(KinetoShim, GPUBackendConfiguration)
 {
     // Test GPU backend configuration with CUDA activities
     impl::kineto::ActivitySet activities;
@@ -172,7 +172,7 @@ XSIGMATEST(KinetoShim, GPUBackendConfiguration)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(KinetoShim, CUDAActivities)
+QUARISMATEST(KinetoShim, CUDAActivities)
 {
     // Test CUDA activity types
     impl::kineto::ActivitySet activities;
@@ -190,7 +190,7 @@ XSIGMATEST(KinetoShim, CUDAActivities)
 // Integration Tests
 // ============================================================================
 
-XSIGMATEST(KinetoShim, FullProfilerCycle)
+QUARISMATEST(KinetoShim, FullProfilerCycle)
 {
     // Test full profiler cycle: init -> prepare -> start -> work -> stop
     impl::kineto::ActivitySet activities;
@@ -211,7 +211,7 @@ XSIGMATEST(KinetoShim, FullProfilerCycle)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(KinetoShim, MultipleTraces)
+QUARISMATEST(KinetoShim, MultipleTraces)
 {
     // Test collecting multiple traces
     impl::kineto::ActivitySet activities;
@@ -230,7 +230,7 @@ XSIGMATEST(KinetoShim, MultipleTraces)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(KinetoShim, ConcurrentTracing)
+QUARISMATEST(KinetoShim, ConcurrentTracing)
 {
     // Test concurrent tracing operations
     impl::kineto::ActivitySet activities;
@@ -272,7 +272,7 @@ XSIGMATEST(KinetoShim, ConcurrentTracing)
 // Error Handling Tests
 // ============================================================================
 
-XSIGMATEST(KinetoShim, StopWithoutStart)
+QUARISMATEST(KinetoShim, StopWithoutStart)
 {
     // Test stopping trace without starting (should handle gracefully)
     impl::kineto::ActivitySet activities;
@@ -286,7 +286,7 @@ XSIGMATEST(KinetoShim, StopWithoutStart)
     EXPECT_TRUE(true);
 }
 
-XSIGMATEST(KinetoShim, EmptyActivitySet)
+QUARISMATEST(KinetoShim, EmptyActivitySet)
 {
     // Test with empty activity set
     impl::kineto::ActivitySet activities;
@@ -481,7 +481,7 @@ static void complex_cpu_workload()
     }
 }
 
-XSIGMATEST(KinetoShim, EndToEndDetailedProfiling)
+QUARISMATEST(KinetoShim, EndToEndDetailedProfiling)
 {
     // ========================================================================
     // IMPORTANT: Kineto JSON Format vs Chrome Trace Event Format
@@ -503,8 +503,8 @@ XSIGMATEST(KinetoShim, EndToEndDetailedProfiling)
     // - Designed for chrome://tracing and Perfetto
     //
     // To get Chrome Trace compatible output, use:
-    // - XSigma's profiler_session with Kineto integration
-    // - XSigma's export_to_chrome_trace_json() function
+    // - Quarisma's profiler_session with Kineto integration
+    // - Quarisma's export_to_chrome_trace_json() function
     // - RecordFunction instrumentation for CPU events
     //
     // This test demonstrates:
@@ -617,7 +617,7 @@ XSIGMATEST(KinetoShim, EndToEndDetailedProfiling)
     std::cout << "  ✗ This JSON is NOT compatible with chrome://tracing" << std::endl;
     std::cout << "  ✗ Kineto uses its own schema, not Chrome Trace Event Format" << std::endl;
     std::cout << "\nTo get Chrome Trace compatible output:" << std::endl;
-    std::cout << "  1. Use XSigma's profiler_session with Kineto integration" << std::endl;
+    std::cout << "  1. Use Quarisma's profiler_session with Kineto integration" << std::endl;
     std::cout << "  2. Use export_to_chrome_trace_json() function" << std::endl;
     std::cout << "  3. See TestProfilerChromeTraceHierarchical.cpp for examples" << std::endl;
     std::cout << "\nKineto JSON can be viewed with:" << std::endl;
@@ -636,4 +636,4 @@ XSIGMATEST(KinetoShim, EndToEndDetailedProfiling)
     // To enable cleanup, uncomment the line above
 }
 
-#endif  // XSIGMA_HAS_KINETO
+#endif  // QUARISMA_HAS_KINETO

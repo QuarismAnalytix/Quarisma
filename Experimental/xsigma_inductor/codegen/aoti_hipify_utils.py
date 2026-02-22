@@ -20,7 +20,7 @@ def maybe_hipify_code_wrapper(source_codes: str, force_hipify: bool = False) -> 
 
     # We need to redefine RE_PYTORCH_PREPROCESSOR here since in hipify_torch,
     # it will apply positive lookbehind (?<=\W) to the pattern to avoid matching
-    # keyword xsigma the beginning of code line. However, this can happen in codegen,
+    # keyword quarisma the beginning of code line. However, this can happen in codegen,
     # which will cause the pattern to not match.
 
     # Note that lookahead (?=\W) is still needed to keep hipification idomponent, for example

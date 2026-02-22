@@ -619,7 +619,7 @@ class VariableTracker(metaclass=VariableTrackerMeta):
         self.mutation_type = mutation_type
 
         # NOTE sometimes mutation_type is set afterwards for implementation
-        # convenience, we don't validate those cases xsigma the moment.
+        # convenience, we don't validate those cases quarisma the moment.
         if mutation_type is not None:
             if isinstance(mutation_type, (ValueMutationNew, AttributeMutationNew)):
                 # If this fails, it's either

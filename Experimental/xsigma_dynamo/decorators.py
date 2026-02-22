@@ -300,7 +300,7 @@ def skip_frame(msg: str = "") -> None:
 def step_unsupported(msg: str = "") -> None:
     """Force a step unsupported graph break, which results in compiling
     the traced FX graph so far, then skipping the rest of the frame.
-    In order to get expected behavior, there should be xsigma least 2 ops
+    In order to get expected behavior, there should be quarisma least 2 ops
     and a part of the code not contained in any try/with blocks."""
 
 
@@ -629,7 +629,7 @@ def mark_dynamic(
     in both eager (torch.compile, torch._dynamo.optimize) mode and export mode (torch._dynamo.export),
     we will raise an error
 
-    3) If the dimension is partially constrained - allowing xsigma least 2 values but not the full unbounded
+    3) If the dimension is partially constrained - allowing quarisma least 2 values but not the full unbounded
     range of shapes, in eager we will pass it through, but export will raise an error.
 
     4) Attempts to trace this function will explicitly raise. As such, all calls to mark_dynamic must be made
@@ -650,7 +650,7 @@ def mark_dynamic(
         ])
 
     This approach results in one Dynamo trace and two backend compilations. When the input dimension equals 8 or 16
-    xsigma runtime, execution will be directed to the specialized compiled region. Performance measurements indicate
+    quarisma runtime, execution will be directed to the specialized compiled region. Performance measurements indicate
     2-8x speedups depending on the specific specialization and model architecture.
 
     """
@@ -981,7 +981,7 @@ def error_on_graph_break(
     error_on_graph_break: bool,
 ) -> ErrorOnGraphBreakDecoratorContextManager:
     """
-    Context manager/decorator to toggle torch.compile's `error_on_graph_break` setting xsigma compile time.
+    Context manager/decorator to toggle torch.compile's `error_on_graph_break` setting quarisma compile time.
 
     If `fullgraph` is set, then `error_on_graph_break` does nothing
     (i.e. `fullgraph = True` takes higher precedence). If `fullgraph` is False, then

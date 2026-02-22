@@ -10,7 +10,7 @@
 #include "logging/logger.h"
 #include "util/exception.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 // #ifdef _WIN32
 // // NVML is available on Windows
@@ -19,7 +19,7 @@
 // #endif
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -56,7 +56,7 @@ private:
      */
     void initialize_cuda()
     {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         // Check CUDA runtime availability
         cudaError_t result = cudaGetDeviceCount(&runtime_info_.cuda_device_count);
         if (result == cudaSuccess && runtime_info_.cuda_device_count > 0)
@@ -315,7 +315,7 @@ public:
 
         initialized_ = true;
 
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "GPU device manager initialized with {} devices", available_devices_.size());
     }
 
@@ -346,7 +346,7 @@ public:
             return *device_it;
         }
 
-        XSIGMA_THROW(
+        QUARISMA_THROW(
             "Device not found: type={}, index={}", static_cast<int>(device_type), device_index);
         return {};  // Added to satisfy compiler C4715
     }
@@ -433,7 +433,7 @@ public:
 
         if (device_it == available_devices_.end())
         {
-            XSIGMA_THROW(
+            QUARISMA_THROW(
                 "Cannot set context for unknown device: type={}, index={}",
                 static_cast<int>(device_type),
                 device_index);
@@ -442,13 +442,13 @@ public:
         // Set device context based on type
         switch (device_type)
         {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         case device_enum::CUDA:
         {
             cudaError_t const result = cudaSetDevice(device_index);
             if (result != cudaSuccess)
             {
-                XSIGMA_THROW(
+                QUARISMA_THROW(
                     "Failed to set CUDA device context: {}",
                     std::string(cudaGetErrorString(result)));
             }
@@ -457,7 +457,7 @@ public:
 #endif
 
         default:
-            XSIGMA_THROW("Unsupported device type for context setting");
+            QUARISMA_THROW("Unsupported device type for context setting");
         }
 
         current_device_ = *device_it;
@@ -588,4 +588,4 @@ gpu_device_manager& gpu_device_manager::instance()
 }
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

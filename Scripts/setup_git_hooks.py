@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """
-XSigma Git Hooks Setup Script
+Quarisma Git Hooks Setup Script
 ==============================
 
-This script installs and configures git hooks for the XSigma project.
+This script installs and configures git hooks for the Quarisma project.
 
 Hooks installed:
 1. pre-commit: Automatically formats C++ files with clang-format
@@ -14,7 +14,7 @@ Cross-platform compatible: Works on Windows, Linux, and macOS.
 Usage:
     python setup_git_hooks.py [--install|--uninstall|--status]
 
-Author: XSigma Development Team
+Author: Quarisma Development Team
 """
 
 import os
@@ -316,7 +316,7 @@ def main() -> int:
     Returns:
         0 if successful, 1 if failed
     """
-    print_header("XSigma Git Hooks Setup")
+    print_header("Quarisma Git Hooks Setup")
 
     # Get repository root
     repo_root = get_repo_root()

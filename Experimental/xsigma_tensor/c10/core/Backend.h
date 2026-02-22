@@ -12,7 +12,7 @@ namespace c10
 
 /**
  * This legacy enum class defines the set of backends supported by old school,
- * code generated Type-based XSigma.  A "backend" in this sense roughly
+ * code generated Type-based Quarisma.  A "backend" in this sense roughly
  * corresponds to the cartesian product of (device type, layout), but restricted
  * only to combinations which we actually have kernels for.  Backend does NOT
  * include dtype.

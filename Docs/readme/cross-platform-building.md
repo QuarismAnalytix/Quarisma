@@ -1,6 +1,6 @@
 # Cross-Platform Building
 
-XSigma provides full cross-platform compatibility across Windows, Linux, and macOS. This guide covers platform-specific build instructions and considerations.
+Quarisma provides full cross-platform compatibility across Windows, Linux, and macOS. This guide covers platform-specific build instructions and considerations.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ XSigma provides full cross-platform compatibility across Windows, Linux, and mac
 
 ## Platform Overview
 
-XSigma supports the following platforms:
+Quarisma supports the following platforms:
 
 | Platform | Compilers | Architectures | Status |
 |----------|-----------|---------------|--------|
@@ -50,8 +50,8 @@ cmake --build build --config Debug
 cmake -B build -S . \
     -G "Visual Studio 17 2022" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_LTO=ON \
-    -DXSIGMA_VECTORIZATION_TYPE=avx2
+    -DQUARISMA_ENABLE_LTO=ON \
+    -DQUARISMA_VECTORIZATION_TYPE=avx2
 
 cmake --build build --config Release
 ```
@@ -63,7 +63,7 @@ cmake --build build --config Release
 cmake -B build -S . \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_LTO=ON
+    -DQUARISMA_ENABLE_LTO=ON
 
 # Build with parallel compilation
 cmake --build build -j
@@ -84,7 +84,7 @@ cmake -B build -S . -T ClangCL  # Clang for Windows
 
 ### Windows-Specific Notes
 
-- **Runtime Library**: XSigma uses `/MD` (Multi-threaded DLL) by default
+- **Runtime Library**: Quarisma uses `/MD` (Multi-threaded DLL) by default
 - **Debug Information**: `/Zi` is enabled for better debugging
 - **Optimization**: `/O2` for Release, `/Od` for Debug
 - **Warnings**: `/W4` warning level enabled
@@ -117,8 +117,8 @@ export CXX=g++
 
 cmake -B build -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_LTO=ON \
-    -DXSIGMA_VECTORIZATION_TYPE=avx2
+    -DQUARISMA_ENABLE_LTO=ON \
+    -DQUARISMA_VECTORIZATION_TYPE=avx2
 
 cmake --build build -j$(nproc)
 ```
@@ -132,8 +132,8 @@ export CXX=clang++
 
 cmake -B build -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_LTO=ON \
-    -DXSIGMA_VECTORIZATION_TYPE=avx2
+    -DQUARISMA_ENABLE_LTO=ON \
+    -DQUARISMA_VECTORIZATION_TYPE=avx2
 
 cmake --build build -j$(nproc)
 ```
@@ -149,7 +149,7 @@ sudo dnf install ninja-build      # Fedora/RHEL
 cmake -B build -S . \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_LTO=ON
+    -DQUARISMA_ENABLE_LTO=ON
 
 cmake --build build -j$(nproc)
 ```
@@ -199,7 +199,7 @@ cmake --build build -j$(sysctl -n hw.ncpu)
 # Release build with optimizations
 cmake -B build -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_LTO=ON
+    -DQUARISMA_ENABLE_LTO=ON
 
 cmake --build build -j$(sysctl -n hw.ncpu)
 ```
@@ -233,7 +233,7 @@ brew install ninja
 cmake -B build -S . \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_LTO=ON
+    -DQUARISMA_ENABLE_LTO=ON
 
 cmake --build build -j$(sysctl -n hw.ncpu)
 ```
@@ -272,7 +272,7 @@ cmake -B build -S . -DCMAKE_OSX_SYSROOT=/path/to/SDK
 
 ### Path Separators
 
-XSigma automatically handles path separators across platforms:
+Quarisma automatically handles path separators across platforms:
 - Windows: `\` (backslash)
 - Linux/macOS: `/` (forward slash)
 
@@ -338,8 +338,8 @@ cmake --build build -j$(sysctl -n hw.ncpu)  # macOS
 ```bash
 cmake -B build -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DXSIGMA_ENABLE_LTO=ON \
-    -DXSIGMA_VECTORIZATION_TYPE=avx2
+    -DQUARISMA_ENABLE_LTO=ON \
+    -DQUARISMA_VECTORIZATION_TYPE=avx2
 
 # Platform-specific parallel build
 cmake --build build -j  # Auto-detect

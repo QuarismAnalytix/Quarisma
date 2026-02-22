@@ -28,14 +28,14 @@ All changes from Option 1 are already implemented:
 
 #### Change 1: Add TBB Include (3 lines)
 ```cpp
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 #include <tbb/enumerable_thread_specific.h>
 #endif
 ```
 
 #### Change 2: Add OpenMP Threadprivate Static (5 lines)
 ```cpp
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
 thread_local unsigned char parallel_tools_functor_initialized = 0;
 #pragma omp threadprivate(parallel_tools_functor_initialized)
 #endif
@@ -56,7 +56,7 @@ Replace the simple `thread_local` implementation with:
 **Mechanism**: `#pragma omp threadprivate` directive
 
 ```cpp
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
 thread_local unsigned char parallel_tools_functor_initialized = 0;
 #pragma omp threadprivate(parallel_tools_functor_initialized)
 
@@ -82,7 +82,7 @@ if (!parallel_tools_functor_initialized) {
 **Mechanism**: `tbb::enumerable_thread_specific<T>`
 
 ```cpp
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
 mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 
 // In constructor:

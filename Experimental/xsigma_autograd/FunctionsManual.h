@@ -1,6 +1,6 @@
 #pragma once
 
-// NB: Must be xsigma the top of file to avoid including the deprecated "math.h".
+// NB: Must be quarisma the top of file to avoid including the deprecated "math.h".
 // https://stackoverflow.com/questions/6563810/m-pi-works-with-math-h-but-not-with-cmath-in-visual-studio
 #ifdef _MSC_VER
 #ifndef _USE_MATH_DEFINES
@@ -9,7 +9,7 @@
 #include <cmath>
 #endif
 
-#include <XSigma/XSigma.h>
+#include <Quarisma/Quarisma.h>
 #include <torch/csrc/autograd/generated/Functions.h>
 
 namespace torch::autograd::generated::details
@@ -44,28 +44,28 @@ inline std::optional<Tensor> wrap_opt_if(const Tensor& t, const bool cond)
 
 TORCH_API Tensor apply_loss_reduction(const Tensor& unreduced, int64_t reduction);
 TORCH_API bool   any_variable_defined(const variable_list& variables);
-TORCH_API void   copy_range(variable_list& out, IndexRange range, const xsigma::Tensor& t);
-TORCH_API void copy_range(variable_list& out, IndexRange range, xsigma::ArrayRef<xsigma::Tensor> t);
-TORCH_API xsigma::Tensor copysign_tensor_self_backward(
+TORCH_API void   copy_range(variable_list& out, IndexRange range, const quarisma::Tensor& t);
+TORCH_API void copy_range(variable_list& out, IndexRange range, quarisma::ArrayRef<quarisma::Tensor> t);
+TORCH_API quarisma::Tensor copysign_tensor_self_backward(
     const Tensor& grad, const Tensor& self, const Tensor& result);
-TORCH_API xsigma::Tensor not_implemented(const char* name, const char* reason = "");
+TORCH_API quarisma::Tensor not_implemented(const char* name, const char* reason = "");
 TORCH_API std::vector<Tensor> not_implemented_list(const char* name, const char* reason = "");
-xsigma::Tensor                handle_r_to_c(ScalarType self_st, Tensor gradient_result);
-xsigma::Tensor                maybe_multiply(const xsigma::Tensor& t, const xsigma::Scalar& s);
+quarisma::Tensor                handle_r_to_c(ScalarType self_st, Tensor gradient_result);
+quarisma::Tensor                maybe_multiply(const quarisma::Tensor& t, const quarisma::Scalar& s);
 int64_t                       _safe_size(IntArrayRef sizes, IntArrayRef dim);
 Tensor         restore_reduced_dims(const Tensor& output, IntArrayRef dims, bool keepdim);
 Tensor         scale_grad_by_count(const Tensor& grad, const Tensor& mask, IntArrayRef dims);
-xsigma::Tensor norm_backward(
-    const xsigma::Tensor&                grad,
-    const xsigma::Tensor&                self,
-    const std::optional<xsigma::Scalar>& p_,
-    const xsigma::Tensor&                norm);
-xsigma::Tensor norm_backward(
-    xsigma::Tensor                       grad,
-    const xsigma::Tensor&                self,
-    const std::optional<xsigma::Scalar>& p_,
-    xsigma::Tensor                       norm,
-    xsigma::IntArrayRef                  dim,
+quarisma::Tensor norm_backward(
+    const quarisma::Tensor&                grad,
+    const quarisma::Tensor&                self,
+    const std::optional<quarisma::Scalar>& p_,
+    const quarisma::Tensor&                norm);
+quarisma::Tensor norm_backward(
+    quarisma::Tensor                       grad,
+    const quarisma::Tensor&                self,
+    const std::optional<quarisma::Scalar>& p_,
+    quarisma::Tensor                       norm,
+    quarisma::IntArrayRef                  dim,
     bool                                 keepdim);
 Tensor norm_jvp(
     const Tensor&                self_p,
@@ -88,183 +88,183 @@ Tensor linalg_vector_norm_jvp(
     const Tensor&                      self_t,
     const Scalar&                      scalar_ord,
     Tensor                             norm,
-    const xsigma::OptionalIntArrayRef& opt_dim,
+    const quarisma::OptionalIntArrayRef& opt_dim,
     bool                               keepdim);
-xsigma::Tensor linalg_vector_norm_backward(
-    xsigma::Tensor                     grad,
-    const xsigma::Tensor&              self,
-    const xsigma::Scalar&              ord,
-    xsigma::Tensor                     norm,
-    const xsigma::OptionalIntArrayRef& opt_dim,
+quarisma::Tensor linalg_vector_norm_backward(
+    quarisma::Tensor                     grad,
+    const quarisma::Tensor&              self,
+    const quarisma::Scalar&              ord,
+    quarisma::Tensor                     norm,
+    const quarisma::OptionalIntArrayRef& opt_dim,
     bool                               keepdim);
-xsigma::Tensor pow_backward(
-    xsigma::Tensor grad, const xsigma::Tensor& self, const xsigma::Scalar& exponent_);
-xsigma::Tensor pow_backward_self(
-    const xsigma::Tensor& grad, const xsigma::Tensor& self, const xsigma::Tensor& exponent);
-xsigma::Tensor pow_backward_exponent(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& self,
-    const xsigma::Tensor& exponent,
-    const xsigma::Tensor& result);
-xsigma::Tensor pow_backward_exponent(
-    const xsigma::Tensor& grad,
-    const xsigma::Scalar& base,
-    const xsigma::Tensor& exponent,
-    const xsigma::Tensor& result);
-xsigma::Tensor angle_backward(const xsigma::Tensor& grad, const xsigma::Tensor& self);
+quarisma::Tensor pow_backward(
+    quarisma::Tensor grad, const quarisma::Tensor& self, const quarisma::Scalar& exponent_);
+quarisma::Tensor pow_backward_self(
+    const quarisma::Tensor& grad, const quarisma::Tensor& self, const quarisma::Tensor& exponent);
+quarisma::Tensor pow_backward_exponent(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& self,
+    const quarisma::Tensor& exponent,
+    const quarisma::Tensor& result);
+quarisma::Tensor pow_backward_exponent(
+    const quarisma::Tensor& grad,
+    const quarisma::Scalar& base,
+    const quarisma::Tensor& exponent,
+    const quarisma::Tensor& result);
+quarisma::Tensor angle_backward(const quarisma::Tensor& grad, const quarisma::Tensor& self);
 template <typename T>
-xsigma::Tensor mul_tensor_backward(const Tensor& grad, T other, ScalarType self_st);
+quarisma::Tensor mul_tensor_backward(const Tensor& grad, T other, ScalarType self_st);
 template <typename T>
-xsigma::Tensor div_tensor_self_backward(
+quarisma::Tensor div_tensor_self_backward(
     const Tensor&                          grad,
     T                                      other,
     ScalarType                             self_st,
     const std::optional<std::string_view>& rounding_mode = std::nullopt);
-xsigma::Tensor div_tensor_other_backward(
+quarisma::Tensor div_tensor_other_backward(
     const Tensor&                          grad,
     const Tensor&                          self,
     const Tensor&                          other,
     const std::optional<std::string_view>& rounding_mode = std::nullopt);
-xsigma::Tensor mvlgamma_backward(const xsigma::Tensor& grad, const xsigma::Tensor& self, int64_t p);
-xsigma::Tensor permute_backwards(const xsigma::Tensor& grad, xsigma::IntArrayRef fwd_dims);
-xsigma::Tensor rad2deg_backward(const xsigma::Tensor& grad);
-xsigma::Tensor deg2rad_backward(const xsigma::Tensor& grad);
-xsigma::Tensor unsqueeze_multiple(
-    const xsigma::Tensor& t, xsigma::OptionalIntArrayRef opt_dim, size_t n_dims);
-xsigma::Tensor sum_backward(
-    const xsigma::Tensor&       grad,
-    xsigma::SymIntArrayRef      sizes,
-    xsigma::OptionalIntArrayRef opt_dims,
+quarisma::Tensor mvlgamma_backward(const quarisma::Tensor& grad, const quarisma::Tensor& self, int64_t p);
+quarisma::Tensor permute_backwards(const quarisma::Tensor& grad, quarisma::IntArrayRef fwd_dims);
+quarisma::Tensor rad2deg_backward(const quarisma::Tensor& grad);
+quarisma::Tensor deg2rad_backward(const quarisma::Tensor& grad);
+quarisma::Tensor unsqueeze_multiple(
+    const quarisma::Tensor& t, quarisma::OptionalIntArrayRef opt_dim, size_t n_dims);
+quarisma::Tensor sum_backward(
+    const quarisma::Tensor&       grad,
+    quarisma::SymIntArrayRef      sizes,
+    quarisma::OptionalIntArrayRef opt_dims,
     bool                        keepdim);
-xsigma::Tensor sum_backward(
-    const xsigma::Tensor&  grad,
-    xsigma::SymIntArrayRef sizes,
-    xsigma::IntArrayRef    dims,
+quarisma::Tensor sum_backward(
+    const quarisma::Tensor&  grad,
+    quarisma::SymIntArrayRef sizes,
+    quarisma::IntArrayRef    dims,
     bool                   keepdim);
-xsigma::Tensor nansum_backward(
-    const xsigma::Tensor&       grad,
-    const xsigma::Tensor&       self,
-    xsigma::OptionalIntArrayRef dims,
+quarisma::Tensor nansum_backward(
+    const quarisma::Tensor&       grad,
+    const quarisma::Tensor&       self,
+    quarisma::OptionalIntArrayRef dims,
     bool                        keepdim);
-std::vector<int64_t>        reverse_list(const xsigma::IntArrayRef list);
-std::vector<xsigma::SymInt> reverse_list_symint(const xsigma::SymIntArrayRef list);
-xsigma::Tensor              reverse_dim(const xsigma::Tensor& t, int64_t dim);
-xsigma::Tensor              prod_safe_zeros_backward(
-                 const xsigma::Tensor& grad, const xsigma::Tensor& inp, int64_t dim);
-xsigma::Tensor prod_backward(
-    const xsigma::Tensor& grad, const xsigma::Tensor& input, const xsigma::Tensor& result);
-xsigma::Tensor prod_backward(
-    xsigma::Tensor        grad,
-    const xsigma::Tensor& input,
-    xsigma::Tensor        result,
+std::vector<int64_t>        reverse_list(const quarisma::IntArrayRef list);
+std::vector<quarisma::SymInt> reverse_list_symint(const quarisma::SymIntArrayRef list);
+quarisma::Tensor              reverse_dim(const quarisma::Tensor& t, int64_t dim);
+quarisma::Tensor              prod_safe_zeros_backward(
+                 const quarisma::Tensor& grad, const quarisma::Tensor& inp, int64_t dim);
+quarisma::Tensor prod_backward(
+    const quarisma::Tensor& grad, const quarisma::Tensor& input, const quarisma::Tensor& result);
+quarisma::Tensor prod_backward(
+    quarisma::Tensor        grad,
+    const quarisma::Tensor& input,
+    quarisma::Tensor        result,
     int64_t               dim,
     bool                  keepdim);
-xsigma::Tensor solve_jvp(const Tensor& X, const Tensor& A, const Tensor& dA, const Tensor& dB);
-xsigma::Tensor solve_backward_self(
-    const xsigma::Tensor& grad, const xsigma::Tensor& self, const xsigma::Tensor& A);
-xsigma::Tensor solve_backward_A(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& self,
-    const xsigma::Tensor& A,
-    const xsigma::Tensor& solution);
-xsigma::Tensor cumsum_backward(const xsigma::Tensor& grad, int64_t dim);
-xsigma::Tensor logsumexp_backward(
-    xsigma::Tensor        grad,
-    const xsigma::Tensor& self,
-    xsigma::Tensor        result,
-    xsigma::IntArrayRef   dim,
+quarisma::Tensor solve_jvp(const Tensor& X, const Tensor& A, const Tensor& dA, const Tensor& dB);
+quarisma::Tensor solve_backward_self(
+    const quarisma::Tensor& grad, const quarisma::Tensor& self, const quarisma::Tensor& A);
+quarisma::Tensor solve_backward_A(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& self,
+    const quarisma::Tensor& A,
+    const quarisma::Tensor& solution);
+quarisma::Tensor cumsum_backward(const quarisma::Tensor& grad, int64_t dim);
+quarisma::Tensor logsumexp_backward(
+    quarisma::Tensor        grad,
+    const quarisma::Tensor& self,
+    quarisma::Tensor        result,
+    quarisma::IntArrayRef   dim,
     bool                  keepdim);
-xsigma::Tensor logsumexp_jvp(
-    const xsigma::Tensor& self_p, const xsigma::Tensor& self_t, IntArrayRef dim, bool keepdim);
-xsigma::Tensor safe_logsumexp_jvp(
-    const xsigma::Tensor& self_p, const xsigma::Tensor& self_t, IntArrayRef dim, bool keepdim);
-xsigma::Tensor logcumsumexp_backward(
-    xsigma::Tensor grad, const xsigma::Tensor& self, const xsigma::Tensor& result, int64_t dim);
-xsigma::Tensor logcumsumexp_jvp(
-    const xsigma::Tensor& self_p, const xsigma::Tensor& self_t, int64_t dim);
-xsigma::Tensor unbind_backward(const variable_list& grads, int64_t dim);
-xsigma::Tensor unbind_backward_nested(
+quarisma::Tensor logsumexp_jvp(
+    const quarisma::Tensor& self_p, const quarisma::Tensor& self_t, IntArrayRef dim, bool keepdim);
+quarisma::Tensor safe_logsumexp_jvp(
+    const quarisma::Tensor& self_p, const quarisma::Tensor& self_t, IntArrayRef dim, bool keepdim);
+quarisma::Tensor logcumsumexp_backward(
+    quarisma::Tensor grad, const quarisma::Tensor& self, const quarisma::Tensor& result, int64_t dim);
+quarisma::Tensor logcumsumexp_jvp(
+    const quarisma::Tensor& self_p, const quarisma::Tensor& self_t, int64_t dim);
+quarisma::Tensor unbind_backward(const variable_list& grads, int64_t dim);
+quarisma::Tensor unbind_backward_nested(
     const variable_list&         grads,
     const Tensor&                nt_sizes,
     int64_t                      dim,
-    const xsigma::TensorOptions& options);
-xsigma::Tensor unbind_backward_nested_jagged(
+    const quarisma::TensorOptions& options);
+quarisma::Tensor unbind_backward_nested_jagged(
     const variable_list& grads, const Tensor& self, int64_t dim);
-xsigma::Tensor unsqueeze_to(const xsigma::Tensor& self, xsigma::SymIntArrayRef sym_sizes);
-xsigma::Tensor unsqueeze_to(
-    const xsigma::Tensor& self, int64_t dim, xsigma::SymIntArrayRef sym_sizes);
-xsigma::Tensor unsqueeze_to(
-    const xsigma::Tensor& self, IntArrayRef dim, xsigma::SymIntArrayRef sym_sizes);
-std::vector<xsigma::Tensor> cat_tensors_backward(
-    const xsigma::Tensor&                           grad,
-    const std::vector<std::vector<xsigma::SymInt>>& sizes,
+quarisma::Tensor unsqueeze_to(const quarisma::Tensor& self, quarisma::SymIntArrayRef sym_sizes);
+quarisma::Tensor unsqueeze_to(
+    const quarisma::Tensor& self, int64_t dim, quarisma::SymIntArrayRef sym_sizes);
+quarisma::Tensor unsqueeze_to(
+    const quarisma::Tensor& self, IntArrayRef dim, quarisma::SymIntArrayRef sym_sizes);
+std::vector<quarisma::Tensor> cat_tensors_backward(
+    const quarisma::Tensor&                           grad,
+    const std::vector<std::vector<quarisma::SymInt>>& sizes,
     const std::vector<ScalarType>&                  dtypes,
     int64_t                                         dim);
-std::vector<xsigma::Tensor> stack_tensors_backward(
-    const xsigma::Tensor& grad, int64_t dim, const std::vector<ScalarType>& dtypes);
-std::vector<xsigma::Tensor> block_diag_backward(
-    const xsigma::Tensor&                    grad,
+std::vector<quarisma::Tensor> stack_tensors_backward(
+    const quarisma::Tensor& grad, int64_t dim, const std::vector<ScalarType>& dtypes);
+std::vector<quarisma::Tensor> block_diag_backward(
+    const quarisma::Tensor&                    grad,
     const std::vector<std::vector<int64_t>>& sizes,
     const std::vector<ScalarType>&           dtypes);
-xsigma::Tensor clamp_backward(
-    const xsigma::Tensor&                grad,
-    const xsigma::Tensor&                self,
-    const std::optional<xsigma::Scalar>& min,
-    const std::optional<xsigma::Scalar>& max);
-xsigma::Tensor clamp_backward(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& self,
-    const xsigma::Tensor& min,
-    const xsigma::Tensor& max);
-std::tuple<xsigma::Tensor, xsigma::Tensor> clamp_backward_min_max(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& self,
-    const xsigma::Tensor& min,
-    const xsigma::Tensor& max,
+quarisma::Tensor clamp_backward(
+    const quarisma::Tensor&                grad,
+    const quarisma::Tensor&                self,
+    const std::optional<quarisma::Scalar>& min,
+    const std::optional<quarisma::Scalar>& max);
+quarisma::Tensor clamp_backward(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& self,
+    const quarisma::Tensor& min,
+    const quarisma::Tensor& max);
+std::tuple<quarisma::Tensor, quarisma::Tensor> clamp_backward_min_max(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& self,
+    const quarisma::Tensor& min,
+    const quarisma::Tensor& max,
     const std::array<bool, 2>& /*grad_input_mask*/);
-xsigma::Tensor clamp_jvp(
+quarisma::Tensor clamp_jvp(
     const Tensor& self_p,
     const Tensor& self_t,
     const Tensor& min_p,
     const Tensor& min_t,
     const Tensor& max_p,
     const Tensor& max_t);
-xsigma::SymIntArrayRef strides_or_error(const Tensor& input, std::string_view const& input_name);
-xsigma::Tensor         mm_mat1_backward(
+quarisma::SymIntArrayRef strides_or_error(const Tensor& input, std::string_view const& input_name);
+quarisma::Tensor         mm_mat1_backward(
             const Tensor&          grad,
             const Tensor&          mat2,
-            xsigma::SymIntArrayRef mat1_sizes,
-            xsigma::SymIntArrayRef mat1_strides,
-            xsigma::Layout         mat1_layout,
+            quarisma::SymIntArrayRef mat1_sizes,
+            quarisma::SymIntArrayRef mat1_strides,
+            quarisma::Layout         mat1_layout,
             const Scalar&          alpha);
-xsigma::Tensor mm_mat2_backward(
-    const xsigma::Tensor&  grad,
-    const xsigma::Tensor&  mat1,
-    xsigma::SymIntArrayRef sizes,
-    xsigma::SymIntArrayRef strides,
-    xsigma::Layout         layout,
-    const xsigma::Scalar&  alpha);
-xsigma::Tensor _grouped_mm_mat1_backward(
+quarisma::Tensor mm_mat2_backward(
+    const quarisma::Tensor&  grad,
+    const quarisma::Tensor&  mat1,
+    quarisma::SymIntArrayRef sizes,
+    quarisma::SymIntArrayRef strides,
+    quarisma::Layout         layout,
+    const quarisma::Scalar&  alpha);
+quarisma::Tensor _grouped_mm_mat1_backward(
     const Tensor&          grad,
     const Tensor&          mat2,
-    xsigma::SymIntArrayRef mat1_sizes,
-    xsigma::SymIntArrayRef mat1_strides,
-    xsigma::Layout         mat1_layout,
+    quarisma::SymIntArrayRef mat1_sizes,
+    quarisma::SymIntArrayRef mat1_strides,
+    quarisma::Layout         mat1_layout,
     std::optional<Tensor>  offs,
     const Scalar&          alpha);
-xsigma::Tensor _grouped_mm_mat2_backward(
-    const xsigma::Tensor&  grad,
-    const xsigma::Tensor&  mat1,
-    xsigma::SymIntArrayRef sizes,
-    xsigma::SymIntArrayRef strides,
-    xsigma::Layout         layout,
+quarisma::Tensor _grouped_mm_mat2_backward(
+    const quarisma::Tensor&  grad,
+    const quarisma::Tensor&  mat1,
+    quarisma::SymIntArrayRef sizes,
+    quarisma::SymIntArrayRef strides,
+    quarisma::Layout         layout,
     std::optional<Tensor>  offs,
-    const xsigma::Scalar&  alpha);
-xsigma::Tensor mm_mat1_sparse_backward(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& mat1,
-    const xsigma::Tensor& mat2,
-    const xsigma::Scalar& alpha);
+    const quarisma::Scalar&  alpha);
+quarisma::Tensor mm_mat1_sparse_backward(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& mat1,
+    const quarisma::Tensor& mat2,
+    const quarisma::Scalar& alpha);
 std::tuple<Tensor, Tensor, Tensor> sparse_sampled_addmm_backward(
     const Tensor&                grad,
     const Tensor&                self,
@@ -273,88 +273,88 @@ std::tuple<Tensor, Tensor, Tensor> sparse_sampled_addmm_backward(
     const Scalar&                alpha,
     const Scalar&                beta,
     const std::array<bool, 3>&   grad_input_mask);
-xsigma::Tensor sparse_mask_backward(
-    const xsigma::Tensor& grad, const xsigma::Tensor& mask, xsigma::Layout self_layout);
-xsigma::Tensor sparse_sparse_matmul_backward(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& mat1,
-    const xsigma::Tensor& mat2,
+quarisma::Tensor sparse_mask_backward(
+    const quarisma::Tensor& grad, const quarisma::Tensor& mask, quarisma::Layout self_layout);
+quarisma::Tensor sparse_sparse_matmul_backward(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& mat1,
+    const quarisma::Tensor& mat2,
     int64_t               grad_order);
-xsigma::Tensor renorm_backward(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& self,
-    const xsigma::Scalar& p,
+quarisma::Tensor renorm_backward(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& self,
+    const quarisma::Scalar& p,
     int64_t               dim,
-    const xsigma::Scalar& maxnorm);
-xsigma::Tensor renorm_jvp(
-    const xsigma::Tensor& self_p,
-    const xsigma::Tensor& self_t,
-    const xsigma::Scalar& p,
+    const quarisma::Scalar& maxnorm);
+quarisma::Tensor renorm_jvp(
+    const quarisma::Tensor& self_p,
+    const quarisma::Tensor& self_t,
+    const quarisma::Scalar& p,
     int64_t               dim,
-    const xsigma::Scalar& maxnorm);
-xsigma::Tensor repeat_backward(
-    xsigma::Tensor grad, xsigma::SymIntArrayRef repeats, xsigma::SymIntArrayRef input_shape);
-xsigma::Tensor _fused_dropout_backward(
-    const xsigma::Tensor& grad, const xsigma::Tensor& mask, double p1m);
-xsigma::Tensor infinitely_differentiable_native_dropout_backward(
-    const xsigma::Tensor& grad, const xsigma::Tensor& mask, double scale);
-xsigma::Tensor native_dropout_double_backward(
-    const xsigma::Tensor& ggI,
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& mask,
+    const quarisma::Scalar& maxnorm);
+quarisma::Tensor repeat_backward(
+    quarisma::Tensor grad, quarisma::SymIntArrayRef repeats, quarisma::SymIntArrayRef input_shape);
+quarisma::Tensor _fused_dropout_backward(
+    const quarisma::Tensor& grad, const quarisma::Tensor& mask, double p1m);
+quarisma::Tensor infinitely_differentiable_native_dropout_backward(
+    const quarisma::Tensor& grad, const quarisma::Tensor& mask, double scale);
+quarisma::Tensor native_dropout_double_backward(
+    const quarisma::Tensor& ggI,
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& mask,
     double                scale);
-xsigma::Tensor evenly_distribute_backward(
-    const xsigma::Tensor& grad, const xsigma::Tensor& input, const xsigma::Tensor& value);
+quarisma::Tensor evenly_distribute_backward(
+    const quarisma::Tensor& grad, const quarisma::Tensor& input, const quarisma::Tensor& value);
 Tensor         sgn_backward(const Tensor& x, const Tensor& gx, const Tensor& sgn);
 Tensor         masked_fill_backward(const Tensor& grad, const Tensor& mask);
-xsigma::Tensor var_backward(
-    xsigma::Tensor                       grad,
-    const xsigma::Tensor&                self,
-    xsigma::OptionalIntArrayRef          dim,
-    const std::optional<xsigma::Scalar>& correction,
+quarisma::Tensor var_backward(
+    quarisma::Tensor                       grad,
+    const quarisma::Tensor&                self,
+    quarisma::OptionalIntArrayRef          dim,
+    const std::optional<quarisma::Scalar>& correction,
     bool                                 keepdim);
-xsigma::Tensor var_jvp(
-    const xsigma::Tensor&                self_t,
-    const xsigma::Tensor&                self_p,
-    const xsigma::Tensor&                result,
-    xsigma::OptionalIntArrayRef          dim_opt,
-    const std::optional<xsigma::Scalar>& correction,
+quarisma::Tensor var_jvp(
+    const quarisma::Tensor&                self_t,
+    const quarisma::Tensor&                self_p,
+    const quarisma::Tensor&                result,
+    quarisma::OptionalIntArrayRef          dim_opt,
+    const std::optional<quarisma::Scalar>& correction,
     bool                                 keepdim);
-xsigma::Tensor std_backward(
-    const xsigma::Tensor&                result,
-    const xsigma::Tensor&                grad,
-    const xsigma::Tensor&                self,
-    xsigma::OptionalIntArrayRef          dim,
-    const std::optional<xsigma::Scalar>& correction,
+quarisma::Tensor std_backward(
+    const quarisma::Tensor&                result,
+    const quarisma::Tensor&                grad,
+    const quarisma::Tensor&                self,
+    quarisma::OptionalIntArrayRef          dim,
+    const std::optional<quarisma::Scalar>& correction,
     bool                                 keepdim);
 Tensor mean_backward(
     const Tensor&               grad,
-    xsigma::SymIntArrayRef      shape,
-    xsigma::OptionalIntArrayRef opt_dim,
-    xsigma::SymInt              numel,
+    quarisma::SymIntArrayRef      shape,
+    quarisma::OptionalIntArrayRef opt_dim,
+    quarisma::SymInt              numel,
     bool                        keepdim);
 Tensor var_mean_backward(
     const Tensor&                        gvar,
     const Tensor&                        gmean,
     const Tensor&                        self,
-    xsigma::OptionalIntArrayRef          dim_opt,
-    const std::optional<xsigma::Scalar>& correction,
+    quarisma::OptionalIntArrayRef          dim_opt,
+    const std::optional<quarisma::Scalar>& correction,
     bool                                 keepdim);
 Tensor std_mean_backward(
     const Tensor&                        gstd,
     const Tensor&                        gmean,
     const Tensor&                        self,
     const Tensor&                        std,
-    xsigma::OptionalIntArrayRef          dim_opt,
-    const std::optional<xsigma::Scalar>& correction,
+    quarisma::OptionalIntArrayRef          dim_opt,
+    const std::optional<quarisma::Scalar>& correction,
     bool                                 keepdim);
-xsigma::Tensor cholesky_backward(const xsigma::Tensor& grad, bool upper, const xsigma::Tensor& L);
-xsigma::Tensor cholesky_jvp(
-    const xsigma::Tensor& input_tangent, const xsigma::Tensor& L, bool upper);
-xsigma::Tensor cholesky_inverse_backward(
-    const xsigma::Tensor& grad, const xsigma::Tensor& L, bool upper, const xsigma::Tensor& inverse);
-xsigma::Tensor cholesky_inverse_jvp(
-    const xsigma::Tensor& F, const xsigma::Tensor& dF, const xsigma::Tensor& X, bool upper);
+quarisma::Tensor cholesky_backward(const quarisma::Tensor& grad, bool upper, const quarisma::Tensor& L);
+quarisma::Tensor cholesky_jvp(
+    const quarisma::Tensor& input_tangent, const quarisma::Tensor& L, bool upper);
+quarisma::Tensor cholesky_inverse_backward(
+    const quarisma::Tensor& grad, const quarisma::Tensor& L, bool upper, const quarisma::Tensor& inverse);
+quarisma::Tensor cholesky_inverse_jvp(
+    const quarisma::Tensor& F, const quarisma::Tensor& dF, const quarisma::Tensor& X, bool upper);
 Tensor pinv_jvp(const Tensor& A, const Tensor& pinvA, const Tensor& dA);
 Tensor pinv_backward(const Tensor& grad, const Tensor& pinvA, const Tensor& A);
 Tensor chunk_backward_nested(
@@ -362,38 +362,38 @@ Tensor chunk_backward_nested(
     const Tensor&                                 self,
     int64_t                                       chunks,
     int64_t                                       dim);
-xsigma::Tensor split_with_sizes_backward(
+quarisma::Tensor split_with_sizes_backward(
     const std::vector<torch::autograd::Variable>& grads,
-    xsigma::SymIntArrayRef                        split_sizes,
+    quarisma::SymIntArrayRef                        split_sizes,
     int64_t                                       dim,
-    xsigma::SymIntArrayRef                        sizes,
-    const xsigma::TensorOptions&                  options);
-xsigma::Tensor _nested_split_with_sizes_backward(
+    quarisma::SymIntArrayRef                        sizes,
+    const quarisma::TensorOptions&                  options);
+quarisma::Tensor _nested_split_with_sizes_backward(
     const std::vector<torch::autograd::Variable>& grads,
-    xsigma::SymIntArrayRef                        split_sizes,
+    quarisma::SymIntArrayRef                        split_sizes,
     int64_t                                       dim,
     const Tensor&                                 nt_sizes,
-    const xsigma::TensorOptions&                  options);
-xsigma::Tensor split_backward(
+    const quarisma::TensorOptions&                  options);
+quarisma::Tensor split_backward(
     const std::vector<torch::autograd::Variable>& grads,
-    const xsigma::SymInt&                         split_size,
+    const quarisma::SymInt&                         split_size,
     int64_t                                       dim,
-    xsigma::SymIntArrayRef                        sizes,
-    const xsigma::TensorOptions&                  options);
-xsigma::Tensor max_pool_double_backward(
-    const xsigma::Tensor& grad, const xsigma::Tensor& indices, int dim);
-xsigma::Tensor error_for_max_pool2d_double_backward();
-xsigma::Tensor glu_double_backward(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& grad_output,
-    const xsigma::Tensor& input,
+    quarisma::SymIntArrayRef                        sizes,
+    const quarisma::TensorOptions&                  options);
+quarisma::Tensor max_pool_double_backward(
+    const quarisma::Tensor& grad, const quarisma::Tensor& indices, int dim);
+quarisma::Tensor error_for_max_pool2d_double_backward();
+quarisma::Tensor glu_double_backward(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& grad_output,
+    const quarisma::Tensor& input,
     int64_t               dim);
-xsigma::Tensor glu_double_backward_grad_output(
-    const xsigma::Tensor& grad, const xsigma::Tensor& input, int64_t dim);
-xsigma::Tensor infinitely_differentiable_silu_backward(
-    const xsigma::Tensor& grad_output, const xsigma::Tensor& input);
-xsigma::Tensor infinitely_differentiable_mish_backward(
-    const xsigma::Tensor& grad_output, const xsigma::Tensor& input);
+quarisma::Tensor glu_double_backward_grad_output(
+    const quarisma::Tensor& grad, const quarisma::Tensor& input, int64_t dim);
+quarisma::Tensor infinitely_differentiable_silu_backward(
+    const quarisma::Tensor& grad_output, const quarisma::Tensor& input);
+quarisma::Tensor infinitely_differentiable_mish_backward(
+    const quarisma::Tensor& grad_output, const quarisma::Tensor& input);
 Tensor infinitely_differentiable_logit_backward(
     const Tensor& grad, const Tensor& self, std::optional<double> eps);
 Tensor binary_cross_entropy_target_backward(
@@ -416,98 +416,98 @@ Tensor binary_cross_entropy_with_logits_backward(
     const std::optional<Tensor>& weight_opt,
     const std::optional<Tensor>& pos_weight_opt,
     int64_t                      reduction);
-xsigma::Tensor binary_cross_entropy_with_logits_target_backward(
-    const xsigma::Tensor&                grad_output,
-    const xsigma::Tensor&                self,
-    const xsigma::Tensor&                target,
-    const std::optional<xsigma::Tensor>& weight,
-    const std::optional<xsigma::Tensor>& pos_weight,
+quarisma::Tensor binary_cross_entropy_with_logits_target_backward(
+    const quarisma::Tensor&                grad_output,
+    const quarisma::Tensor&                self,
+    const quarisma::Tensor&                target,
+    const std::optional<quarisma::Tensor>& weight,
+    const std::optional<quarisma::Tensor>& pos_weight,
     int64_t                              reduction);
-xsigma::Tensor log_sigmoid_double_backward(const xsigma::Tensor& grad, const xsigma::Tensor& input);
-xsigma::Tensor softmax_double_backward(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& grad_output,
+quarisma::Tensor log_sigmoid_double_backward(const quarisma::Tensor& grad, const quarisma::Tensor& input);
+quarisma::Tensor softmax_double_backward(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& grad_output,
     int                   dim,
-    const xsigma::Tensor& output);
-xsigma::Tensor binary_cross_entropy_double_backward(
-    const xsigma::Tensor&                grad_output,
-    const xsigma::Tensor&                grad,
-    const xsigma::Tensor&                input,
-    const xsigma::Tensor&                target,
-    const std::optional<xsigma::Tensor>& weight,
+    const quarisma::Tensor& output);
+quarisma::Tensor binary_cross_entropy_double_backward(
+    const quarisma::Tensor&                grad_output,
+    const quarisma::Tensor&                grad,
+    const quarisma::Tensor&                input,
+    const quarisma::Tensor&                target,
+    const std::optional<quarisma::Tensor>& weight,
     int64_t                              reduction);
-xsigma::Tensor binary_cross_entropy_double_backward_grad_output(
-    const xsigma::Tensor&                grad,
-    const xsigma::Tensor&                input,
-    const xsigma::Tensor&                target,
-    const std::optional<xsigma::Tensor>& weight,
+quarisma::Tensor binary_cross_entropy_double_backward_grad_output(
+    const quarisma::Tensor&                grad,
+    const quarisma::Tensor&                input,
+    const quarisma::Tensor&                target,
+    const std::optional<quarisma::Tensor>& weight,
     int64_t                              reduction);
-xsigma::Tensor smooth_l1_loss_double_backward(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& input,
-    const xsigma::Tensor& target,
+quarisma::Tensor smooth_l1_loss_double_backward(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& input,
+    const quarisma::Tensor& target,
     int64_t               reduction,
     double                beta);
-xsigma::Tensor huber_loss_double_backward(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& input,
-    const xsigma::Tensor& target,
+quarisma::Tensor huber_loss_double_backward(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& input,
+    const quarisma::Tensor& target,
     int64_t               reduction,
     double                delta);
-xsigma::Tensor huber_loss_double_backward_grad_output(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& grad_output,
-    const xsigma::Tensor& input,
-    const xsigma::Tensor& target,
+quarisma::Tensor huber_loss_double_backward_grad_output(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& grad_output,
+    const quarisma::Tensor& input,
+    const quarisma::Tensor& target,
     int64_t               reduction,
     double                delta);
-xsigma::Tensor mse_loss_double_backward(
-    const xsigma::Tensor& grad, const xsigma::Tensor& input, int64_t reduction);
-xsigma::Tensor soft_margin_loss_double_backward(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& input,
-    const xsigma::Tensor& target,
+quarisma::Tensor mse_loss_double_backward(
+    const quarisma::Tensor& grad, const quarisma::Tensor& input, int64_t reduction);
+quarisma::Tensor soft_margin_loss_double_backward(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& input,
+    const quarisma::Tensor& target,
     int64_t               reduction);
-xsigma::Tensor soft_margin_loss_double_backward_grad_output(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& grad_output,
-    const xsigma::Tensor& input,
-    const xsigma::Tensor& target,
+quarisma::Tensor soft_margin_loss_double_backward_grad_output(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& grad_output,
+    const quarisma::Tensor& input,
+    const quarisma::Tensor& target,
     int64_t               reduction);
-xsigma::Tensor softplus_double_backward(
-    const xsigma::Tensor& grad,
-    const xsigma::Tensor& input,
-    const xsigma::Scalar& beta,
-    const xsigma::Scalar& threshold);
-std::tuple<xsigma::Tensor, xsigma::Tensor> slogdet_jvp(
-    const xsigma::Tensor& LU,
-    const xsigma::Tensor& pivots,
-    const xsigma::Tensor& dA,
-    const xsigma::Tensor& sign,
+quarisma::Tensor softplus_double_backward(
+    const quarisma::Tensor& grad,
+    const quarisma::Tensor& input,
+    const quarisma::Scalar& beta,
+    const quarisma::Scalar& threshold);
+std::tuple<quarisma::Tensor, quarisma::Tensor> slogdet_jvp(
+    const quarisma::Tensor& LU,
+    const quarisma::Tensor& pivots,
+    const quarisma::Tensor& dA,
+    const quarisma::Tensor& sign,
     const bool            use_A_T);
-xsigma::Tensor slogdet_backward(
-    const xsigma::Tensor& grad_sign,
-    const xsigma::Tensor& grad_logabsdet,
-    const xsigma::Tensor& A,
-    const xsigma::Tensor& signdet,
-    const xsigma::Tensor& LU,
-    const xsigma::Tensor& pivots);
-xsigma::Tensor log1p_backward(const xsigma::Tensor& grad, const xsigma::Tensor& self);
-xsigma::Tensor sinc_backward(const xsigma::Tensor& grad, const xsigma::Tensor& self);
-xsigma::Tensor sparse_constructor_values_backward(
-    const xsigma::Tensor& sparse_grad_out, const xsigma::Tensor& indices);
-xsigma::Tensor embedding_dense_double_backward_symint(
-    const xsigma::Tensor& grad, const xsigma::Tensor& indices, const xsigma::SymInt& padding_idx);
-xsigma::Tensor index_backward(
-    xsigma::Tensor                            zeros_like_self,
+quarisma::Tensor slogdet_backward(
+    const quarisma::Tensor& grad_sign,
+    const quarisma::Tensor& grad_logabsdet,
+    const quarisma::Tensor& A,
+    const quarisma::Tensor& signdet,
+    const quarisma::Tensor& LU,
+    const quarisma::Tensor& pivots);
+quarisma::Tensor log1p_backward(const quarisma::Tensor& grad, const quarisma::Tensor& self);
+quarisma::Tensor sinc_backward(const quarisma::Tensor& grad, const quarisma::Tensor& self);
+quarisma::Tensor sparse_constructor_values_backward(
+    const quarisma::Tensor& sparse_grad_out, const quarisma::Tensor& indices);
+quarisma::Tensor embedding_dense_double_backward_symint(
+    const quarisma::Tensor& grad, const quarisma::Tensor& indices, const quarisma::SymInt& padding_idx);
+quarisma::Tensor index_backward(
+    quarisma::Tensor                            zeros_like_self,
     const torch::List<std::optional<Tensor>>& indices,
-    const xsigma::Tensor&                     grad);
-xsigma::Tensor _cudnn_ctc_loss_backward(
-    const xsigma::Tensor& grad_out,
-    const xsigma::Tensor& loss,
-    const xsigma::Tensor& raw_grad,
+    const quarisma::Tensor&                     grad);
+quarisma::Tensor _cudnn_ctc_loss_backward(
+    const quarisma::Tensor& grad_out,
+    const quarisma::Tensor& loss,
+    const quarisma::Tensor& raw_grad,
     bool                  zero_infinity);
-xsigma::Tensor elu_double_backward(
+quarisma::Tensor elu_double_backward(
     const Tensor& grad,
     const Tensor& grad_output,
     const Scalar& alpha,
@@ -527,12 +527,12 @@ Tensor svd_backward(
 std::tuple<Tensor, Tensor, Tensor> linalg_svd_jvp(
     const Tensor& dA, const Tensor& U, const Tensor& S, const Tensor& Vh, const bool full_matrices);
 Tensor slice_backward_wrapper(
-    const xsigma::Tensor&         grad,
-    const xsigma::SymIntArrayRef& input_sizes,
+    const quarisma::Tensor&         grad,
+    const quarisma::SymIntArrayRef& input_sizes,
     int64_t                       dim,
-    std::optional<xsigma::SymInt> start,
-    std::optional<xsigma::SymInt> end,
-    xsigma::SymInt                step);
+    std::optional<quarisma::SymInt> start,
+    std::optional<quarisma::SymInt> end,
+    quarisma::SymInt                step);
 std::tuple<Tensor, Tensor> linalg_eig_jvp(
     const Tensor& dA, const Tensor& L, const Tensor& V, const bool is_hermitian);
 Tensor linalg_eig_backward(
@@ -633,12 +633,12 @@ Tensor fft_backward(
     IntArrayRef   output_sizes);
 Tensor fft_r2c_backward(
     const Tensor&         grad,
-    xsigma::IntArrayRef   dim,
+    quarisma::IntArrayRef   dim,
     int64_t               normalization,
     bool                  onesided,
-    const xsigma::SymInt& last_dim_size);
+    const quarisma::SymInt& last_dim_size);
 Tensor fft_c2r_backward(const Tensor& grad, IntArrayRef dim, int64_t normalization);
-Tensor constant_pad_nd_backward(const Tensor& grad, xsigma::SymIntArrayRef pad);
+Tensor constant_pad_nd_backward(const Tensor& grad, quarisma::SymIntArrayRef pad);
 std::tuple<Tensor, Tensor> cholesky_solve_backward(
     const Tensor&       grad_x,
     const Tensor&       self,
@@ -656,9 +656,9 @@ std::tuple<Tensor, Tensor, Tensor> infinitely_differentiable_native_group_norm_b
     const Tensor&                mean,
     const Tensor&                rstd,
     const std::optional<Tensor>& gamma,
-    xsigma::SymInt               N,
-    const xsigma::SymInt&        C,
-    xsigma::SymInt               HxW,
+    quarisma::SymInt               N,
+    const quarisma::SymInt&        C,
+    quarisma::SymInt               HxW,
     int64_t                      group,
     double                       eps,
     std::array<bool, 3>          grad_input_mask);
@@ -667,16 +667,16 @@ Tensor gelu_double_backward(
 Tensor as_strided_backward(
     Tensor                               grad,
     const TensorGeometry&                input_geometry,
-    xsigma::SymIntArrayRef               sizes,
-    xsigma::SymIntArrayRef               strides,
-    const std::optional<xsigma::SymInt>& storage_offset_);
+    quarisma::SymIntArrayRef               sizes,
+    quarisma::SymIntArrayRef               strides,
+    const std::optional<quarisma::SymInt>& storage_offset_);
 Tensor as_strided_scatter_backward(
     const Tensor&                 grad,
     const TensorGeometry&         input_geometry,
     const TensorGeometry&         src_geometry,
-    xsigma::SymIntArrayRef        sizes,
-    xsigma::SymIntArrayRef        strides,
-    std::optional<xsigma::SymInt> storage_offset);
+    quarisma::SymIntArrayRef        sizes,
+    quarisma::SymIntArrayRef        strides,
+    std::optional<quarisma::SymInt> storage_offset);
 std::tuple<Tensor, Tensor> atan2_backward(
     const Tensor& grad, const Tensor& self, const Tensor& other, std::array<bool, 2> output_mask);
 Tensor amaxamin_jvp(
@@ -690,7 +690,7 @@ std::tuple<Tensor, Tensor, Tensor> layer_norm_double_backward(
     const Tensor&                gO,
     const Tensor&                save_mean,
     const Tensor&                save_invstd,
-    xsigma::SymIntArrayRef       normalized_shape,
+    quarisma::SymIntArrayRef       normalized_shape,
     std::array<bool, 3>          output_mask);
 
 std::tuple<Tensor, Tensor> infinitely_differentiable_native_rms_norm_backward(
@@ -754,7 +754,7 @@ Tensor linalg_solve_jvp(
     const bool    left,
     const bool    use_A_T);
 Tensor lu_unpack_backward(
-    const Tensor& L_grad, const Tensor& U_grad, const xsigma::SymInt& m, const xsigma::SymInt& n);
+    const Tensor& L_grad, const Tensor& U_grad, const quarisma::SymInt& m, const quarisma::SymInt& n);
 
 Tensor linalg_det_backward(
     const Tensor& grad, const Tensor& det, const Tensor& A, const Tensor& LU, const Tensor& pivots);
@@ -809,7 +809,7 @@ Tensor layer_norm_jvp(
     const Tensor&          bias_t,
     const Tensor&          saved_mean,
     const Tensor&          saved_invstd,
-    xsigma::SymIntArrayRef normalized_shape);
+    quarisma::SymIntArrayRef normalized_shape);
 
 Tensor rms_norm_jvp(
     const Tensor& input_p,
@@ -850,12 +850,12 @@ Tensor convolution_jvp(
     const Tensor&          weight_t,
     const Tensor&          bias_p,
     const Tensor&          bias_t,
-    xsigma::SymIntArrayRef stride,
-    xsigma::SymIntArrayRef padding,
-    xsigma::SymIntArrayRef dilation,
+    quarisma::SymIntArrayRef stride,
+    quarisma::SymIntArrayRef padding,
+    quarisma::SymIntArrayRef dilation,
     bool                   transposed,
-    xsigma::SymIntArrayRef output_padding,
-    const xsigma::SymInt&  groups);
+    quarisma::SymIntArrayRef output_padding,
+    const quarisma::SymInt&  groups);
 
 Tensor _convolution_jvp(
     const Tensor&          input_p,
@@ -864,12 +864,12 @@ Tensor _convolution_jvp(
     const Tensor&          weight_t,
     const Tensor&          bias_p,
     const Tensor&          bias_t,
-    xsigma::SymIntArrayRef stride,
-    xsigma::SymIntArrayRef padding,
-    xsigma::SymIntArrayRef dilation,
+    quarisma::SymIntArrayRef stride,
+    quarisma::SymIntArrayRef padding,
+    quarisma::SymIntArrayRef dilation,
     bool                   transposed,
-    xsigma::SymIntArrayRef output_padding,
-    const xsigma::SymInt&  groups,
+    quarisma::SymIntArrayRef output_padding,
+    const quarisma::SymInt&  groups,
     bool                   benchmark,
     bool                   deterministic,
     bool                   cudnn_enabled,
@@ -877,9 +877,9 @@ Tensor _convolution_jvp(
 
 Tensor convolution_backward_jvp_grad_bias(const Tensor& grad_out_t, const Tensor& grad_bias);
 
-Tensor cat_jvp(const xsigma::ITensorListRef& tensors, int64_t dim);
-Tensor block_diag_jvp(xsigma::TensorList tensors);
-Tensor stack_jvp(xsigma::TensorList tensors, int64_t dim);
+Tensor cat_jvp(const quarisma::ITensorListRef& tensors, int64_t dim);
+Tensor block_diag_jvp(quarisma::TensorList tensors);
+Tensor stack_jvp(quarisma::TensorList tensors, int64_t dim);
 Tensor cumprod_jvp(const Tensor& self_t, const Tensor& self_p, const Tensor& result, int dim);
 Tensor gather_with_keepdimed_indices(
     const Tensor& input, int64_t dim, const Tensor& indices, bool keepdim);
@@ -887,15 +887,15 @@ Tensor evenly_read_jvp(const Tensor& fw_grad, const Tensor& input, const Tensor&
 Tensor warn_backwards(const Tensor& grad_output);
 
 std::tuple<Tensor, Tensor> _cudnn_convolution_backward(
-    const xsigma::Tensor&  self,
-    const xsigma::Tensor&  grad_output,
-    const xsigma::Tensor&  weight,
-    xsigma::SymIntArrayRef padding,
-    xsigma::SymIntArrayRef output_padding,
-    xsigma::SymIntArrayRef stride,
-    xsigma::SymIntArrayRef dilation,
+    const quarisma::Tensor&  self,
+    const quarisma::Tensor&  grad_output,
+    const quarisma::Tensor&  weight,
+    quarisma::SymIntArrayRef padding,
+    quarisma::SymIntArrayRef output_padding,
+    quarisma::SymIntArrayRef stride,
+    quarisma::SymIntArrayRef dilation,
     bool                   transposed,
-    xsigma::SymInt         groups,
+    quarisma::SymInt         groups,
     ::std::array<bool, 2>  output_mask);
 
 Tensor scatter_reduce_jvp(
@@ -919,7 +919,7 @@ std::tuple<Tensor, Tensor> scatter_reduce_backward(
     bool             include_self,
     const Tensor&    result);
 
-Tensor _to_copy_backward(const Tensor& grad, const xsigma::TensorOptions& self_options);
+Tensor _to_copy_backward(const Tensor& grad, const quarisma::TensorOptions& self_options);
 
 std::tuple<Tensor, Tensor> index_reduce_backward(
     const Tensor&    grad,
@@ -935,8 +935,8 @@ Tensor take_backward(const Tensor& grad, const Tensor& self, const Tensor& indic
 
 Tensor to_sparse_backward(
     const Tensor&                                   grad,
-    const xsigma::Layout                            self_layout,
-    const xsigma::OptionalArrayRef<xsigma::SymInt>& self_blocksize);
+    const quarisma::Layout                            self_layout,
+    const quarisma::OptionalArrayRef<quarisma::SymInt>& self_blocksize);
 
 std::tuple<Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor>
 mkldnn_rnn_layer_differentiable_backward(
@@ -960,9 +960,9 @@ mkldnn_rnn_layer_differentiable_backward(
     bool                         has_biases,
     bool                         train,
     bool                         bidirectional,
-    xsigma::IntArrayRef          batch_sizes,
+    quarisma::IntArrayRef          batch_sizes,
     bool                         batch_first,
-    const xsigma::Tensor&        workspace);
+    const quarisma::Tensor&        workspace);
 
 Tensor values_backward(const Tensor& grad, const Tensor& self);
 

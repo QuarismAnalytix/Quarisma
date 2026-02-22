@@ -1,12 +1,12 @@
 #pragma once
 
-#include <XSigma/XSigma.h>
-#include <XSigma/core/ivalue.h>
-#include <XSigma/core/jit_type.h>
-#include <XSigma/core/stack.h>
+#include <Quarisma/Quarisma.h>
+#include <Quarisma/core/ivalue.h>
+#include <Quarisma/core/jit_type.h>
+#include <Quarisma/core/stack.h>
 #include <torch/csrc/Export.h>
 #include <torch/csrc/jit/ir/ir.h>
-#include <xsigma/util/sparse_bitset.h>
+#include <quarisma/util/sparse_bitset.h>
 
 #include <list>
 #include <unordered_map>
@@ -15,7 +15,7 @@
 namespace torch::jit
 {
 
-using SparseBitVector = ::xsigma::SparseBitVector<256>;
+using SparseBitVector = ::quarisma::SparseBitVector<256>;
 
 // BuildLivenessSets computes "bailout" liveness which is equivalent to
 // "{LIVE_IN} or {GEN}" or "{LIVE_OUT} - {KILL}"

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -28,7 +28,7 @@
 #include "common/macros.h"
 #include "memory/device.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -102,7 +102,7 @@ enum class gpu_architecture
  * Contains alignment parameters optimized for specific GPU
  * architectures and memory access patterns.
  */
-struct XSIGMA_VISIBILITY alignment_config
+struct QUARISMA_VISIBILITY alignment_config
 {
     /** @brief Base alignment boundary in bytes */
     size_t base_alignment = alignment::CUDA_COALESCING_BOUNDARY;
@@ -163,7 +163,7 @@ struct XSIGMA_VISIBILITY alignment_config
  * );
  * ```
  */
-class XSIGMA_VISIBILITY gpu_memory_alignment
+class QUARISMA_VISIBILITY gpu_memory_alignment
 {
 public:
     /**
@@ -172,7 +172,7 @@ public:
      * @param pattern Memory access pattern
      * @return Optimal alignment configuration
      */
-    XSIGMA_API static alignment_config get_optimal_config(
+    QUARISMA_API static alignment_config get_optimal_config(
         gpu_architecture arch, memory_access_pattern pattern);
 
     /**
@@ -183,7 +183,7 @@ public:
      * @param vendor_name Vendor name (for HIP)
      * @return Detected GPU architecture
      */
-    XSIGMA_API static gpu_architecture detect_architecture(
+    QUARISMA_API static gpu_architecture detect_architecture(
         device_enum        device_type,
         int                compute_major,
         int                compute_minor,
@@ -195,7 +195,7 @@ public:
      * @param alignment Alignment boundary (must be power of 2)
      * @return Aligned size
      */
-    XSIGMA_API static constexpr size_t align_size(size_t size, size_t alignment) noexcept
+    QUARISMA_API static constexpr size_t align_size(size_t size, size_t alignment) noexcept
     {
         return (size + alignment - 1) & ~(alignment - 1);
     }
@@ -359,19 +359,19 @@ public:
      * @param config Configuration to validate
      * @return True if configuration is valid
      */
-    XSIGMA_API static bool validate_config(const alignment_config& config) noexcept;
+    QUARISMA_API static bool validate_config(const alignment_config& config) noexcept;
 
     /**
      * @brief Get alignment report for debugging
      * @param config Alignment configuration
      * @return Formatted string with alignment information
      */
-    XSIGMA_API static std::string get_alignment_report(const alignment_config& config);
+    QUARISMA_API static std::string get_alignment_report(const alignment_config& config);
 
 private:
     gpu_memory_alignment() = default;
-    XSIGMA_DELETE_COPY_AND_MOVE(gpu_memory_alignment);
+    QUARISMA_DELETE_COPY_AND_MOVE(gpu_memory_alignment);
 };
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

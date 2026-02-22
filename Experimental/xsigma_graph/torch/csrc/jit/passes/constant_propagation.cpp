@@ -1,5 +1,5 @@
-#include <XSigma/core/functional.h>
-#include <XSigma/core/ivalue.h>
+#include <Quarisma/core/functional.h>
+#include <Quarisma/core/ivalue.h>
 #include <torch/csrc/autograd/variable.h>
 #include <torch/csrc/jit/ir/alias_analysis.h>
 #include <torch/csrc/jit/ir/constants.h>
@@ -10,7 +10,7 @@
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
 #include <torch/csrc/jit/runtime/operator.h>
 #include <torch/csrc/jit/runtime/vararg_functions.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <utility>
 
@@ -93,7 +93,7 @@ std::optional<std::vector<IValue>> runNodeIfInputsAreConstant(
         const auto maybe_schema = n->maybeSchema();
         if (maybe_schema && maybe_schema->is_vararg())
         {
-            // vararg schemas require the number of inputs xsigma the top of the stack
+            // vararg schemas require the number of inputs quarisma the top of the stack
             // but this is broken in other places in constant prop, so disable it
             // for now
             return std::nullopt;
@@ -116,7 +116,7 @@ std::optional<std::vector<IValue>> runNodeIfInputsAreConstant(
     {
         if (v.isTensor())
         {
-            const xsigma::Tensor& t = v.toTensor();
+            const quarisma::Tensor& t = v.toTensor();
             if (t.defined() && t.requires_grad())
             {
                 // requires grad tensors cannot be constants
@@ -227,7 +227,7 @@ private:
         }
         auto            graph = n->owningGraph();
         WithInsertPoint guard(n);
-        for (const auto i : xsigma::irange(outputs.size()))
+        for (const auto i : quarisma::irange(outputs.size()))
         {
             auto new_output = tryInsertConstant(*graph, outputs[i]);
             if (new_output)
@@ -254,7 +254,7 @@ private:
         auto loop_input_offset = 2;  // offset of loop carried deps in input list
         for (size_t i = 0; i < n->outputs().size(); ++i)
         {
-            n->outputs().xsigma(i)->replaceAllUsesWith(n->inputs().xsigma(i + loop_input_offset));
+            n->outputs().quarisma(i)->replaceAllUsesWith(n->inputs().quarisma(i + loop_input_offset));
         }
         made_change_ = true;
         n->destroy();
@@ -262,10 +262,10 @@ private:
 
     bool loopWillNotRun(Node* node)
     {
-        Value*  trip_count = node->inputs().xsigma(0);
+        Value*  trip_count = node->inputs().quarisma(0);
         int64_t iter_len   = constant_as<int64_t>(trip_count).value_or(1);
 
-        Value* start_cond = node->inputs().xsigma(1);
+        Value* start_cond = node->inputs().quarisma(1);
         bool   cond_val   = constant_as<bool>(start_cond).value_or(true);
 
         bool loop_might_run = cond_val && iter_len > 0;
@@ -295,7 +295,7 @@ private:
         }
         for (size_t i = 0; i < n->outputs().size(); ++i)
         {
-            n->outputs().xsigma(i)->replaceAllUsesWith(body->outputs().xsigma(i));
+            n->outputs().quarisma(i)->replaceAllUsesWith(body->outputs().quarisma(i));
         }
         // NB: destroy the node here, because it might contain side effects, like
         // print
@@ -309,23 +309,23 @@ private:
         GRAPH_UPDATE(
             "Folding if ", getHeader(n->input()->node()), " where condition = ", *input_bool);
         size_t block_index = *input_bool ? 0 : 1;
-        ConstantPropagation(n->blocks().xsigma(block_index));
-        inlineIfBody(n->blocks().xsigma(block_index));
+        ConstantPropagation(n->blocks().quarisma(block_index));
+        inlineIfBody(n->blocks().quarisma(block_index));
         made_change_ = true;
     }
 
     void replaceAndRemoveIfOutput(Node* n, size_t i, Value* replacement)
     {
-        n->outputs().xsigma(i)->replaceAllUsesWith(replacement);
+        n->outputs().quarisma(i)->replaceAllUsesWith(replacement);
         n->eraseOutput(i);
-        n->blocks().xsigma(0)->eraseOutput(i);
-        n->blocks().xsigma(1)->eraseOutput(i);
+        n->blocks().quarisma(0)->eraseOutput(i);
+        n->blocks().quarisma(1)->eraseOutput(i);
     }
 
     // remove extra outputs from the node
     void removeExtraIfOutputs(Node* n)
     {
-        XSIGMA_CHECK(n->kind() == prim::If, "Only supported for If nodes");
+        QUARISMA_CHECK(n->kind() == prim::If, "Only supported for If nodes");
         auto            true_block      = n->blocks()[0];
         auto            false_block     = n->blocks()[1];
         auto            graph           = n->owningGraph();
@@ -333,8 +333,8 @@ private:
         WithInsertPoint guard(n);
         for (size_t i = 0; i < true_block->outputs().size();)
         {
-            auto t_out = true_block->outputs().xsigma(i);
-            auto f_out = false_block->outputs().xsigma(i);
+            auto t_out = true_block->outputs().quarisma(i);
+            auto f_out = false_block->outputs().quarisma(i);
 
             // neither block changes the output value
             if (true_block->outputs()[i] == false_block->outputs()[i])
@@ -362,7 +362,7 @@ private:
     void removeExtraLoopOutputs(Node* node)
     {
         auto initial_outputs   = node->outputs().size();
-        auto loop_body         = node->blocks().xsigma(0);
+        auto loop_body         = node->blocks().quarisma(0);
         auto loop_input_offset = 2;  // offset of loop carried deps in input list
         auto loop_body_offset =
             1;  // offset to the loop carried dependencies in block inputs/outputs
@@ -370,12 +370,12 @@ private:
         {
             size_t i = i_1 - 1;
             // if the value is no longer changed remove output
-            if (loop_body->inputs().xsigma(loop_body_offset + i) ==
-                loop_body->outputs().xsigma(loop_body_offset + i))
+            if (loop_body->inputs().quarisma(loop_body_offset + i) ==
+                loop_body->outputs().quarisma(loop_body_offset + i))
             {
-                auto node_input = node->inputs().xsigma(loop_input_offset + i);
-                node->outputs().xsigma(i)->replaceAllUsesWith(node_input);
-                loop_body->inputs().xsigma(loop_body_offset + i)->replaceAllUsesWith(node_input);
+                auto node_input = node->inputs().quarisma(loop_input_offset + i);
+                node->outputs().quarisma(i)->replaceAllUsesWith(node_input);
+                loop_body->inputs().quarisma(loop_body_offset + i)->replaceAllUsesWith(node_input);
                 node->eraseOutput(i);
                 node->removeInput(loop_input_offset + i);
                 loop_body->eraseInput(loop_body_offset + i);
@@ -385,7 +385,7 @@ private:
         made_change_ |= initial_outputs != node->outputs().size();
     }
 
-    bool noMutableValues(xsigma::ArrayRef<Value*> values)
+    bool noMutableValues(quarisma::ArrayRef<Value*> values)
     {
         return std::none_of(
             values.begin(), values.end(), [](Value* v) { return AliasDb::isMutableType(v); });
@@ -415,7 +415,7 @@ private:
                !n->isNondeterministic() && !n->hasSideEffects() && n->blocks().empty();
     }
 
-    void ConstantPropagation(xsigma::ArrayRef<Block*> blocks)
+    void ConstantPropagation(quarisma::ArrayRef<Block*> blocks)
     {
         for (Block* block : blocks)
         {

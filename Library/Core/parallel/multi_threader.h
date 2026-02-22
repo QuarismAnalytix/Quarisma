@@ -16,17 +16,17 @@
 
 #include "common/export.h"
 
-#ifndef XSIGMA_MAX_THREADS
-#define XSIGMA_MAX_THREADS 64
+#ifndef QUARISMA_MAX_THREADS
+#define QUARISMA_MAX_THREADS 64
 #endif
 
 typedef void (*thread_function_type)(void*);
 
-#if XSIGMA_USE_PTHREADS
+#if QUARISMA_USE_PTHREADS
 #include <pthread.h>
 typedef pthread_t thread_process_id_type;
 typedef pthread_t multi_threader_id_type;
-#elif XSIGMA_USE_WIN32_THREADS
+#elif QUARISMA_USE_WIN32_THREADS
 #include <windows.h>
 typedef HANDLE thread_process_id_type;
 typedef DWORD  multi_threader_id_type;
@@ -35,10 +35,10 @@ typedef int thread_process_id_type;
 typedef int multi_threader_id_type;
 #endif
 
-class XSIGMA_VISIBILITY multi_threader
+class QUARISMA_VISIBILITY multi_threader
 {
 public:
-    XSIGMA_API static multi_threader* create();
+    QUARISMA_API static multi_threader* create();
     virtual ~multi_threader();
 
     /**
@@ -66,18 +66,18 @@ public:
     ///@{
     /**
    * Get/Set the number of threads to create. It will be clamped to the range
-   * 1 - XSIGMA_MAX_THREADS, so the caller of this method should check that the
+   * 1 - QUARISMA_MAX_THREADS, so the caller of this method should check that the
    * requested number of threads was accepted.
    */
-    XSIGMA_API void        set_number_of_threads(int num);
-    XSIGMA_API virtual int get_number_of_threads();
+    QUARISMA_API void        set_number_of_threads(int num);
+    QUARISMA_API virtual int get_number_of_threads();
     ///@}
 
     ///@{
     /**
    * Set/Get the maximum number of threads VTK was allocated to support.
    */
-    XSIGMA_API static int get_global_static_maximum_number_of_threads();
+    QUARISMA_API static int get_global_static_maximum_number_of_threads();
     ///@}
 
     ///@{
@@ -86,18 +86,18 @@ public:
    * This limits and overrides any other settings for multithreading.
    * A value of zero indicates no limit.
    */
-    XSIGMA_API static void set_global_maximum_number_of_threads(int val);
-    XSIGMA_API static int  get_global_maximum_number_of_threads();
+    QUARISMA_API static void set_global_maximum_number_of_threads(int val);
+    QUARISMA_API static int  get_global_maximum_number_of_threads();
     ///@}
 
     ///@{
     /**
    * Set/Get the value which is used to initialize the number_of_threads
    * in the constructor.  Initially this default is set to the number of
-   * processors or XSIGMA_MAX_THREADS (which ever is less).
+   * processors or QUARISMA_MAX_THREADS (which ever is less).
    */
-    XSIGMA_API static void set_global_default_number_of_threads(int val);
-    XSIGMA_API static int  get_global_default_number_of_threads();
+    QUARISMA_API static void set_global_default_number_of_threads(int val);
+    QUARISMA_API static int  get_global_default_number_of_threads();
     ///@}
 
     // These methods are excluded from wrapping 1) because the
@@ -108,14 +108,14 @@ public:
    * Execute the single_method (as define by set_single_method) using
    * number_of_threads_ threads.
    */
-    XSIGMA_API void single_method_execute();
+    QUARISMA_API void single_method_execute();
 
     /**
    * Execute the multiple_methods (as define by calling set_multiple_method
    * for each of the required number_of_threads_ methods) using
    * number_of_threads_ threads.
    */
-    XSIGMA_API void multiple_method_execute();
+    QUARISMA_API void multiple_method_execute();
 
     /**
    * Set the single_method to f() and the user_data field of the
@@ -124,40 +124,40 @@ public:
    * must be of type thread_function_type and must take a single argument of
    * type void *.
    */
-    XSIGMA_API void set_single_method(thread_function_type f, void* data);
+    QUARISMA_API void set_single_method(thread_function_type f, void* data);
 
     /**
    * Set the multiple_method at the given index to f() and the user_data
    * field of the thread_info that is passed to it will be data.
    */
-    XSIGMA_API void set_multiple_method(int index, thread_function_type f, void* data);
+    QUARISMA_API void set_multiple_method(int index, thread_function_type f, void* data);
 
     /**
    * Create a new thread for the given function. Return a thread id
-   * which is a number between 0 and XSIGMA_MAX_THREADS - 1. This id should
+   * which is a number between 0 and QUARISMA_MAX_THREADS - 1. This id should
    * be used to kill the thread at a later time.
    */
-    XSIGMA_API int spawn_thread(thread_function_type f, void* data);
+    QUARISMA_API int spawn_thread(thread_function_type f, void* data);
 
     /**
    * Terminate the thread that was created with a spawn_thread_execute()
    */
-    XSIGMA_API void terminate_thread(int thread_id);
+    QUARISMA_API void terminate_thread(int thread_id);
 
     /**
    * Determine if a thread is still active
    */
-    XSIGMA_API bool is_thread_active(int thread_id);
+    QUARISMA_API bool is_thread_active(int thread_id);
 
     /**
    * Get the thread identifier of the calling thread.
    */
-    XSIGMA_API static multi_threader_id_type get_current_thread_id();
+    QUARISMA_API static multi_threader_id_type get_current_thread_id();
 
     /**
    * Check whether two thread identifiers refer to the same thread.
    */
-    XSIGMA_API static bool threads_equal(multi_threader_id_type t1, multi_threader_id_type t2);
+    QUARISMA_API static bool threads_equal(multi_threader_id_type t1, multi_threader_id_type t2);
 
 protected:
     multi_threader();
@@ -166,24 +166,24 @@ protected:
     int number_of_threads_;
 
     // An array of thread info containing a thread id
-    // (0, 1, 2, .. XSIGMA_MAX_THREADS-1), the thread count, and a pointer
+    // (0, 1, 2, .. QUARISMA_MAX_THREADS-1), the thread count, and a pointer
     // to void so that user data can be passed to each thread
-    thread_info thread_info_array_[XSIGMA_MAX_THREADS];
+    thread_info thread_info_array_[QUARISMA_MAX_THREADS];
 
     // The methods
     thread_function_type single_method_;
-    thread_function_type multiple_method_[XSIGMA_MAX_THREADS];
+    thread_function_type multiple_method_[QUARISMA_MAX_THREADS];
 
     // Storage of MutexFunctions and ints used to control spawned
     // threads and the spawned thread ids
-    int                         spawned_thread_active_flag_[XSIGMA_MAX_THREADS];
-    std::unique_ptr<std::mutex> spawned_thread_active_flag_lock_[XSIGMA_MAX_THREADS];
-    thread_process_id_type      spawned_thread_process_id_[XSIGMA_MAX_THREADS];
-    thread_info                 spawned_thread_info_array_[XSIGMA_MAX_THREADS];
+    int                         spawned_thread_active_flag_[QUARISMA_MAX_THREADS];
+    std::unique_ptr<std::mutex> spawned_thread_active_flag_lock_[QUARISMA_MAX_THREADS];
+    thread_process_id_type      spawned_thread_process_id_[QUARISMA_MAX_THREADS];
+    thread_info                 spawned_thread_info_array_[QUARISMA_MAX_THREADS];
 
     // Internal storage of the data
     void* single_data_;
-    void* multiple_data_[XSIGMA_MAX_THREADS];
+    void* multiple_data_[QUARISMA_MAX_THREADS];
 
 private:
     multi_threader(const multi_threader&) = delete;

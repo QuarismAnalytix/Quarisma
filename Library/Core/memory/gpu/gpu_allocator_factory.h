@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
@@ -25,7 +25,7 @@
 #include "memory/device.h"
 #include "memory/gpu/cuda_caching_allocator.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -53,7 +53,7 @@ enum class gpu_allocation_strategy
  * Provides comprehensive configuration options for different allocation
  * strategies, allowing fine-tuning for specific quantitative applications.
  */
-struct XSIGMA_VISIBILITY gpu_allocator_config
+struct QUARISMA_VISIBILITY gpu_allocator_config
 {
     gpu_allocation_strategy strategy     = gpu_allocation_strategy::DIRECT;
     device_enum             device_type  = device_enum::CUDA;
@@ -75,7 +75,7 @@ struct XSIGMA_VISIBILITY gpu_allocator_config
      * @param device_index CUDA device index
      * @return Optimized configuration
      */
-    XSIGMA_API static gpu_allocator_config create_default(
+    QUARISMA_API static gpu_allocator_config create_default(
         gpu_allocation_strategy strategy, int device_index = 0);
 
     /**
@@ -83,14 +83,14 @@ struct XSIGMA_VISIBILITY gpu_allocator_config
      * @param device_index CUDA device index
      * @return Monte Carlo optimized configuration
      */
-    XSIGMA_API static gpu_allocator_config create_monte_carlo_optimized(int device_index = 0);
+    QUARISMA_API static gpu_allocator_config create_monte_carlo_optimized(int device_index = 0);
 
     /**
      * @brief Create configuration optimized for PDE solvers
      * @param device_index CUDA device index
      * @return PDE solver optimized configuration
      */
-    XSIGMA_API static gpu_allocator_config create_pde_optimized(int device_index = 0);
+    QUARISMA_API static gpu_allocator_config create_pde_optimized(int device_index = 0);
 };
 
 /**
@@ -109,7 +109,7 @@ struct XSIGMA_VISIBILITY gpu_allocator_config
  *
  * @note All allocators created by this factory are thread-safe
  */
-class XSIGMA_VISIBILITY gpu_allocator_factory
+class QUARISMA_VISIBILITY gpu_allocator_factory
 {
 public:
     /**
@@ -155,7 +155,7 @@ public:
      * @param allocation_lifetime Average lifetime in seconds
      * @return Recommended allocation strategy
      */
-    XSIGMA_API static gpu_allocation_strategy recommend_strategy(
+    QUARISMA_API static gpu_allocation_strategy recommend_strategy(
         size_t avg_allocation_size, double allocation_frequency, double allocation_lifetime);
 
     /**
@@ -165,7 +165,7 @@ public:
      * @param device_index Device index
      * @return true if device supports strategy
      */
-    XSIGMA_API static bool validate_device_support(
+    QUARISMA_API static bool validate_device_support(
         gpu_allocation_strategy strategy, device_enum device_type, int device_index);
 
     /**
@@ -173,11 +173,11 @@ public:
      * @param strategy Allocation strategy
      * @return Strategy name string
      */
-    XSIGMA_API static std::string strategy_name(gpu_allocation_strategy strategy);
+    QUARISMA_API static std::string strategy_name(gpu_allocation_strategy strategy);
 
 private:
     gpu_allocator_factory() = delete;  // Static factory only
 };
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

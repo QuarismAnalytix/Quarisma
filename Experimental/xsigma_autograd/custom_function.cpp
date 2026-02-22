@@ -2,7 +2,7 @@
 #include <torch/csrc/autograd/autograd.h>
 #include <torch/csrc/autograd/custom_function.h>
 #include <torch/csrc/autograd/functions/accumulate_grad.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <utility>
 
@@ -29,11 +29,11 @@ namespace torch::autograd
 //    corresponding output.
 static void _process_forward_mode_AD(
     const variable_list&                            inputs,
-    std::unordered_map<xsigma::TensorImpl*, size_t> inputs_mapping,
-    const xsigma::ArrayRef<std::optional<Variable>> raw_outputs,
+    std::unordered_map<quarisma::TensorImpl*, size_t> inputs_mapping,
+    const quarisma::ArrayRef<std::optional<Variable>> raw_outputs,
     const optional_variable_list&                   outputs,
-    const std::unordered_set<xsigma::TensorImpl*>&  non_differentiable,
-    const std::unordered_set<xsigma::TensorImpl*>&  dirty_inputs,
+    const std::unordered_set<quarisma::TensorImpl*>&  non_differentiable,
+    const std::unordered_set<quarisma::TensorImpl*>&  dirty_inputs,
     const _jvp_fn_t&                                jvp_user_function)
 {
     // TODO handle multiple levels here
@@ -47,8 +47,8 @@ static void _process_forward_mode_AD(
     // common case where the user is not using forward mode AD.
     variable_list                                   input_grads;
     std::vector<int64_t>                            grad_versions;
-    std::vector<xsigma::TensorImpl*>                grad_impls;
-    std::unordered_map<xsigma::TensorImpl*, size_t> inputs_bases;
+    std::vector<quarisma::TensorImpl*>                grad_impls;
+    std::unordered_map<quarisma::TensorImpl*, size_t> inputs_bases;
 
     auto init_tracked_info = [&]()
     {
@@ -56,7 +56,7 @@ static void _process_forward_mode_AD(
         grad_versions.resize(num_inputs);
         grad_impls.resize(num_inputs);
 
-        for (const auto i : xsigma::irange(num_inputs))
+        for (const auto i : quarisma::irange(num_inputs))
         {
             const auto& inp = inputs[i];
             if (inp.is_view() && impl::get_view_autograd_meta(inp)->has_fw_view())
@@ -77,7 +77,7 @@ static void _process_forward_mode_AD(
     bool any_input_has_grad = false;
     // Extract the input's forward gradients and record any info we will need
     // later
-    for (const auto i : xsigma::irange(num_inputs))
+    for (const auto i : quarisma::irange(num_inputs))
     {
         const auto& inp = inputs[i];
         if (!inp.defined())
@@ -106,13 +106,13 @@ static void _process_forward_mode_AD(
 
     torch::autograd::variable_list forward_grads;
     {
-        xsigma::AutoFwGradMode fw_grad_mode(false);
+        quarisma::AutoFwGradMode fw_grad_mode(false);
         forward_grads = jvp_user_function(inputs, std::move(input_grads));
     }
 
     const auto num_forward_grads = forward_grads.size();
     // contrary to backward mode, we don't allow returning too many gradients
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         num_forward_grads == num_outputs,
         "Function's jvp returned "
         "an invalid number of forward gradients (expected ",
@@ -121,13 +121,13 @@ static void _process_forward_mode_AD(
         num_forward_grads,
         ")");
 
-    for (const auto i : xsigma::irange(num_outputs))
+    for (const auto i : quarisma::irange(num_outputs))
     {
         if (!raw_outputs[i].has_value())
         {
             continue;
         }
-        const auto& out = outputs[i].has_value() ? outputs[i].value() : xsigma::Tensor();
+        const auto& out = outputs[i].has_value() ? outputs[i].value() : quarisma::Tensor();
         auto        out_tensor_impl = raw_outputs[i].value().unsafeGetTensorImpl();
         bool        is_differentiable =
             (non_differentiable.count(out_tensor_impl) == 0 &&
@@ -135,13 +135,13 @@ static void _process_forward_mode_AD(
         const auto& out_grad = forward_grads[i];
         if (!out.defined() || !is_differentiable)
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 !out_grad.defined(),
-                "Function's jvp returned a gradient xsigma position ",
+                "Function's jvp returned a gradient quarisma position ",
                 i,
                 ", but "
                 " the corresponding forward output is not a differentiable Tensor."
-                "You should return None xsigma that position instead.");
+                "You should return None quarisma that position instead.");
             continue;
         }
 
@@ -150,7 +150,7 @@ static void _process_forward_mode_AD(
 
         if (is_modified)
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 is_input,
                 "Only input Tensors should be given to ctx.mark_dirty(). If a Tensor is not an "
                 "input, there"
@@ -160,13 +160,13 @@ static void _process_forward_mode_AD(
             {
                 // If there was already a forward grad for that input
                 // Just make sure that it is modified inplace and returned as-is
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     out_grad._version() != grad_versions[inp_idx],
                     "An inplace custom Function is not modifying the "
                     "forward mode gradients inplace. If the forward is modifying an input inplace, "
                     "then the jvp "
                     "function must modify the corresponding gradient inplace.")
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     out_grad.unsafeGetTensorImpl() == grad_impls[inp_idx],
                     "An inplace custom Function is not returning the "
                     "forward mode gradients as-is. If the forward is modifying an input inplace, "
@@ -204,7 +204,7 @@ static void _process_forward_mode_AD(
                     // returned a view of that Tensor
                     if (matching_input_grad.defined())
                     {
-                        XSIGMA_CHECK(
+                        QUARISMA_CHECK(
                             out_grad.is_view() &&
                                 impl::get_view_autograd_meta(out_grad)->has_fw_view(),
                             "A custom Function's forward is returning a view (or an input as-is) "
@@ -221,7 +221,7 @@ static void _process_forward_mode_AD(
                                 impl::get_view_autograd_meta(matching_input_grad)
                                     ->get_forward_view()
                                     .base_;
-                            XSIGMA_CHECK(
+                            QUARISMA_CHECK(
                                 matching_input_grad_base.unsafeGetTensorImpl() ==
                                     out_grad_base.unsafeGetTensorImpl(),
                                 "A custom Function is returning a view but the jvp is not "
@@ -232,7 +232,7 @@ static void _process_forward_mode_AD(
                         {
                             // If the matching input's grad is not a view, then it must be the
                             // output gradient's base
-                            XSIGMA_CHECK(
+                            QUARISMA_CHECK(
                                 matching_input_grad.unsafeGetTensorImpl() ==
                                     out_grad_base.unsafeGetTensorImpl(),
                                 "A custom Function is returning a view but the jvp is not "
@@ -258,8 +258,8 @@ static void _process_forward_mode_AD(
     }
 }
 
-static xsigma::Tensor _view_as_self_with_no_grad(
-    const xsigma::Tensor& self, const _view_as_self_fn_t& view_as_self_fn)
+static quarisma::Tensor _view_as_self_with_no_grad(
+    const quarisma::Tensor& self, const _view_as_self_fn_t& view_as_self_fn)
 {
     // This is called below in _process_backward_mode_ad in two places:
     //
@@ -276,7 +276,7 @@ static xsigma::Tensor _view_as_self_with_no_grad(
     // Alternatively, we could have not disabled forward grad while performing
     // this view, but it would mean that the user defined jvp may be silently
     // ignored.
-    xsigma::AutoFwGradMode fw_grad_mode(false);
+    quarisma::AutoFwGradMode fw_grad_mode(false);
     AutoGradMode           grad_mode(false);
     // We thread through this view_as_self_fn lambda so that in the case we are a
     // Python custom function (rather than a cpp one), we can properly call the
@@ -285,12 +285,12 @@ static xsigma::Tensor _view_as_self_with_no_grad(
 }
 
 static optional_variable_list _process_backward_mode_ad(
-    const std::unordered_map<xsigma::TensorImpl*, size_t>& inputs_mapping,
-    const std::unordered_set<xsigma::TensorImpl*>&         non_differentiable,
-    const std::unordered_set<xsigma::TensorImpl*>&         dirty_inputs,
-    const xsigma::ArrayRef<std::optional<Variable>>        raw_outputs,
+    const std::unordered_map<quarisma::TensorImpl*, size_t>& inputs_mapping,
+    const std::unordered_set<quarisma::TensorImpl*>&         non_differentiable,
+    const std::unordered_set<quarisma::TensorImpl*>&         dirty_inputs,
+    const quarisma::ArrayRef<std::optional<Variable>>        raw_outputs,
     const std::shared_ptr<Node>&                           cdata,
-    const std::unordered_set<xsigma::TensorImpl*>&         to_save_if_setup_context,
+    const std::unordered_set<quarisma::TensorImpl*>&         to_save_if_setup_context,
     const _view_as_self_fn_t&                              view_as_self_fn,
     bool                                                   pure_view)
 {
@@ -318,7 +318,7 @@ static optional_variable_list _process_backward_mode_ad(
             {
                 if (is_input && !is_modified)
                 {
-                    XSIGMA_CHECK(!is_saved_and_setup_context, error_msg_input_returned_as_is)
+                    QUARISMA_CHECK(!is_saved_and_setup_context, error_msg_input_returned_as_is)
                     var = _view_as_self_with_no_grad(var, view_as_self_fn);
                 }
                 return;
@@ -345,7 +345,7 @@ static optional_variable_list _process_backward_mode_ad(
         {
             if (var.is_leaf() && var.requires_grad())
             {
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     "a leaf Variable that requires grad has been used in an in-place operation.");
             }
@@ -357,12 +357,12 @@ static optional_variable_list _process_backward_mode_ad(
                     "Only input Tensors that have been mutated should be passed to "
                     "ctx.mark_dirty().";
                 // We reach this path in the view of intermediate case
-                XSIGMA_CHECK(!var.is_view(), mark_dirty_error_msg);
+                QUARISMA_CHECK(!var.is_view(), mark_dirty_error_msg);
                 TORCH_WARN(mark_dirty_error_msg);
             }
             // If the input is a view, the rebase will need to rewrite the graph and
             // this only works if we have a single output to this Function.
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 !(var.is_view() && num_outputs > 1),
                 "If your Function modifies inplace an input that is a view"
                 " of another Tensor, your Function cannot return more than one Tensor. This is not "
@@ -392,7 +392,7 @@ static optional_variable_list _process_backward_mode_ad(
         }
         else if (is_input)
         {
-            XSIGMA_CHECK(!is_saved_and_setup_context, error_msg_input_returned_as_is)
+            QUARISMA_CHECK(!is_saved_and_setup_context, error_msg_input_returned_as_is)
             var = _view_as_self_with_no_grad(var, view_as_self_fn);
             impl::set_gradient_edge(var, {cdata, output_nr});
         }
@@ -403,11 +403,11 @@ static optional_variable_list _process_backward_mode_ad(
     };
 
     optional_variable_list                  outputs;
-    std::unordered_set<xsigma::TensorImpl*> outputs_impl;  // For dirty_inputs check
+    std::unordered_set<quarisma::TensorImpl*> outputs_impl;  // For dirty_inputs check
     outputs.reserve(num_outputs);
     int num_diff_outputs = 0;
 
-    for (const auto i : xsigma::irange(num_outputs))
+    for (const auto i : quarisma::irange(num_outputs))
     {
         // We put a undefined_input placeholder for outputs that are not tensor and
         // for when the output tensor is not differentiable (see below)
@@ -490,7 +490,7 @@ static optional_variable_list _process_backward_mode_ad(
     // valid.
     for (auto& dirty_input : dirty_inputs)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             outputs_impl.count(dirty_input) > 0,
             "Some elements marked as dirty during the forward method were not returned as output. "
             "The"
@@ -502,25 +502,25 @@ static optional_variable_list _process_backward_mode_ad(
 
 optional_variable_list _wrap_outputs(
     const variable_list&                            input_vars,
-    const std::unordered_set<xsigma::TensorImpl*>&  non_differentiable,
-    const std::unordered_set<xsigma::TensorImpl*>&  dirty_inputs,
-    const xsigma::ArrayRef<std::optional<Variable>> raw_outputs,
+    const std::unordered_set<quarisma::TensorImpl*>&  non_differentiable,
+    const std::unordered_set<quarisma::TensorImpl*>&  dirty_inputs,
+    const quarisma::ArrayRef<std::optional<Variable>> raw_outputs,
     const std::shared_ptr<Node>&                    cdata,
     const _jvp_fn_t&                                jvp_user_function,
-    const std::unordered_set<xsigma::TensorImpl*>&  to_save_if_setup_context,
+    const std::unordered_set<quarisma::TensorImpl*>&  to_save_if_setup_context,
     const _view_as_self_fn_t&                       view_as_self_fn,
     bool                                            pure_view)
 {
-    std::unordered_map<xsigma::TensorImpl*, size_t> inputs_mapping;
+    std::unordered_map<quarisma::TensorImpl*, size_t> inputs_mapping;
     inputs_mapping.reserve(input_vars.size());
-    for (const auto i : xsigma::irange(input_vars.size()))
+    for (const auto i : quarisma::irange(input_vars.size()))
     {
         inputs_mapping.emplace(input_vars[i].unsafeGetTensorImpl(), i);
     }
 
     // Limit pure views to 1-1 mapping as it is unclear if it is even
     // possible to have a pure view for N-1 or 1-N.
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         !pure_view || (input_vars.size() == 1 && raw_outputs.size() == 1),
         "Pure view custom Function can only have one input Tensor and one output Tensor. Open an "
         "issue if you need to support more.");
@@ -550,11 +550,11 @@ optional_variable_list _wrap_outputs(
 }
 
 void check_variable_result(
-    const xsigma::TensorBase& original,
-    const xsigma::TensorBase& result,
+    const quarisma::TensorBase& original,
+    const quarisma::TensorBase& result,
     const std::string&        hook_name)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         original.options().type_equal(result.options()),
         "hook '",
         hook_name,
@@ -564,7 +564,7 @@ void check_variable_result(
         result.toString(),
         ")");
 
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         original.is_cuda() == result.is_cuda(),
         "hook '",
         hook_name,
@@ -574,7 +574,7 @@ void check_variable_result(
         result.is_cuda() ? "CUDA tensor" : "CPU tensor",
         ")");
 
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         original.sym_sizes().vec() == result.sym_sizes().vec(),
         "hook '",
         hook_name,
@@ -622,7 +622,7 @@ void AutogradContext::save_variables()
 
 variable_list AutogradContext::get_saved_variables() const
 {
-    XSIGMA_CHECK(!has_freed_buffers_, ERR_BACKWARD_TWICE);
+    QUARISMA_CHECK(!has_freed_buffers_, ERR_BACKWARD_TWICE);
     if (saved_variables_override_.has_value())
     {
         return *saved_variables_override_;
@@ -642,7 +642,7 @@ bool AutogradContext::needs_input_grad(size_t output_edge_index) const
 {
     if (needs_input_grad_override_.has_value())
     {
-        return needs_input_grad_override_.value().xsigma(output_edge_index);
+        return needs_input_grad_override_.value().quarisma(output_edge_index);
     }
     auto ptr = grad_fn_.lock();
     TORCH_INTERNAL_ASSERT(ptr);
@@ -659,9 +659,9 @@ bool AutogradContext::needs_input_grad(std::initializer_list<IndexRange> idxs) c
             [this](IndexRange range)
             {
                 bool result = false;
-                for (const auto i : xsigma::irange(range.first, range.second))
+                for (const auto i : quarisma::irange(range.first, range.second))
                 {
-                    result |= needs_input_grad_override_.value().xsigma(i);
+                    result |= needs_input_grad_override_.value().quarisma(i);
                 }
                 return result;
             });
@@ -696,7 +696,7 @@ void AutogradContext::set_materialize_grads(bool value)
     materialize_grads_ = value;
 }
 
-const std::unordered_set<xsigma::TensorImpl*>& AutogradContext::get_and_bump_dirty() const
+const std::unordered_set<quarisma::TensorImpl*>& AutogradContext::get_and_bump_dirty() const
 {
     for (auto& var : dirty_inputs_)
     {
@@ -705,7 +705,7 @@ const std::unordered_set<xsigma::TensorImpl*>& AutogradContext::get_and_bump_dir
     return dirty_inputs_;
 }
 
-const std::unordered_set<xsigma::TensorImpl*>& AutogradContext::get_non_differentiable() const
+const std::unordered_set<quarisma::TensorImpl*>& AutogradContext::get_non_differentiable() const
 {
     return non_differentiable_;
 }

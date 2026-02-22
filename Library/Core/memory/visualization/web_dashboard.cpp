@@ -15,7 +15,7 @@
 #include "logging/logger.h"
 #include "memory/cpu/allocator.h"
 
-namespace xsigma
+namespace quarisma
 {
 
 web_dashboard::~web_dashboard()
@@ -30,7 +30,7 @@ bool web_dashboard::start_dashboard(int port)
 {
     if (server_running_.load())
     {
-        XSIGMA_LOG_WARNING("Dashboard is already running");
+        QUARISMA_LOG_WARNING("Dashboard is already running");
         return false;
     }
 
@@ -48,7 +48,7 @@ bool web_dashboard::start_dashboard(int port)
     // Start metrics collection thread
     metrics_thread_ = std::thread(&web_dashboard::metrics_thread_main, this);
 
-    XSIGMA_LOG_INFO("Web dashboard started on {}:{}", config_.host, config_.port);
+    QUARISMA_LOG_INFO("Web dashboard started on {}:{}", config_.host, config_.port);
     return true;
 }
 
@@ -79,14 +79,14 @@ void web_dashboard::stop_dashboard()
         websocket_clients_.clear();
     }
 
-    XSIGMA_LOG_INFO("Web dashboard stopped");
+    QUARISMA_LOG_INFO("Web dashboard stopped");
 }
 
 bool web_dashboard::register_allocator(const std::string& name, Allocator* allocator)
 {
     if (allocator == nullptr)
     {
-        XSIGMA_LOG_ERROR("Cannot register null allocator: {}", name);
+        QUARISMA_LOG_ERROR("Cannot register null allocator: {}", name);
         return false;
     }
 
@@ -94,7 +94,7 @@ bool web_dashboard::register_allocator(const std::string& name, Allocator* alloc
 
     if (registered_allocators_.find(name) != registered_allocators_.end())  //NOLINT
     {
-        XSIGMA_LOG_WARNING("Allocator already registered: {}", name);
+        QUARISMA_LOG_WARNING("Allocator already registered: {}", name);
         return false;
     }
 
@@ -107,7 +107,7 @@ bool web_dashboard::register_allocator(const std::string& name, Allocator* alloc
 
     registered_allocators_[name] = info;
 
-    XSIGMA_LOG_INFO("Registered allocator: {} (type: {})", name, info.type);
+    QUARISMA_LOG_INFO("Registered allocator: {} (type: {})", name, info.type);
     return true;
 }
 
@@ -118,7 +118,7 @@ bool web_dashboard::unregister_allocator(const std::string& name)
     auto it = registered_allocators_.find(name);
     if (it == registered_allocators_.end())
     {
-        XSIGMA_LOG_WARNING("Allocator not found for unregistration: {}", name);
+        QUARISMA_LOG_WARNING("Allocator not found for unregistration: {}", name);
         return false;
     }
 
@@ -130,7 +130,7 @@ bool web_dashboard::unregister_allocator(const std::string& name)
         metrics_history_.erase(name);
     }
 
-    XSIGMA_LOG_INFO("Unregistered allocator: {}", name);
+    QUARISMA_LOG_INFO("Unregistered allocator: {}", name);
     return true;
 }
 
@@ -358,7 +358,7 @@ void web_dashboard::update_metrics_now()
 
 void web_dashboard::server_thread_main()
 {
-    XSIGMA_LOG_INFO("Starting web dashboard server thread on port {}", config_.port);
+    QUARISMA_LOG_INFO("Starting web dashboard server thread on port {}", config_.port);
 
     // Simple HTTP server implementation
     // In a real implementation, this would use a proper HTTP library like httplib or similar
@@ -372,12 +372,12 @@ void web_dashboard::server_thread_main()
         // This is a simplified implementation - in practice would use proper HTTP library
     }
 
-    XSIGMA_LOG_INFO("Web dashboard server thread stopped");
+    QUARISMA_LOG_INFO("Web dashboard server thread stopped");
 }
 
 void web_dashboard::metrics_thread_main()
 {
-    XSIGMA_LOG_INFO("Starting metrics collection thread");
+    QUARISMA_LOG_INFO("Starting metrics collection thread");
 
     while (!should_stop_.load())
     {
@@ -385,7 +385,7 @@ void web_dashboard::metrics_thread_main()
         std::this_thread::sleep_for(config_.update_interval);
     }
 
-    XSIGMA_LOG_INFO("Metrics collection thread stopped");
+    QUARISMA_LOG_INFO("Metrics collection thread stopped");
 }
 
 void web_dashboard::collect_metrics()
@@ -441,7 +441,7 @@ void web_dashboard::broadcast_metrics_update(const std::string& /*metrics_json*/
     // For now, just log that we would broadcast
     if (!websocket_clients_.empty())
     {
-        XSIGMA_LOG_INFO_DEBUG(
+        QUARISMA_LOG_INFO_DEBUG(
             "Broadcasting metrics update to {} clients", websocket_clients_.size());
     }
 }
@@ -527,4 +527,4 @@ double web_dashboard::calculate_allocation_rate(const std::string& allocator_nam
     return static_cast<double>(alloc_diff) / time_diff;
 }
 
-}  // namespace xsigma
+}  // namespace quarisma

@@ -19,7 +19,7 @@
 
 ## Executive Summary
 
-This document provides a prioritized list of issues found in the XSigma linting infrastructure, along with specific recommendations and implementation guidance.
+This document provides a prioritized list of issues found in the Quarisma linting infrastructure, along with specific recommendations and implementation guidance.
 
 ### Issue Distribution
 
@@ -461,7 +461,7 @@ for match in RESULTS_RE.finditer(proc.stdout.decode()):
         file_path = file_path.resolve()
     
     abs_path = str(file_path)
-    if not abs_path.startswith(XSIGMA_ROOT):
+    if not abs_path.startswith(QUARISMA_ROOT):
         continue
     ...
 ```
@@ -657,7 +657,7 @@ Low Impact, Low Effort:
 
 ## Conclusion
 
-The XSigma linting infrastructure is **well-designed and production-ready**. The identified issues are primarily enhancements to improve Windows compatibility, reduce code duplication, and increase maintainability.
+The Quarisma linting infrastructure is **well-designed and production-ready**. The identified issues are primarily enhancements to improve Windows compatibility, reduce code duplication, and increase maintainability.
 
 ### Key Takeaways
 

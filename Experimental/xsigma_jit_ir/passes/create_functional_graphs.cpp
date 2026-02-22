@@ -159,7 +159,7 @@ private:
         // We don't allow any node in the functional graph to output a value
         // that escapes scope or is mutated, and we don't allow any mutating nodes
         // into the graph.
-        // - allow functional graphs to have xsigma most one value that can escape scope
+        // - allow functional graphs to have quarisma most one value that can escape scope
         // - allow outputs which alias the wildcard set but do not "re-escape"
         for (Value* v : n->outputs())
         {
@@ -186,7 +186,7 @@ private:
         return is_functional_node;
     }
 
-    void AnalyzeFunctionalSubset(xsigma::ArrayRef<Block*> blocks)
+    void AnalyzeFunctionalSubset(quarisma::ArrayRef<Block*> blocks)
     {
         for (Block* block : blocks)
         {

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,13 +13,13 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #pragma once
 
-#ifndef __XSIGMA_WRAP__
+#ifndef __QUARISMA_WRAP__
 
 #include <cstddef>
 #include <cstddef>    // for size_t, ptrdiff_t
@@ -29,18 +29,18 @@
 #include <stdexcept>  // for invalid_argument
 
 #include "common/configure.h"
-#include "common/macros.h"         // for XSIGMA_FORCE_INLINE, XSIGMA_ALIGNMENT, XSIG...
+#include "common/macros.h"         // for QUARISMA_FORCE_INLINE, QUARISMA_ALIGNMENT, XSIG...
 #include "memory/cpu/allocator.h"  // for Allocator
 #include "memory/cpu/allocator_device.h"
 #include "memory/device.h"                // for device_enum
 #include "memory/helper/process_state.h"  // for process_state
 
 // GPU support includes
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 /**
  * @brief Unified memory allocator supporting both CPU and GPU memory management
@@ -48,7 +48,7 @@ namespace xsigma
  * This allocator provides a unified interface for memory allocation across different
  * device types including CPU, CUDA, and HIP devices. It automatically selects
  * the appropriate allocation strategy based on the device type and integrates with
- * XSigma's memory pool system for optimal performance in quantitative finance applications.
+ * Quarisma's memory pool system for optimal performance in quantitative finance applications.
  *
  * Key Features:
  * - Unified interface for CPU and GPU memory allocation
@@ -63,10 +63,10 @@ namespace xsigma
  * @tparam d_type Default device type (CPU, CUDA, HIP)
  * @tparam alignment Memory alignment requirement in bytes
  */
-template <class T, std::size_t alignment = XSIGMA_ALIGNMENT>
+template <class T, std::size_t alignment = QUARISMA_ALIGNMENT>
 struct allocator
 {
-    XSIGMA_DELETE_CLASS(allocator)
+    QUARISMA_DELETE_CLASS(allocator)
 
 public:
     using size_type       = std::size_t;
@@ -76,7 +76,7 @@ public:
     using const_pointer   = const T*;
 
     // Stream type for asynchronous operations
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     using stream_t = cudaStream_t;
 #else
     using stream_t = void*;
@@ -95,7 +95,7 @@ public:
      * @return Pointer to allocated memory
      * @throws std::bad_alloc if allocation fails
      */
-    XSIGMA_FORCE_INLINE static pointer allocate(
+    QUARISMA_FORCE_INLINE static pointer allocate(
         size_type n, device_enum type = device_enum::CPU, int device_index = 0)
     {
         if (n == 0)
@@ -107,11 +107,11 @@ public:
         if (type == device_enum::CPU)
         {
             ptr = static_cast<pointer>(
-                xsigma::process_state::singleton()->GetCPUAllocator(0)->allocate_raw(
+                quarisma::process_state::singleton()->GetCPUAllocator(0)->allocate_raw(
                     alignment, n * scalar_size));
         }
         // GPU allocation using direct CUDA calls
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         else if (type == device_enum::CUDA || type == device_enum::HIP)
         {
             // Set the device
@@ -150,7 +150,7 @@ public:
      * @param device_index device_option index for multi-GPU systems (default: 0)
      * @param count Number of elements (for tracking purposes, default: 0)
      */
-    XSIGMA_FORCE_INLINE static void free(
+    QUARISMA_FORCE_INLINE static void free(
         pointer&    ptr,
         device_enum type         = device_enum::CPU,
         int         device_index = 0,
@@ -162,15 +162,15 @@ public:
         // CPU deallocation
         if (type == device_enum::CPU)
         {
-#if XSIGMA_HAS_NUMA
+#if QUARISMA_HAS_NUMA
             int numa_node = GetCurrentNUMANode();
 #else
             int numa_node = 0;
 #endif
-            xsigma::process_state::singleton()->GetCPUAllocator(numa_node)->deallocate_raw(ptr);
+            quarisma::process_state::singleton()->GetCPUAllocator(numa_node)->deallocate_raw(ptr);
         }
         // GPU deallocation using direct CUDA calls
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         else if (type == device_enum::CUDA || type == device_enum::HIP)
         {
             // Set the device
@@ -178,7 +178,7 @@ public:
             if (result != cudaSuccess)
             {
                 // Log error but don't throw from free
-                // XSIGMA_LOG_ERROR("Failed to set CUDA device during deallocation");
+                // QUARISMA_LOG_ERROR("Failed to set CUDA device during deallocation");
             }
 
             // Free GPU memory
@@ -186,7 +186,7 @@ public:
             if (result != cudaSuccess)
             {
                 // Log error but don't throw from free
-                // XSIGMA_LOG_ERROR("CUDA free failed");
+                // QUARISMA_LOG_ERROR("CUDA free failed");
             }
         }
 #endif
@@ -209,7 +209,7 @@ public:
      * @param to_index Destination device index (default: 0)
      * @param stream Stream for asynchronous operations (default: nullptr)
      */
-    XSIGMA_FORCE_INLINE static void copy(
+    QUARISMA_FORCE_INLINE static void copy(
         const_pointer from,
         size_type     n,
         pointer       to,
@@ -232,7 +232,7 @@ public:
         }
 
         // GPU-involved copies using direct CUDA operations
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         if (from_type == device_enum::CUDA || to_type == device_enum::CUDA ||
             from_type == device_enum::HIP || to_type == device_enum::HIP)
         {
@@ -290,7 +290,7 @@ public:
         throw std::invalid_argument("Unsupported device combination for memory copy");
     }
 
-    XSIGMA_FORCE_INLINE static size_type first_aligned(const_pointer array, size_type size)
+    QUARISMA_FORCE_INLINE static size_type first_aligned(const_pointer array, size_type size)
     {
         if constexpr ((alignment % scalar_size) != 0)
         {
@@ -308,21 +308,21 @@ public:
         return (first < size) ? first : size;
     }
 
-    XSIGMA_FORCE_INLINE static size_type last_aligned(
+    QUARISMA_FORCE_INLINE static size_type last_aligned(
         size_type aligned_start, size_type size, size_type simd_stride)
     {
         return aligned_start + ((size - aligned_start) / simd_stride) * simd_stride;
     }
 
     // GPU-specific convenience methods
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 
     /**
      * @brief Allocate pinned CPU memory for efficient GPU transfers
      * @param n Number of elements to allocate
      * @return Pointer to pinned CPU memory
      */
-    XSIGMA_FORCE_INLINE static pointer allocate_pinned(size_type n)
+    QUARISMA_FORCE_INLINE static pointer allocate_pinned(size_type n)
     {
         if (n == 0)
             return nullptr;
@@ -335,7 +335,7 @@ public:
      * @brief Free pinned CPU memory
      * @param ptr Reference to pointer to pinned memory (will be set to nullptr)
      */
-    XSIGMA_FORCE_INLINE static void free_pinned(pointer& ptr)
+    QUARISMA_FORCE_INLINE static void free_pinned(pointer& ptr)
     {
         if (!ptr)
             return;
@@ -398,7 +398,7 @@ inline constexpr std::size_t optimal_alignment(device_enum device_type)
     switch (device_type)
     {
     case device_enum::CPU:
-        return XSIGMA_ALIGNMENT;
+        return QUARISMA_ALIGNMENT;
     case device_enum::CUDA:
     case device_enum::HIP:
         return 256;  // GPU coalescing alignment
@@ -423,12 +423,12 @@ inline constexpr bool is_gpu_device(device_enum device_type)
  */
 inline constexpr bool has_gpu_support()
 {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     return true;
 #else
     return false;
 #endif
 }
 
-}  // namespace xsigma
+}  // namespace quarisma
 #endif

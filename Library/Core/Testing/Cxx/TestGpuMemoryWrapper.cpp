@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,15 +13,15 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "common/configure.h"
 #include "common/macros.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 
 #include <memory>
 #include <vector>
@@ -31,13 +31,13 @@
 #include "memory/gpu/gpu_memory_pool.h"
 #include "memory/gpu/gpu_memory_wrapper.h"
 
-using namespace xsigma;
-using namespace xsigma::gpu;
+using namespace quarisma;
+using namespace quarisma::gpu;
 
 /**
  * @brief Test GPU memory wrapper default construction
  */
-XSIGMATEST(GpuMemoryWrapper, constructs_empty_wrapper)
+QUARISMATEST(GpuMemoryWrapper, constructs_empty_wrapper)
 {
     // Test default construction
     gpu_memory_wrapper<float> wrapper;
@@ -48,13 +48,13 @@ XSIGMATEST(GpuMemoryWrapper, constructs_empty_wrapper)
     EXPECT_FALSE(wrapper.owns_memory());
     EXPECT_FALSE(static_cast<bool>(wrapper));
 
-    XSIGMA_LOG_INFO("GPU memory wrapper default construction test passed");
+    QUARISMA_LOG_INFO("GPU memory wrapper default construction test passed");
 }
 
 /**
  * @brief Test GPU memory wrapper allocation
  */
-XSIGMATEST(GpuMemoryWrapper, allocates_typed_memory)
+QUARISMATEST(GpuMemoryWrapper, allocates_typed_memory)
 {
     try
     {
@@ -71,23 +71,23 @@ XSIGMATEST(GpuMemoryWrapper, allocates_typed_memory)
             EXPECT_EQ(device_enum::CUDA, wrapper.device().type());
             EXPECT_EQ(0, wrapper.device().index());
 
-            XSIGMA_LOG_INFO("GPU memory wrapper typed allocation test passed");
+            QUARISMA_LOG_INFO("GPU memory wrapper typed allocation test passed");
         }
         else
         {
-            XSIGMA_LOG_INFO("GPU memory wrapper allocation returned null (expected if no GPU)");
+            QUARISMA_LOG_INFO("GPU memory wrapper allocation returned null (expected if no GPU)");
         }
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO("GPU memory wrapper allocation failed (expected if no GPU): {}", e.what());
+        QUARISMA_LOG_INFO("GPU memory wrapper allocation failed (expected if no GPU): {}", e.what());
     }
 }
 
 /**
  * @brief Test GPU memory wrapper void specialization
  */
-XSIGMATEST(GpuMemoryWrapper, handles_void_specialization)
+QUARISMATEST(GpuMemoryWrapper, handles_void_specialization)
 {
     try
     {
@@ -102,17 +102,17 @@ XSIGMATEST(GpuMemoryWrapper, handles_void_specialization)
             EXPECT_FALSE(void_wrapper.empty());
             EXPECT_TRUE(static_cast<bool>(void_wrapper));
 
-            XSIGMA_LOG_INFO("GPU memory wrapper void specialization test passed");
+            QUARISMA_LOG_INFO("GPU memory wrapper void specialization test passed");
         }
         else
         {
-            XSIGMA_LOG_INFO(
+            QUARISMA_LOG_INFO(
                 "GPU memory wrapper void allocation returned null (expected if no GPU)");
         }
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "GPU memory wrapper void allocation failed (expected if no GPU): {}", e.what());
     }
 }
@@ -120,7 +120,7 @@ XSIGMATEST(GpuMemoryWrapper, handles_void_specialization)
 /**
  * @brief Test non-owning wrapper creation
  */
-XSIGMATEST(GpuMemoryWrapper, creates_non_owning_wrapper)
+QUARISMATEST(GpuMemoryWrapper, creates_non_owning_wrapper)
 {
     // Test non-owning wrapper with host memory
     float* raw_ptr = static_cast<float*>(malloc(100 * sizeof(float)));
@@ -138,13 +138,13 @@ XSIGMATEST(GpuMemoryWrapper, creates_non_owning_wrapper)
     // Clean up raw pointer manually since wrapper doesn't own it
     free(raw_ptr);
 
-    XSIGMA_LOG_INFO("GPU memory wrapper non-owning creation test passed");
+    QUARISMA_LOG_INFO("GPU memory wrapper non-owning creation test passed");
 }
 
 /**
  * @brief Test wrapper with custom deleter
  */
-XSIGMATEST(GpuMemoryWrapper, supports_custom_deleter)
+QUARISMATEST(GpuMemoryWrapper, supports_custom_deleter)
 {
     bool deleter_called = false;
 
@@ -172,13 +172,13 @@ XSIGMATEST(GpuMemoryWrapper, supports_custom_deleter)
     // Custom deleter should have been called
     EXPECT_TRUE(deleter_called);
 
-    XSIGMA_LOG_INFO("GPU memory wrapper custom deleter test passed");
+    QUARISMA_LOG_INFO("GPU memory wrapper custom deleter test passed");
 }
 
 /**
  * @brief Test move semantics
  */
-XSIGMATEST(GpuMemoryWrapper, supports_move_semantics)
+QUARISMATEST(GpuMemoryWrapper, supports_move_semantics)
 {
     try
     {
@@ -203,23 +203,23 @@ XSIGMATEST(GpuMemoryWrapper, supports_move_semantics)
             EXPECT_FALSE(wrapper1.owns_memory());
             EXPECT_TRUE(wrapper1.empty());
 
-            XSIGMA_LOG_INFO("GPU memory wrapper move semantics test passed");
+            QUARISMA_LOG_INFO("GPU memory wrapper move semantics test passed");
         }
         else
         {
-            XSIGMA_LOG_INFO("GPU memory wrapper move test skipped (no GPU allocation)");
+            QUARISMA_LOG_INFO("GPU memory wrapper move test skipped (no GPU allocation)");
         }
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO("GPU memory wrapper move test failed (expected if no GPU): {}", e.what());
+        QUARISMA_LOG_INFO("GPU memory wrapper move test failed (expected if no GPU): {}", e.what());
     }
 }
 
 /**
  * @brief Test copy semantics (non-owning copy)
  */
-XSIGMATEST(GpuMemoryWrapper, supports_copy_semantics)
+QUARISMATEST(GpuMemoryWrapper, supports_copy_semantics)
 {
     try
     {
@@ -243,23 +243,23 @@ XSIGMATEST(GpuMemoryWrapper, supports_copy_semantics)
             EXPECT_EQ(wrapper1.size(), original_size);
             EXPECT_TRUE(wrapper1.owns_memory());
 
-            XSIGMA_LOG_INFO("GPU memory wrapper copy semantics test passed");
+            QUARISMA_LOG_INFO("GPU memory wrapper copy semantics test passed");
         }
         else
         {
-            XSIGMA_LOG_INFO("GPU memory wrapper copy test skipped (no GPU allocation)");
+            QUARISMA_LOG_INFO("GPU memory wrapper copy test skipped (no GPU allocation)");
         }
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO("GPU memory wrapper copy test failed (expected if no GPU): {}", e.what());
+        QUARISMA_LOG_INFO("GPU memory wrapper copy test failed (expected if no GPU): {}", e.what());
     }
 }
 
 /**
  * @brief Test memory release functionality
  */
-XSIGMATEST(GpuMemoryWrapper, releases_memory_ownership)
+QUARISMATEST(GpuMemoryWrapper, releases_memory_ownership)
 {
     try
     {
@@ -283,16 +283,16 @@ XSIGMATEST(GpuMemoryWrapper, releases_memory_ownership)
             // Note: In real usage, you'd need to use appropriate deallocation method
             // For this test, we'll just verify the release worked
 
-            XSIGMA_LOG_INFO("GPU memory wrapper memory release test passed");
+            QUARISMA_LOG_INFO("GPU memory wrapper memory release test passed");
         }
         else
         {
-            XSIGMA_LOG_INFO("GPU memory wrapper release test skipped (no GPU allocation)");
+            QUARISMA_LOG_INFO("GPU memory wrapper release test skipped (no GPU allocation)");
         }
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "GPU memory wrapper release test failed (expected if no GPU): {}", e.what());
     }
 }
@@ -300,7 +300,7 @@ XSIGMATEST(GpuMemoryWrapper, releases_memory_ownership)
 /**
  * @brief Test reset functionality
  */
-XSIGMATEST(GpuMemoryWrapper, resets_wrapper_state)
+QUARISMATEST(GpuMemoryWrapper, resets_wrapper_state)
 {
     try
     {
@@ -321,23 +321,23 @@ XSIGMATEST(GpuMemoryWrapper, resets_wrapper_state)
             EXPECT_TRUE(wrapper.empty());
             EXPECT_FALSE(static_cast<bool>(wrapper));
 
-            XSIGMA_LOG_INFO("GPU memory wrapper reset test passed");
+            QUARISMA_LOG_INFO("GPU memory wrapper reset test passed");
         }
         else
         {
-            XSIGMA_LOG_INFO("GPU memory wrapper reset test skipped (no GPU allocation)");
+            QUARISMA_LOG_INFO("GPU memory wrapper reset test skipped (no GPU allocation)");
         }
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO("GPU memory wrapper reset test failed (expected if no GPU): {}", e.what());
+        QUARISMA_LOG_INFO("GPU memory wrapper reset test failed (expected if no GPU): {}", e.what());
     }
 }
 
 /**
  * @brief Test wrapper comparison operators
  */
-XSIGMATEST(GpuMemoryWrapper, supports_comparison_operators)
+QUARISMATEST(GpuMemoryWrapper, supports_comparison_operators)
 {
     try
     {
@@ -357,16 +357,16 @@ XSIGMATEST(GpuMemoryWrapper, supports_comparison_operators)
             EXPECT_TRUE(wrapper1 == wrapper1);
             EXPECT_FALSE(wrapper1 != wrapper1);
 
-            XSIGMA_LOG_INFO("GPU memory wrapper comparison operators test passed");
+            QUARISMA_LOG_INFO("GPU memory wrapper comparison operators test passed");
         }
         else
         {
-            XSIGMA_LOG_INFO("GPU memory wrapper comparison test skipped (no GPU allocation)");
+            QUARISMA_LOG_INFO("GPU memory wrapper comparison test skipped (no GPU allocation)");
         }
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "GPU memory wrapper comparison test failed (expected if no GPU): {}", e.what());
     }
 }
@@ -374,7 +374,7 @@ XSIGMATEST(GpuMemoryWrapper, supports_comparison_operators)
 /**
  * @brief Test convenience function for creating GPU memory
  */
-XSIGMATEST(GpuMemoryWrapper, provides_convenience_functions)
+QUARISMATEST(GpuMemoryWrapper, provides_convenience_functions)
 {
     try
     {
@@ -388,16 +388,16 @@ XSIGMATEST(GpuMemoryWrapper, provides_convenience_functions)
             EXPECT_TRUE(wrapper.owns_memory());
             EXPECT_EQ(device_enum::CUDA, wrapper.device().type());
 
-            XSIGMA_LOG_INFO("GPU memory wrapper convenience functions test passed");
+            QUARISMA_LOG_INFO("GPU memory wrapper convenience functions test passed");
         }
         else
         {
-            XSIGMA_LOG_INFO("GPU memory wrapper convenience test skipped (no GPU allocation)");
+            QUARISMA_LOG_INFO("GPU memory wrapper convenience test skipped (no GPU allocation)");
         }
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "GPU memory wrapper convenience test failed (expected if no GPU): {}", e.what());
     }
 }
@@ -405,7 +405,7 @@ XSIGMATEST(GpuMemoryWrapper, provides_convenience_functions)
 /**
  * @brief Test wrapper swap functionality
  */
-XSIGMATEST(GpuMemoryWrapper, supports_swap_operation)
+QUARISMATEST(GpuMemoryWrapper, supports_swap_operation)
 {
     try
     {
@@ -438,17 +438,17 @@ XSIGMATEST(GpuMemoryWrapper, supports_swap_operation)
             EXPECT_EQ(wrapper2.get(), ptr2);
             EXPECT_EQ(wrapper2.size(), size2);
 
-            XSIGMA_LOG_INFO("GPU memory wrapper swap test passed");
+            QUARISMA_LOG_INFO("GPU memory wrapper swap test passed");
         }
         else
         {
-            XSIGMA_LOG_INFO("GPU memory wrapper swap test skipped (no GPU allocation)");
+            QUARISMA_LOG_INFO("GPU memory wrapper swap test skipped (no GPU allocation)");
         }
     }
     catch (const std::exception& e)
     {
-        XSIGMA_LOG_INFO("GPU memory wrapper swap test failed (expected if no GPU): {}", e.what());
+        QUARISMA_LOG_INFO("GPU memory wrapper swap test failed (expected if no GPU): {}", e.what());
     }
 }
 
-#endif  // XSIGMA_HAS_CUDA
+#endif  // QUARISMA_HAS_CUDA

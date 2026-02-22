@@ -55,7 +55,7 @@ static void hoistConvPackedParams(
     Module convModule = findChildModule(rootModule, rootToConvPath);
 
     // get the packed params value
-    xsigma::IValue packedParams = convModule.attr("_packed_params");
+    quarisma::IValue packedParams = convModule.attr("_packed_params");
 
     // create the new name
 

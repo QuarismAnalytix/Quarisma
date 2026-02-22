@@ -109,7 +109,7 @@ class HalfRewriter : public IRMutator
             if (inserted_half_casts_.count(v) < 1)
             {
                 v->set_src_value(child);
-                v->set_dtype(v->dtype().cloneWithScalarType(xsigma::kFloat));
+                v->set_dtype(v->dtype().cloneWithScalarType(quarisma::kFloat));
                 return v;
             }
         }
@@ -171,7 +171,7 @@ class HalfRewriter : public IRMutator
         IRMutator::mutate(v);
         if (isHalf(v))
         {
-            v->set_dtype(v->dtype().cloneWithScalarType(xsigma::kFloat));
+            v->set_dtype(v->dtype().cloneWithScalarType(quarisma::kFloat));
         }
         return v;
     }

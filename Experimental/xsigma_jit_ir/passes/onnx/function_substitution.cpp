@@ -11,7 +11,7 @@ namespace
 
 const std::string kTopModuleVariableName;
 
-std::string TidyClassNameFromTorchScript(const std::optional<xsigma::QualifiedName>& class_name)
+std::string TidyClassNameFromTorchScript(const std::optional<quarisma::QualifiedName>& class_name)
 {
     if (!class_name)
     {
@@ -78,7 +78,7 @@ ScopePtr ForwardCallScope(Graph& graph, Node* call_node)
     const std::string& method_name = call_node->s(attr::name);
     if (method_name == "forward")
     {
-        const auto        type          = call_node->input(0)->type()->expect<xsigma::NamedType>();
+        const auto        type          = call_node->input(0)->type()->expect<quarisma::NamedType>();
         const std::string class_name    = TidyClassNameFromTorchScript(type->name());
         const std::string variable_name = GetCallNodeVariableName(call_node);
         const std::string scope_name =
@@ -193,7 +193,7 @@ ScopePtr ONNXGraphTopLevelScope(Graph& graph)
     {
         return graph.current_scope();
     }
-    if (auto top_module_type = graph.inputs().xsigma(0)->type()->cast<ClassType>())
+    if (auto top_module_type = graph.inputs().quarisma(0)->type()->cast<ClassType>())
     {
         auto scope_name = ::torch::jit::onnx::ONNXScopeName::createFullScopeName(
             TidyClassNameFromTorchScript(top_module_type->name()), kTopModuleVariableName);

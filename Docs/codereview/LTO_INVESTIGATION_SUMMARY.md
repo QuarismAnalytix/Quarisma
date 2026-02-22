@@ -1,4 +1,4 @@
-# LTO Investigation Summary for XSigma
+# LTO Investigation Summary for Quarisma
 
 **Investigation Date**: November 2024  
 **Status**: ✅ Complete  
@@ -9,9 +9,9 @@
 ## Quick Reference
 
 ### Current Configuration
-- **Default**: LTO enabled (`XSIGMA_ENABLE_LTO=ON`)
+- **Default**: LTO enabled (`QUARISMA_ENABLE_LTO=ON`)
 - **Applies to**: Release builds
-- **Can be toggled**: Via `-DXSIGMA_ENABLE_LTO=OFF` or `python setup.py ... .lto`
+- **Can be toggled**: Via `-DQUARISMA_ENABLE_LTO=OFF` or `python setup.py ... .lto`
 
 ### Key Findings
 
@@ -41,7 +41,7 @@
 - **Trade-off**: Larger intermediate files during compilation
 
 ### Compiler Maturity
-- All XSigma-supported compilers have mature LTO support
+- All Quarisma-supported compilers have mature LTO support
 - GCC: 7.0+ (mature)
 - Clang: 5.0+ (mature)
 - MSVC: 19.14+ (mature)
@@ -58,7 +58,7 @@
 ### Memory Consumption
 - **Peak Usage**: 2-4x higher than non-LTO
 - **Known Issue**: LTO + gold/mold linkers cause OOM
-- **Mitigation**: XSigma automatically skips faster linkers with LTO
+- **Mitigation**: Quarisma automatically skips faster linkers with LTO
 
 ### Debugging Challenges
 - **Breakpoints**: May not work on inlined functions
@@ -66,7 +66,7 @@
 - **Workaround**: Use RelWithDebInfo builds without LTO
 
 ### Shared Library Limitations
-- **XSigma Requirement**: All libraries built as shared (DLLs)
+- **Quarisma Requirement**: All libraries built as shared (DLLs)
 - **Impact**: Optimization stops at DLL boundaries
 - **Benefit Reduction**: 30-50% less optimization vs static linking
 - **Reason**: Cross-DLL inlining not possible
@@ -78,7 +78,7 @@
 
 ---
 
-## XSigma-Specific Interactions
+## Quarisma-Specific Interactions
 
 ### Shared Library Architecture
 - **Current**: All libraries built as shared (DLLs on Windows)
@@ -163,9 +163,9 @@ python setup.py config.build.test.ninja.clang.debug
 # Automatically enable LTO for Release builds
 # Automatically disable LTO for Debug builds
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  set(XSIGMA_ENABLE_LTO_DEFAULT ON)
+  set(QUARISMA_ENABLE_LTO_DEFAULT ON)
 else()
-  set(XSIGMA_ENABLE_LTO_DEFAULT OFF)
+  set(QUARISMA_ENABLE_LTO_DEFAULT OFF)
 endif()
 ```
 
@@ -180,7 +180,7 @@ endif()
 - Document performance impact
 
 **4. Performance Benchmarking** (Future)
-- Measure actual LTO impact on XSigma
+- Measure actual LTO impact on Quarisma
 - Document performance improvements
 - Track build time impact
 
@@ -230,7 +230,7 @@ python setup.py config.build.ninja.clang.release
 
 1. **LTO_INVESTIGATION_ANALYSIS.md**
    - Comprehensive analysis of LTO advantages/disadvantages
-   - XSigma-specific interactions
+   - Quarisma-specific interactions
    - Known issues and limitations
    - Detailed recommendations
 
@@ -281,7 +281,7 @@ python setup.py config.build.ninja.clang.release
 
 ## Conclusion
 
-**LTO is beneficial for XSigma and should remain enabled by default for Release builds.**
+**LTO is beneficial for Quarisma and should remain enabled by default for Release builds.**
 
 The current configuration provides:
 - ✅ 5-15% runtime performance improvement

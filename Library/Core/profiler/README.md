@@ -1,8 +1,8 @@
-# Enhanced Profiler for XSigma Core Module
+# Enhanced Profiler for Quarisma Core Module
 
 ## Overview
 
-The Enhanced Profiler is a comprehensive performance analysis system for the XSigma Core module that provides:
+The Enhanced Profiler is a comprehensive performance analysis system for the Quarisma Core module that provides:
 
 - **High-precision timing measurements** with nanosecond accuracy
 - **Memory usage tracking** with allocation/deallocation monitoring
@@ -57,7 +57,7 @@ Chrome Trace Event JSON produced by the profiler uses nanoseconds for timestamps
 ```cpp
 #include "profiler/native/core/profiler.h"
 
-using namespace xsigma::profiler;
+using namespace quarisma::profiler;
 
 int main() {
     // Create profiler session with builder pattern
@@ -74,14 +74,14 @@ int main() {
 
     // Profile a function
     {
-        XSIGMA_PROFILE_FUNCTION();
+        QUARISMA_PROFILE_FUNCTION();
 
         // Your code here
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         // Profile nested operations
         {
-            XSIGMA_PROFILE_SCOPE("nested_operation");
+            QUARISMA_PROFILE_SCOPE("nested_operation");
             std::vector<int> data(1000, 42);
             // More work...
         }
@@ -147,13 +147,13 @@ Convenient macros for automatic profiling:
 
 ```cpp
 // Profile current scope
-XSIGMA_PROFILE_SCOPE("scope_name");
+QUARISMA_PROFILE_SCOPE("scope_name");
 
 // Profile current function
-XSIGMA_PROFILE_FUNCTION();
+QUARISMA_PROFILE_FUNCTION();
 
 // Profile a block of code
-XSIGMA_PROFILE_BLOCK("block_name") {
+QUARISMA_PROFILE_BLOCK("block_name") {
     // Your code here
 }
 ```
@@ -218,14 +218,14 @@ The Enhanced Profiler is designed for minimal overhead:
 
 ## Integration with Existing Code
 
-The profiler integrates seamlessly with existing XSigma components:
+The profiler integrates seamlessly with existing Quarisma components:
 
 ### With TraceMe
 ```cpp
 // Enhanced profiler builds on TraceMe infrastructure
 {
     TraceMe trace("traceme_scope");
-    XSIGMA_PROFILE_SCOPE("enhanced_scope");
+    QUARISMA_PROFILE_SCOPE("enhanced_scope");
     // Both profilers will capture this scope
 }
 ```
@@ -245,7 +245,7 @@ session->start();
 std::vector<std::thread> threads;
 for (int i = 0; i < 4; ++i) {
     threads.emplace_back([&session, i]() {
-        XSIGMA_PROFILE_SCOPE("thread_" + std::to_string(i));
+        QUARISMA_PROFILE_SCOPE("thread_" + std::to_string(i));
         // Thread-specific work
     });
 }
@@ -260,7 +260,7 @@ session->stop();
 
 ## Best Practices
 
-1. **Use RAII scopes** - Prefer `XSIGMA_PROFILE_SCOPE` over manual start/stop
+1. **Use RAII scopes** - Prefer `QUARISMA_PROFILE_SCOPE` over manual start/stop
 2. **Minimize scope names** - Use short, descriptive names to reduce overhead
 3. **Configure appropriately** - Only enable features you need
 4. **Profile in release builds** - The profiler is designed for production use
@@ -291,4 +291,4 @@ See the test files in `Library/Core/Testing/Cxx/TestEnhancedProfiler.cpp` for co
 
 ## License
 
-This profiler is part of the XSigma Core module and follows the same licensing terms.
+This profiler is part of the Quarisma Core module and follows the same licensing terms.

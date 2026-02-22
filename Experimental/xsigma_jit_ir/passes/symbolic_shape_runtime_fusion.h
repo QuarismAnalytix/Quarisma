@@ -13,13 +13,13 @@ namespace torch::jit
 // E.g. Tensor(5, 3), Tensor(3, 1) -> Tensor(SS(-1), SS(-2)), Tensor(SS(-2), 1)
 // From there, runs symbolic shape inference on the graph, and creates a
 // versioning if in the graph with prim::TensorExprDynamicGuard checking if
-// the inputs xsigma runtime match the Generalized Symbolic Shapes that are inputs
+// the inputs quarisma runtime match the Generalized Symbolic Shapes that are inputs
 // to the TE Kernel. The computate to calculate all symbolic dimensions is
 // inlined in to the if block with the TE Kernel. All Sym Dim Value* are
 // appended to the end of the TE Kernel Graph/Node inputs, and the Node is
 // augmented with a integer list attr `symbolic_shape_inputs` that gives the
 // mapping from Value * -> Symbolic Shape int64_t value. For more lengthy IR
-// examples and walkthrough look xsigma ShapeAnalysisTest.DynamicShapesFusion in
+// examples and walkthrough look quarisma ShapeAnalysisTest.DynamicShapesFusion in
 // `test_shape_analysis` Returns True on Success, False on Failure, can fail if
 // shape propagation fails to propagate # of dims or if complete shapes on
 // inputs not set

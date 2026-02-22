@@ -2,7 +2,7 @@
 
 ## What I've Done
 
-I've completed a **comprehensive exploration** of all viable options for completely removing `parallel_thread_local` from the XSigma codebase. Here's what you now have:
+I've completed a **comprehensive exploration** of all viable options for completely removing `parallel_thread_local` from the Quarisma codebase. Here's what you now have:
 
 ---
 

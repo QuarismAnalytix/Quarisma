@@ -415,7 +415,7 @@ def log_kernel_metadata(
 
 def purge_old_log_files() -> None:
     """
-    Purge the old log file xsigma the beginning when the benchmark script runs.
+    Purge the old log file quarisma the beginning when the benchmark script runs.
     Should do it in the parent process rather than the child processes running
     each individual model.
     """

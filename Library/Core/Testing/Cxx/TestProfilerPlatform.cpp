@@ -1,6 +1,6 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
@@ -15,9 +15,9 @@
 
 #include "profiler/native/platform/env_time.h"
 #include "profiler/native/platform/env_var.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 namespace
 {
@@ -47,14 +47,14 @@ void unset_env(const char* name)
 // Environment Time Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, env_time_now_nanos_returns_positive)
+QUARISMATEST(Profiler, env_time_now_nanos_returns_positive)
 {
     uint64_t time = env_time::now_nanos();
 
     EXPECT_GT(time, 0);
 }
 
-XSIGMATEST(Profiler, env_time_now_nanos_monotonic)
+QUARISMATEST(Profiler, env_time_now_nanos_monotonic)
 {
     uint64_t time1 = env_time::now_nanos();
     uint64_t time2 = env_time::now_nanos();
@@ -62,7 +62,7 @@ XSIGMATEST(Profiler, env_time_now_nanos_monotonic)
     EXPECT_GE(time2, time1);
 }
 
-XSIGMATEST(Profiler, env_time_now_nanos_increasing)
+QUARISMATEST(Profiler, env_time_now_nanos_increasing)
 {
     uint64_t time1 = env_time::now_nanos();
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -71,14 +71,14 @@ XSIGMATEST(Profiler, env_time_now_nanos_increasing)
     EXPECT_GT(time2, time1);
 }
 
-XSIGMATEST(Profiler, env_time_now_micros_returns_positive)
+QUARISMATEST(Profiler, env_time_now_micros_returns_positive)
 {
     uint64_t time = env_time::now_micros();
 
     EXPECT_GT(time, 0);
 }
 
-XSIGMATEST(Profiler, env_time_now_micros_monotonic)
+QUARISMATEST(Profiler, env_time_now_micros_monotonic)
 {
     uint64_t time1 = env_time::now_micros();
     uint64_t time2 = env_time::now_micros();
@@ -86,14 +86,14 @@ XSIGMATEST(Profiler, env_time_now_micros_monotonic)
     EXPECT_GE(time2, time1);
 }
 
-XSIGMATEST(Profiler, env_time_now_seconds_returns_positive)
+QUARISMATEST(Profiler, env_time_now_seconds_returns_positive)
 {
     uint64_t time = env_time::now_seconds();
 
     EXPECT_GT(time, 0);
 }
 
-XSIGMATEST(Profiler, env_time_now_seconds_monotonic)
+QUARISMATEST(Profiler, env_time_now_seconds_monotonic)
 {
     uint64_t time1 = env_time::now_seconds();
     uint64_t time2 = env_time::now_seconds();
@@ -101,7 +101,7 @@ XSIGMATEST(Profiler, env_time_now_seconds_monotonic)
     EXPECT_GE(time2, time1);
 }
 
-XSIGMATEST(Profiler, env_time_nanos_to_micros_conversion)
+QUARISMATEST(Profiler, env_time_nanos_to_micros_conversion)
 {
     uint64_t nanos  = 1000000;  // 1ms
     uint64_t micros = nanos / 1000;
@@ -109,7 +109,7 @@ XSIGMATEST(Profiler, env_time_nanos_to_micros_conversion)
     EXPECT_EQ(micros, 1000);
 }
 
-XSIGMATEST(Profiler, env_time_nanos_to_seconds_conversion)
+QUARISMATEST(Profiler, env_time_nanos_to_seconds_conversion)
 {
     uint64_t nanos   = 1000000000;  // 1 second
     uint64_t seconds = nanos / 1000000000;
@@ -117,7 +117,7 @@ XSIGMATEST(Profiler, env_time_nanos_to_seconds_conversion)
     EXPECT_EQ(seconds, 1);
 }
 
-XSIGMATEST(Profiler, env_time_micros_to_nanos_conversion)
+QUARISMATEST(Profiler, env_time_micros_to_nanos_conversion)
 {
     uint64_t micros = 1000;  // 1ms
     uint64_t nanos  = micros * 1000;
@@ -125,7 +125,7 @@ XSIGMATEST(Profiler, env_time_micros_to_nanos_conversion)
     EXPECT_EQ(nanos, 1000000);
 }
 
-XSIGMATEST(Profiler, env_time_multiple_reads_consistency)
+QUARISMATEST(Profiler, env_time_multiple_reads_consistency)
 {
     uint64_t time1 = env_time::now_nanos();
     uint64_t time2 = env_time::now_nanos();
@@ -135,7 +135,7 @@ XSIGMATEST(Profiler, env_time_multiple_reads_consistency)
     EXPECT_GE(time3, time2);
 }
 
-XSIGMATEST(Profiler, env_time_sleep_and_measure)
+QUARISMATEST(Profiler, env_time_sleep_and_measure)
 {
     uint64_t time1 = env_time::now_nanos();
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -145,7 +145,7 @@ XSIGMATEST(Profiler, env_time_sleep_and_measure)
     EXPECT_GE(elapsed, 2500000);  // At least 2.5ms
 }
 
-XSIGMATEST(Profiler, env_time_high_resolution_verification)
+QUARISMATEST(Profiler, env_time_high_resolution_verification)
 {
     // Verify we're getting nanosecond precision
     uint64_t time1 = env_time::now_nanos();
@@ -156,7 +156,7 @@ XSIGMATEST(Profiler, env_time_high_resolution_verification)
     EXPECT_LT(diff, 1000000000);  // Less than 1 second
 }
 
-XSIGMATEST(Profiler, env_time_consistency_between_units)
+QUARISMATEST(Profiler, env_time_consistency_between_units)
 {
     uint64_t nanos   = env_time::now_nanos();
     uint64_t micros  = env_time::now_micros();
@@ -171,7 +171,7 @@ XSIGMATEST(Profiler, env_time_consistency_between_units)
     EXPECT_GT(nanos, micros);
 }
 
-XSIGMATEST(Profiler, env_time_large_duration_measurement)
+QUARISMATEST(Profiler, env_time_large_duration_measurement)
 {
     uint64_t time1 = env_time::now_nanos();
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -181,7 +181,7 @@ XSIGMATEST(Profiler, env_time_large_duration_measurement)
     EXPECT_GE(elapsed, 25000000);  // At least 25ms
 }
 
-XSIGMATEST(Profiler, env_time_micros_precision)
+QUARISMATEST(Profiler, env_time_micros_precision)
 {
     uint64_t time1 = env_time::now_micros();
     std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -191,7 +191,7 @@ XSIGMATEST(Profiler, env_time_micros_precision)
     EXPECT_GE(elapsed, 50);  // At least 50 microseconds
 }
 
-XSIGMATEST(Profiler, env_time_seconds_precision)
+QUARISMATEST(Profiler, env_time_seconds_precision)
 {
     uint64_t time1 = env_time::now_seconds();
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -205,9 +205,9 @@ XSIGMATEST(Profiler, env_time_seconds_precision)
 // Environment Variable Tests
 // ============================================================================
 
-XSIGMATEST(Profiler, env_var_read_bool_values)
+QUARISMATEST(Profiler, env_var_read_bool_values)
 {
-    static constexpr char const* var_name = "XSIGMA_TEST_ENV_BOOL";
+    static constexpr char const* var_name = "QUARISMA_TEST_ENV_BOOL";
 
     unset_env(var_name);
     bool value   = false;
@@ -234,9 +234,9 @@ XSIGMATEST(Profiler, env_var_read_bool_values)
     unset_env(var_name);
 }
 
-XSIGMATEST(Profiler, env_var_read_int64_with_trimming_and_fallback)
+QUARISMATEST(Profiler, env_var_read_int64_with_trimming_and_fallback)
 {
-    static constexpr char const* var_name = "XSIGMA_TEST_ENV_INT";
+    static constexpr char const* var_name = "QUARISMA_TEST_ENV_INT";
 
     set_env(var_name, "  -42  ");
     int64_t value   = 0;
@@ -263,9 +263,9 @@ XSIGMATEST(Profiler, env_var_read_int64_with_trimming_and_fallback)
     EXPECT_EQ(value, 1234);
 }
 
-XSIGMATEST(Profiler, env_var_read_float_with_trimming_and_invalid)
+QUARISMATEST(Profiler, env_var_read_float_with_trimming_and_invalid)
 {
-    static constexpr char const* var_name = "XSIGMA_TEST_ENV_FLOAT";
+    static constexpr char const* var_name = "QUARISMA_TEST_ENV_FLOAT";
 
     set_env(var_name, "  3.25  ");
     float value   = 0.0F;
@@ -292,9 +292,9 @@ XSIGMATEST(Profiler, env_var_read_float_with_trimming_and_invalid)
     EXPECT_FLOAT_EQ(value, 2.5F);
 }
 
-XSIGMATEST(Profiler, env_var_read_string_default_and_override)
+QUARISMATEST(Profiler, env_var_read_string_default_and_override)
 {
-    static constexpr char const* var_name = "XSIGMA_TEST_ENV_STRING";
+    static constexpr char const* var_name = "QUARISMA_TEST_ENV_STRING";
 
     unset_env(var_name);
     std::string value;
@@ -311,9 +311,9 @@ XSIGMATEST(Profiler, env_var_read_string_default_and_override)
     unset_env(var_name);
 }
 
-XSIGMATEST(Profiler, env_var_read_strings_with_trimming_and_default)
+QUARISMATEST(Profiler, env_var_read_strings_with_trimming_and_default)
 {
-    static constexpr char const* var_name = "XSIGMA_TEST_ENV_STRINGS";
+    static constexpr char const* var_name = "QUARISMA_TEST_ENV_STRINGS";
 
     std::vector<std::string> values;
 
@@ -355,4 +355,4 @@ XSIGMATEST(Profiler, env_var_read_strings_with_trimming_and_default)
 
     unset_env(var_name);
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

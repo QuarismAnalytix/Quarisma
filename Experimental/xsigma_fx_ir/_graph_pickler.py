@@ -176,7 +176,7 @@ class _ShapeEnvPickleData:
     def __init__(self, env: ShapeEnv) -> None:
         # In theory pickle should recognize that a given ShapeEnv was already
         # pickled and reuse the resulting _ShapeEnvPickleData (so two objects
-        # pointing xsigma the same ShapeEnv get the same ShapeEnv out).
+        # pointing quarisma the same ShapeEnv get the same ShapeEnv out).
         assert not env._translation_validation_enabled
         self.data = env.__dict__.copy()
         del self.data["tracked_fakes"]

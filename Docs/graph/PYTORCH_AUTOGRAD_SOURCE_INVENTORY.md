@@ -1,6 +1,6 @@
-# XSigma Autograd Source Code Inventory
+# Quarisma Autograd Source Code Inventory
 
-**Comprehensive catalog of all source files involved in XSigma's computational graph system**
+**Comprehensive catalog of all source files involved in Quarisma's computational graph system**
 
 ---
 
@@ -10,29 +10,29 @@
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/function.h` | Core Node class definition for autograd graph nodes | `Node`, `NodeGuard`, `SavedVariable` | 113-792 | Core |
-| `xsigma/csrc/autograd/function.cpp` | Node implementation, memory management, node deletion | `deleteNode()`, `gatherFunctions()`, `NodeGuard` | 1-200+ | Core |
-| `xsigma/csrc/autograd/edge.h` | Edge structure connecting nodes in the graph | `Edge` struct with `function` and `input_nr` | 1-57 | Core |
-| `xsigma/csrc/autograd/function_hook.h` | Hook interface for intercepting node execution | `FunctionPreHook`, `FunctionPostHook` | 1-100+ | Core |
+| `quarisma/csrc/autograd/function.h` | Core Node class definition for autograd graph nodes | `Node`, `NodeGuard`, `SavedVariable` | 113-792 | Core |
+| `quarisma/csrc/autograd/function.cpp` | Node implementation, memory management, node deletion | `deleteNode()`, `gatherFunctions()`, `NodeGuard` | 1-200+ | Core |
+| `quarisma/csrc/autograd/edge.h` | Edge structure connecting nodes in the graph | `Edge` struct with `function` and `input_nr` | 1-57 | Core |
+| `quarisma/csrc/autograd/function_hook.h` | Hook interface for intercepting node execution | `FunctionPreHook`, `FunctionPostHook` | 1-100+ | Core |
 
 ### 1.2 Graph Data Structures
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/graph_task.h` | GraphTask metadata container for backward execution | `GraphTask`, `ExecInfo`, `GraphTaskGuard` | 17-230 | Core |
-| `xsigma/csrc/autograd/input_buffer.h` | InputBuffer for accumulating gradients | `InputBuffer` class | 1-100+ | Core |
-| `xsigma/csrc/autograd/input_buffer.cpp` | InputBuffer implementation | Gradient accumulation logic | 1-100+ | Core |
-| `xsigma/csrc/autograd/input_metadata.h` | Metadata storage for tensor inputs | `InputMetadata` struct | 1-100+ | Core |
-| `xsigma/csrc/autograd/input_metadata.cpp` | InputMetadata implementation | Shape, dtype, device storage | 1-100+ | Core |
+| `quarisma/csrc/autograd/graph_task.h` | GraphTask metadata container for backward execution | `GraphTask`, `ExecInfo`, `GraphTaskGuard` | 17-230 | Core |
+| `quarisma/csrc/autograd/input_buffer.h` | InputBuffer for accumulating gradients | `InputBuffer` class | 1-100+ | Core |
+| `quarisma/csrc/autograd/input_buffer.cpp` | InputBuffer implementation | Gradient accumulation logic | 1-100+ | Core |
+| `quarisma/csrc/autograd/input_metadata.h` | Metadata storage for tensor inputs | `InputMetadata` struct | 1-100+ | Core |
+| `quarisma/csrc/autograd/input_metadata.cpp` | InputMetadata implementation | Shape, dtype, device storage | 1-100+ | Core |
 
 ### 1.3 Tensor Autograd Metadata
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/variable.h` | Tensor autograd metadata and grad_fn management | `Variable` (alias for Tensor), autograd metadata | 1-200+ | Core |
-| `xsigma/csrc/autograd/variable.cpp` | Variable implementation, grad_fn access | `grad_fn()`, `set_grad_fn()`, `rebase_history()` | 1-600+ | Core |
-| `xsigma/csrc/autograd/variable_info.h` | VariableInfo for storing tensor metadata | `VariableInfo` struct | 1-50 | Core |
-| `xsigma/csrc/autograd/variable_info.cpp` | VariableInfo implementation | Metadata creation and storage | 1-100+ | Core |
+| `quarisma/csrc/autograd/variable.h` | Tensor autograd metadata and grad_fn management | `Variable` (alias for Tensor), autograd metadata | 1-200+ | Core |
+| `quarisma/csrc/autograd/variable.cpp` | Variable implementation, grad_fn access | `grad_fn()`, `set_grad_fn()`, `rebase_history()` | 1-600+ | Core |
+| `quarisma/csrc/autograd/variable_info.h` | VariableInfo for storing tensor metadata | `VariableInfo` struct | 1-50 | Core |
+| `quarisma/csrc/autograd/variable_info.cpp` | VariableInfo implementation | Metadata creation and storage | 1-100+ | Core |
 
 ---
 
@@ -42,26 +42,26 @@
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/functions/utils.h` | Tensor history setting and grad_fn connection | `set_history()`, `set_history_and_grad_fn()` | 66-91 | Core |
-| `xsigma/csrc/autograd/functions/utils.cpp` | Implementation of history setting | Backward node creation logic | 1-100+ | Core |
-| `xsigma/csrc/autograd/functions/basic_ops.h` | Basic operation nodes (GraphRoot, Error) | `GraphRoot`, `Error`, `DelayedError` | 85-113 | Core |
-| `xsigma/csrc/autograd/functions/basic_ops.cpp` | Implementation of basic operation nodes | Backward implementations | 1-200+ | Core |
+| `quarisma/csrc/autograd/functions/utils.h` | Tensor history setting and grad_fn connection | `set_history()`, `set_history_and_grad_fn()` | 66-91 | Core |
+| `quarisma/csrc/autograd/functions/utils.cpp` | Implementation of history setting | Backward node creation logic | 1-100+ | Core |
+| `quarisma/csrc/autograd/functions/basic_ops.h` | Basic operation nodes (GraphRoot, Error) | `GraphRoot`, `Error`, `DelayedError` | 85-113 | Core |
+| `quarisma/csrc/autograd/functions/basic_ops.cpp` | Implementation of basic operation nodes | Backward implementations | 1-200+ | Core |
 
 ### 2.2 Operation-Specific Backward Nodes
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/functions/accumulate_grad.h` | AccumulateGrad node for leaf tensors | `AccumulateGrad` class | 1-100+ | Core |
-| `xsigma/csrc/autograd/functions/accumulate_grad.cpp` | AccumulateGrad implementation | Gradient accumulation into parameter.grad | 1-100+ | Core |
-| `xsigma/csrc/autograd/functions/tensor.h` | Tensor operation backward nodes | Various tensor operation nodes | 1-100+ | Core |
-| `xsigma/csrc/autograd/functions/tensor.cpp` | Tensor operation implementations | Backward pass for tensor ops | 1-200+ | Core |
+| `quarisma/csrc/autograd/functions/accumulate_grad.h` | AccumulateGrad node for leaf tensors | `AccumulateGrad` class | 1-100+ | Core |
+| `quarisma/csrc/autograd/functions/accumulate_grad.cpp` | AccumulateGrad implementation | Gradient accumulation into parameter.grad | 1-100+ | Core |
+| `quarisma/csrc/autograd/functions/tensor.h` | Tensor operation backward nodes | Various tensor operation nodes | 1-100+ | Core |
+| `quarisma/csrc/autograd/functions/tensor.cpp` | Tensor operation implementations | Backward pass for tensor ops | 1-200+ | Core |
 
 ### 2.3 Distributed Operations
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/functions/comm.h` | Communication operation nodes | Distributed backward nodes | 1-100+ | Core |
-| `xsigma/csrc/autograd/functions/comm.cpp` | Communication operation implementations | Multi-GPU gradient communication | 1-100+ | Core |
+| `quarisma/csrc/autograd/functions/comm.h` | Communication operation nodes | Distributed backward nodes | 1-100+ | Core |
+| `quarisma/csrc/autograd/functions/comm.cpp` | Communication operation implementations | Multi-GPU gradient communication | 1-100+ | Core |
 
 ---
 
@@ -71,26 +71,26 @@
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/engine.h` | Backward execution engine and ready queue | `Engine`, `ReadyQueue`, `GraphTask` | 86-125 | Core |
-| `xsigma/csrc/autograd/engine.cpp` | Engine implementation and backward execution | `Engine::execute()`, node scheduling | 1288-1380 | Core |
-| `xsigma/csrc/autograd/python_engine.h` | Python-specific engine wrapper | Python bindings for engine | 1-100+ | Core |
-| `xsigma/csrc/autograd/python_engine.cpp` | Python engine implementation | Python backward execution | 1-200+ | Core |
+| `quarisma/csrc/autograd/engine.h` | Backward execution engine and ready queue | `Engine`, `ReadyQueue`, `GraphTask` | 86-125 | Core |
+| `quarisma/csrc/autograd/engine.cpp` | Engine implementation and backward execution | `Engine::execute()`, node scheduling | 1288-1380 | Core |
+| `quarisma/csrc/autograd/python_engine.h` | Python-specific engine wrapper | Python bindings for engine | 1-100+ | Core |
+| `quarisma/csrc/autograd/python_engine.cpp` | Python engine implementation | Python backward execution | 1-200+ | Core |
 
 ### 3.2 Execution Control
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/grad_mode.h` | Gradient computation mode control | `GradMode`, `no_grad`, `enable_grad` | 1-100+ | Core |
-| `xsigma/csrc/autograd/InferenceMode.h` | Inference mode for disabling autograd | `InferenceMode` context | 1-100+ | Core |
+| `quarisma/csrc/autograd/grad_mode.h` | Gradient computation mode control | `GradMode`, `no_grad`, `enable_grad` | 1-100+ | Core |
+| `quarisma/csrc/autograd/InferenceMode.h` | Inference mode for disabling autograd | `InferenceMode` context | 1-100+ | Core |
 
 ### 3.3 Anomaly Detection
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/anomaly_mode.h` | Anomaly detection mode | `AnomalyMode`, `AnomalyMetadata` | 1-100+ | Core |
-| `xsigma/csrc/autograd/anomaly_mode.cpp` | Anomaly detection implementation | Backward traceback and NaN detection | 1-200+ | Core |
-| `xsigma/csrc/autograd/python_anomaly_mode.h` | Python anomaly mode wrapper | Python bindings | 1-50 | Core |
-| `xsigma/csrc/autograd/python_anomaly_mode.cpp` | Python anomaly implementation | Python anomaly detection | 1-100+ | Core |
+| `quarisma/csrc/autograd/anomaly_mode.h` | Anomaly detection mode | `AnomalyMode`, `AnomalyMetadata` | 1-100+ | Core |
+| `quarisma/csrc/autograd/anomaly_mode.cpp` | Anomaly detection implementation | Backward traceback and NaN detection | 1-200+ | Core |
+| `quarisma/csrc/autograd/python_anomaly_mode.h` | Python anomaly mode wrapper | Python bindings | 1-50 | Core |
+| `quarisma/csrc/autograd/python_anomaly_mode.cpp` | Python anomaly implementation | Python anomaly detection | 1-100+ | Core |
 
 ---
 
@@ -100,141 +100,141 @@
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/saved_variable.h` | SavedVariable for storing tensors in backward | `SavedVariable` class | 1-100+ | Core |
-| `xsigma/csrc/autograd/saved_variable.cpp` | SavedVariable implementation | Tensor storage and retrieval | 1-200+ | Core |
-| `xsigma/csrc/autograd/saved_variable_hooks.h` | Hooks for saved tensor management | `SavedTensorDefaultHooks` | 1-100+ | Core |
-| `xsigma/csrc/autograd/python_saved_variable_hooks.h` | Python saved variable hooks | Python hook interface | 1-100+ | Core |
-| `xsigma/csrc/autograd/python_saved_variable_hooks.cpp` | Python saved variable implementation | Python tensor hooks | 1-200+ | Core |
+| `quarisma/csrc/autograd/saved_variable.h` | SavedVariable for storing tensors in backward | `SavedVariable` class | 1-100+ | Core |
+| `quarisma/csrc/autograd/saved_variable.cpp` | SavedVariable implementation | Tensor storage and retrieval | 1-200+ | Core |
+| `quarisma/csrc/autograd/saved_variable_hooks.h` | Hooks for saved tensor management | `SavedTensorDefaultHooks` | 1-100+ | Core |
+| `quarisma/csrc/autograd/python_saved_variable_hooks.h` | Python saved variable hooks | Python hook interface | 1-100+ | Core |
+| `quarisma/csrc/autograd/python_saved_variable_hooks.cpp` | Python saved variable implementation | Python tensor hooks | 1-200+ | Core |
 
 ### 4.2 Custom Functions
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/custom_function.h` | Custom autograd function support | `CustomFunction` base | 1-100+ | Core |
-| `xsigma/csrc/autograd/custom_function.cpp` | Custom function implementation | User-defined backward | 1-200+ | Core |
-| `xsigma/csrc/autograd/python_function.h` | Python custom function wrapper | `PyFunction` class | 1-100+ | Core |
-| `xsigma/csrc/autograd/python_function.cpp` | Python function implementation | Python backward execution | 1-300+ | Core |
-| `xsigma/csrc/autograd/python_cpp_function.h` | C++ function called from Python | `PythonCppFunction` | 1-100+ | Core |
-| `xsigma/csrc/autograd/python_cpp_function.cpp` | C++ function implementation | C++ backward from Python | 1-200+ | Core |
+| `quarisma/csrc/autograd/custom_function.h` | Custom autograd function support | `CustomFunction` base | 1-100+ | Core |
+| `quarisma/csrc/autograd/custom_function.cpp` | Custom function implementation | User-defined backward | 1-200+ | Core |
+| `quarisma/csrc/autograd/python_function.h` | Python custom function wrapper | `PyFunction` class | 1-100+ | Core |
+| `quarisma/csrc/autograd/python_function.cpp` | Python function implementation | Python backward execution | 1-300+ | Core |
+| `quarisma/csrc/autograd/python_cpp_function.h` | C++ function called from Python | `PythonCppFunction` | 1-100+ | Core |
+| `quarisma/csrc/autograd/python_cpp_function.cpp` | C++ function implementation | C++ backward from Python | 1-200+ | Core |
 
 ### 4.3 Forward AD (Tangent Computation)
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/forward_grad.h` | Forward AD tangent tracking | `ForwardGrad`, `DualTensor` | 1-100+ | Core |
-| `xsigma/csrc/autograd/forward_grad.cpp` | Forward AD implementation | Tangent propagation | 1-200+ | Core |
+| `quarisma/csrc/autograd/forward_grad.h` | Forward AD tangent tracking | `ForwardGrad`, `DualTensor` | 1-100+ | Core |
+| `quarisma/csrc/autograd/forward_grad.cpp` | Forward AD implementation | Tangent propagation | 1-200+ | Core |
 
 ### 4.4 Profiling and Debugging
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/profiler.h` | Profiler interface | Profiling hooks | 1-100+ | Core |
-| `xsigma/csrc/autograd/profiler_legacy.h` | Legacy profiler | Old profiling API | 1-100+ | Core |
-| `xsigma/csrc/autograd/profiler_legacy.cpp` | Legacy profiler implementation | Legacy profiling | 1-200+ | Core |
-| `xsigma/csrc/autograd/profiler_kineto.h` | Kineto profiler integration | Modern profiling | 1-100+ | Core |
-| `xsigma/csrc/autograd/profiler_kineto.cpp` | Kineto profiler implementation | Kineto integration | 1-200+ | Core |
-| `xsigma/csrc/autograd/profiler_python.h` | Python profiler wrapper | Python profiling API | 1-100+ | Core |
-| `xsigma/csrc/autograd/profiler_python.cpp` | Python profiler implementation | Python profiling | 1-200+ | Core |
+| `quarisma/csrc/autograd/profiler.h` | Profiler interface | Profiling hooks | 1-100+ | Core |
+| `quarisma/csrc/autograd/profiler_legacy.h` | Legacy profiler | Old profiling API | 1-100+ | Core |
+| `quarisma/csrc/autograd/profiler_legacy.cpp` | Legacy profiler implementation | Legacy profiling | 1-200+ | Core |
+| `quarisma/csrc/autograd/profiler_kineto.h` | Kineto profiler integration | Modern profiling | 1-100+ | Core |
+| `quarisma/csrc/autograd/profiler_kineto.cpp` | Kineto profiler implementation | Kineto integration | 1-200+ | Core |
+| `quarisma/csrc/autograd/profiler_python.h` | Python profiler wrapper | Python profiling API | 1-100+ | Core |
+| `quarisma/csrc/autograd/profiler_python.cpp` | Python profiler implementation | Python profiling | 1-200+ | Core |
 
 ### 4.5 Hooks and Callbacks
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/cpp_hook.h` | C++ hook interface | `CppFunctionPreHook` | 1-100+ | Core |
-| `xsigma/csrc/autograd/cpp_hook.cpp` | C++ hook implementation | Hook execution | 1-100+ | Core |
-| `xsigma/csrc/autograd/python_hook.h` | Python hook wrapper | `PyFunctionTensorPreHook` | 1-100+ | Core |
-| `xsigma/csrc/autograd/python_hook.cpp` | Python hook implementation | Python hook execution | 1-200+ | Core |
+| `quarisma/csrc/autograd/cpp_hook.h` | C++ hook interface | `CppFunctionPreHook` | 1-100+ | Core |
+| `quarisma/csrc/autograd/cpp_hook.cpp` | C++ hook implementation | Hook execution | 1-100+ | Core |
+| `quarisma/csrc/autograd/python_hook.h` | Python hook wrapper | `PyFunctionTensorPreHook` | 1-100+ | Core |
+| `quarisma/csrc/autograd/python_hook.cpp` | Python hook implementation | Python hook execution | 1-200+ | Core |
 
 ### 4.6 Initialization and Bindings
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/init.cpp` | Autograd module initialization | Module setup and bindings | 1-200+ | Core |
-| `xsigma/csrc/autograd/python_autograd.h` | Python autograd module header | Module interface | 1-50 | Core |
-| `xsigma/csrc/autograd/functions/init.cpp` | Functions module initialization | Function bindings | 1-100+ | Core |
-| `xsigma/csrc/autograd/functions/pybind.h` | Pybind11 function bindings | Python bindings | 1-100+ | Core |
+| `quarisma/csrc/autograd/init.cpp` | Autograd module initialization | Module setup and bindings | 1-200+ | Core |
+| `quarisma/csrc/autograd/python_autograd.h` | Python autograd module header | Module interface | 1-50 | Core |
+| `quarisma/csrc/autograd/functions/init.cpp` | Functions module initialization | Function bindings | 1-100+ | Core |
+| `quarisma/csrc/autograd/functions/pybind.h` | Pybind11 function bindings | Python bindings | 1-100+ | Core |
 
 ### 4.7 Utilities
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/autograd.h` | Core autograd API | `backward()`, `grad()` | 1-100+ | Core |
-| `xsigma/csrc/autograd/autograd.cpp` | Autograd implementation | Backward execution | 1-200+ | Core |
-| `xsigma/csrc/autograd/autograd_meta.cpp` | Autograd metadata management | Metadata initialization | 1-100+ | Core |
-| `xsigma/csrc/autograd/autograd_not_implemented_fallback.h` | Fallback for unimplemented ops | Error handling | 1-50 | Core |
-| `xsigma/csrc/autograd/autograd_not_implemented_fallback.cpp` | Fallback implementation | Unimplemented op handling | 1-100+ | Core |
-| `xsigma/csrc/autograd/jit_decomp_interface.h` | JIT decomposition interface | JIT integration | 1-50 | Core |
-| `xsigma/csrc/autograd/jit_decomp_interface.cpp` | JIT decomposition implementation | JIT autograd | 1-100+ | Core |
-| `xsigma/csrc/autograd/record_function_ops.h` | Record function operations | Profiling operations | 1-50 | Core |
-| `xsigma/csrc/autograd/record_function_ops.cpp` | Record function implementation | Operation recording | 1-100+ | Core |
+| `quarisma/csrc/autograd/autograd.h` | Core autograd API | `backward()`, `grad()` | 1-100+ | Core |
+| `quarisma/csrc/autograd/autograd.cpp` | Autograd implementation | Backward execution | 1-200+ | Core |
+| `quarisma/csrc/autograd/autograd_meta.cpp` | Autograd metadata management | Metadata initialization | 1-100+ | Core |
+| `quarisma/csrc/autograd/autograd_not_implemented_fallback.h` | Fallback for unimplemented ops | Error handling | 1-50 | Core |
+| `quarisma/csrc/autograd/autograd_not_implemented_fallback.cpp` | Fallback implementation | Unimplemented op handling | 1-100+ | Core |
+| `quarisma/csrc/autograd/jit_decomp_interface.h` | JIT decomposition interface | JIT integration | 1-50 | Core |
+| `quarisma/csrc/autograd/jit_decomp_interface.cpp` | JIT decomposition implementation | JIT autograd | 1-100+ | Core |
+| `quarisma/csrc/autograd/record_function_ops.h` | Record function operations | Profiling operations | 1-50 | Core |
+| `quarisma/csrc/autograd/record_function_ops.cpp` | Record function implementation | Operation recording | 1-100+ | Core |
 
 ### 4.8 Python Variable Wrapper
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/python_variable.h` | Python Tensor wrapper | `THPVariable` struct | 1-100+ | Core |
-| `xsigma/csrc/autograd/python_variable.cpp` | Python variable implementation | Python tensor methods | 1-300+ | Core |
-| `xsigma/csrc/autograd/python_variable_indexing.h` | Python indexing support | Indexing operations | 1-100+ | Core |
-| `xsigma/csrc/autograd/python_variable_indexing.cpp` | Indexing implementation | Python indexing | 1-200+ | Core |
-| `xsigma/csrc/autograd/python_legacy_variable.h` | Legacy variable support | Backward compatibility | 1-50 | Core |
-| `xsigma/csrc/autograd/python_legacy_variable.cpp` | Legacy variable implementation | Legacy support | 1-100+ | Core |
+| `quarisma/csrc/autograd/python_variable.h` | Python Tensor wrapper | `THPVariable` struct | 1-100+ | Core |
+| `quarisma/csrc/autograd/python_variable.cpp` | Python variable implementation | Python tensor methods | 1-300+ | Core |
+| `quarisma/csrc/autograd/python_variable_indexing.h` | Python indexing support | Indexing operations | 1-100+ | Core |
+| `quarisma/csrc/autograd/python_variable_indexing.cpp` | Indexing implementation | Python indexing | 1-200+ | Core |
+| `quarisma/csrc/autograd/python_legacy_variable.h` | Legacy variable support | Backward compatibility | 1-50 | Core |
+| `quarisma/csrc/autograd/python_legacy_variable.cpp` | Legacy variable implementation | Legacy support | 1-100+ | Core |
 
 ### 4.9 Manual Functions
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/FunctionsManual.h` | Manually defined backward functions | Custom backward implementations | 1-100+ | Core |
-| `xsigma/csrc/autograd/FunctionsManual.cpp` | Manual function implementations | Special case backward | 1-200+ | Core |
-| `xsigma/csrc/autograd/VariableTypeManual.cpp` | Manual variable type methods | Special tensor methods | 1-200+ | Core |
-| `xsigma/csrc/autograd/TraceTypeManual.cpp` | Manual trace type methods | Tracing support | 1-100+ | Core |
+| `quarisma/csrc/autograd/FunctionsManual.h` | Manually defined backward functions | Custom backward implementations | 1-100+ | Core |
+| `quarisma/csrc/autograd/FunctionsManual.cpp` | Manual function implementations | Special case backward | 1-200+ | Core |
+| `quarisma/csrc/autograd/VariableTypeManual.cpp` | Manual variable type methods | Special tensor methods | 1-200+ | Core |
+| `quarisma/csrc/autograd/TraceTypeManual.cpp` | Manual trace type methods | Tracing support | 1-100+ | Core |
 
 ### 4.10 Utilities and Helpers
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/utils/error_messages.h` | Error message utilities | Error formatting | 1-50 | Utility |
-| `xsigma/csrc/autograd/utils/grad_layout_contract.h` | Gradient layout contracts | Layout validation | 1-50 | Utility |
-| `xsigma/csrc/autograd/utils/lambda_post_hook.h` | Lambda post-hook utilities | Hook helpers | 1-50 | Utility |
-| `xsigma/csrc/autograd/utils/python_arg_parsing.h` | Python argument parsing | Argument parsing | 1-100+ | Utility |
-| `xsigma/csrc/autograd/utils/warnings.h` | Warning utilities | Warning management | 1-50 | Utility |
-| `xsigma/csrc/autograd/utils/warnings.cpp` | Warning implementation | Warning output | 1-100+ | Utility |
-| `xsigma/csrc/autograd/utils/wrap_outputs.h` | Output wrapping utilities | Result wrapping | 1-100+ | Utility |
-| `xsigma/csrc/autograd/VariableTypeUtils.h` | Variable type utilities | Type utilities | 1-100+ | Utility |
+| `quarisma/csrc/autograd/utils/error_messages.h` | Error message utilities | Error formatting | 1-50 | Utility |
+| `quarisma/csrc/autograd/utils/grad_layout_contract.h` | Gradient layout contracts | Layout validation | 1-50 | Utility |
+| `quarisma/csrc/autograd/utils/lambda_post_hook.h` | Lambda post-hook utilities | Hook helpers | 1-50 | Utility |
+| `quarisma/csrc/autograd/utils/python_arg_parsing.h` | Python argument parsing | Argument parsing | 1-100+ | Utility |
+| `quarisma/csrc/autograd/utils/warnings.h` | Warning utilities | Warning management | 1-50 | Utility |
+| `quarisma/csrc/autograd/utils/warnings.cpp` | Warning implementation | Warning output | 1-100+ | Utility |
+| `quarisma/csrc/autograd/utils/wrap_outputs.h` | Output wrapping utilities | Result wrapping | 1-100+ | Utility |
+| `quarisma/csrc/autograd/VariableTypeUtils.h` | Variable type utilities | Type utilities | 1-100+ | Utility |
 
 ---
 
-## 5. PYTHON API (xsigma/autograd/)
+## 5. PYTHON API (quarisma/autograd/)
 
 ### 5.1 Core Python API
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/autograd/__init__.py` | Autograd module initialization | Module exports, API | 1-600+ | Python API |
-| `xsigma/autograd/function.py` | Custom autograd function API | `Function`, `FunctionCtx`, `once_differentiable` | 472-566 | Python API |
-| `xsigma/autograd/variable.py` | Variable class (legacy) | `Variable`, `VariableMeta` | 1-50 | Python API |
-| `xsigma/autograd/graph.py` | Graph inspection API | `Node`, `GradientEdge`, hooks | 1-600+ | Python API |
+| `quarisma/autograd/__init__.py` | Autograd module initialization | Module exports, API | 1-600+ | Python API |
+| `quarisma/autograd/function.py` | Custom autograd function API | `Function`, `FunctionCtx`, `once_differentiable` | 472-566 | Python API |
+| `quarisma/autograd/variable.py` | Variable class (legacy) | `Variable`, `VariableMeta` | 1-50 | Python API |
+| `quarisma/autograd/graph.py` | Graph inspection API | `Node`, `GradientEdge`, hooks | 1-600+ | Python API |
 
 ### 5.2 Gradient Computation
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/autograd/grad_mode.py` | Gradient mode control | `no_grad`, `enable_grad`, `inference_mode` | 1-400+ | Python API |
-| `xsigma/autograd/forward_ad.py` | Forward AD API | `make_dual`, `unpack_dual`, `dual_level` | 1-300+ | Python API |
-| `xsigma/autograd/gradcheck.py` | Gradient checking utilities | `gradcheck`, `gradgradcheck` | 1-2200+ | Python API |
+| `quarisma/autograd/grad_mode.py` | Gradient mode control | `no_grad`, `enable_grad`, `inference_mode` | 1-400+ | Python API |
+| `quarisma/autograd/forward_ad.py` | Forward AD API | `make_dual`, `unpack_dual`, `dual_level` | 1-300+ | Python API |
+| `quarisma/autograd/gradcheck.py` | Gradient checking utilities | `gradcheck`, `gradgradcheck` | 1-2200+ | Python API |
 
 ### 5.3 Debugging and Profiling
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/autograd/anomaly_mode.py` | Anomaly detection API | `detect_anomaly`, `set_detect_anomaly` | 1-200+ | Python API |
-| `xsigma/autograd/profiler.py` | Profiler API | `profile`, `record_function` | 1-400+ | Python API |
-| `xsigma/autograd/profiler_util.py` | Profiler utilities | `FunctionEvent`, `EventList` | 1-300+ | Python API |
+| `quarisma/autograd/anomaly_mode.py` | Anomaly detection API | `detect_anomaly`, `set_detect_anomaly` | 1-200+ | Python API |
+| `quarisma/autograd/profiler.py` | Profiler API | `profile`, `record_function` | 1-400+ | Python API |
+| `quarisma/autograd/profiler_util.py` | Profiler utilities | `FunctionEvent`, `EventList` | 1-300+ | Python API |
 
 ### 5.4 Functional API
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/autograd/functional.py` | Functional autograd operations | `jacobian`, `hessian`, `vjp`, `jvp` | 1-400+ | Python API |
+| `quarisma/autograd/functional.py` | Functional autograd operations | `jacobian`, `hessian`, `vjp`, `jvp` | 1-400+ | Python API |
 
 ---
 
@@ -253,7 +253,7 @@
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/autograd/generated/` | Generated backward functions | Auto-generated Node classes | Variable | Generated |
+| `quarisma/csrc/autograd/generated/` | Generated backward functions | Auto-generated Node classes | Variable | Generated |
 
 ---
 
@@ -263,14 +263,14 @@
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/_dynamo/compiled_autograd.py` | Compiled autograd system | `AutogradCompilerInstance` | 1-500+ | Integration |
-| `xsigma/csrc/dynamo/compiled_autograd.h` | C++ compiled autograd | Compiled backward execution | 1-100+ | Integration |
+| `quarisma/_dynamo/compiled_autograd.py` | Compiled autograd system | `AutogradCompilerInstance` | 1-500+ | Integration |
+| `quarisma/csrc/dynamo/compiled_autograd.h` | C++ compiled autograd | Compiled backward execution | 1-100+ | Integration |
 
 ### 7.2 Distributed Autograd
 
 | File Path | Purpose | Key Classes/Functions | Lines | Category |
 |-----------|---------|----------------------|-------|----------|
-| `xsigma/csrc/distributed/autograd/` | Distributed autograd system | RPC-based backward | Variable | Integration |
+| `quarisma/csrc/distributed/autograd/` | Distributed autograd system | RPC-based backward | Variable | Integration |
 
 ---
 
@@ -327,6 +327,6 @@ functions/utils.h (set_history)
 **Need to understand custom functions?** → `custom_function.h`, `python_function.h`
 **Need to understand profiling?** → `profiler*.h/cpp`
 **Need to understand anomaly detection?** → `anomaly_mode.h/cpp`
-**Need Python API?** → `xsigma/autograd/*.py`
+**Need Python API?** → `quarisma/autograd/*.py`
 
 

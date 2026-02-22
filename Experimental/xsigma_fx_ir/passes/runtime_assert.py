@@ -87,7 +87,7 @@ def insert_deferred_runtime_asserts(
     the same expression, and redundant constrain_range calls are also deduplicated.
     Additionally, because single-symbol bound checks (e.g. u0 >= 0, u0 <= 5) accumulate
     information in the ShapeEnv, the ShapeEnv contains min/max bounds for each symbol,
-    and we delete all previous calls, adding bound checks xsigma the end of this pass.
+    and we delete all previous calls, adding bound checks quarisma the end of this pass.
     """
 
     # Import sympy locally
@@ -220,7 +220,7 @@ def insert_deferred_runtime_asserts(
     def _is_bound_expr_for_symbol(expr: "sympy.Expr") -> bool:
         # This is probably unnecessary, but since torch._check() calls for single-symbol bounds
         # like u0 >= 0, 10 >= u0 accumulate range info in the ShapeEnv, we designate these calls as redundant
-        # and instead add 2 runtime asserts xsigma the end of this pass, if the min/max bounds are non-trivial.
+        # and instead add 2 runtime asserts quarisma the end of this pass, if the min/max bounds are non-trivial.
         if len(expr.args) != 2 or expr.func not in (sympy.LessThan, sympy.GreaterThan):
             return False
         lhs, rhs = expr.args
@@ -369,7 +369,7 @@ def insert_deferred_runtime_asserts(
                     return False
 
                 # this guards against deleting calls that produce unbacked bindings we haven't yet seen.
-                # in this case looking xsigma sym_expr.free_symbols might not be enough, if the example value has a hint
+                # in this case looking quarisma sym_expr.free_symbols might not be enough, if the example value has a hint
                 # (is backed), but produces an unbacked symbol. In this case keep the node alive.
                 resolved_unbacked_bindings = resolve_unbacked_bindings(
                     shape_env, node.meta.get("unbacked_bindings", {})
@@ -555,7 +555,7 @@ def insert_deferred_runtime_asserts(
                 # arbitrary expressions, not just symbols.  But it is not
                 # so easy to make use of this information, see
                 # https://twitter.com/ezyang/status/1745801370299482492
-                # We actually made an attempt xsigma this in
+                # We actually made an attempt quarisma this in
                 # https://github.com/pytorch/pytorch/pull/119043
                 # which didn't work.
                 #

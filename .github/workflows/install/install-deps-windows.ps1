@@ -1,5 +1,5 @@
-# XSigma CI - Windows Dependency Installation Script (PowerShell)
-# This script installs all required dependencies for building XSigma on Windows
+# Quarisma CI - Windows Dependency Installation Script (PowerShell)
+# This script installs all required dependencies for building Quarisma on Windows
 # Usage: .\install-deps-windows.ps1 [-WithCuda] [-WithTbb]
 
 param(
@@ -162,4 +162,4 @@ foreach ($tool in $tools) {
 }
 
 Write-Success "Windows dependency installation completed!"
-Write-Info "You can now build XSigma using: python Scripts/setup.py ninja clang config build test"
+Write-Info "You can now build Quarisma using: python Scripts/setup.py ninja clang config build test"

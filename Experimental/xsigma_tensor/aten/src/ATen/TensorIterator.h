@@ -1,9 +1,9 @@
 #pragma once
 
-#include <XSigma/TensorMeta.h>
-#include <XSigma/core/Dimname.h>
-#include <XSigma/core/Range.h>
-#include <XSigma/core/TensorBase.h>
+#include <Quarisma/TensorMeta.h>
+#include <Quarisma/core/Dimname.h>
+#include <Quarisma/core/Range.h>
+#include <Quarisma/core/TensorBase.h>
 #include <c10/core/DynamicCast.h>
 #include <c10/util/FunctionRef.h>
 #include <c10/util/MaybeOwned.h>

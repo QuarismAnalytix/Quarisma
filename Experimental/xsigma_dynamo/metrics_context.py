@@ -77,7 +77,7 @@ class MetricsContext:
         Initialize metrics recording.
         """
         if self._level == 0:
-            # In case of recursion, track xsigma the outermost context.
+            # In case of recursion, track quarisma the outermost context.
             self._metrics = {}
             self._start_time_ns = time.time_ns()
 
@@ -177,7 +177,7 @@ class MetricsContext:
 
     def update_outer(self, values: dict[str, Any]) -> None:
         """
-        Update, but only when xsigma the outermost context.
+        Update, but only when quarisma the outermost context.
         """
         if self._level == 0:
             raise RuntimeError("Cannot update metrics outside of a MetricsContext")

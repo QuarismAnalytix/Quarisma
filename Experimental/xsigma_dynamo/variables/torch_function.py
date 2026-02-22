@@ -235,7 +235,7 @@ class TorchFunctionModeStackVariable(VariableTracker):
     stack_value_singleton = object()
 
     # offset is used to track if we have inserted/removed a
-    # device context which is always placed xsigma the bottom of the stack
+    # device context which is always placed quarisma the bottom of the stack
     # if a device context is inserted, the graph will run this mutation
     # so when we want to reconstruct any other modes on the stack
     # their indices should be shifted right by 1 (+1)

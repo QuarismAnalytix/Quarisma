@@ -5,9 +5,9 @@
 ### `enableProfiler()` - Start Profiling
 ```cpp
 void enableProfiler(
-    const xsigma::profiler::impl::ProfilerConfig& config,
-    const std::set<xsigma::profiler::impl::ActivityType>& activities,
-    const std::unordered_set<xsigma::RecordScope>& scopes = {});
+    const quarisma::profiler::impl::ProfilerConfig& config,
+    const std::set<quarisma::profiler::impl::ActivityType>& activities,
+    const std::unordered_set<quarisma::RecordScope>& scopes = {});
 ```
 **File:** `Library/Core/profiler/pytroch_profiler/profiler_kineto.cpp:834`
 
@@ -19,11 +19,11 @@ void enableProfiler(
 
 **Example:**
 ```cpp
-xsigma::profiler::impl::ProfilerConfig config(
-    xsigma::profiler::impl::ProfilerState::KINETO);
-std::set<xsigma::profiler::impl::ActivityType> activities{
-    xsigma::profiler::impl::ActivityType::CPU};
-xsigma::autograd::profiler::enableProfiler(config, activities);
+quarisma::profiler::impl::ProfilerConfig config(
+    quarisma::profiler::impl::ProfilerState::KINETO);
+std::set<quarisma::profiler::impl::ActivityType> activities{
+    quarisma::profiler::impl::ActivityType::CPU};
+quarisma::autograd::profiler::enableProfiler(config, activities);
 ```
 
 ---
@@ -42,7 +42,7 @@ std::unique_ptr<ProfilerResult> disableProfiler();
 
 **Example:**
 ```cpp
-auto result = xsigma::autograd::profiler::disableProfiler();
+auto result = quarisma::autograd::profiler::disableProfiler();
 result->save("trace.json");
 ```
 
@@ -90,7 +90,7 @@ enum class ActivityType {
 ### `RecordScope` - Which Functions to Capture
 ```cpp
 enum class RecordScope : uint8_t {
-    FUNCTION = 0,              // XSigma/XSigma ops
+    FUNCTION = 0,              // Quarisma/Quarisma ops
     BACKWARD_FUNCTION,         // Autograd nodes
     TORCHSCRIPT_FUNCTION,      // TorchScript functions
     CUSTOM_CLASS,              // Torchbind classes
@@ -130,15 +130,15 @@ struct KinetoEvent {
     uint64_t startNs() const;
     uint64_t endNs() const;
     uint64_t durationNs() const;
-    xsigma::device_enum deviceType() const;
+    quarisma::device_enum deviceType() const;
     int deviceIndex() const;
     uint64_t correlationId() const;
     
     // Optional metadata
     bool hasShapes() const;
-    const xsigma::array_ref<std::vector<int64_t>> shapes() const;
+    const quarisma::array_ref<std::vector<int64_t>> shapes() const;
     bool hasStack() const;
-    const xsigma::array_ref<std::string> stack() const;
+    const quarisma::array_ref<std::string> stack() const;
     std::string backend() const;
 };
 ```
@@ -248,8 +248,8 @@ void recordThreadInfo();
 ### Basic Profiling
 ```cpp
 // 1. Configure
-xsigma::profiler::impl::ProfilerConfig config(
-    xsigma::profiler::impl::ProfilerState::KINETO,
+quarisma::profiler::impl::ProfilerConfig config(
+    quarisma::profiler::impl::ProfilerState::KINETO,
     true,   // report_input_shapes
     true,   // profile_memory
     true,   // with_stack
@@ -258,24 +258,24 @@ xsigma::profiler::impl::ProfilerConfig config(
 );
 
 // 2. Set activities
-std::set<xsigma::profiler::impl::ActivityType> activities{
-    xsigma::profiler::impl::ActivityType::CPU
+std::set<quarisma::profiler::impl::ActivityType> activities{
+    quarisma::profiler::impl::ActivityType::CPU
 };
 
 // 3. Start
-xsigma::autograd::profiler::enableProfiler(config, activities);
+quarisma::autograd::profiler::enableProfiler(config, activities);
 
 // 4. Run code to profile
 // ... your code ...
 
 // 5. Stop and save
-auto result = xsigma::autograd::profiler::disableProfiler();
+auto result = quarisma::autograd::profiler::disableProfiler();
 result->save("profile.json");
 ```
 
 ### Accessing Events
 ```cpp
-auto result = xsigma::autograd::profiler::disableProfiler();
+auto result = quarisma::autograd::profiler::disableProfiler();
 for (const auto& event : result->events()) {
     std::cout << "Event: " << event.name() << "\n"
               << "  Duration: " << event.durationNs() << " ns\n"
@@ -285,8 +285,8 @@ for (const auto& event : result->events()) {
 
 ### Memory Profiling
 ```cpp
-xsigma::profiler::impl::ProfilerConfig config(
-    xsigma::profiler::impl::ProfilerState::KINETO,
+quarisma::profiler::impl::ProfilerConfig config(
+    quarisma::profiler::impl::ProfilerState::KINETO,
     false,  // report_input_shapes
     true,   // profile_memory ← Enable memory tracking
     false,  // with_stack
@@ -339,7 +339,7 @@ xsigma::profiler::impl::ProfilerConfig config(
 Viewable in:
 - Chrome DevTools (chrome://tracing)
 - Perfetto (ui.perfetto.dev)
-- XSigma TensorBoard plugin
+- Quarisma TensorBoard plugin
 
 ---
 

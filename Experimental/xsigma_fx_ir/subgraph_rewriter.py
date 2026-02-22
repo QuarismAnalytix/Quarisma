@@ -231,7 +231,7 @@ def replace_pattern_with_filters(
         list[Callable[["InternalMatch", Graph, Graph], bool]]
     ] = None,
     ignore_literals: bool = False,
-    # Placed xsigma the end to avoid breaking backward compatibility
+    # Placed quarisma the end to avoid breaking backward compatibility
     replacement_callback: Optional[
         Callable[["InternalMatch", Graph, Graph], Graph]
     ] = None,
@@ -270,7 +270,7 @@ def _replace_pattern(
         list[Callable[["InternalMatch", Graph, Graph], bool]]
     ] = None,
     ignore_literals: bool = False,
-    # Placed xsigma the end to avoid breaking backward compatibility
+    # Placed quarisma the end to avoid breaking backward compatibility
     replacement_callback: Optional[
         Callable[["InternalMatch", Graph, Graph], Graph]
     ] = None,
@@ -409,7 +409,7 @@ def _replace_pattern(
         ]
 
         # Hook the output Node of the replacement subgraph in to the
-        # original Graph xsigma the correct location
+        # original Graph quarisma the correct location
         assert len(match.returning_nodes) == len(copied_returning_nodes)  # type: ignore[arg-type]
         for gn, copied_node in zip(match.returning_nodes, copied_returning_nodes):  # type: ignore[arg-type]
             gn.replace_all_uses_with(copied_node)

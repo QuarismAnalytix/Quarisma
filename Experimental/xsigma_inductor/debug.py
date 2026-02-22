@@ -699,7 +699,7 @@ class DebugFormatter:
             "prescreening_time": prescreening_elapse,
         }
         with self.fopen_context(
-            "autotuning_result_json_list.txt", "xsigma", encoding="utf-8"
+            "autotuning_result_json_list.txt", "quarisma", encoding="utf-8"
         ) as fd:
             for caller, time in timings.items():
                 info_dict = dict(caller.info_dict())
@@ -747,7 +747,7 @@ def log_collective_schedule(nodes: Sequence[BaseSchedulerNode]) -> None:
         if isinstance(op := getattr(node, "node", None), ir._CollectiveKernel)
     ]
 
-    # Only log when there is xsigma least one collective op
+    # Only log when there is quarisma least one collective op
     if schedule:
         _dump_collective_schedule(schedule)
 
@@ -1035,7 +1035,7 @@ def dump_inductor_provenance_info() -> dict[str, Any]:
                 ) as fd:
                     json.dump(node_mapping, fd)
         # we need to update the node mapping version when node mapping format changes
-        # so the tlparse tool knows which node mapping version it is looking xsigma
+        # so the tlparse tool knows which node mapping version it is looking quarisma
         node_mapping["version"] = 2.0
         return node_mapping
     except Exception as e:

@@ -1,6 +1,6 @@
-#include <XSigma/DeviceGuard.h>
-#include <XSigma/ExpandUtils.h>
-#include <XSigma/core/symbol.h>
+#include <Quarisma/DeviceGuard.h>
+#include <Quarisma/ExpandUtils.h>
+#include <Quarisma/core/symbol.h>
 #include <torch/csrc/autograd/variable.h>
 #include <torch/csrc/jit/frontend/error_report.h>
 #include <torch/csrc/jit/ir/alias_analysis.h>
@@ -11,14 +11,14 @@
 #include <torch/csrc/jit/passes/utils/op_registry.h>
 #include <torch/csrc/jit/runtime/exception_message.h>
 #include <torch/csrc/jit/runtime/operator.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include "util/exception.h"
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/empty_strided.h>
+#include <Quarisma/ops/empty_strided.h>
 #endif
 
 #include <exception>
@@ -34,7 +34,7 @@ bool mergeTypes(ArrayRef<Value*> lhs, ArrayRef<Value*> rhs, ArrayRef<Value*> out
 {
     AT_ASSERT(lhs.size() == rhs.size() && rhs.size() == outputs.size());
     bool changed = false;
-    for (const auto i : xsigma::irange(lhs.size()))
+    for (const auto i : quarisma::irange(lhs.size()))
     {
         auto old_output_type = outputs[i]->type();
         auto new_type = unifyTypes(lhs[i]->type(), rhs[i]->type(), /*default_to_union=*/true);
@@ -49,7 +49,7 @@ bool mergeTypes(ArrayRef<Value*> lhs, ArrayRef<Value*> rhs, ArrayRef<Value*> out
 static void applyTypes(ArrayRef<Value*> src, ArrayRef<Value*> dst)
 {
     AT_ASSERT(src.size() == dst.size());
-    for (const auto i : xsigma::irange(src.size()))
+    for (const auto i : quarisma::irange(src.size()))
     {
         dst[i]->setType(src[i]->type());
     }
@@ -79,8 +79,8 @@ void PropertyPropBase::propagateBlock(Block* block, bool insert_expands)
 
 void PropertyPropBase::processIf(Node* node)
 {
-    auto then_block = node->blocks().xsigma(0);
-    auto else_block = node->blocks().xsigma(1);
+    auto then_block = node->blocks().quarisma(0);
+    auto else_block = node->blocks().quarisma(1);
     propagateBlock(then_block);
     propagateBlock(else_block);
     mergeTypes(then_block->outputs(), else_block->outputs(), node->outputs());
@@ -96,7 +96,7 @@ void PropertyPropBase::processLoop(Node* node)
     do
     {
         propagateBlock(loop.bodyBlock(), /*insert_expands=*/false);
-        // note: inserting expands is unsafe xsigma this point, we don't know
+        // note: inserting expands is unsafe quarisma this point, we don't know
         // if the types are stable yet, so the arguments to expand may change
     } while (
         mergeTypes(loop.bodyCarriedInputs(), loop.bodyCarriedOutputs(), loop.bodyCarriedInputs()));
@@ -121,7 +121,7 @@ void PropertyPropBase::setUnshapedType(Node* node)
 
 namespace prim
 {
-using namespace ::xsigma::prim;
+using namespace ::quarisma::prim;
 }
 
 #define SHAPE_ASSERT(cond) \
@@ -142,7 +142,7 @@ bool isValidArgumentForRunning(Value* v)
         {
             return false;
         }
-        return !xsigma::isIntegralType(*tt->scalarType(), /*includeBool=*/false);
+        return !quarisma::isIntegralType(*tt->scalarType(), /*includeBool=*/false);
     }
     return v->type()->isSubtypeOf(*FloatType::get());
 }
@@ -157,7 +157,7 @@ bool containsTensorType(const TypePtr& t)
     auto n_contained = t->containedTypes().size();
     if (n_contained == 1)
     {
-        return t->containedTypes().xsigma(0)->isSubtypeOf(*TensorType::get());
+        return t->containedTypes().quarisma(0)->isSubtypeOf(*TensorType::get());
     }
     else if (n_contained > 1)
     {
@@ -187,7 +187,7 @@ std::optional<std::vector<TensorTypePtr>> gatherTensorTypes(Node* node, bool com
     {
         return std::nullopt;
     }
-    for (const auto i : xsigma::irange(args.size()))
+    for (const auto i : quarisma::irange(args.size()))
     {
         if (args[i].type()->isSubtypeOf(*ListType::ofTensors()))
         {
@@ -216,7 +216,7 @@ std::optional<std::vector<TensorTypePtr>> gatherTensorTypes(Node* node, bool com
     return tensor_types;
 }
 
-int64_t wrapDim(int64_t dim, xsigma::IntArrayRef sizes)
+int64_t wrapDim(int64_t dim, quarisma::IntArrayRef sizes)
 {
     if (dim < 0)
     {
@@ -225,15 +225,15 @@ int64_t wrapDim(int64_t dim, xsigma::IntArrayRef sizes)
     return dim;
 }
 
-xsigma::ScalarType unionScalarTypes(xsigma::ScalarType original, xsigma::ScalarType next)
+quarisma::ScalarType unionScalarTypes(quarisma::ScalarType original, quarisma::ScalarType next)
 {
-    if (original == xsigma::ScalarType::Undefined)
+    if (original == quarisma::ScalarType::Undefined)
     {
         return next;
     }
     else
     {
-        return xsigma::promoteTypes(original, next);
+        return quarisma::promoteTypes(original, next);
     }
 }
 
@@ -241,12 +241,12 @@ xsigma::ScalarType unionScalarTypes(xsigma::ScalarType original, xsigma::ScalarT
 // new type promotion logic. See tensor_attributes.rst for details.
 // This doesn't handle the case of arithmetic ops with Scalar arguments (when
 // `Tensor.getUnsafeTensorImpl()->is_wrapped_number()` would return true)
-std::optional<xsigma::ScalarType> getPromotedTypeForArithmeticOp(Node* node)
+std::optional<quarisma::ScalarType> getPromotedTypeForArithmeticOp(Node* node)
 {
-    xsigma::ScalarType dimmed  = xsigma::ScalarType::Undefined;
-    xsigma::ScalarType zerodim = xsigma::ScalarType::Undefined;
+    quarisma::ScalarType dimmed  = quarisma::ScalarType::Undefined;
+    quarisma::ScalarType zerodim = quarisma::ScalarType::Undefined;
     // binary arithmetic ops, more than 2 args is alpha.
-    for (const auto i : xsigma::irange(2))
+    for (const auto i : quarisma::irange(2))
     {
         auto dtt        = node->inputs()[i]->type()->expect<TensorType>();
         auto inputDtype = dtt->scalarType();
@@ -276,14 +276,14 @@ std::optional<xsigma::ScalarType> getPromotedTypeForArithmeticOp(Node* node)
         return zerodim;
     }
     // bool_tensor * non_bool_scalar -> non_bool_tensor
-    if (xsigma::ScalarType::Bool == dimmed && xsigma::ScalarType::Undefined != zerodim)
+    if (quarisma::ScalarType::Bool == dimmed && quarisma::ScalarType::Undefined != zerodim)
     {
         return zerodim;
     }
     // types of dimensioned tensors generally take precedence over zero-dim
     // tensors if not promoting due to category. e.g.:
     // int_tensor * long -> int_tensor
-    if (xsigma::ScalarType::Undefined != dimmed)
+    if (quarisma::ScalarType::Undefined != dimmed)
     {
         return dimmed;
     }
@@ -326,7 +326,7 @@ private:
         // ops which take the result and write to input "out"
         if (auto out_arg_index = n->schema().argumentIndexWithName("out"))
         {
-            auto arg = n->schema().arguments().xsigma(*out_arg_index);
+            auto arg = n->schema().arguments().quarisma(*out_arg_index);
             return arg.kwarg_only() && arg.type()->isSubtypeOf(*TensorType::get());
         }
         return false;
@@ -365,11 +365,11 @@ private:
         {
             if (type->isComplete())
             {
-                xsigma::DeviceGuard device_guard(*type->device());
-                return xsigma::empty_strided(
+                quarisma::DeviceGuard device_guard(*type->device());
+                return quarisma::empty_strided(
                            *type->sizes().concrete_sizes(),
                            *type->strides().concrete_sizes(),
-                           xsigma::TensorOptions(*type->device()).dtype(type->scalarType()))
+                           quarisma::TensorOptions(*type->device()).dtype(type->scalarType()))
                     .zero_();
             }
             // fallthrough
@@ -388,11 +388,11 @@ private:
 
     void broadcastBinary(Node* node, std::vector<TensorTypePtr>& types, size_t idx1, size_t idx2)
     {
-        auto expected_size = xsigma::infer_size(
+        auto expected_size = quarisma::infer_size(
             *types[idx1]->sizes().concrete_sizes(), *types[idx2]->sizes().concrete_sizes());
         auto broadcast = [&](size_t input_idx)
         {
-            TensorTypePtr input_type = types.xsigma(input_idx);
+            TensorTypePtr input_type = types.quarisma(input_idx);
             if (input_type->sizes() == expected_size)
                 return;
             auto            graph = node->owningGraph();
@@ -400,7 +400,7 @@ private:
             Node*           expand = graph
                                ->create(
                                    aten::expand,
-                                   {node->inputs().xsigma(input_idx),
+                                   {node->inputs().quarisma(input_idx),
                                     graph->insertConstant(expected_size),
                                     graph->insertConstant(false)})
                                ->insertBefore(node);
@@ -409,8 +409,8 @@ private:
         };
         broadcast(idx1);
         broadcast(idx2);
-        types[0] = node->inputs().xsigma(idx1)->type()->expect<TensorType>();
-        types[1] = node->inputs().xsigma(idx2)->type()->expect<TensorType>();
+        types[0] = node->inputs().quarisma(idx1)->type()->expect<TensorType>();
+        types[1] = node->inputs().quarisma(idx2)->type()->expect<TensorType>();
     }
 
     OperatorSet cannot_propagate_shape_by_running_it = {
@@ -515,7 +515,7 @@ private:
         op(stack);
 
         AT_ASSERT(stack.size() == node->outputs().size());
-        for (const auto i : xsigma::irange(stack.size()))
+        for (const auto i : quarisma::irange(stack.size()))
         {
             // some ops may have mixed tensor/primitive outputs
             // for primitives, we don't need to change the type because it is already
@@ -536,7 +536,7 @@ private:
     void PropagateCatShape(Node* cat_node)
     {
         static const auto propagate_complete = [](Node*                    node,
-                                                  xsigma::ArrayRef<Value*> tensors) -> bool
+                                                  quarisma::ArrayRef<Value*> tensors) -> bool
         {
             auto input_types =
                 fmap(tensors, [](Value* v) { return v->type()->cast<TensorType>(); });
@@ -562,7 +562,7 @@ private:
                 auto tp_sizes = tp->sizes().concrete_sizes().value();
                 if (sizes.size() != tp_sizes.size())
                     return false;
-                for (const auto i : xsigma::irange(ndim))
+                for (const auto i : quarisma::irange(ndim))
                 {
                     if (sizes[i] != tp_sizes[i] && i != dim)
                     {
@@ -574,7 +574,7 @@ private:
             node->output()->setType(input_types[0]->withSizes(sizes));
             return true;
         };
-        static const auto propagate = [](Node* node, xsigma::ArrayRef<Value*> tensors) -> bool
+        static const auto propagate = [](Node* node, quarisma::ArrayRef<Value*> tensors) -> bool
         {
             for (Value* v : tensors)
             {
@@ -610,7 +610,7 @@ private:
 
     void propagateTorchTensorShape(Node* node)
     {
-        auto input_type = node->inputs().xsigma(0)->type();
+        auto input_type = node->inputs().quarisma(0)->type();
 
         size_t dims            = 0;
         auto   input_base_type = input_type;
@@ -622,10 +622,10 @@ private:
             list_type       = input_base_type->cast<ListType>();
         }
 
-        std::optional<xsigma::ScalarType> default_type = tryScalarTypeFromJitType(*input_base_type);
+        std::optional<quarisma::ScalarType> default_type = tryScalarTypeFromJitType(*input_base_type);
         if (auto grad_index = node->schema().argumentIndexWithName("dtype"))
         {
-            auto inp = toIValue(node->inputs().xsigma(*grad_index));
+            auto inp = toIValue(node->inputs().quarisma(*grad_index));
             if (inp == std::nullopt)
             {
                 return;
@@ -636,10 +636,10 @@ private:
             }
         }
 
-        xsigma::Device default_device = xsigma::kCPU;
+        quarisma::Device default_device = quarisma::kCPU;
         if (auto device_index = node->schema().argumentIndexWithName("device"))
         {
-            auto inp = toIValue(node->inputs().xsigma(*device_index));
+            auto inp = toIValue(node->inputs().quarisma(*device_index));
             if (inp == std::nullopt)
             {
                 return;
@@ -654,7 +654,7 @@ private:
     }
 
     // returns whether any such values were found
-    bool setUnshapedTypeIfAliasResizedSet(xsigma::ArrayRef<Value*> vs)
+    bool setUnshapedTypeIfAliasResizedSet(quarisma::ArrayRef<Value*> vs)
     {
         bool in_resize = false;
         for (auto v : vs)
@@ -702,13 +702,13 @@ private:
             {
                 node->output()->setType(
                     TensorType::create(
-                        xsigma::kLong, xsigma::kCPU, 0, /*requires_grad=*/std::nullopt));
+                        quarisma::kLong, quarisma::kCPU, 0, /*requires_grad=*/std::nullopt));
             }
             else if (node->input()->type()->isSubtypeOf(*FloatType::get()))
             {
                 node->output()->setType(
                     TensorType::create(
-                        xsigma::kDouble, xsigma::kCPU, 0, /*requires_grad=*/std::nullopt));
+                        quarisma::kDouble, quarisma::kCPU, 0, /*requires_grad=*/std::nullopt));
             }
             return;
         }
@@ -718,7 +718,7 @@ private:
             // as_tensor has an overloaded schema and can either have a tensor or
             // a list as the first input, if the input is a tensor, we delegate
             // the shape propagation in PropagateTensorShapeOnNode
-            if (node->inputs().xsigma(0)->type()->isSubtypeOf(*TensorType::get()))
+            if (node->inputs().quarisma(0)->type()->isSubtypeOf(*TensorType::get()))
             {
                 break;
             }
@@ -858,7 +858,7 @@ private:
     static std::optional<size_t> determineListSize(Value* list)
     {
         AT_ASSERT(list->type()->cast<ListType>());
-        if (auto shape = constant_as<xsigma::List<int64_t>>(list))
+        if (auto shape = constant_as<quarisma::List<int64_t>>(list))
         {
             return shape->size();
         }
@@ -886,7 +886,7 @@ private:
     bool PropagateTensorShapeOnNode(Node* node, bool insert_expands)
     {
         static const auto broadcast = [](std::vector<TensorTypePtr>&       tensor_types,
-                                         std::optional<xsigma::ScalarType> t) -> TensorTypePtr
+                                         std::optional<quarisma::ScalarType> t) -> TensorTypePtr
         {
             if (tensor_types.size() == 1)
             {
@@ -1047,7 +1047,7 @@ private:
                     const auto scalar_type = *(input_type->scalarType());
                     if (isComplexType(scalar_type))
                     {
-                        const auto out_type = xsigma::toRealValueType(scalar_type);
+                        const auto out_type = quarisma::toRealValueType(scalar_type);
                         return type_vec_t{input_type->dimensionedOnly()->withScalarType(out_type)};
                     }
                 }
@@ -1121,7 +1121,7 @@ private:
                         return {};
                     }
                     size_t arg_for_type = 0;
-                    if (xsigma::promoteTypes(*first_scalar_type, *second_scalar_type) !=
+                    if (quarisma::promoteTypes(*first_scalar_type, *second_scalar_type) !=
                         first_scalar_type)
                     {
                         arg_for_type = 1;
@@ -1176,14 +1176,14 @@ private:
                         isFloatingType(*second_scalar_type))
                     {
                         auto default_dtype =
-                            xsigma::typeMetaToScalarType(caffe2::get_default_dtype());
+                            quarisma::typeMetaToScalarType(caffe2::get_default_dtype());
                         return {broadcast(*maybe_tensor_types, default_dtype)};
                     }
-                    if (xsigma::ScalarType::Bool == *first_scalar_type &&
-                        xsigma::ScalarType::Bool != *second_scalar_type)
+                    if (quarisma::ScalarType::Bool == *first_scalar_type &&
+                        quarisma::ScalarType::Bool != *second_scalar_type)
                     {
                         auto result_type =
-                            xsigma::promoteTypes(*first_scalar_type, *second_scalar_type);
+                            quarisma::promoteTypes(*first_scalar_type, *second_scalar_type);
                         return {broadcast(*maybe_tensor_types, result_type)};
                     }
                     return {broadcast(*maybe_tensor_types, first_scalar_type)};
@@ -1295,7 +1295,7 @@ private:
             {
                 if (auto maybe_tensor_types = gatherTensorTypes(node))
                 {
-                    return {broadcast(*maybe_tensor_types, xsigma::kBool)};
+                    return {broadcast(*maybe_tensor_types, quarisma::kBool)};
                 }
                 return {};
             }};
@@ -1396,9 +1396,9 @@ private:
                     if (type->scalarType())
                     {
                         return {
-                            xsigma::isFloatingType(*type->scalarType())
+                            quarisma::isFloatingType(*type->scalarType())
                                 ? std::move(type)
-                                : type->withScalarType(xsigma::kLong)};
+                                : type->withScalarType(quarisma::kLong)};
                     }
                     else
                     {
@@ -1424,9 +1424,9 @@ private:
                 {
                     type = type->withScalarType(opt_dtype->toScalarType());
                 }
-                else if (upcast_integer && !xsigma::isFloatingType(*type->scalarType()))
+                else if (upcast_integer && !quarisma::isFloatingType(*type->scalarType()))
                 {
-                    type = type->withScalarType(xsigma::kLong);
+                    type = type->withScalarType(quarisma::kLong);
                 }
                 if (static_cast<int64_t>(*type->dim()) >= num_reduced_dim && num_reduced_dim > 0)
                 {
@@ -1465,7 +1465,7 @@ private:
             {
                 if (auto type = node->input(0)->type()->cast<TensorType>())
                 {
-                    if (node->input(1)->type()->kind() == xsigma::TypeKind::NoneType)
+                    if (node->input(1)->type()->kind() == quarisma::TypeKind::NoneType)
                     {
                         return {type->withDim(0)};
                     }
@@ -1508,7 +1508,7 @@ private:
                     node, /*num_reduced_dim=*/1, /*upcast_integer=*/false);
                 if (!output_types.empty() && node->outputs().size() == 2)
                 {
-                    output_types.push_back(output_types.back()->withScalarType(xsigma::kLong));
+                    output_types.push_back(output_types.back()->withScalarType(quarisma::kLong));
                 }
                 return output_types;
             }};
@@ -1580,7 +1580,7 @@ private:
             }};
 
         static const auto factory_with_ndim =
-            [](Node* node, int dim, xsigma::ScalarType default_dtype) -> type_vec_t
+            [](Node* node, int dim, quarisma::ScalarType default_dtype) -> type_vec_t
         {
             std::optional<IValue> maybe_layout_option = node->get(attr::layout);
             if (!maybe_layout_option)
@@ -1590,7 +1590,7 @@ private:
             if (!maybe_device_option)
                 return {};
             auto device =
-                (maybe_device_option->isNone() ? xsigma::kCPU : maybe_device_option->toDevice());
+                (maybe_device_option->isNone() ? quarisma::kCPU : maybe_device_option->toDevice());
 
             std::optional<IValue> maybe_dtype_option = node->get(attr::dtype);
             if (!maybe_dtype_option)
@@ -1700,9 +1700,9 @@ private:
             },
             [](Node* node) -> type_vec_t
             {
-                if (auto maybe_size = node->get<xsigma::List<int64_t>>(attr::size))
+                if (auto maybe_size = node->get<quarisma::List<int64_t>>(attr::size))
                 {
-                    return factory_with_ndim(node, (int)maybe_size->size(), xsigma::kDouble);
+                    return factory_with_ndim(node, (int)maybe_size->size(), quarisma::kDouble);
                 }
                 return {};
             }};
@@ -1716,33 +1716,33 @@ private:
             },
             [](Node* node) -> type_vec_t
             {
-                if (auto maybe_size = node->get<xsigma::List<int64_t>>(attr::size))
+                if (auto maybe_size = node->get<quarisma::List<int64_t>>(attr::size))
                 {
-                    return factory_with_ndim(node, (int)maybe_size->size(), xsigma::kLong);
+                    return factory_with_ndim(node, (int)maybe_size->size(), quarisma::kLong);
                 }
                 return {};
             }};
 
-        static const auto get_cast_scalar_type = [](Node* node) -> xsigma::ScalarType
+        static const auto get_cast_scalar_type = [](Node* node) -> quarisma::ScalarType
         {
             switch (node->kind())
             {
             case aten::_cast_Byte:
-                return xsigma::kByte;
+                return quarisma::kByte;
             case aten::_cast_Char:
-                return xsigma::kChar;
+                return quarisma::kChar;
             case aten::_cast_Double:
-                return xsigma::kDouble;
+                return quarisma::kDouble;
             case aten::_cast_Float:
-                return xsigma::kFloat;
+                return quarisma::kFloat;
             case aten::_cast_Half:
-                return xsigma::kHalf;
+                return quarisma::kHalf;
             case aten::_cast_Int:
-                return xsigma::kInt;
+                return quarisma::kInt;
             case aten::_cast_Long:
-                return xsigma::kLong;
+                return quarisma::kLong;
             case aten::_cast_Short:
-                return xsigma::kShort;
+                return quarisma::kShort;
             default:
                 TORCH_INTERNAL_ASSERT(
                     false,
@@ -1785,7 +1785,7 @@ private:
                 {
                     auto outputs = node->outputs();
                     AT_ASSERT(types.size() == outputs.size());
-                    for (const auto i : xsigma::irange(types.size()))
+                    for (const auto i : quarisma::irange(types.size()))
                     {
                         AT_ASSERT(outputs[i]->type()->isSubtypeOf(*TensorType::get()));
                         outputs[i]->setType(types[i]);
@@ -1827,9 +1827,9 @@ private:
         {
             if (auto type = input_type(0))
             {
-                if (type->scalarType() == xsigma::kHalf)
+                if (type->scalarType() == quarisma::kHalf)
                 {
-                    type = type->withScalarType(xsigma::kFloat);
+                    type = type->withScalarType(quarisma::kFloat);
                 }
                 type = type->withDim(1);
                 node->outputs()[0]->setType(type);
@@ -1972,7 +1972,7 @@ private:
         {
             if (auto list_size = determineListSize(node->namedInput(shape_input)))
             {
-                return tensor_types.xsigma(0)->withDim(list_size);
+                return tensor_types.quarisma(0)->withDim(list_size);
             }
             return nullptr;
         };
@@ -1980,14 +1980,14 @@ private:
         {
             if (node->matches("aten::type_as(Tensor self, Tensor other) -> Tensor"))
             {
-                return tensor_types.xsigma(0)->withScalarType(tensor_types.xsigma(1)->scalarType());
+                return tensor_types.quarisma(0)->withScalarType(tensor_types.quarisma(1)->scalarType());
             }
             else if (
                 node->matches("aten::view_as(Tensor(a) self, Tensor other) -> Tensor(a)") ||
                 node->matches("aten::expand_as(Tensor(a) self, Tensor other) -> Tensor(a)") ||
                 node->matches("aten::reshape_as(Tensor(a) self, Tensor other) -> Tensor(a)"))
             {
-                return tensor_types.xsigma(0)->withDim(tensor_types.xsigma(1)->dim());
+                return tensor_types.quarisma(0)->withDim(tensor_types.quarisma(1)->dim());
             }
             else if (
                 node->matches("aten::view(Tensor self, int[] size) -> Tensor") ||
@@ -2003,16 +2003,16 @@ private:
                          "aten::as_tensor(Tensor data, *, ScalarType? dtype, Device? device) -> "
                          "Tensor"))
             {
-                TypePtr input_type = node->inputs().xsigma(0)->type();
+                TypePtr input_type = node->inputs().quarisma(0)->type();
                 if (auto type = input_type->cast<TensorType>())
                 {
                     if (type->scalarType() && type->device())
                     {
-                        xsigma::ScalarType default_type   = *type->scalarType();
-                        xsigma::Device     default_device = *type->device();
+                        quarisma::ScalarType default_type   = *type->scalarType();
+                        quarisma::Device     default_device = *type->device();
                         if (auto dtype_index = node->schema().argumentIndexWithName("dtype"))
                         {
-                            auto inp = toIValue(node->inputs().xsigma(*dtype_index));
+                            auto inp = toIValue(node->inputs().quarisma(*dtype_index));
                             if (inp == std::nullopt)
                             {
                                 return nullptr;
@@ -2024,7 +2024,7 @@ private:
                         }
                         if (auto device_index = node->schema().argumentIndexWithName("device"))
                         {
-                            auto inp = toIValue(node->inputs().xsigma(*device_index));
+                            auto inp = toIValue(node->inputs().quarisma(*device_index));
                             if (inp == std::nullopt)
                             {
                                 return nullptr;
@@ -2054,7 +2054,7 @@ private:
             }
             else if (node->matches("aten::unsqueeze(Tensor self, int dim) -> Tensor"))
             {
-                auto& t = tensor_types.xsigma(0);
+                auto& t = tensor_types.quarisma(0);
                 if (!t->dim())
                 {
                     return t;
@@ -2066,37 +2066,37 @@ private:
                 node->matches(
                     "aten::diagonal(Tensor self, int offset, int dim1, int dim2) -> Tensor"))
             {
-                auto& t = tensor_types.xsigma(0);
+                auto& t = tensor_types.quarisma(0);
                 return t->dim() && *t->dim() > 0 ? t->withDim(*t->dim() - 1) : nullptr;
             }
             else if (node->matches("aten::matmul(Tensor self, Tensor other) -> Tensor"))
             {
-                if (!tensor_types.xsigma(0)->dim() || !tensor_types.xsigma(1)->dim())
+                if (!tensor_types.quarisma(0)->dim() || !tensor_types.quarisma(1)->dim())
                 {
                     return nullptr;
                 }
-                auto dim1 = *tensor_types.xsigma(0)->dim();
-                auto dim2 = *tensor_types.xsigma(1)->dim();
+                auto dim1 = *tensor_types.quarisma(0)->dim();
+                auto dim2 = *tensor_types.quarisma(1)->dim();
                 if (dim1 == 1 && dim2 == 1)
                 {
                     // Dot product
-                    return tensor_types.xsigma(0)->withDim(0);
+                    return tensor_types.quarisma(0)->withDim(0);
                     // NOLINTNEXTLINE(bugprone-branch-clone)
                 }
                 else if (dim1 == 2 && dim2 == 2)
                 {
                     // Matrix multiply
-                    return tensor_types.xsigma(0);
+                    return tensor_types.quarisma(0);
                 }
                 else if (dim1 == 1 && dim2 == 2)
                 {
                     // Unsqueeze + matrix multiply + squeeze
-                    return tensor_types.xsigma(0);
+                    return tensor_types.quarisma(0);
                 }
                 else if (dim1 == 2 && dim2 == 1)
                 {
                     // Matrix vector multiply
-                    return tensor_types.xsigma(1);
+                    return tensor_types.quarisma(1);
                 }
                 else
                 {
@@ -2112,20 +2112,20 @@ private:
             }
             else if (node->matches("aten::nonzero(Tensor self) -> Tensor"))
             {
-                return tensor_types.xsigma(0)->dimensionedOnly()->withScalarType(xsigma::kLong);
+                return tensor_types.quarisma(0)->dimensionedOnly()->withScalarType(quarisma::kLong);
             }
             else if (node->matches("aten::take(Tensor self, Tensor index) -> Tensor"))
             {
-                return tensor_types.xsigma(1)->dimensionedOnly()->withScalarType(
-                    tensor_types.xsigma(0)->scalarType());
+                return tensor_types.quarisma(1)->dimensionedOnly()->withScalarType(
+                    tensor_types.quarisma(0)->scalarType());
             }
             else if (node->matches("aten::diagflat(Tensor self, int offset) -> Tensor"))
             {
-                return tensor_types.xsigma(0)->withDim(2);
+                return tensor_types.quarisma(0)->withDim(2);
             }
             else if (node->matches("aten::diag(Tensor self, int diagonal) -> Tensor"))
             {
-                auto& t = tensor_types.xsigma(0);
+                auto& t = tensor_types.quarisma(0);
                 if (t->dim() && *t->dim() == 1)
                 {
                     return t->withDim(2);
@@ -2142,7 +2142,7 @@ private:
             else if (node->matches(
                          "aten::unfold(Tensor self, int dimension, int size, int step) -> Tensor"))
             {
-                auto& t = tensor_types.xsigma(0);
+                auto& t = tensor_types.quarisma(0);
                 if (!t->dim())
                 {
                     return nullptr;
@@ -2151,7 +2151,7 @@ private:
             }
             else if (node->matches("aten::polygamma(int n, Tensor self) -> Tensor"))
             {
-                return tensor_types.xsigma(0);
+                return tensor_types.quarisma(0);
             }
             return nullptr;
         };
@@ -2201,7 +2201,7 @@ private:
         }
         else if (node->matches("aten::pow(Tensor self, Scalar exponent) -> Tensor"))
         {
-            node->output()->setType(tensor_types.xsigma(0));
+            node->output()->setType(tensor_types.quarisma(0));
             return true;
         }
         else if (
@@ -2218,15 +2218,15 @@ private:
             }
             if (isIntegralType(*first_scalar_type, false) && isFloatingType(*second_scalar_type))
             {
-                auto default_dtype = xsigma::typeMetaToScalarType(caffe2::get_default_dtype());
+                auto default_dtype = quarisma::typeMetaToScalarType(caffe2::get_default_dtype());
                 auto type          = tensor_types[0]->withScalarType(default_dtype);
                 node->output()->setType(std::move(type));
                 return true;
             }
-            if (xsigma::ScalarType::Bool == *first_scalar_type &&
-                xsigma::ScalarType::Bool != *second_scalar_type)
+            if (quarisma::ScalarType::Bool == *first_scalar_type &&
+                quarisma::ScalarType::Bool != *second_scalar_type)
             {
-                auto result_type = xsigma::promoteTypes(*first_scalar_type, *second_scalar_type);
+                auto result_type = quarisma::promoteTypes(*first_scalar_type, *second_scalar_type);
                 auto type        = tensor_types[0]->withScalarType(result_type);
                 node->output()->setType(std::move(type));
                 return true;
@@ -2259,13 +2259,13 @@ private:
             node->matches("aten::sigmoid(Tensor self) -> Tensor") ||
             node->matches("aten::tanh(Tensor self) -> Tensor"))
         {
-            node->output()->setType(tensor_types.xsigma(0)->contiguous());
+            node->output()->setType(tensor_types.quarisma(0)->contiguous());
             return true;
         }
         else if (node->matches("aten::mm(Tensor self, Tensor mat2) -> Tensor"))
         {
-            auto lhs_type  = tensor_types.xsigma(0);
-            auto rhs_type  = tensor_types.xsigma(1);
+            auto lhs_type  = tensor_types.quarisma(0);
+            auto rhs_type  = tensor_types.quarisma(1);
             auto lhs_sizes = lhs_type->sizes().concrete_sizes().value();
             auto rhs_sizes = rhs_type->sizes().concrete_sizes().value();
             SHAPE_ASSERT(*lhs_type->sizes().size() == 2 && *rhs_type->sizes().size() == 2);
@@ -2273,17 +2273,17 @@ private:
                 TensorType::createContiguous(
                     *lhs_type->scalarType(),
                     *lhs_type->device(),
-                    xsigma::IntArrayRef{lhs_sizes[0], rhs_sizes[1]}));
+                    quarisma::IntArrayRef{lhs_sizes[0], rhs_sizes[1]}));
             return true;
         }
         else if (node->matches("aten::t(Tensor self) -> Tensor"))
         {
-            auto tp      = tensor_types.xsigma(0);
+            auto tp      = tensor_types.quarisma(0);
             auto sizes   = tp->sizes().concrete_sizes().value();
             auto strides = tp->strides().concrete_sizes().value();
             SHAPE_ASSERT(sizes.size() == 2);
-            std::swap(sizes.xsigma(0), sizes.xsigma(1));
-            std::swap(strides.xsigma(0), strides.xsigma(1));
+            std::swap(sizes.quarisma(0), sizes.quarisma(1));
+            std::swap(strides.quarisma(0), strides.quarisma(1));
             node->output()->setType(tp->withSizesStrides(sizes, strides));
             return true;
         }
@@ -2291,28 +2291,28 @@ private:
                      "aten::narrow(Tensor self, int dim, int start, int length) -> Tensor",
                      /*const_inputs=*/{attr::dim, attr::length}))
         {
-            auto    tp     = tensor_types.xsigma(0);
+            auto    tp     = tensor_types.quarisma(0);
             auto    sizes  = tp->sizes().concrete_sizes().value();
             int64_t dim    = node->get<int64_t>(attr::dim).value();
             int64_t length = node->get<int64_t>(attr::length).value();
             SHAPE_ASSERT(dim >= 0 && static_cast<size_t>(dim) < sizes.size());
-            sizes.xsigma(dim) = length;
+            sizes.quarisma(dim) = length;
             node->output()->setType(
                 tp->withSizesStrides(sizes, tp->strides().concrete_sizes().value()));
             return true;
         }
         else if (node->matches("aten::sum(Tensor self, *, int? dtype) -> Tensor"))
         {
-            node->output()->setType(tensor_types.xsigma(0)->withSizes({}));
+            node->output()->setType(tensor_types.quarisma(0)->withSizes({}));
             return true;
         }
         else if (node->matches(
                      "aten::sum(Tensor self, int[]? dim, bool keepdim, *, int? dtype) -> Tensor",
                      /*const_inputs=*/{attr::dim, attr::keepdim}))
         {
-            auto& tp      = tensor_types.xsigma(0);
+            auto& tp      = tensor_types.quarisma(0);
             auto  sizes   = tp->sizes().concrete_sizes().value();
-            auto  dims    = node->get<xsigma::List<int64_t>>(attr::dim).value();
+            auto  dims    = node->get<quarisma::List<int64_t>>(attr::dim).value();
             bool  keepdim = node->get<bool>(attr::keepdim).value();
             std::reverse(dims.begin(), dims.end());
             for (int64_t dim : dims)
@@ -2320,7 +2320,7 @@ private:
                 SHAPE_ASSERT(dim >= 0 && static_cast<size_t>(dim) < sizes.size());
                 if (keepdim)
                 {
-                    sizes.xsigma(dim) = 1;
+                    sizes.quarisma(dim) = 1;
                 }
                 else
                 {
@@ -2334,12 +2334,12 @@ private:
                      "aten::squeeze(Tensor self, int dim) -> Tensor",
                      /*const_inputs=*/attr::dim))
         {
-            auto&   tp      = tensor_types.xsigma(0);
+            auto&   tp      = tensor_types.quarisma(0);
             auto    sizes   = tp->sizes().concrete_sizes().value();
             auto    strides = tp->strides().concrete_sizes().value();
             int64_t dim     = wrapDim(node->get<int64_t>(attr::dim).value(), sizes);
             SHAPE_ASSERT(dim >= 0 && static_cast<size_t>(dim) < sizes.size());
-            if (sizes.xsigma(dim) == 1)
+            if (sizes.quarisma(dim) == 1)
             {
                 sizes.erase(sizes.begin() + dim);
                 strides.erase(strides.begin() + dim);
@@ -2351,14 +2351,14 @@ private:
                      "aten::unsqueeze(Tensor self, int dim) -> Tensor",
                      /*const_inputs=*/attr::dim))
         {
-            auto&   tp      = tensor_types.xsigma(0);
+            auto&   tp      = tensor_types.quarisma(0);
             auto    sizes   = tp->sizes().concrete_sizes().value();
             auto    strides = tp->strides().concrete_sizes().value();
             int64_t dim     = wrapDim(node->get<int64_t>(attr::dim).value(), sizes);
             SHAPE_ASSERT(dim >= 0 && static_cast<size_t>(dim) <= sizes.size());
             int64_t new_stride = dim >= static_cast<int64_t>(sizes.size())
                                      ? 1
-                                     : sizes.xsigma(dim) * strides.xsigma(dim);
+                                     : sizes.quarisma(dim) * strides.quarisma(dim);
             sizes.insert(sizes.begin() + dim, 1);
             strides.insert(strides.begin() + dim, new_stride);
             node->output()->setType(tp->withSizesStrides(sizes, strides));
@@ -2368,11 +2368,11 @@ private:
                      "aten::view(Tensor self, int[] size) -> Tensor",
                      /*const_inputs=*/attr::size))
         {
-            auto    sizes        = node->get<xsigma::List<int64_t>>(attr::size).value();
+            auto    sizes        = node->get<quarisma::List<int64_t>>(attr::size).value();
             bool    inferred     = false;
             size_t  inferred_idx = 0;
             int64_t size_product = 1;
-            for (const auto i : xsigma::irange(sizes.size()))
+            for (const auto i : quarisma::irange(sizes.size()))
             {
                 if (sizes.get(i) == -1)
                 {
@@ -2391,26 +2391,26 @@ private:
             {
                 SHAPE_ASSERT(size_product != 0);
                 int64_t numel          = 1;
-                auto    concrete_sizes = tensor_types.xsigma(0)->sizes().concrete_sizes().value();
+                auto    concrete_sizes = tensor_types.quarisma(0)->sizes().concrete_sizes().value();
                 for (int64_t s : concrete_sizes)
                     numel *= s;
                 int64_t inferred_size = numel / size_product;
                 sizes[inferred_idx]   = inferred_size;
             }
-            node->output()->setType(tensor_types.xsigma(0)->withSizes(sizes.vec()));
+            node->output()->setType(tensor_types.quarisma(0)->withSizes(sizes.vec()));
             return true;
         }
         else if (node->matches("aten::type_as(Tensor self, Tensor other) -> Tensor"))
         {
-            if (tensor_types.xsigma(0)->scalarType() == tensor_types.xsigma(1)->scalarType())
+            if (tensor_types.quarisma(0)->scalarType() == tensor_types.quarisma(1)->scalarType())
             {
                 node->output()->setType(node->namedInput(attr::self)->type());
             }
             else
             {
                 // This will be a copy, so the result will be contiguous
-                node->output()->setType(tensor_types.xsigma(1)->withSizes(
-                    tensor_types.xsigma(0)->sizes().concrete_sizes().value()));
+                node->output()->setType(tensor_types.quarisma(1)->withSizes(
+                    tensor_types.quarisma(0)->sizes().concrete_sizes().value()));
             }
             return true;
         }
@@ -2418,11 +2418,11 @@ private:
                      "aten::expand(Tensor self, int[] size, *, bool implicit) -> Tensor",
                      /*const_inputs=*/attr::size))
         {
-            auto tp              = tensor_types.xsigma(0);
-            auto sizesAndStrides = xsigma::inferExpandGeometry_dimvector(
+            auto tp              = tensor_types.quarisma(0);
+            auto sizesAndStrides = quarisma::inferExpandGeometry_dimvector(
                 tp->sizes().concrete_sizes().value(),
                 tp->strides().concrete_sizes().value(),
-                node->get<xsigma::List<int64_t>>(attr::size).value().vec());
+                node->get<quarisma::List<int64_t>>(attr::size).value().vec());
             node->output()->setType(
                 tp->withSizesStrides(sizesAndStrides.sizes, sizesAndStrides.strides));
             return true;
@@ -2431,8 +2431,8 @@ private:
                      "aten::index_select(Tensor self, int dim, Tensor index) -> Tensor",
                      /*const_inputs=*/attr::dim))
         {
-            auto    ten   = tensor_types.xsigma(0);
-            auto    index = tensor_types.xsigma(1);
+            auto    ten   = tensor_types.quarisma(0);
+            auto    index = tensor_types.quarisma(1);
             int64_t dim   = node->get<int64_t>(attr::dim).value();
             SHAPE_ASSERT(*index->sizes().size() == 1);
             SHAPE_ASSERT(dim >= 0 && static_cast<size_t>(dim) < ten->sizes().size());
@@ -2445,7 +2445,7 @@ private:
                      "aten::chunk(Tensor self, int chunks, int dim) -> Tensor[]",
                      /*const_inputs=*/{attr::chunks, attr::dim}))
         {
-            auto    input_type = tensor_types.xsigma(0);
+            auto    input_type = tensor_types.quarisma(0);
             auto    sizes      = input_type->sizes().concrete_sizes().value();
             auto    strides    = input_type->strides().concrete_sizes().value();
             int64_t dim        = node->get<int64_t>(attr::dim).value();
@@ -2462,16 +2462,16 @@ private:
             }
             return true;
         }
-        else if (node->kind() == ::xsigma::onnx::Shape)
+        else if (node->kind() == ::quarisma::onnx::Shape)
         {
             SHAPE_ASSERT(node->inputs().size() == 1 && node->outputs().size() == 1);
-            std::vector<int64_t> dim_vec = {(int64_t)*tensor_types.xsigma(0)->sizes().size()};
-            xsigma::IntArrayRef  dims(dim_vec);
+            std::vector<int64_t> dim_vec = {(int64_t)*tensor_types.quarisma(0)->sizes().size()};
+            quarisma::IntArrayRef  dims(dim_vec);
             node->output()->setType(
-                TensorType::createContiguous(xsigma::kLong, xsigma::kCPU, dims));
+                TensorType::createContiguous(quarisma::kLong, quarisma::kCPU, dims));
             return true;
         }
-        else if (node->kind() == ::xsigma::onnx::Reshape)
+        else if (node->kind() == ::quarisma::onnx::Reshape)
         {
             setUnshapedType(node);
             return true;
@@ -2500,7 +2500,7 @@ TypePtr unshapedTypeImpl(TypePtr type, TypeCache& unshaped_type_cache)
     {
         return TensorType::get();
     }
-    xsigma::ArrayRef<TypePtr> contained = type->containedTypes();
+    quarisma::ArrayRef<TypePtr> contained = type->containedTypes();
     if (contained.empty())
     {
         return type;
@@ -2528,7 +2528,7 @@ TypePtr getOrCreateUnshapedType(const TypePtr& type, TypeCache& unshaped_type_ca
 
 void EraseShapeInformation(const std::shared_ptr<Graph>& graph, TypeCache& unshaped_type_cache);
 
-void EraseShapeInformation(xsigma::ArrayRef<Value*> vals, TypeCache& unshaped_type_cache)
+void EraseShapeInformation(quarisma::ArrayRef<Value*> vals, TypeCache& unshaped_type_cache)
 {
     for (Value* v : vals)
     {

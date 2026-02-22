@@ -37,7 +37,7 @@ def set_field(config, name, value):
 
 class CoordescTuner:
     """
-    The coordinate descent tuner. Tune one field/coordinate xsigma a time.
+    The coordinate descent tuner. Tune one field/coordinate quarisma a time.
 
     TODO will it be necessary to tune multiple fields simultaneously.
 

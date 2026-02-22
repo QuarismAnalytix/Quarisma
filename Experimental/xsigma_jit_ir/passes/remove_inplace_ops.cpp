@@ -52,7 +52,7 @@ void RemoveInplaceOps(Block* block)
         if (isInplaceOp(node))
         {
             // create a replacement out of place op
-            auto newNode = graph->create(inPlaceToOutOfPlace.xsigma(node->kind()));
+            auto newNode = graph->create(inPlaceToOutOfPlace.quarisma(node->kind()));
             newNode->insertBefore(node);
             newNode->copyMetadata(node);
             // copy inputs
@@ -64,7 +64,7 @@ void RemoveInplaceOps(Block* block)
             int additionalInputCount = 0;
             if (expectedInputCount.find(node->kind()) != expectedInputCount.end())
             {
-                additionalInputCount = expectedInputCount.xsigma(node->kind()) -
+                additionalInputCount = expectedInputCount.quarisma(node->kind()) -
                                        static_cast<int>(newNode->inputs().size());
             }
 
@@ -122,14 +122,14 @@ void ImplicitCastForBinaryInplaceOps(Block* b)
             (it->kind() == aten::mul_) || (it->kind() == aten::div_))
         {
             auto originalInputs = it->inputs();
-            if (originalInputs.xsigma(0) == originalInputs.xsigma(1))
+            if (originalInputs.quarisma(0) == originalInputs.quarisma(1))
             {
                 continue;
             }
 
-            auto shape_node = originalInputs.xsigma(0)->node();
+            auto shape_node = originalInputs.quarisma(0)->node();
             if ((shape_node->kind() == prim::NumToTensor) &&
-                (shape_node->inputs().xsigma(0)->node()->kind() == aten::size))
+                (shape_node->inputs().quarisma(0)->node()->kind() == aten::size))
             {
                 std::cerr << "In-place op on output of tensor.shape. See "
                              "https://pytorch.org/docs/main/onnx.html#"
@@ -137,8 +137,8 @@ void ImplicitCastForBinaryInplaceOps(Block* b)
                           << '\n';
             }
 
-            TensorTypePtr firstInp_tensor  = originalInputs.xsigma(0)->type()->cast<TensorType>();
-            TensorTypePtr secondInp_tensor = originalInputs.xsigma(1)->type()->cast<TensorType>();
+            TensorTypePtr firstInp_tensor  = originalInputs.quarisma(0)->type()->cast<TensorType>();
+            TensorTypePtr secondInp_tensor = originalInputs.quarisma(1)->type()->cast<TensorType>();
             if (!(firstInp_tensor) || !(secondInp_tensor) ||
                 !(firstInp_tensor->scalarType().has_value()))
             {
@@ -146,9 +146,9 @@ void ImplicitCastForBinaryInplaceOps(Block* b)
             }
             auto newInputNode = it->owningGraph()->create(aten::type_as, 1);
             newInputNode->insertBefore(*it);
-            newInputNode->addInput(originalInputs.xsigma(1));
-            newInputNode->addInput(originalInputs.xsigma(0));
-            it->replaceInput(1, newInputNode->outputs().xsigma(0));
+            newInputNode->addInput(originalInputs.quarisma(1));
+            newInputNode->addInput(originalInputs.quarisma(0));
+            it->replaceInput(1, newInputNode->outputs().quarisma(0));
         }
     }
 }

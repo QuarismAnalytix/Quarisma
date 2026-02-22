@@ -1,11 +1,11 @@
 #pragma once
 #include "profiler/common/api.h"
 
-namespace xsigma::profiler::impl
+namespace quarisma::profiler::impl
 {
 
 using CallBackFnPtr =
-    void (*)(const ProfilerConfig& config, const std::unordered_set<xsigma::RecordScope>& scopes);
+    void (*)(const ProfilerConfig& config, const std::unordered_set<quarisma::RecordScope>& scopes);
 
 struct PushPRIVATEUSE1CallbacksStub
 {
@@ -31,7 +31,7 @@ private:
     CallBackFnPtr push_privateuse1_callbacks_fn = nullptr;
 };
 
-extern XSIGMA_API struct PushPRIVATEUSE1CallbacksStub pushPRIVATEUSE1CallbacksStub;
+extern QUARISMA_API struct PushPRIVATEUSE1CallbacksStub pushPRIVATEUSE1CallbacksStub;
 
 struct RegisterPRIVATEUSE1Observer
 {
@@ -43,4 +43,4 @@ struct RegisterPRIVATEUSE1Observer
 
 #define REGISTER_PRIVATEUSE1_OBSERVER(name, fn) \
     static RegisterPRIVATEUSE1Observer name##__register(name, fn);
-}  // namespace xsigma::profiler::impl
+}  // namespace quarisma::profiler::impl

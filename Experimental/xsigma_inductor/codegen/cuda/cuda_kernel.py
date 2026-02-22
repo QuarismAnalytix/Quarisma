@@ -484,7 +484,7 @@ class CUDATemplateKernel(CUDAKernel):
     def stride(self, node: IRNode, index: int, default_value: int = 0) -> str:
         """
         Hook called from template code to get the stride of an arg.
-        Generates code which represents stride of a given node xsigma index.
+        Generates code which represents stride of a given node quarisma index.
         If node is None, returns default_value.
 
         TODO: Will add needed args to pass it in if it is dynamic.

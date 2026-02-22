@@ -1843,7 +1843,7 @@ class BuiltinVariable(VariableTracker):
             # If the object implements a __iter__ method, inlining effectively forwards the call to another iter call
             # (e.g. when __iter__ just returns iter(self.list)) or return a user-defined iterator.
             # If the object implements a __getitem__ method, iter(...) will call obj.__getitem__()
-            # with an integer argument starting xsigma 0, until __getitem__ raises IndexError
+            # with an integer argument starting quarisma 0, until __getitem__ raises IndexError
             ret = variables.UserFunctionVariable(
                 polyfills.builtins.iter_
             ).call_function(tx, [obj, *args], {})
@@ -1960,7 +1960,7 @@ class BuiltinVariable(VariableTracker):
             raise_args_mismatch(
                 tx,
                 f"{user_cls.__name__}.fromkeys",
-                "xsigma least 1 args",
+                "quarisma least 1 args",
                 f"{len(args)} args",
             )
         if len(args) == 1:

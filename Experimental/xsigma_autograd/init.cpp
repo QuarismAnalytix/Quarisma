@@ -1,9 +1,9 @@
-#include <XSigma/PythonTorchFunctionTLS.h>
-#include <XSigma/SavedTensorHooks.h>
-#include <XSigma/SequenceNumber.h>
-#include <XSigma/autocast_mode.h>
-#include <XSigma/core/PythonFallbackKernel.h>
-#include <XSigma/record_function.h>
+#include <Quarisma/PythonTorchFunctionTLS.h>
+#include <Quarisma/SavedTensorHooks.h>
+#include <Quarisma/SequenceNumber.h>
+#include <Quarisma/autocast_mode.h>
+#include <Quarisma/core/PythonFallbackKernel.h>
+#include <Quarisma/record_function.h>
 #include <torch/csrc/Exceptions.h>
 #include <torch/csrc/autograd/VariableTypeUtils.h>
 #include <torch/csrc/autograd/autograd.h>
@@ -29,10 +29,10 @@
 #include <torch/csrc/utils/pycfunction_helpers.h>
 #include <torch/csrc/utils/python_raii.h>
 #include <torch/csrc/utils/python_torch_function_mode.h>
-#include <xsigma/core/DeviceType.h>
-#include <xsigma/core/InferenceMode.h>
-#include <xsigma/core/ScalarType.h>
-#include <xsigma/core/impl/PythonDispatcherTLS.h>
+#include <quarisma/core/DeviceType.h>
+#include <quarisma/core/InferenceMode.h>
+#include <quarisma/core/ScalarType.h>
+#include <quarisma/core/impl/PythonDispatcherTLS.h>
 
 #include <set>
 #include <unordered_set>
@@ -50,25 +50,25 @@ namespace
 struct DisableFuncTorch
 {
     DisableFuncTorch()
-        : front_guard_(xsigma::DispatchKey::FuncTorchDynamicLayerFrontMode),
-          back_guard_(xsigma::DispatchKey::FuncTorchDynamicLayerBackMode)
+        : front_guard_(quarisma::DispatchKey::FuncTorchDynamicLayerFrontMode),
+          back_guard_(quarisma::DispatchKey::FuncTorchDynamicLayerBackMode)
     {
     }
-    xsigma::impl::ExcludeDispatchKeyGuard front_guard_;
-    xsigma::impl::ExcludeDispatchKeyGuard back_guard_;
+    quarisma::impl::ExcludeDispatchKeyGuard front_guard_;
+    quarisma::impl::ExcludeDispatchKeyGuard back_guard_;
 };
 
 struct DisableAutocast
 {
-    xsigma::impl::ExcludeDispatchKeyGuard guard_{xsigma::autocast_dispatch_keyset};
+    quarisma::impl::ExcludeDispatchKeyGuard guard_{quarisma::autocast_dispatch_keyset};
 };
 
 struct EnableTorchFunction
 {
-    EnableTorchFunction() : old_(xsigma::impl::PythonTorchFunctionTLS::get_disabled_state())
+    EnableTorchFunction() : old_(quarisma::impl::PythonTorchFunctionTLS::get_disabled_state())
     {
-        xsigma::impl::PythonTorchFunctionTLS::set_disabled_state(
-            xsigma::impl::TorchFunctionDisabledState::ENABLED);
+        quarisma::impl::PythonTorchFunctionTLS::set_disabled_state(
+            quarisma::impl::TorchFunctionDisabledState::ENABLED);
     }
 
     EnableTorchFunction(const EnableTorchFunction& other)            = delete;
@@ -76,29 +76,29 @@ struct EnableTorchFunction
     EnableTorchFunction& operator=(const EnableTorchFunction& other) = delete;
     EnableTorchFunction& operator=(EnableTorchFunction&& other)      = delete;
 
-    ~EnableTorchFunction() { xsigma::impl::PythonTorchFunctionTLS::set_disabled_state(old_); }
-    xsigma::impl::TorchFunctionDisabledState old_;
+    ~EnableTorchFunction() { quarisma::impl::PythonTorchFunctionTLS::set_disabled_state(old_); }
+    quarisma::impl::TorchFunctionDisabledState old_;
 };
 
 struct EnablePythonDispatcher
 {
-    EnablePythonDispatcher() : old_(xsigma::impl::PythonDispatcherTLS::get_state())
+    EnablePythonDispatcher() : old_(quarisma::impl::PythonDispatcherTLS::get_state())
     {
-        xsigma::impl::PythonDispatcherTLS::set_state(getPyInterpreter());
+        quarisma::impl::PythonDispatcherTLS::set_state(getPyInterpreter());
     }
     EnablePythonDispatcher(const EnablePythonDispatcher& other)            = delete;
     EnablePythonDispatcher(EnablePythonDispatcher&& other)                 = delete;
     EnablePythonDispatcher& operator=(const EnablePythonDispatcher& other) = delete;
     EnablePythonDispatcher& operator=(EnablePythonDispatcher&& other)      = delete;
 
-    ~EnablePythonDispatcher() { xsigma::impl::PythonDispatcherTLS::set_state(old_); }
-    xsigma::impl::PyInterpreter* old_;
+    ~EnablePythonDispatcher() { quarisma::impl::PythonDispatcherTLS::set_state(old_); }
+    quarisma::impl::PyInterpreter* old_;
 };
 
 struct EnablePreDispatch
 {
-    EnablePreDispatch() : guard_(xsigma::DispatchKey::PreDispatch) {}
-    xsigma::impl::IncludeDispatchKeyGuard guard_;
+    EnablePreDispatch() : guard_(quarisma::DispatchKey::PreDispatch) {}
+    quarisma::impl::IncludeDispatchKeyGuard guard_;
 };
 
 }  // namespace
@@ -146,10 +146,10 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
     if (!ParameterClass)
         return nullptr;
 
-    py::class_<xsigma::TensorGeometry>(m, "TensorGeometry")
-        .def("sizes", &xsigma::TensorGeometry::sizes)
-        .def("strides", &xsigma::TensorGeometry::strides)
-        .def("storage_offset", &xsigma::TensorGeometry::storage_offset);
+    py::class_<quarisma::TensorGeometry>(m, "TensorGeometry")
+        .def("sizes", &quarisma::TensorGeometry::sizes)
+        .def("strides", &quarisma::TensorGeometry::strides)
+        .def("storage_offset", &quarisma::TensorGeometry::storage_offset);
 
     py::class_<LegacyEvent>(m, "ProfilerEvent")
         .def("kind", &LegacyEvent::kindStr)
@@ -174,28 +174,28 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
         .def("flops", &LegacyEvent::flops)
         .def("is_async", &LegacyEvent::isAsync);
 
-    py::enum_<xsigma::DeviceType>(m, "DeviceType")
-        .value("CPU", xsigma::DeviceType::CPU)
-        .value("CUDA", xsigma::DeviceType::CUDA)
-        .value("MKLDNN", xsigma::DeviceType::MKLDNN)
-        .value("OPENGL", xsigma::DeviceType::OPENGL)
-        .value("OPENCL", xsigma::DeviceType::OPENCL)
-        .value("IDEEP", xsigma::DeviceType::IDEEP)
-        .value("HIP", xsigma::DeviceType::HIP)
-        .value("FPGA", xsigma::DeviceType::FPGA)
-        .value("MAIA", xsigma::DeviceType::MAIA)
-        .value("XLA", xsigma::DeviceType::XLA)
-        .value("Vulkan", xsigma::DeviceType::Vulkan)
-        .value("Metal", xsigma::DeviceType::Metal)
-        .value("XPU", xsigma::DeviceType::XPU)
-        .value("MPS", xsigma::DeviceType::MPS)
-        .value("MTIA", xsigma::DeviceType::MTIA)
-        .value("Meta", xsigma::DeviceType::Meta)
-        .value("HPU", xsigma::DeviceType::HPU)
-        .value("VE", xsigma::DeviceType::VE)
-        .value("Lazy", xsigma::DeviceType::Lazy)
-        .value("IPU", xsigma::DeviceType::IPU)
-        .value("PrivateUse1", xsigma::DeviceType::PrivateUse1);
+    py::enum_<quarisma::DeviceType>(m, "DeviceType")
+        .value("CPU", quarisma::DeviceType::CPU)
+        .value("CUDA", quarisma::DeviceType::CUDA)
+        .value("MKLDNN", quarisma::DeviceType::MKLDNN)
+        .value("OPENGL", quarisma::DeviceType::OPENGL)
+        .value("OPENCL", quarisma::DeviceType::OPENCL)
+        .value("IDEEP", quarisma::DeviceType::IDEEP)
+        .value("HIP", quarisma::DeviceType::HIP)
+        .value("FPGA", quarisma::DeviceType::FPGA)
+        .value("MAIA", quarisma::DeviceType::MAIA)
+        .value("XLA", quarisma::DeviceType::XLA)
+        .value("Vulkan", quarisma::DeviceType::Vulkan)
+        .value("Metal", quarisma::DeviceType::Metal)
+        .value("XPU", quarisma::DeviceType::XPU)
+        .value("MPS", quarisma::DeviceType::MPS)
+        .value("MTIA", quarisma::DeviceType::MTIA)
+        .value("Meta", quarisma::DeviceType::Meta)
+        .value("HPU", quarisma::DeviceType::HPU)
+        .value("VE", quarisma::DeviceType::VE)
+        .value("Lazy", quarisma::DeviceType::Lazy)
+        .value("IPU", quarisma::DeviceType::IPU)
+        .value("PrivateUse1", quarisma::DeviceType::PrivateUse1);
 
     using torch::autograd::CreationMeta;
     py::enum_<CreationMeta>(m, "CreationMeta")
@@ -255,7 +255,7 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
                     e.concreteInputs().begin(),
                     e.concreteInputs().end(),
                     std::back_inserter(as_pyobj),
-                    [](const xsigma::IValue& val) { return torch::jit::toPyObject(val); });
+                    [](const quarisma::IValue& val) { return torch::jit::toPyObject(val); });
                 return as_pyobj;
             })
         .def(
@@ -302,15 +302,15 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
         .def("metadata_json", [](const KinetoEvent& e) { return e.metadataJson(); });
 
     m.def("_soft_assert_raises", &setSoftAssertRaises);
-    m.def("_get_sequence_nr", &xsigma::sequence_number::peek);
+    m.def("_get_sequence_nr", &quarisma::sequence_number::peek);
 
     py::class_<ProfilerResult>(m, "_ProfilerResult")
         .def("trace_start_ns", &ProfilerResult::trace_start_ns)
         .def("events", &ProfilerResult::events)
         .def("experimental_event_tree", &ProfilerResult::event_tree)
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
         .def("save", &ProfilerResult::save)
-#endif  // XSIGMA_HAS_KINETO
+#endif  // QUARISMA_HAS_KINETO
         ;
 
     m.def(
@@ -318,15 +318,15 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
         &enableProfiler,
         py::arg("config"),
         py::arg("activities"),
-        py::arg("scopes") = std::unordered_set<xsigma::RecordScope>());
+        py::arg("scopes") = std::unordered_set<quarisma::RecordScope>());
     m.def("_disable_profiler", disableProfiler);
     m.def("_prepare_profiler", prepareProfiler, py::call_guard<py::gil_scoped_release>());
     m.def(
         "_toggle_collection_dynamic",
         toggleCollectionDynamic,
         py::call_guard<py::gil_scoped_release>());
-    m.def("_add_metadata_json", addMetadataJson);  // Only if `XSIGMA_HAS_KINETO` is set
-    m.def("_kineto_step", profilerStep);           // Only if `XSIGMA_HAS_KINETO` is set
+    m.def("_add_metadata_json", addMetadataJson);  // Only if `QUARISMA_HAS_KINETO` is set
+    m.def("_kineto_step", profilerStep);           // Only if `QUARISMA_HAS_KINETO` is set
     m.def("kineto_available", []() { return torch::profiler::kKinetoAvailable; });
 
     // NOTICE: These record functions are not torch operators and may not show up
@@ -340,20 +340,20 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
         {
             using torch::autograd::profiler::PythonRecordFunction;
             auto python_rec =
-                xsigma::make_intrusive<PythonRecordFunction>(xsigma::RecordScope::USER_SCOPE);
+                quarisma::make_intrusive<PythonRecordFunction>(quarisma::RecordScope::USER_SCOPE);
             auto* rec = &python_rec->record;
             if (rec->isActive())
             {
                 if (rec->needsInputs())
                 {
-                    auto iv_inputs = std::vector<xsigma::IValue>();
+                    auto iv_inputs = std::vector<quarisma::IValue>();
                     for (const auto& arg : args)
                     {
                         iv_inputs.push_back(torch::jit::toTypeInferredIValue(arg));
                     }
                     rec->before(
                         name,
-                        xsigma::ArrayRef<const xsigma::IValue>(iv_inputs.data(), iv_inputs.size()));
+                        quarisma::ArrayRef<const quarisma::IValue>(iv_inputs.data(), iv_inputs.size()));
                 }
                 else
                 {
@@ -382,33 +382,33 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
         {
             std::set<torch::profiler::impl::activity_type_enum> activities{
                 torch::profiler::impl::activity_type_enum::CPU};
-#if XSIGMA_HAS_KINETO && (!defined(LIBKINETO_NOCUPTI) || !defined(LIBKINETO_NOROCTRACER))
-            if (xsigma::hasMTIA())
+#if QUARISMA_HAS_KINETO && (!defined(LIBKINETO_NOCUPTI) || !defined(LIBKINETO_NOROCTRACER))
+            if (quarisma::hasMTIA())
             {
                 activities.insert(torch::profiler::impl::activity_type_enum::MTIA);
             }
-            if (xsigma::hasHPU())
+            if (quarisma::hasHPU())
             {
                 activities.insert(torch::profiler::impl::activity_type_enum::HPU);
             }
-            if (xsigma::getNumGPUs() > 0)
+            if (quarisma::getNumGPUs() > 0)
             {
                 activities.insert(torch::profiler::impl::activity_type_enum::CUDA);
             }
-#elif defined(XSIGMA_HAS_KINETO)
-            if (xsigma::hasXPU())
+#elif defined(QUARISMA_HAS_KINETO)
+            if (quarisma::hasXPU())
             {
                 activities.insert(torch::profiler::impl::activity_type_enum::XPU);
             }
-            if (xsigma::hasHPU())
+            if (quarisma::hasHPU())
             {
                 activities.insert(torch::profiler::impl::activity_type_enum::HPU);
             }
-            if (xsigma::hasMTIA())
+            if (quarisma::hasMTIA())
             {
                 activities.insert(torch::profiler::impl::activity_type_enum::MTIA);
             }
-            if (xsigma::get_privateuse1_backend() != "privateuseone")
+            if (quarisma::get_privateuse1_backend() != "privateuseone")
             {
                 activities.insert(torch::profiler::impl::activity_type_enum::PrivateUse1);
             }
@@ -418,17 +418,17 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
 
     m.def(
         "_unsafe_set_version_counter",
-        [](const std::vector<xsigma::Tensor>& tensors, const std::vector<int64_t>& versions)
+        [](const std::vector<quarisma::Tensor>& tensors, const std::vector<int64_t>& versions)
         {
             auto tensors_len  = tensors.size();
             auto versions_len = versions.size();
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 tensors_len == versions_len,
                 "tensors_len=",
                 tensors_len,
                 ", versions_len=",
                 versions_len);
-            for (const auto i : xsigma::irange(tensors_len))
+            for (const auto i : quarisma::irange(tensors_len))
             {
                 auto vc = torch::autograd::impl::version_counter(tensors[i]);
                 vc.set_version(versions[i]);
@@ -443,34 +443,34 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
         py::arg("profiler_disable_options") = ProfilerDisableOptions());
     m.def("_profiler_enabled", profilerEnabled);
     m.def("_profiler_type", torch::profiler::impl::profilerType);
-    m.def("_enable_record_function", [](bool enable) { xsigma::enableRecordFunction(enable); });
+    m.def("_enable_record_function", [](bool enable) { quarisma::enableRecordFunction(enable); });
     m.def(
         "_set_empty_test_observer",
         [](bool is_global, double sampling_prob)
         {
-            auto cb = xsigma::RecordFunctionCallback(nullptr).needsInputs(true).samplingProb(
+            auto cb = quarisma::RecordFunctionCallback(nullptr).needsInputs(true).samplingProb(
                 sampling_prob);
             if (is_global)
             {
-                xsigma::addGlobalCallback(cb);
+                quarisma::addGlobalCallback(cb);
             }
             else
             {
-                xsigma::addThreadLocalCallback(cb);
+                quarisma::addThreadLocalCallback(cb);
             }
         });
-    m.def("_clear_callbacks", []() { xsigma::clearCallbacks(); });
-    m.def("_saved_tensors_hooks_is_enabled", xsigma::SavedTensorDefaultHooks::is_enabled);
-    m.def("_saved_tensors_hooks_enable", xsigma::SavedTensorDefaultHooks::enable);
+    m.def("_clear_callbacks", []() { quarisma::clearCallbacks(); });
+    m.def("_saved_tensors_hooks_is_enabled", quarisma::SavedTensorDefaultHooks::is_enabled);
+    m.def("_saved_tensors_hooks_enable", quarisma::SavedTensorDefaultHooks::enable);
     m.def(
         "_saved_tensors_hooks_disable",
-        xsigma::SavedTensorDefaultHooks::disable,
+        quarisma::SavedTensorDefaultHooks::disable,
         py::arg("error_message"),
         py::arg("fail_if_non_empty") = true);
-    m.def("_saved_tensors_hooks_set_tracing", xsigma::SavedTensorDefaultHooks::set_tracing);
+    m.def("_saved_tensors_hooks_set_tracing", quarisma::SavedTensorDefaultHooks::set_tracing);
     m.def(
         "_saved_tensors_hooks_get_disabled_error_message",
-        xsigma::SavedTensorDefaultHooks::get_disabled_error_message);
+        quarisma::SavedTensorDefaultHooks::get_disabled_error_message);
     m.def(
         "_push_saved_tensors_default_hooks",
         [](py::function& pack_hook, py::function& unpack_hook)
@@ -482,7 +482,7 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
         "_top_saved_tensors_default_hooks",
         [](bool ignore_is_tracing) -> std::optional<std::pair<py::function, py::function>>
         {
-            auto out = xsigma::SavedTensorDefaultHooks::get_hooks(ignore_is_tracing);
+            auto out = quarisma::SavedTensorDefaultHooks::get_hooks(ignore_is_tracing);
 
             if (!out.has_value())
             {
@@ -503,19 +503,19 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
 
     m.def(
         "_get_creation_meta",
-        [](const xsigma::Tensor& t)
+        [](const quarisma::Tensor& t)
         {
             auto* meta = torch::autograd::impl::get_view_autograd_meta(t);
-            XSIGMA_CHECK(meta != nullptr);
+            QUARISMA_CHECK(meta != nullptr);
             return meta->get_creation_meta();
         });
 
     m.def(
         "_set_creation_meta",
-        [](const xsigma::Tensor& t, CreationMeta new_creation_meta)
+        [](const quarisma::Tensor& t, CreationMeta new_creation_meta)
         {
             auto* meta = torch::autograd::impl::get_view_autograd_meta(t);
-            XSIGMA_CHECK(meta != nullptr);
+            QUARISMA_CHECK(meta != nullptr);
             meta->set_creation_meta(new_creation_meta);
         });
 
@@ -523,7 +523,7 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
         "_get_current_graph_task_keep_graph",
         []() { return torch::autograd::get_current_graph_task_keep_graph(); });
 
-    m.def("_get_data_attr", [](const xsigma::Tensor& t) { return t.variable_data(); });
+    m.def("_get_data_attr", [](const quarisma::Tensor& t) { return t.variable_data(); });
 
     _C_m.def(
         "_register_py_class_for_device",
@@ -576,13 +576,13 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
 
     _C_m.def("_activate_gpu_trace", []() { activateGPUTrace(); });
 
-    py_context_manager_DEPRECATED<xsigma::InferenceMode, bool>(_C_m, "_InferenceMode");
-    py_context_manager<xsigma::impl::RestorePythonTLSSnapshot>(_C_m, "_RestorePythonTLSSnapshot");
+    py_context_manager_DEPRECATED<quarisma::InferenceMode, bool>(_C_m, "_InferenceMode");
+    py_context_manager<quarisma::impl::RestorePythonTLSSnapshot>(_C_m, "_RestorePythonTLSSnapshot");
 
     py_context_manager_DEPRECATED<torch::DisableTorchDispatch>(_C_m, "_DisableTorchDispatch");
     py_context_manager_DEPRECATED<EnableTorchFunction>(_C_m, "_EnableTorchFunction");
     py_context_manager_DEPRECATED<EnablePythonDispatcher>(_C_m, "_EnablePythonDispatcher");
-    py_context_manager<xsigma::impl::DisablePythonDispatcher>(_C_m, "_DisablePythonDispatcher");
+    py_context_manager<quarisma::impl::DisablePythonDispatcher>(_C_m, "_DisablePythonDispatcher");
     py_context_manager<EnablePreDispatch>(_C_m, "_EnablePreDispatch");
     py_context_manager_DEPRECATED<DisableFuncTorch>(_C_m, "_DisableFuncTorch");
     py_context_manager<DisableAutocast>(_C_m, "_DisableAutocast");
@@ -591,7 +591,7 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused)
             py::init(
                 []() -> torch::autograd::SavedVariable
                 {
-                    XSIGMA_CHECK(
+                    QUARISMA_CHECK(
                         false, "Trying to create a SavedTensor object from Python is forbidden.");
                 }))
         .def(
@@ -655,16 +655,16 @@ static PyObject* set_autocast_enabled(PyObject* _unused, PyObject* args, PyObjec
          "set_autocast_enabled(bool enabled)"});  // this signature is deprecated.
     ParsedArgs<2> parsed_args;
     auto          r = parser.parse(args, kwargs, parsed_args);
-    // Set xsigma::kCUDA as default value to prevent BC-breaking changes.
-    xsigma::DeviceType device_type = xsigma::kCUDA;
+    // Set quarisma::kCUDA as default value to prevent BC-breaking changes.
+    quarisma::DeviceType device_type = quarisma::kCUDA;
     int                enabled_id  = 0;
     if (r.idx == 0)
     {
-        device_type = xsigma::Device(r.string(0)).type();
+        device_type = quarisma::Device(r.string(0)).type();
         enabled_id  = 1;
     }
     auto enabled = r.toBool(enabled_id);
-    xsigma::autocast::set_autocast_enabled(device_type, enabled);
+    quarisma::autocast::set_autocast_enabled(device_type, enabled);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -677,13 +677,13 @@ static PyObject* is_autocast_enabled(PyObject* _unused, PyObject* args, PyObject
          "is_autocast_enabled()"});  // this signature is deprecated.
     ParsedArgs<1> parsed_args;
     auto          r = parser.parse(args, kwargs, parsed_args);
-    // Set xsigma::kCUDA as default value to prevent BC-breaking changes.
-    xsigma::DeviceType device_type = xsigma::kCUDA;
+    // Set quarisma::kCUDA as default value to prevent BC-breaking changes.
+    quarisma::DeviceType device_type = quarisma::kCUDA;
     if (r.idx == 0)
     {
-        device_type = xsigma::Device(r.string(0)).type();
+        device_type = quarisma::Device(r.string(0)).type();
     }
-    if (xsigma::autocast::is_autocast_enabled(device_type))
+    if (quarisma::autocast::is_autocast_enabled(device_type))
     {
         Py_RETURN_TRUE;
     }
@@ -700,8 +700,8 @@ static PyObject* get_autocast_dtype(PyObject* _unused, PyObject* args, PyObject*
     static PythonArgParser parser({"get_autocast_dtype(std::string_view device_type)"});
     ParsedArgs<1>          parsed_args;
     auto                   r             = parser.parse(args, kwargs, parsed_args);
-    auto                   device_type   = xsigma::Device(r.string(0)).type();
-    xsigma::ScalarType     current_dtype = xsigma::autocast::get_autocast_dtype(device_type);
+    auto                   device_type   = quarisma::Device(r.string(0)).type();
+    quarisma::ScalarType     current_dtype = quarisma::autocast::get_autocast_dtype(device_type);
     return utils::wrap(current_dtype);
     END_HANDLE_TH_ERRORS
 }
@@ -713,9 +713,9 @@ static PyObject* set_autocast_dtype(PyObject* _unused, PyObject* args, PyObject*
         {"set_autocast_dtype(std::string_view device_type, ScalarType dtype)"});
     ParsedArgs<2> parsed_args;
     auto          r           = parser.parse(args, kwargs, parsed_args);
-    auto          device_type = xsigma::Device(r.string(0)).type();
+    auto          device_type = quarisma::Device(r.string(0)).type();
     auto          dtype       = r.scalartype(1);
-    xsigma::autocast::set_autocast_dtype(device_type, dtype);
+    quarisma::autocast::set_autocast_dtype(device_type, dtype);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -723,13 +723,13 @@ static PyObject* set_autocast_dtype(PyObject* _unused, PyObject* args, PyObject*
 static PyObject* is_any_autocast_enabled(PyObject* _unused, PyObject* arg)
 {
     HANDLE_TH_ERRORS
-    if (xsigma::autocast::is_autocast_enabled(xsigma::kCPU) ||
-        xsigma::autocast::is_autocast_enabled(xsigma::kCUDA) ||
-        xsigma::autocast::is_autocast_enabled(xsigma::kXPU) ||
-        xsigma::autocast::is_autocast_enabled(xsigma::kIPU) ||
-        xsigma::autocast::is_autocast_enabled(xsigma::kXLA) ||
-        xsigma::autocast::is_autocast_enabled(xsigma::kHPU) ||
-        xsigma::autocast::is_autocast_enabled(xsigma::kPrivateUse1))
+    if (quarisma::autocast::is_autocast_enabled(quarisma::kCPU) ||
+        quarisma::autocast::is_autocast_enabled(quarisma::kCUDA) ||
+        quarisma::autocast::is_autocast_enabled(quarisma::kXPU) ||
+        quarisma::autocast::is_autocast_enabled(quarisma::kIPU) ||
+        quarisma::autocast::is_autocast_enabled(quarisma::kXLA) ||
+        quarisma::autocast::is_autocast_enabled(quarisma::kHPU) ||
+        quarisma::autocast::is_autocast_enabled(quarisma::kPrivateUse1))
     {
         Py_RETURN_TRUE;
     }
@@ -746,8 +746,8 @@ static PyObject* is_autocast_available(PyObject* _unused, PyObject* args, PyObje
     static PythonArgParser parser({"_is_autocast_available(std::string_view device_type)"});
     ParsedArgs<1>          parsed_args;
     auto                   r           = parser.parse(args, kwargs, parsed_args);
-    auto                   device_type = xsigma::Device(r.string(0)).type();
-    if (xsigma::autocast::is_autocast_available(device_type))
+    auto                   device_type = quarisma::Device(r.string(0)).type();
+    if (quarisma::autocast::is_autocast_available(device_type))
     {
         Py_RETURN_TRUE;
     }
@@ -765,7 +765,7 @@ static PyObject* set_autocast_cpu_enabled(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.set_autocast_cpu_enabled(enabled) is deprecated. Please use "
         "torch.set_autocast_enabled('cpu', enabled) instead.")
-    xsigma::autocast::set_autocast_enabled(xsigma::kCPU, arg == Py_True);
+    quarisma::autocast::set_autocast_enabled(quarisma::kCPU, arg == Py_True);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -776,7 +776,7 @@ static PyObject* is_autocast_cpu_enabled(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.is_autocast_cpu_enabled() is deprecated. Please use "
         "torch.is_autocast_enabled('cpu') instead.")
-    if (xsigma::autocast::is_autocast_enabled(xsigma::kCPU))
+    if (quarisma::autocast::is_autocast_enabled(quarisma::kCPU))
     {
         Py_RETURN_TRUE;
     }
@@ -794,7 +794,7 @@ static PyObject* set_autocast_ipu_enabled(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.set_autocast_ipu_enabled(enabled) is deprecated. Please use "
         "torch.set_autocast_enabled('ipu', enabled) instead.")
-    xsigma::autocast::set_autocast_enabled(xsigma::kIPU, arg == Py_True);
+    quarisma::autocast::set_autocast_enabled(quarisma::kIPU, arg == Py_True);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -805,7 +805,7 @@ static PyObject* is_autocast_ipu_enabled(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.is_autocast_ipu_enabled() is deprecated. Please use "
         "torch.is_autocast_enabled('ipu') instead.")
-    if (xsigma::autocast::is_autocast_enabled(xsigma::kIPU))
+    if (quarisma::autocast::is_autocast_enabled(quarisma::kIPU))
     {
         Py_RETURN_TRUE;
     }
@@ -823,7 +823,7 @@ static PyObject* set_autocast_xla_enabled(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.set_autocast_xla_enabled(enabled) is deprecated. Please use "
         "torch.set_autocast_enabled('xla', enabled) instead.")
-    xsigma::autocast::set_autocast_enabled(xsigma::kXLA, arg == Py_True);
+    quarisma::autocast::set_autocast_enabled(quarisma::kXLA, arg == Py_True);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -834,7 +834,7 @@ static PyObject* is_autocast_xla_enabled(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.is_autocast_xla_enabled() is deprecated. Please use "
         "torch.is_autocast_enabled('xla') instead.")
-    if (xsigma::autocast::is_autocast_enabled(xsigma::kXLA))
+    if (quarisma::autocast::is_autocast_enabled(quarisma::kXLA))
     {
         Py_RETURN_TRUE;
     }
@@ -853,8 +853,8 @@ static PyObject* set_autocast_gpu_dtype(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.set_autocast_gpu_dtype(dtype) is deprecated. Please use "
         "torch.set_autocast_dtype('cuda', dtype) instead.")
-    xsigma::ScalarType targetType = reinterpret_cast<THPDtype*>(arg)->scalar_type;
-    xsigma::autocast::set_autocast_dtype(xsigma::kCUDA, targetType);
+    quarisma::ScalarType targetType = reinterpret_cast<THPDtype*>(arg)->scalar_type;
+    quarisma::autocast::set_autocast_dtype(quarisma::kCUDA, targetType);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -867,8 +867,8 @@ static PyObject* set_autocast_cpu_dtype(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.set_autocast_cpu_dtype(dtype) is deprecated. Please use "
         "torch.set_autocast_dtype('cpu', dtype) instead.")
-    xsigma::ScalarType targetType = reinterpret_cast<THPDtype*>(arg)->scalar_type;
-    xsigma::autocast::set_autocast_dtype(xsigma::kCPU, targetType);
+    quarisma::ScalarType targetType = reinterpret_cast<THPDtype*>(arg)->scalar_type;
+    quarisma::autocast::set_autocast_dtype(quarisma::kCPU, targetType);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -881,8 +881,8 @@ static PyObject* set_autocast_ipu_dtype(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.set_autocast_ipu_dtype(dtype) is deprecated. Please use "
         "torch.set_autocast_dtype('ipu', dtype) instead.")
-    xsigma::ScalarType targetType = reinterpret_cast<THPDtype*>(arg)->scalar_type;
-    xsigma::autocast::set_autocast_dtype(xsigma::kIPU, targetType);
+    quarisma::ScalarType targetType = reinterpret_cast<THPDtype*>(arg)->scalar_type;
+    quarisma::autocast::set_autocast_dtype(quarisma::kIPU, targetType);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -895,8 +895,8 @@ static PyObject* set_autocast_xla_dtype(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.set_autocast_xla_dtype(dtype) is deprecated. Please use "
         "torch.set_autocast_dtype('xla', dtype) instead.")
-    xsigma::ScalarType targetType = reinterpret_cast<THPDtype*>(arg)->scalar_type;
-    xsigma::autocast::set_autocast_dtype(xsigma::kXLA, targetType);
+    quarisma::ScalarType targetType = reinterpret_cast<THPDtype*>(arg)->scalar_type;
+    quarisma::autocast::set_autocast_dtype(quarisma::kXLA, targetType);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -907,7 +907,7 @@ static PyObject* get_autocast_gpu_dtype(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.get_autocast_gpu_dtype() is deprecated. Please use torch.get_autocast_dtype('cuda') "
         "instead.")
-    xsigma::ScalarType current_dtype = xsigma::autocast::get_autocast_dtype(xsigma::kCUDA);
+    quarisma::ScalarType current_dtype = quarisma::autocast::get_autocast_dtype(quarisma::kCUDA);
     return utils::wrap(current_dtype);
     END_HANDLE_TH_ERRORS
 }
@@ -918,7 +918,7 @@ static PyObject* get_autocast_cpu_dtype(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.get_autocast_cpu_dtype() is deprecated. Please use torch.get_autocast_dtype('cpu') "
         "instead.")
-    xsigma::ScalarType current_dtype = xsigma::autocast::get_autocast_dtype(xsigma::kCPU);
+    quarisma::ScalarType current_dtype = quarisma::autocast::get_autocast_dtype(quarisma::kCPU);
     return utils::wrap(current_dtype);
     END_HANDLE_TH_ERRORS
 }
@@ -929,7 +929,7 @@ static PyObject* get_autocast_ipu_dtype(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.get_autocast_ipu_dtype() is deprecated. Please use torch.get_autocast_dtype('ipu') "
         "instead.")
-    xsigma::ScalarType current_dtype = xsigma::autocast::get_autocast_dtype(xsigma::kIPU);
+    quarisma::ScalarType current_dtype = quarisma::autocast::get_autocast_dtype(quarisma::kIPU);
     return utils::wrap(current_dtype);
     END_HANDLE_TH_ERRORS
 }
@@ -940,7 +940,7 @@ static PyObject* get_autocast_xla_dtype(PyObject* _unused, PyObject* arg)
     TORCH_WARN_DEPRECATION(
         "torch.get_autocast_xla_dtype() is deprecated. Please use torch.get_autocast_dtype('xla') "
         "instead.")
-    xsigma::ScalarType current_dtype = xsigma::autocast::get_autocast_dtype(xsigma::kXLA);
+    quarisma::ScalarType current_dtype = quarisma::autocast::get_autocast_dtype(quarisma::kXLA);
     return utils::wrap(current_dtype);
     END_HANDLE_TH_ERRORS
 }
@@ -950,7 +950,7 @@ static PyObject* clear_autocast_cache(PyObject* _unused, PyObject* arg)
     HANDLE_TH_ERRORS
     {
         pybind11::gil_scoped_release no_gil;
-        xsigma::autocast::clear_cache();
+        quarisma::autocast::clear_cache();
     }
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
@@ -959,21 +959,21 @@ static PyObject* clear_autocast_cache(PyObject* _unused, PyObject* arg)
 static PyObject* autocast_increment_nesting(PyObject* _unused, PyObject* arg)
 {
     HANDLE_TH_ERRORS
-    return THPUtils_packInt64(xsigma::autocast::increment_nesting());
+    return THPUtils_packInt64(quarisma::autocast::increment_nesting());
     END_HANDLE_TH_ERRORS
 }
 
 static PyObject* autocast_decrement_nesting(PyObject* _unused, PyObject* arg)
 {
     HANDLE_TH_ERRORS
-    return THPUtils_packInt64(xsigma::autocast::decrement_nesting());
+    return THPUtils_packInt64(quarisma::autocast::decrement_nesting());
     END_HANDLE_TH_ERRORS
 }
 
 static PyObject* is_autocast_cache_enabled(PyObject* _unused, PyObject* arg)
 {
     HANDLE_TH_ERRORS
-    if (xsigma::autocast::is_autocast_cache_enabled())
+    if (quarisma::autocast::is_autocast_cache_enabled())
     {
         Py_RETURN_TRUE;
     }
@@ -988,7 +988,7 @@ static PyObject* set_autocast_cache_enabled(PyObject* _unused, PyObject* arg)
 {
     HANDLE_TH_ERRORS
     TORCH_CHECK_TYPE(PyBool_Check(arg), "enabled must be a bool (got ", Py_TYPE(arg)->tp_name, ")");
-    xsigma::autocast::set_autocast_cache_enabled(arg == Py_True);
+    quarisma::autocast::set_autocast_cache_enabled(arg == Py_True);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -1002,7 +1002,7 @@ static PyObject* set_grad_enabled(PyObject* _unused, PyObject* args, PyObject* k
     ParsedArgs<1>          parsed_args;
     auto                   r = parser.parse(args, kwargs, parsed_args);
 
-    if (xsigma::impl::torch_function_mode_enabled())
+    if (quarisma::impl::torch_function_mode_enabled())
     {
         auto torch_C_module = THPObjectPtr(PyImport_ImportModule("torch._C"));
         return handle_torch_function(
@@ -1032,7 +1032,7 @@ static PyObject* set_fwd_grad_enabled(PyObject* _unused, PyObject* arg)
 {
     HANDLE_TH_ERRORS
     TORCH_CHECK_TYPE(PyBool_Check(arg), "enabled must be a bool (got ", Py_TYPE(arg)->tp_name, ")");
-    xsigma::AutogradState::get_tls_state().set_fw_grad_mode(arg == Py_True);
+    quarisma::AutogradState::get_tls_state().set_fw_grad_mode(arg == Py_True);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -1040,7 +1040,7 @@ static PyObject* set_fwd_grad_enabled(PyObject* _unused, PyObject* arg)
 static PyObject* is_fwd_grad_enabled(PyObject* _unused, PyObject* arg)
 {
     HANDLE_TH_ERRORS
-    if (xsigma::AutogradState::get_tls_state().get_fw_grad_mode())
+    if (quarisma::AutogradState::get_tls_state().get_fw_grad_mode())
     {
         Py_RETURN_TRUE;
     }
@@ -1052,7 +1052,7 @@ static PyObject* is_fwd_grad_enabled(PyObject* _unused, PyObject* arg)
 }
 
 template <bool skip_tensors_in_non_tensorlist>
-static bool visit(PyObject* o, const std::function<bool(xsigma::Tensor&)>& visit_tensor)
+static bool visit(PyObject* o, const std::function<bool(quarisma::Tensor&)>& visit_tensor)
 {
     if (THPVariable_Check(o))
     {
@@ -1067,7 +1067,7 @@ static bool visit(PyObject* o, const std::function<bool(xsigma::Tensor&)>& visit
         // Check that this List is TensorList
         if constexpr (skip_tensors_in_non_tensorlist)
         {
-            for (const auto i : xsigma::irange(PyList_GET_SIZE(o)))
+            for (const auto i : quarisma::irange(PyList_GET_SIZE(o)))
             {
                 if (!THPVariable_Check(PyList_GET_ITEM(o, i)))
                 {
@@ -1075,7 +1075,7 @@ static bool visit(PyObject* o, const std::function<bool(xsigma::Tensor&)>& visit
                 }
             }
         }
-        for (const auto i : xsigma::irange(PyList_GET_SIZE(o)))
+        for (const auto i : quarisma::irange(PyList_GET_SIZE(o)))
         {
             if (visit<skip_tensors_in_non_tensorlist>(PyList_GET_ITEM(o, i), visit_tensor))
             {
@@ -1092,11 +1092,11 @@ static bool visit(PyObject* o, const std::function<bool(xsigma::Tensor&)>& visit
 // Lambda returning true means short circuit, traversal stops after that.
 template <bool skip_tensors_in_non_tensorlist>
 static void visit_tensors(
-    PyObject* args, PyObject* kwargs, const std::function<bool(xsigma::Tensor&)>& visit_tensor)
+    PyObject* args, PyObject* kwargs, const std::function<bool(quarisma::Tensor&)>& visit_tensor)
 {
     if (args && PyTuple_Check(args))
     {
-        for (const auto i : xsigma::irange(PyTuple_GET_SIZE(args)))
+        for (const auto i : quarisma::irange(PyTuple_GET_SIZE(args)))
         {
             if (visit<skip_tensors_in_non_tensorlist>(PyTuple_GET_ITEM(args, i), visit_tensor))
             {
@@ -1107,7 +1107,7 @@ static void visit_tensors(
     if (kwargs && PyDict_Check(kwargs))
     {
         auto vals = THPObjectPtr{PyDict_Values(kwargs)};
-        for (const auto i : xsigma::irange(PyList_Size(vals)))
+        for (const auto i : quarisma::irange(PyList_Size(vals)))
         {
             if (visit<skip_tensors_in_non_tensorlist>(PyList_GetItem(vals, i), visit_tensor))
             {
@@ -1126,7 +1126,7 @@ static PyObject* any_requires_grad(PyObject* _unused, PyObject* args, PyObject* 
     visit_tensors<true>(
         args,
         kwargs,
-        [&has_requires_grad](xsigma::Tensor& t)
+        [&has_requires_grad](quarisma::Tensor& t)
         {
             if (t.requires_grad())
             {
@@ -1161,7 +1161,7 @@ static PyObject* any_output_is_alias_to_input_or_output(PyObject* _unused, PyObj
     visit_tensors<false>(
         inps,
         inps_kwargs,
-        [&s](xsigma::Tensor& t)
+        [&s](quarisma::Tensor& t)
         {
             if (!t.storage())
             {
@@ -1178,7 +1178,7 @@ static PyObject* any_output_is_alias_to_input_or_output(PyObject* _unused, PyObj
     visit_tensors<false>(
         outs,
         nullptr,
-        [&s, &ret](xsigma::Tensor& t)
+        [&s, &ret](quarisma::Tensor& t)
         {
             if (!t.storage())
             {
@@ -1214,14 +1214,14 @@ static PyObject* set_multithreading_enabled(PyObject* self, PyObject* args, PyOb
     ParsedArgs<1>          parsed_args;
     auto                   r = parser.parse(args, kwargs, parsed_args);
 
-    if (xsigma::impl::torch_function_mode_enabled())
+    if (quarisma::impl::torch_function_mode_enabled())
     {
         auto torch_C_module = THPObjectPtr(PyImport_ImportModule("torch._C"));
         return handle_torch_function(
             r, args, kwargs, torch_C_module, "torch._C", "_set_multithreading_enabled");
     }
     auto multithreading_enabled = r.toBool(0);
-    xsigma::AutogradState::get_tls_state().set_multithreading_enabled(multithreading_enabled);
+    quarisma::AutogradState::get_tls_state().set_multithreading_enabled(multithreading_enabled);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -1229,7 +1229,7 @@ static PyObject* set_multithreading_enabled(PyObject* self, PyObject* args, PyOb
 static PyObject* is_multithreading_enabled(PyObject* self, PyObject* args)
 {
     HANDLE_TH_ERRORS
-    if (xsigma::AutogradState::get_tls_state().get_multithreading_enabled())
+    if (quarisma::AutogradState::get_tls_state().get_multithreading_enabled())
     {
         Py_RETURN_TRUE;
     }
@@ -1249,14 +1249,14 @@ static PyObject* set_view_replay_enabled(PyObject* self, PyObject* args, PyObjec
     ParsedArgs<1>          parsed_args;
     auto                   r = parser.parse(args, kwargs, parsed_args);
 
-    if (xsigma::impl::torch_function_mode_enabled())
+    if (quarisma::impl::torch_function_mode_enabled())
     {
         auto torch_C_module = THPObjectPtr(PyImport_ImportModule("torch._C"));
         return handle_torch_function(
             r, args, kwargs, torch_C_module, "torch._C", "_set_view_replay_enabled");
     }
     auto view_replay_enabled = r.toBool(0);
-    xsigma::AutogradState::get_tls_state().set_view_replay_enabled(view_replay_enabled);
+    quarisma::AutogradState::get_tls_state().set_view_replay_enabled(view_replay_enabled);
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
 }
@@ -1264,7 +1264,7 @@ static PyObject* set_view_replay_enabled(PyObject* self, PyObject* args, PyObjec
 static PyObject* is_view_replay_enabled(PyObject* self, PyObject* args)
 {
     HANDLE_TH_ERRORS
-    if (xsigma::AutogradState::get_tls_state().get_view_replay_enabled())
+    if (quarisma::AutogradState::get_tls_state().get_view_replay_enabled())
     {
         Py_RETURN_TRUE;
     }
@@ -1278,7 +1278,7 @@ static PyObject* is_view_replay_enabled(PyObject* self, PyObject* args)
 static PyObject* is_inference_mode_enabled(PyObject* _unused, PyObject* arg)
 {
     HANDLE_TH_ERRORS
-    if (xsigma::InferenceMode::is_enabled())
+    if (quarisma::InferenceMode::is_enabled())
     {
         Py_RETURN_TRUE;
     }
@@ -1349,7 +1349,7 @@ static PyObject* python_exit_dual_level(PyObject* _unused, PyObject* args, PyObj
 
     auto idx = _r.toInt64(0);
     // Make sure the given index is valid before casting it
-    XSIGMA_CHECK(idx >= 0, "Dual level must be a positive number.");
+    QUARISMA_CHECK(idx >= 0, "Dual level must be a positive number.");
     forward_ad::exit_dual_level(static_cast<uint64_t>(idx));
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
@@ -1358,7 +1358,7 @@ static PyObject* python_exit_dual_level(PyObject* _unused, PyObject* args, PyObj
 static PyObject* is_torch_function_mode_enabled(PyObject* _unused, PyObject* _unused2)
 {
     HANDLE_TH_ERRORS
-    if (xsigma::impl::torch_function_mode_enabled())
+    if (quarisma::impl::torch_function_mode_enabled())
     {
         Py_RETURN_TRUE;
     }
@@ -1375,8 +1375,8 @@ static PyObject* push_on_torch_function_stack(PyObject* _unused, PyObject* arg)
     if (arg != Py_None)
     {
         Py_INCREF(arg);
-        xsigma::impl::PythonTorchFunctionTLS::push_onto_stack(
-            std::make_shared<xsigma::SafePyObject>(arg, getPyInterpreter()));
+        quarisma::impl::PythonTorchFunctionTLS::push_onto_stack(
+            std::make_shared<quarisma::SafePyObject>(arg, getPyInterpreter()));
     }
     Py_RETURN_NONE;
     END_HANDLE_TH_ERRORS
@@ -1385,7 +1385,7 @@ static PyObject* push_on_torch_function_stack(PyObject* _unused, PyObject* arg)
 static PyObject* pop_torch_function_stack(PyObject* _unused, PyObject* _unused2)
 {
     HANDLE_TH_ERRORS
-    const auto& mode = xsigma::impl::PythonTorchFunctionTLS::pop_stack();
+    const auto& mode = quarisma::impl::PythonTorchFunctionTLS::pop_stack();
     auto*       r    = mode->ptr(getPyInterpreter());
     Py_INCREF(r);
     return r;
@@ -1401,7 +1401,7 @@ static PyObject* get_function_stack_at(PyObject* _unused, PyObject* args, PyObje
     auto          _r = parser.parse(args, kwargs, parsed_args);
 
     auto        idx  = _r.toInt64(0);
-    const auto& mode = xsigma::impl::PythonTorchFunctionTLS::get_stack_at(idx);
+    const auto& mode = quarisma::impl::PythonTorchFunctionTLS::get_stack_at(idx);
     auto*       r    = mode->ptr(getPyInterpreter());
     Py_INCREF(r);
     return r;
@@ -1411,7 +1411,7 @@ static PyObject* get_function_stack_at(PyObject* _unused, PyObject* args, PyObje
 static PyObject* len_torch_function_stack(PyObject* _unused, PyObject* _unused2)
 {
     HANDLE_TH_ERRORS
-    const auto len = xsigma::impl::PythonTorchFunctionTLS::stack_len();
+    const auto len = quarisma::impl::PythonTorchFunctionTLS::stack_len();
     return utils::wrap(static_cast<int64_t>(len));
     END_HANDLE_TH_ERRORS
 }
@@ -1421,22 +1421,22 @@ static PyObject* push_on_torch_dispatch_stack(PyObject* _unused, PyObject* arg)
     HANDLE_TH_ERRORS
     if (arg != Py_None)
     {
-        using xsigma::impl::TorchDispatchModeKey;
+        using quarisma::impl::TorchDispatchModeKey;
         // When we push a mode onto the mode stack, we need to
         // check if it's an "infra" mode, by checking its _mode_key attribute.
-        std::optional<xsigma::impl::TorchDispatchModeKey> mode_key;
+        std::optional<quarisma::impl::TorchDispatchModeKey> mode_key;
         py::object maybe_mode_key_obj = PyObject_FastGetAttrString(arg, "_mode_key");
         if (maybe_mode_key_obj)
         {
-            mode_key = py::cast<xsigma::impl::TorchDispatchModeKey>(maybe_mode_key_obj);
-            xsigma::impl::TorchDispatchModeTLS::set_mode(
-                std::make_shared<xsigma::impl::PyObject_TorchDispatchMode>(arg, getPyInterpreter()),
+            mode_key = py::cast<quarisma::impl::TorchDispatchModeKey>(maybe_mode_key_obj);
+            quarisma::impl::TorchDispatchModeTLS::set_mode(
+                std::make_shared<quarisma::impl::PyObject_TorchDispatchMode>(arg, getPyInterpreter()),
                 mode_key.value());
         }
         else
         {
-            xsigma::impl::TorchDispatchModeTLS::push_non_infra_mode_onto_stack(
-                std::make_shared<xsigma::impl::PyObject_TorchDispatchMode>(
+            quarisma::impl::TorchDispatchModeTLS::push_non_infra_mode_onto_stack(
+                std::make_shared<quarisma::impl::PyObject_TorchDispatchMode>(
                     arg, getPyInterpreter()));
         }
         Py_INCREF(arg);
@@ -1448,23 +1448,23 @@ static PyObject* push_on_torch_dispatch_stack(PyObject* _unused, PyObject* arg)
 static PyObject* pop_torch_dispatch_stack(PyObject* _unused, PyObject* maybe_mode_key)
 {
     HANDLE_TH_ERRORS
-    std::optional<xsigma::impl::TorchDispatchModeKey> mode_key;
+    std::optional<quarisma::impl::TorchDispatchModeKey> mode_key;
     PyObject*                                         r = nullptr;
     if (maybe_mode_key != Py_None)
     {
-        mode_key        = py::cast<xsigma::impl::TorchDispatchModeKey>(maybe_mode_key);
-        auto maybe_mode = xsigma::impl::TorchDispatchModeTLS::unset_mode(mode_key.value());
-        XSIGMA_CHECK(
+        mode_key        = py::cast<quarisma::impl::TorchDispatchModeKey>(maybe_mode_key);
+        auto maybe_mode = quarisma::impl::TorchDispatchModeTLS::unset_mode(mode_key.value());
+        QUARISMA_CHECK(
             maybe_mode.has_value(),
             "Attempted to unset ",
-            xsigma::impl::to_string(mode_key.value()),
+            quarisma::impl::to_string(mode_key.value()),
             ", but there wasn't one active.");
         auto mode = maybe_mode.value();
         r         = mode->ptr(getPyInterpreter());
     }
     else
     {
-        auto mode = xsigma::impl::TorchDispatchModeTLS::pop_stack();
+        auto mode = quarisma::impl::TorchDispatchModeTLS::pop_stack();
         r         = mode->ptr(getPyInterpreter());
     }
     Py_INCREF(r);
@@ -1481,7 +1481,7 @@ static PyObject* get_dispatch_stack_at(PyObject* _unused, PyObject* args, PyObje
     auto          _r = parser.parse(args, kwargs, parsed_args);
 
     auto        idx  = _r.toInt64(0);
-    const auto& mode = xsigma::impl::TorchDispatchModeTLS::get_stack_at(idx);
+    const auto& mode = quarisma::impl::TorchDispatchModeTLS::get_stack_at(idx);
     auto*       r    = mode->ptr(getPyInterpreter());
     Py_INCREF(r);
     return r;
@@ -1491,17 +1491,17 @@ static PyObject* get_dispatch_stack_at(PyObject* _unused, PyObject* args, PyObje
 static PyObject* set_dispatch_mode(PyObject* _unused, PyObject* mode)
 {
     HANDLE_TH_ERRORS
-    XSIGMA_CHECK(mode != Py_None);
+    QUARISMA_CHECK(mode != Py_None);
 
     py::object maybe_mode_key_obj = PyObject_FastGetAttrString(mode, "_mode_key");
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         maybe_mode_key_obj,
         "set_dispatch_mode() called with a mode that does not contain a _mode_key attribute!");
-    auto mode_key = py::cast<xsigma::impl::TorchDispatchModeKey>(maybe_mode_key_obj);
+    auto mode_key = py::cast<quarisma::impl::TorchDispatchModeKey>(maybe_mode_key_obj);
 
     Py_INCREF(mode);
-    xsigma::impl::TorchDispatchModeTLS::set_mode(
-        std::make_shared<xsigma::impl::PyObject_TorchDispatchMode>(mode, getPyInterpreter()),
+    quarisma::impl::TorchDispatchModeTLS::set_mode(
+        std::make_shared<quarisma::impl::PyObject_TorchDispatchMode>(mode, getPyInterpreter()),
         mode_key);
 
     Py_RETURN_NONE;
@@ -1511,10 +1511,10 @@ static PyObject* set_dispatch_mode(PyObject* _unused, PyObject* mode)
 static PyObject* get_dispatch_mode(PyObject* _unused, PyObject* arg)
 {
     HANDLE_TH_ERRORS
-    XSIGMA_CHECK(arg != Py_None);
-    auto mode_key = py::cast<xsigma::impl::TorchDispatchModeKey>(arg);
+    QUARISMA_CHECK(arg != Py_None);
+    auto mode_key = py::cast<quarisma::impl::TorchDispatchModeKey>(arg);
 
-    auto maybe_mode = xsigma::impl::TorchDispatchModeTLS::get_mode(mode_key);
+    auto maybe_mode = quarisma::impl::TorchDispatchModeTLS::get_mode(mode_key);
     if (!maybe_mode.has_value())
     {
         Py_RETURN_NONE;
@@ -1528,10 +1528,10 @@ static PyObject* get_dispatch_mode(PyObject* _unused, PyObject* arg)
 static PyObject* unset_dispatch_mode(PyObject* _unused, PyObject* arg)
 {
     HANDLE_TH_ERRORS
-    XSIGMA_CHECK(arg != Py_None);
-    auto mode_key = py::cast<xsigma::impl::TorchDispatchModeKey>(arg);
+    QUARISMA_CHECK(arg != Py_None);
+    auto mode_key = py::cast<quarisma::impl::TorchDispatchModeKey>(arg);
 
-    const auto maybe_mode = xsigma::impl::TorchDispatchModeTLS::unset_mode(mode_key);
+    const auto maybe_mode = quarisma::impl::TorchDispatchModeTLS::unset_mode(mode_key);
     if (!maybe_mode.has_value())
     {
         Py_RETURN_NONE;
@@ -1545,7 +1545,7 @@ static PyObject* unset_dispatch_mode(PyObject* _unused, PyObject* arg)
 static PyObject* len_torch_dispatch_stack(PyObject* _unused, PyObject* args)
 {
     HANDLE_TH_ERRORS
-    const auto len = xsigma::impl::TorchDispatchModeTLS::stack_len();
+    const auto len = quarisma::impl::TorchDispatchModeTLS::stack_len();
     return utils::wrap(static_cast<int64_t>(len));
     END_HANDLE_TH_ERRORS
 }
@@ -1554,11 +1554,11 @@ static PyObject* THPModule_increment_version(PyObject* _unused, PyObject* tensor
 {
     HANDLE_TH_ERRORS
     auto iterator = THPObjectPtr(PyObject_GetIter(tensor_list));
-    XSIGMA_CHECK(iterator, "increment_version expect a Iterable[Tensor] as input");
+    QUARISMA_CHECK(iterator, "increment_version expect a Iterable[Tensor] as input");
     auto item = THPObjectPtr(PyIter_Next(iterator));
     while (item)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             THPVariable_Check(item),
             "increment_version expects each element of the iterable to be a tensor");
         auto t = THPVariable_Unpack(item);

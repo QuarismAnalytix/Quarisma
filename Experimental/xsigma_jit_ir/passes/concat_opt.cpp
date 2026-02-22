@@ -7,7 +7,7 @@
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
 #include <torch/csrc/jit/passes/remove_mutation.h>
 #include <torch/csrc/jit/runtime/graph_iterator.h>
-#include <xsigma/util/ssize.h>
+#include <quarisma/util/ssize.h>
 
 #include <algorithm>
 #include <deque>
@@ -34,7 +34,7 @@ void removeCatNodeFromGraph(Node* n)
     }
 }
 
-bool equal(xsigma::ArrayRef<Value*> list1, xsigma::ArrayRef<Value*> list2)
+bool equal(quarisma::ArrayRef<Value*> list1, quarisma::ArrayRef<Value*> list2)
 {
     return list1.size() == list2.size() && std::equal(list1.begin(), list1.end(), list2.begin());
 }
@@ -550,17 +550,17 @@ size_t determineUsageIdx(Value* value, Node* user)
 {
     const auto idx =
         std::find(user->inputs().begin(), user->inputs().end(), value) - user->inputs().begin();
-    using xsigma::ssize;
-    XSIGMA_CHECK(idx != ssize(user->inputs()));
+    using quarisma::ssize;
+    QUARISMA_CHECK(idx != ssize(user->inputs()));
     return idx;
 }
 
 std::vector<Value*> getConcatInputs(Node* concat)
 {
-    XSIGMA_CHECK(concat->kind() == aten::cat);
+    QUARISMA_CHECK(concat->kind() == aten::cat);
     auto* list           = concat->input(0);
     auto* list_construct = list->node();
-    XSIGMA_CHECK(list_construct->kind() == prim::ListConstruct);
+    QUARISMA_CHECK(list_construct->kind() == prim::ListConstruct);
     return list_construct->inputs().vec();
 }
 

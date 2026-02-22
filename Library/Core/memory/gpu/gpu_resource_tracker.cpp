@@ -17,16 +17,16 @@
 namespace std
 {
 template <>
-struct hash<std::pair<xsigma::device_enum, int>>
+struct hash<std::pair<quarisma::device_enum, int>>
 {
-    size_t operator()(const std::pair<xsigma::device_enum, int>& p) const
+    size_t operator()(const std::pair<quarisma::device_enum, int>& p) const
     {
         return std::hash<int>()(static_cast<int>(p.first)) ^ (std::hash<int>()(p.second) << 1);
     }
 };
 }  // namespace std
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -64,10 +64,10 @@ private:
     std::atomic<size_t> next_allocation_id_{1};
 
     /** @brief Map of active allocations (using custom hash for void*) */
-    xsigma_map<void*, std::shared_ptr<gpu_allocation_info>, void_ptr_hash> active_allocations_;
+    quarisma_map<void*, std::shared_ptr<gpu_allocation_info>, void_ptr_hash> active_allocations_;
 
     /** @brief Map of all allocations (including deallocated) */
-    xsigma_map<size_t, std::shared_ptr<gpu_allocation_info>> all_allocations_;
+    quarisma_map<size_t, std::shared_ptr<gpu_allocation_info>> all_allocations_;
 
     /** @brief Leak detection configuration */
     leak_detection_config leak_config_;
@@ -107,13 +107,13 @@ private:
                         auto leaks = detect_leaks();
                         if (!leaks.empty() && leak_config_.enable_auto_reporting)
                         {
-                            XSIGMA_LOG_WARNING(
+                            QUARISMA_LOG_WARNING(
                                 "GPU memory leak detection found {} potential leaks", leaks.size());
                             // Log details of first few leaks
                             for (size_t i = 0; i < std::min(leaks.size(), size_t(5)); ++i)
                             {
                                 const auto& leak = leaks[i];
-                                XSIGMA_LOG_WARNING(
+                                QUARISMA_LOG_WARNING(
                                     "Leak {}: {} bytes at {} allocated in {} ({})",
                                     i + 1,
                                     leak->size,
@@ -210,7 +210,7 @@ public:
         std::scoped_lock const lock(mutex_);
         if (!active_allocations_.empty())
         {
-            XSIGMA_LOG_WARNING(
+            QUARISMA_LOG_WARNING(
                 "GPU resource tracker destroyed with {} active allocations (potential memory "
                 "leaks)",
                 active_allocations_.size());
@@ -521,7 +521,7 @@ public:
         oss << "  Potential leaks: " << leaks.size() << "\n\n";
 
         // Active allocations by device
-        xsigma_map<
+        quarisma_map<
             std::pair<device_enum, int>,
             std::vector<std::shared_ptr<gpu_allocation_info>>,
             std::hash<std::pair<device_enum, int>>>
@@ -646,4 +646,4 @@ gpu_resource_tracker& gpu_resource_tracker::instance()
 }
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

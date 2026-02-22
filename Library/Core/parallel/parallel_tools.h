@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  *
  * Portions of this code are based on VTK (Visualization Toolkit):
 
@@ -42,18 +42,18 @@
 #include "common/export.h"
 #include "parallel/common/parallel_tools_api.h"
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
 #include <tbb/enumerable_thread_specific.h>
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace detail
 {
 namespace parallel
 {
 
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
 // Static storage for OpenMP threadprivate
 // Each thread gets its own copy automatically via OpenMP's threadprivate pragma.
 // NOTE: Do NOT use 'thread_local' with OpenMP's threadprivate pragma - they are incompatible.
@@ -122,14 +122,14 @@ struct parallel_tools_functor_internal<Functor, true>
 {
     Functor& f_;
 
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
     // TBB backend: Use enumerable_thread_specific
     mutable tbb::enumerable_thread_specific<unsigned char> initialized_;
 #endif
 
     parallel_tools_functor_internal(Functor& f)
         : f_(f)
-#if XSIGMA_HAS_TBB
+#if QUARISMA_HAS_TBB
           ,
           initialized_(0)
 #endif
@@ -138,14 +138,14 @@ struct parallel_tools_functor_internal<Functor, true>
 
     void Execute(size_t first, size_t last)
     {
-#if XSIGMA_HAS_OPENMP
+#if QUARISMA_HAS_OPENMP
         // OpenMP backend: Use threadprivate static
         if (!parallel_tools_functor_initialized)
         {
             this->f_.Initialize();
             parallel_tools_functor_initialized = 1;
         }
-#elif XSIGMA_HAS_TBB
+#elif QUARISMA_HAS_TBB
         // TBB backend: Use enumerable_thread_specific
         unsigned char& inited = initialized_.local();
         if (!inited)
@@ -200,9 +200,9 @@ using resolved_not_int = typename std::enable_if<!std::is_integral<T>::value, vo
 
 }  // namespace parallel
 }  // namespace detail
-}  // namespace xsigma
+}  // namespace quarisma
 
-class XSIGMA_VISIBILITY parallel_tools
+class QUARISMA_VISIBILITY parallel_tools
 {
 public:
     ///@{
@@ -225,14 +225,14 @@ public:
     template <typename Functor>
     static void parallel_for(size_t first, size_t last, size_t grain, Functor& f)
     {
-        typename xsigma::detail::parallel::parallel_tools_lookup_for<Functor>::type fi(f);
+        typename quarisma::detail::parallel::parallel_tools_lookup_for<Functor>::type fi(f);
         fi.parallel_for(first, last, grain);
     }
 
     template <typename Functor>
     static void parallel_for(size_t first, size_t last, size_t grain, const Functor& f)
     {
-        typename xsigma::detail::parallel::parallel_tools_lookup_for<Functor const>::type fi(f);
+        typename quarisma::detail::parallel::parallel_tools_lookup_for<Functor const>::type fi(f);
         fi.parallel_for(first, last, grain);
     }
 
@@ -240,39 +240,39 @@ public:
    * /!\ This method is not thread safe.
    * Initialize the underlying libraries for execution.
    */
-    XSIGMA_API static void initialize(int num_threads = 0);
+    QUARISMA_API static void initialize(int num_threads = 0);
 
     /**
    * Get the estimated number of threads being used by the backend.
    */
-    XSIGMA_API static int estimated_number_of_threads();
+    QUARISMA_API static int estimated_number_of_threads();
 
     /**
    * Get the estimated number of threads being used by the backend by default.
    */
-    XSIGMA_API static int estimated_default_number_of_threads();
+    QUARISMA_API static int estimated_default_number_of_threads();
 
     /**
    * /!\ This method is not thread safe.
    * If true enable nested parallelism for underlying backends.
    */
-    XSIGMA_API static void set_nested_parallelism(bool is_nested);
+    QUARISMA_API static void set_nested_parallelism(bool is_nested);
 
     /**
    * Get true if the nested parallelism is enabled.
    */
-    XSIGMA_API static bool nested_parallelism();
+    QUARISMA_API static bool nested_parallelism();
 
     /**
    * Return true if it is called from a parallel scope.
    */
-    XSIGMA_API static bool is_parallel_scope();
+    QUARISMA_API static bool is_parallel_scope();
 
     /**
    * Returns true if the given thread is specified thread
    * for single scope. Returns false otherwise.
    */
-    XSIGMA_API static bool single_thread();
+    QUARISMA_API static bool single_thread();
 
     /**
    * Structure used to specify configuration for local_scope() method.
@@ -293,7 +293,7 @@ public:
               nested_parallelism_(nested)
         {
         }
-        config(xsigma::detail::parallel::parallel_tools_api& API)
+        config(quarisma::detail::parallel::parallel_tools_api& API)
             : max_number_of_threads_(API.get_internal_desired_number_of_thread()),
               backend_(API.get_backend()),
               nested_parallelism_(API.nested_parallelism())
@@ -313,7 +313,7 @@ public:
     template <typename T>
     static void local_scope(config const& cfg, T&& lambda)
     {
-        auto& SMPToolsAPI = xsigma::detail::parallel::parallel_tools_api::instance();
+        auto& SMPToolsAPI = quarisma::detail::parallel::parallel_tools_api::instance();
         SMPToolsAPI.local_scope<parallel_tools::config>(cfg, lambda);
     }
 };

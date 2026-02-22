@@ -1,17 +1,17 @@
 #pragma once
 
-#include <XSigma/CachedTensorUtils.h>
-#include <XSigma/LegacyBatchedTensorImpl.h>
-#include <XSigma/TensorOperators.h>
+#include <Quarisma/CachedTensorUtils.h>
+#include <Quarisma/LegacyBatchedTensorImpl.h>
+#include <Quarisma/TensorOperators.h>
 #include <torch/csrc/Export.h>
 #include <torch/csrc/autograd/function.h>
 #include <torch/csrc/autograd/utils/grad_layout_contract.h>
 #include <torch/csrc/autograd/variable.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/_sparse_coo_tensor_unsafe.h>
+#include <Quarisma/ops/_sparse_coo_tensor_unsafe.h>
 #endif
 
 #include <mutex>
@@ -80,7 +80,7 @@ struct TORCH_API AccumulateGrad : public Node
     // be added to variable_grad.  If we aren't setting up for double backward
     // (!GradMode::is_enabled()), AccumulateGrad performs "variable_grad +=
     // new_grad" in-place, which keeps variable_grad's layout. We assume (hope)
-    // variable_grad was created obeying (1) or (2) xsigma some point in the past.
+    // variable_grad was created obeying (1) or (2) quarisma some point in the past.
     //
     // If we are setting up for double backward, AccumulateGrad updates the grad
     // out-of-place via "variable_grad + new_grad."  TensorIterator operator+
@@ -175,16 +175,16 @@ struct TORCH_API AccumulateGrad : public Node
     template <typename T>
     static void accumulateGrad(
         const Variable&       variable,
-        xsigma::Tensor&       variable_grad,
-        const xsigma::Tensor& new_grad,
+        quarisma::Tensor&       variable_grad,
+        const quarisma::Tensor& new_grad,
         size_t                num_expected_refs,
         const T&              update_grad)
     {
         if (!variable_grad.defined())
         {
             if (!GradMode::is_enabled() && !new_grad.is_sparse() && !new_grad.is_sparse_csr() &&
-                !(variable.is_sparse_csr() && new_grad.layout() == xsigma::kStrided) &&
-                xsigma::caching::adjusted_use_count(new_grad) <= num_expected_refs &&
+                !(variable.is_sparse_csr() && new_grad.layout() == quarisma::kStrided) &&
+                quarisma::caching::adjusted_use_count(new_grad) <= num_expected_refs &&
                 (new_grad.is_mkldnn() || utils::obeys_layout_contract(new_grad, variable)))
             {
                 // See Case 1.1: Stealable dense new_grad
@@ -200,13 +200,13 @@ struct TORCH_API AccumulateGrad : public Node
             {
                 // Case 1.2: Stealable sparse new_grad
                 // No scenario where we expect this to be true currently
-                XSIGMA_CHECK_DEBUG(
-                    !xsigma::caching::is_cached_tensor(new_grad._indices()) &&
-                    !xsigma::caching::is_cached_tensor(new_grad._values()) &&
-                    !xsigma::caching::is_cached_tensor(new_grad));
+                QUARISMA_CHECK_DEBUG(
+                    !quarisma::caching::is_cached_tensor(new_grad._indices()) &&
+                    !quarisma::caching::is_cached_tensor(new_grad._values()) &&
+                    !quarisma::caching::is_cached_tensor(new_grad));
 
                 update_grad(
-                    xsigma::_sparse_coo_tensor_unsafe(
+                    quarisma::_sparse_coo_tensor_unsafe(
                         new_grad._indices(),
                         new_grad._values(),
                         new_grad.sizes(),
@@ -245,7 +245,7 @@ struct TORCH_API AccumulateGrad : public Node
                 CHECK_RESULT(result, variable);
                 update_grad(std::move(result));
             }
-            else if (!xsigma::inplaceIsVmapCompatible(variable_grad, new_grad))
+            else if (!quarisma::inplaceIsVmapCompatible(variable_grad, new_grad))
             {
                 // Case 2.2: Vmap-incompatible
                 auto result = variable_grad + new_grad;
@@ -263,9 +263,9 @@ struct TORCH_API AccumulateGrad : public Node
                 // } else if (obeys_layout_contract(variable_grad, variable)) {
                 //   variable_grad += new_grad;
                 // } else {
-                //   result = xsigma::empty_strided(variable.sizes(), variable.strides(),
+                //   result = quarisma::empty_strided(variable.sizes(), variable.strides(),
                 //                              variable.options().memory_format(std::nullopt));
-                //   update_grad(xsigma::native::add_out(result, variable_grad,
+                //   update_grad(quarisma::native::add_out(result, variable_grad,
                 //   new_grad, 1.0);
                 // }
                 // However, that accumulation is sometimes in place and sometimes not,
@@ -275,7 +275,7 @@ struct TORCH_API AccumulateGrad : public Node
         else
         {
             // Case 3: Param has existing grad and grad mode is enabled
-            xsigma::Tensor result;
+            quarisma::Tensor result;
             if (variable_grad.is_sparse() && !new_grad.is_sparse())
             {
                 // Case 3.1: Sparse variable_grad + Dense new_grad

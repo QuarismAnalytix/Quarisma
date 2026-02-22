@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,12 +18,12 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "memory/cpu/allocator_cpu.h"
@@ -41,13 +41,13 @@
 #include "memory/cpu/allocator.h"
 #include "memory/helper/memory_allocator.h"
 #include "memory/helper/memory_info.h"
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 #include "profiler/native/memory/scoped_memory_debug_annotation.h"
 #include "profiler/native/tracing/traceme.h"
 #include "profiler/native/tracing/traceme_encode.h"
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 
 /**
@@ -171,9 +171,9 @@ void* allocator_cpu::allocate_raw(size_t alignment, size_t num_bytes)
 #ifndef NDEBUG
     // Check for large allocation warning (rate-limited)
     // cppcheck-suppress syntaxError
-    // Explanation: XSIGMA_UNLIKELY is a branch prediction macro that expands to compiler-specific
+    // Explanation: QUARISMA_UNLIKELY is a branch prediction macro that expands to compiler-specific
     // attributes (__builtin_expect or [[unlikely]]). Cppcheck doesn't understand this macro syntax.
-    if XSIGMA_UNLIKELY (num_bytes > static_cast<size_t>(LargeAllocationWarningBytes()))
+    if QUARISMA_UNLIKELY (num_bytes > static_cast<size_t>(LargeAllocationWarningBytes()))
     {
         const auto current_count = single_allocation_warning_count_.load(std::memory_order_relaxed);
         if (current_count < kMaxSingleAllocationWarnings)
@@ -183,7 +183,7 @@ void* allocator_cpu::allocate_raw(size_t alignment, size_t num_bytes)
             if (single_allocation_warning_count_.compare_exchange_weak(
                     expected, current_count + 1, std::memory_order_relaxed))
             {
-                XSIGMA_LOG_WARNING(
+                QUARISMA_LOG_WARNING(
                     "Large allocation of {} bytes ({}% of available RAM) exceeds {}% threshold",
                     num_bytes,
                     (100.0 * num_bytes / port::available_ram()),
@@ -197,7 +197,7 @@ void* allocator_cpu::allocate_raw(size_t alignment, size_t num_bytes)
     void* p = cpu::memory_allocator::allocate(num_bytes, alignment);  //NOLINT
 
     // Collect statistics if enabled (fast path when disabled)
-    if XSIGMA_UNLIKELY (cpu_allocator_collect_stats.load(std::memory_order_relaxed) && p != nullptr)
+    if QUARISMA_UNLIKELY (cpu_allocator_collect_stats.load(std::memory_order_relaxed) && p != nullptr)
     {
         const auto alloc_size = 0;
 
@@ -235,7 +235,7 @@ void* allocator_cpu::allocate_raw(size_t alignment, size_t num_bytes)
             {
                 ++total_allocation_warning_count_;
                 size_t bytes_in_use = stats_.bytes_in_use.load(std::memory_order_relaxed);
-                XSIGMA_LOG_WARNING(
+                QUARISMA_LOG_WARNING(
                     "Total allocated memory {} bytes ({}% of available RAM) exceeds {}% "
                     "threshold",
                     bytes_in_use,
@@ -245,7 +245,7 @@ void* allocator_cpu::allocate_raw(size_t alignment, size_t num_bytes)
         }
 
         // Add profiling trace (outside lock to minimize contention)
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
         AddTraceMe("MemoryAllocation", p, num_bytes, alloc_size);
 #endif
     }
@@ -256,7 +256,7 @@ void* allocator_cpu::allocate_raw(size_t alignment, size_t num_bytes)
 void allocator_cpu::deallocate_raw(void* ptr)
 {
     // Fast path when statistics disabled
-    if XSIGMA_UNLIKELY (cpu_allocator_collect_stats.load(std::memory_order_relaxed))
+    if QUARISMA_UNLIKELY (cpu_allocator_collect_stats.load(std::memory_order_relaxed))
     {
         // Get allocation size before deallocation
         const auto alloc_size = 0;
@@ -268,7 +268,7 @@ void allocator_cpu::deallocate_raw(void* ptr)
         }
 
         // Add profiling trace (outside lock to minimize contention)
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
         AddTraceMe("MemoryDeallocation", ptr, 0, alloc_size);
 #endif
     }
@@ -317,22 +317,22 @@ allocator_memory_enum allocator_cpu::GetMemoryType() const noexcept
     return allocator_memory_enum::HOST_PAGEABLE;
 }
 
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 void allocator_cpu::AddTraceMe(
     std::string_view traceme_name,
     const void*      chunk_ptr,
     std::size_t      req_bytes,
     std::size_t      alloc_bytes)
 {
-    xsigma::traceme::instant_activity(
+    quarisma::traceme::instant_activity(
         [this, traceme_name, chunk_ptr, req_bytes, alloc_bytes]()
-            XSIGMA_NO_THREAD_SAFETY_ANALYSIS -> std::string
+            QUARISMA_NO_THREAD_SAFETY_ANALYSIS -> std::string
         {
             // Capture current debug annotation context
-            const auto& annotation = xsigma::scoped_memory_debug_annotation::current_annotation();
+            const auto& annotation = quarisma::scoped_memory_debug_annotation::current_annotation();
 
             // Create comprehensive trace with current allocator state
-            return xsigma::traceme_encode(
+            return quarisma::traceme_encode(
                 std::string(traceme_name),
                 {{"allocator_name", Name()},
                  {"bytes_reserved", stats_.bytes_reserved.load(std::memory_order_relaxed)},
@@ -341,14 +341,14 @@ void allocator_cpu::AddTraceMe(
                  {"requested_bytes", req_bytes},
                  {"allocation_bytes", alloc_bytes},
                  {"addr", reinterpret_cast<uint64_t>(chunk_ptr)},
-                 {"xsigma_op", annotation.pending_op_name},
+                 {"quarisma_op", annotation.pending_op_name},
                  {"id", annotation.pending_step_id},
                  {"region_type", annotation.pending_region_type},
                  {"data_type", annotation.pending_data_type},
                  {"shape", annotation.pending_shape_func()}});
         },
-        static_cast<int>(xsigma::traceme_level_enum::INFO));
+        static_cast<int>(quarisma::traceme_level_enum::INFO));
 }
 #endif
 
-}  // namespace xsigma
+}  // namespace quarisma

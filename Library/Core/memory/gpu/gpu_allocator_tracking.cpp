@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -17,13 +17,13 @@
  * Copyright 2015 The TensorFlow Authors. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0.
  *
- * Modifications for XSigma:
- * - Adapted for XSigma quantitative computing requirements
+ * Modifications for Quarisma:
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance GPU memory allocation optimizations
  * - Integrated CUDA-aware allocation strategies
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "memory/gpu/gpu_allocator_tracking.h"
@@ -38,14 +38,14 @@
 #include "common/configure.h"
 #include "util/exception.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
 
 // ========== CUDA Error Info Implementation ==========
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 cuda_error_info::cuda_error_info(
     cudaError_t cuda_error, const char* function_name, size_t size, int device) noexcept
     : error_code(static_cast<int>(cuda_error)),
@@ -178,7 +178,7 @@ gpu_allocator_tracking::gpu_allocator_tracking(
     }
     else
     {
-        XSIGMA_THROW(
+        QUARISMA_THROW(
             "GPU device not found: type={}, index={}",
             static_cast<int>(device_type_),
             device_index_);
@@ -196,7 +196,7 @@ gpu_allocator_tracking::gpu_allocator_tracking(
     // Log initialization if enabled
     if (gpu_log_level_.load(std::memory_order_relaxed) >= gpu_tracking_log_level::INFO)
     {
-        XSIGMA_LOG_INFO(
+        QUARISMA_LOG_INFO(
             "gpu_allocator_tracking initialized: device={}, enhanced={}, bandwidth={}",
             device_info_.name,
             enhanced_tracking_enabled_,
@@ -209,7 +209,7 @@ gpu_allocator_tracking::~gpu_allocator_tracking()
     // Log destruction if enabled
     if (gpu_log_level_.load(std::memory_order_relaxed) >= gpu_tracking_log_level::INFO)
     {
-        XSIGMA_LOG_INFO("gpu_allocator_tracking destroying: device={}", device_info_.name);
+        QUARISMA_LOG_INFO("gpu_allocator_tracking destroying: device={}", device_info_.name);
     }
 
     // Cleanup CUDA events
@@ -218,7 +218,7 @@ gpu_allocator_tracking::~gpu_allocator_tracking()
 
 void gpu_allocator_tracking::InitializeCUDAEvents()
 {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     if (device_type_ == device_enum::CUDA)
     {
         // Set device context
@@ -243,7 +243,7 @@ void gpu_allocator_tracking::InitializeCUDAEvents()
 
         if (!cuda_events_initialized_)
         {
-            XSIGMA_LOG_WARNING(
+            QUARISMA_LOG_WARNING(
                 "Failed to initialize CUDA events for timing: {}", cudaGetErrorString(result));
         }
     }
@@ -252,7 +252,7 @@ void gpu_allocator_tracking::InitializeCUDAEvents()
 
 void gpu_allocator_tracking::CleanupCUDAEvents() noexcept
 {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     if (cuda_events_initialized_)
     {
         cudaEventDestroy(start_event_);
@@ -283,7 +283,7 @@ void* gpu_allocator_tracking::allocate_raw(
     auto current_log_level = gpu_log_level_.load(std::memory_order_relaxed);
     if (current_log_level >= gpu_tracking_log_level::TRACE)
     {
-        XSIGMA_LOG_INFO_DEBUG(
+        QUARISMA_LOG_INFO_DEBUG(
             "gpu_allocator_tracking::allocate_raw: bytes={}, alignment={}, device={}, tag={}",
             bytes,
             alignment,
@@ -291,7 +291,7 @@ void* gpu_allocator_tracking::allocate_raw(
             tag);
     }
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     // Record CUDA event for GPU-side timing if available
     if (cuda_events_initialized_ && (stream != nullptr))
     {
@@ -314,7 +314,7 @@ void* gpu_allocator_tracking::allocate_raw(
         else
         {
             // Use direct CUDA allocation (replacing gpu_allocator)
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
             if (device_type_ == device_enum::CUDA || device_type_ == device_enum::HIP)
             {
                 cudaError_t result = cudaSetDevice(device_index_);
@@ -333,7 +333,7 @@ void* gpu_allocator_tracking::allocate_raw(
     catch (const std::exception& e)
     {
         // Capture allocation failure information
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         if (device_type_ == device_enum::CUDA)
         {
             cudaError_t const cuda_error = cudaGetLastError();
@@ -342,7 +342,7 @@ void* gpu_allocator_tracking::allocate_raw(
         }
 #endif
 
-        XSIGMA_LOG_ERROR(
+        QUARISMA_LOG_ERROR(
             "GPU allocation failed: {}, bytes={}, device={}", e.what(), bytes, device_index_);
 
         // Update failure statistics
@@ -356,7 +356,7 @@ void* gpu_allocator_tracking::allocate_raw(
     auto duration_us =
         std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count();
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     // Get GPU-side timing if CUDA events are available
     if (cuda_events_initialized_ && (stream != nullptr))
     {
@@ -424,7 +424,7 @@ void* gpu_allocator_tracking::allocate_raw(
     // Log successful allocation
     if (current_log_level >= gpu_tracking_log_level::TRACE)
     {
-        XSIGMA_LOG_INFO_DEBUG(
+        QUARISMA_LOG_INFO_DEBUG(
             "gpu_allocator_tracking::allocate_raw success: ptr={}, bytes={}, time={}μs",
             ptr,
             bytes,
@@ -449,14 +449,14 @@ void gpu_allocator_tracking::deallocate_raw(void* ptr, size_t bytes, void* strea
     auto current_log_level = gpu_log_level_.load(std::memory_order_relaxed);
     if (current_log_level >= gpu_tracking_log_level::TRACE)
     {
-        XSIGMA_LOG_INFO_DEBUG(
+        QUARISMA_LOG_INFO_DEBUG(
             "gpu_allocator_tracking::deallocate_raw: ptr={}, bytes={}, device={}",
             ptr,
             bytes,
             device_index_);
     }
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     // Record CUDA event for GPU-side timing if available
     if (cuda_events_initialized_ && (stream != nullptr))
     {
@@ -484,7 +484,7 @@ void gpu_allocator_tracking::deallocate_raw(void* ptr, size_t bytes, void* strea
     }
 
     // Perform actual GPU deallocation using direct CUDA calls
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     if (device_type_ == device_enum::CUDA || device_type_ == device_enum::HIP)
     {
         cudaError_t result = cudaSetDevice(device_index_);
@@ -511,7 +511,7 @@ void gpu_allocator_tracking::deallocate_raw(void* ptr, size_t bytes, void* strea
     auto duration_us =
         std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count();
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     // Get GPU-side timing if CUDA events are available
     if (cuda_events_initialized_ && (stream != nullptr))
     {
@@ -573,7 +573,7 @@ void gpu_allocator_tracking::deallocate_raw(void* ptr, size_t bytes, void* strea
     // Log successful deallocation
     if (current_log_level >= gpu_tracking_log_level::TRACE)
     {
-        XSIGMA_LOG_INFO_DEBUG(
+        QUARISMA_LOG_INFO_DEBUG(
             "gpu_allocator_tracking::deallocate_raw success: ptr={}, time={}μs", ptr, duration_us);
     }
 }
@@ -718,7 +718,7 @@ std::string gpu_allocator_tracking::GenerateGPUReport(
     if (include_cuda_info && device_type_ == device_enum::CUDA)
     {
         report << "CUDA-Specific Information:\n";
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         report << "  CUDA Events Initialized: " << (cuda_events_initialized_ ? "Yes" : "No")
                << "\n";
 #else
@@ -795,14 +795,14 @@ void gpu_allocator_tracking::UpdateMemoryUsage(size_t bytes, bool is_allocation)
 }
 
 void gpu_allocator_tracking::LogGPUOperation(
-    XSIGMA_UNUSED const std::string& operation, XSIGMA_UNUSED const std::string& details) const
+    QUARISMA_UNUSED const std::string& operation, QUARISMA_UNUSED const std::string& details) const
 {
     auto current_log_level = gpu_log_level_.load(std::memory_order_relaxed);
     if (current_log_level >= gpu_tracking_log_level::DEBUG_LEVEL)
     {
-        XSIGMA_LOG_INFO_DEBUG("GPU {}: {}", operation, details);
+        QUARISMA_LOG_INFO_DEBUG("GPU {}: {}", operation, details);
     }
 }
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

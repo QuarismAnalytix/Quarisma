@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""XSigma Bazel Build Configuration Script.
+"""Quarisma Bazel Build Configuration Script.
 
-This script provides a simplified interface for building XSigma with Bazel,
+This script provides a simplified interface for building Quarisma with Bazel,
 mirroring the functionality of setup.py but using Bazel instead of CMake.
 
 Usage:
@@ -303,7 +303,7 @@ class BazelConfiguration:
     def print_configuration_summary(self) -> None:
         """Print a summary of the build configuration."""
         print("\n" + "=" * 80)
-        print("XSIGMA BAZEL BUILD CONFIGURATION SUMMARY")
+        print("QUARISMA BAZEL BUILD CONFIGURATION SUMMARY")
         print("=" * 80)
 
         # Compiler and build tool
@@ -333,13 +333,13 @@ class BazelConfiguration:
         # Feature flags
         print(f"\n{Fore.CYAN}Feature Flags:{Style.RESET_ALL}")
         features = {
-            "mimalloc": "XSIGMA_ENABLE_MIMALLOC",
-            "magic_enum": "XSIGMA_ENABLE_MAGIC_ENUM",
-            "tbb": "XSIGMA_ENABLE_TBB",
-            "openmp": "XSIGMA_ENABLE_OPENMP",
-            "cuda": "XSIGMA_ENABLE_CUDA",
-            "hip": "XSIGMA_ENABLE_HIP",
-            "lto": "XSIGMA_ENABLE_LTO",
+            "mimalloc": "QUARISMA_ENABLE_MIMALLOC",
+            "magic_enum": "QUARISMA_ENABLE_MAGIC_ENUM",
+            "tbb": "QUARISMA_ENABLE_TBB",
+            "openmp": "QUARISMA_ENABLE_OPENMP",
+            "cuda": "QUARISMA_ENABLE_CUDA",
+            "hip": "QUARISMA_ENABLE_HIP",
+            "lto": "QUARISMA_ENABLE_LTO",
         }
 
         for feature, flag in features.items():
@@ -504,7 +504,7 @@ def parse_args(args: list[str]) -> list[str]:
 
 def print_help() -> None:
     """Print help message."""
-    print_status("XSigma Bazel Build Configuration Helper", "INFO")
+    print_status("Quarisma Bazel Build Configuration Helper", "INFO")
     print("\n" + "=" * 80)
     print("BAZEL BUILD SYSTEM")
     print("=" * 80)

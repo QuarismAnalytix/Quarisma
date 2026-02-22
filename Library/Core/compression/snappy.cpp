@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -22,8 +22,8 @@
  * - Added conditional compilation support for optional compression
  * - Enhanced error handling and platform compatibility
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "compression/snappy.h"
@@ -34,13 +34,13 @@
 #include "common/configure.h"
 #include "common/macros.h"
 
-#if XSIGMA_HAS_COMPRESSION
-#if defined(XSIGMA_COMPRESSION_TYPE_SNAPPY)
+#if QUARISMA_HAS_COMPRESSION
+#if defined(QUARISMA_COMPRESSION_TYPE_SNAPPY)
 #include "snappy.h"
 #endif
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace compression
 {
@@ -49,8 +49,8 @@ namespace snappy
 
 bool compress(const char* input, size_t length, std::string* output)
 {
-#if XSIGMA_HAS_COMPRESSION
-#if defined(XSIGMA_COMPRESSION_TYPE_SNAPPY)
+#if QUARISMA_HAS_COMPRESSION
+#if defined(QUARISMA_COMPRESSION_TYPE_SNAPPY)
     output->resize(::snappy::MaxCompressedLength(length));
     size_t outlen;
     ::snappy::RawCompress(input, length, &(*output)[0], &outlen);
@@ -74,8 +74,8 @@ bool compress(const char* input, size_t length, std::string* output)
 
 bool compress_from_io_vec(const struct iovec* iov, size_t uncompressed_length, std::string* output)
 {
-#if XSIGMA_HAS_COMPRESSION
-#if defined(XSIGMA_COMPRESSION_TYPE_SNAPPY)
+#if QUARISMA_HAS_COMPRESSION
+#if defined(QUARISMA_COMPRESSION_TYPE_SNAPPY)
     output->resize(::snappy::MaxCompressedLength(uncompressed_length));
     size_t outlen;
 
@@ -109,8 +109,8 @@ bool compress_from_io_vec(const struct iovec* iov, size_t uncompressed_length, s
 
 bool get_uncompressed_length(const char* input, size_t length, size_t* result)
 {
-#if XSIGMA_HAS_COMPRESSION
-#if defined(XSIGMA_COMPRESSION_TYPE_SNAPPY)
+#if QUARISMA_HAS_COMPRESSION
+#if defined(QUARISMA_COMPRESSION_TYPE_SNAPPY)
     return ::snappy::GetUncompressedLength(input, length, result);
 #else
     // Compression enabled but Snappy not selected
@@ -130,8 +130,8 @@ bool get_uncompressed_length(const char* input, size_t length, size_t* result)
 
 bool uncompress(const char* input, size_t length, char* output)
 {
-#if XSIGMA_HAS_COMPRESSION
-#if defined(XSIGMA_COMPRESSION_TYPE_SNAPPY)
+#if QUARISMA_HAS_COMPRESSION
+#if defined(QUARISMA_COMPRESSION_TYPE_SNAPPY)
     return ::snappy::RawUncompress(input, length, output);
 #else
     // Compression enabled but Snappy not selected
@@ -152,8 +152,8 @@ bool uncompress(const char* input, size_t length, char* output)
 bool uncompress_to_io_vec(
     const char* compressed, size_t compressed_length, const struct iovec* iov, size_t iov_cnt)
 {
-#if XSIGMA_HAS_COMPRESSION
-#if defined(XSIGMA_COMPRESSION_TYPE_SNAPPY)
+#if QUARISMA_HAS_COMPRESSION
+#if defined(QUARISMA_COMPRESSION_TYPE_SNAPPY)
     // Platform-specific handling of iovec structure
 #ifdef _WIN32
     // Windows requires casting to snappy::iovec
@@ -183,4 +183,4 @@ bool uncompress_to_io_vec(
 
 }  // namespace snappy
 }  // namespace compression
-}  // namespace xsigma
+}  // namespace quarisma

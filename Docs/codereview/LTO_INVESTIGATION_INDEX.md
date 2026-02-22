@@ -1,6 +1,6 @@
 # LTO Investigation Index & Navigation Guide
 
-**Investigation Scope**: Link-Time Optimization (LTO) in XSigma C++ Project  
+**Investigation Scope**: Link-Time Optimization (LTO) in Quarisma C++ Project  
 **Investigation Date**: November 2024  
 **Status**: ✅ Complete  
 **Recommendation**: Keep current LTO configuration (ON by default for Release builds)
@@ -26,14 +26,14 @@
 ---
 
 ### 2. **LTO_INVESTIGATION_ANALYSIS.md** 📊 COMPREHENSIVE ANALYSIS
-**Purpose**: Detailed technical analysis of LTO for XSigma  
+**Purpose**: Detailed technical analysis of LTO for Quarisma  
 **Length**: ~300 lines  
 **Best for**: Understanding the full picture  
 **Contains**:
-- Current LTO configuration in XSigma
+- Current LTO configuration in Quarisma
 - Detailed advantages (performance, binary size, compiler support)
 - Detailed disadvantages (build time, memory, debugging, compatibility)
-- XSigma-specific interactions
+- Quarisma-specific interactions
 - Known issues and limitations
 - Detailed recommendations
 - Performance impact summary
@@ -48,7 +48,7 @@
 **Best for**: Developers and build engineers  
 **Contains**:
 - Compiler-specific LTO implementation (GCC, Clang, MSVC)
-- XSigma CMake configuration details
+- Quarisma CMake configuration details
 - Build script integration
 - Performance characteristics
 - Troubleshooting guide
@@ -195,7 +195,7 @@
 **Reference**: LTO_INVESTIGATION_ANALYSIS.md → Memory Usage During Linking
 
 ### Q: Is LTO supported on all platforms?
-**A**: ✅ Yes, all XSigma-supported compilers have mature LTO support  
+**A**: ✅ Yes, all Quarisma-supported compilers have mature LTO support  
 **Reference**: LTO_INVESTIGATION_ANALYSIS.md → Compiler Support
 
 ### Q: What about debugging with LTO?
@@ -247,10 +247,10 @@
 ## 🔍 Investigation Scope
 
 ### What Was Investigated
-✅ Current LTO configuration in XSigma  
+✅ Current LTO configuration in Quarisma  
 ✅ Advantages of LTO for C++ projects  
 ✅ Disadvantages of LTO for C++ projects  
-✅ XSigma-specific interactions (shared libraries, cross-platform)  
+✅ Quarisma-specific interactions (shared libraries, cross-platform)  
 ✅ Compiler support (GCC, Clang, MSVC, Apple Clang)  
 ✅ Known issues and limitations  
 ✅ Recommendations for configuration  
@@ -258,7 +258,7 @@
 ✅ CI/CD pipeline implications  
 
 ### What Was NOT Investigated
-❌ Actual performance benchmarking on XSigma codebase  
+❌ Actual performance benchmarking on Quarisma codebase  
 ❌ Profile-Guided Optimization (PGO) integration  
 ❌ Detailed Windows DLL testing  
 ❌ Comparison with other optimization techniques  
@@ -328,7 +328,7 @@
 | Total Documents | 6 |
 | Total Pages | ~1,800 lines |
 | Audience | Developers, Build Engineers, Project Managers |
-| Scope | XSigma C++ Project |
+| Scope | Quarisma C++ Project |
 
 ---
 
@@ -337,7 +337,7 @@
 - ✅ Examined current LTO configuration
 - ✅ Researched LTO advantages
 - ✅ Researched LTO disadvantages
-- ✅ Analyzed XSigma-specific interactions
+- ✅ Analyzed Quarisma-specific interactions
 - ✅ Checked compiler compatibility
 - ✅ Identified known issues
 - ✅ Provided recommendations

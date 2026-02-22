@@ -1,7 +1,7 @@
 #pragma once
 
-#include <XSigma/core/boxing/KernelFunction.h>
-#include <XSigma/core/dispatch/Dispatcher.h>
+#include <Quarisma/core/boxing/KernelFunction.h>
+#include <Quarisma/core/dispatch/Dispatcher.h>
 #include <torch/csrc/autograd/edge.h>
 #include <torch/csrc/autograd/function.h>
 #include <torch/csrc/autograd/functions/basic_ops.h>
@@ -12,7 +12,7 @@
 #include <torch/csrc/autograd/saved_variable.h>
 #include <torch/csrc/autograd/variable.h>
 #include <torch/csrc/utils/variadic.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <cstddef>
 #include <functional>
@@ -43,7 +43,7 @@ enum class can_mutate_inplace_result
 // require gradients: a = torch.rand(2) b = torch.rand(2, requires_grad=True)
 // a.copy_(b)
 inline can_mutate_inplace_result can_mutate_inplace(
-    const xsigma::Tensor& tensor, bool requires_grad)
+    const quarisma::Tensor& tensor, bool requires_grad)
 {
     if (!requires_grad || !GradMode::is_enabled())
     {
@@ -68,7 +68,7 @@ inline can_mutate_inplace_result can_mutate_inplace(
     return can_mutate_inplace_result::success;
 }
 
-inline void check_inplace(const xsigma::Tensor& tensor, bool requires_grad)
+inline void check_inplace(const quarisma::Tensor& tensor, bool requires_grad)
 {
     switch (can_mutate_inplace(tensor, requires_grad))
     {
@@ -79,20 +79,20 @@ inline void check_inplace(const xsigma::Tensor& tensor, bool requires_grad)
         return handle_view_on_rebase(impl::get_view_autograd_meta(tensor));
     }
     case can_mutate_inplace_result::view_of_leaf:
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false,
             "a view of a leaf Variable that requires grad is being used in an in-place operation.");
         break;
 
     case can_mutate_inplace_result::is_leaf:
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false, "a leaf Variable that requires grad is being used in an in-place operation.");
         break;
     }
     TORCH_INTERNAL_ASSERT(false);
 }
 
-inline void check_inplace(xsigma::ITensorListRef tensors, bool requires_grad)
+inline void check_inplace(quarisma::ITensorListRef tensors, bool requires_grad)
 {
     for (const auto& tensor : tensors)
     {
@@ -102,18 +102,18 @@ inline void check_inplace(xsigma::ITensorListRef tensors, bool requires_grad)
 
 inline void throw_error_out_requires_grad(const char* name)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         false,
         name,
         "(): functions with out=... arguments don't support automatic differentiation, "
         "but one of the arguments requires grad.");
 }
 
-inline void throw_error_for_complex_autograd(const xsigma::Tensor& tensor, const char* name)
+inline void throw_error_for_complex_autograd(const quarisma::Tensor& tensor, const char* name)
 {
     if (tensor.requires_grad())
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             !tensor.is_complex(),
             name,
             " does not support automatic differentiation for outputs with complex dtype.");
@@ -121,9 +121,9 @@ inline void throw_error_for_complex_autograd(const xsigma::Tensor& tensor, const
 }
 
 inline void throw_error_if_base_and_tensor_are_same(
-    const xsigma::Tensor& base, const xsigma::Tensor& tensor)
+    const quarisma::Tensor& base, const quarisma::Tensor& tensor)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         base.unsafeGetTensorImpl() != tensor.unsafeGetTensorImpl(),
         "View operation returned a tensor that is the same as the input base tensor.  This "
         "is no longer allowed; you must explicitly create a new tensor (e.g., using .detach()). "
@@ -132,7 +132,7 @@ inline void throw_error_if_base_and_tensor_are_same(
         "report a bug to PyTorch or the backend you are using.");
 }
 
-inline void throw_error_for_complex_autograd(xsigma::ITensorListRef tensorlist, const char* name)
+inline void throw_error_for_complex_autograd(quarisma::ITensorListRef tensorlist, const char* name)
 {
     for (const auto& tensor : tensorlist)
     {
@@ -170,7 +170,7 @@ inline void rebase_history(const std::vector<Variable>& vars, const std::shared_
     }
 }
 
-inline void increment_version(const xsigma::Tensor& t)
+inline void increment_version(const quarisma::Tensor& t)
 {
     impl::bump_version(t);
 }
@@ -180,13 +180,13 @@ struct Flatten : IterArgs<Flatten>
     Flatten(variable_list& out) : out(out) {}
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
     variable_list& out;
-    void           operator()(const xsigma::Tensor& x) { out.emplace_back(x); }
-    void           operator()(const std::optional<xsigma::Tensor>& x)
+    void           operator()(const quarisma::Tensor& x) { out.emplace_back(x); }
+    void           operator()(const std::optional<quarisma::Tensor>& x)
     {
         if (x.has_value())
             out.emplace_back(x.value());
     }
-    void operator()(xsigma::ArrayRef<xsigma::Tensor> xs)
+    void operator()(quarisma::ArrayRef<quarisma::Tensor> xs)
     {
         out.insert(out.end(), xs.begin(), xs.end());
     }
@@ -202,13 +202,13 @@ inline variable_list flatten_tensor_args(Args&&... args)
 }
 
 // See NOTE [ Autograd View Variables ] for details.
-inline xsigma::Tensor as_view(
-    const xsigma::Tensor&                                base,
-    const xsigma::Tensor&                                tensor,
+inline quarisma::Tensor as_view(
+    const quarisma::Tensor&                                base,
+    const quarisma::Tensor&                                tensor,
     bool                                                 is_bw_differentiable,
     bool                                                 is_fw_differentiable,
     std::unique_ptr<ViewFunc>                            view_func     = nullptr,
-    std::function<xsigma::Tensor(const xsigma::Tensor&)> rev_view_func = nullptr,
+    std::function<quarisma::Tensor(const quarisma::Tensor&)> rev_view_func = nullptr,
     CreationMeta                                         creation_meta = CreationMeta::DEFAULT,
     bool                                                 allow_tensor_metadata_change = true)
 {
@@ -274,7 +274,7 @@ inline xsigma::Tensor as_view(
     }
     else
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             creation_meta == CreationMeta::DEFAULT,
             "Non-backward differentiable views must have creation_meta=CreationMeta::DEFAULT");
     }
@@ -317,12 +317,12 @@ inline xsigma::Tensor as_view(
 }
 
 inline void check_no_requires_grad(
-    const xsigma::Tensor& tensor,
+    const quarisma::Tensor& tensor,
     const char*           name,
     const char*           fn_name         = "",
     bool                  check_grad_mode = true)
 {
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         !(tensor.defined() && tensor.requires_grad()) ||
             !(check_grad_mode && GradMode::is_enabled()),
         "The function '",
@@ -333,7 +333,7 @@ inline void check_no_requires_grad(
 }
 
 inline void check_no_requires_grad(
-    const std::optional<xsigma::Tensor>& tensor, const char* name, const char* fn_name = "")
+    const std::optional<quarisma::Tensor>& tensor, const char* name, const char* fn_name = "")
 {
     if (tensor.has_value())
     {
@@ -342,7 +342,7 @@ inline void check_no_requires_grad(
 }
 
 inline void check_no_requires_grad(
-    xsigma::ITensorListRef tensors, const char* name, const char* fn_name = "")
+    quarisma::ITensorListRef tensors, const char* name, const char* fn_name = "")
 {
     // GradMode check is expensive, so check it only once for TensorLists
     if (!GradMode::is_enabled())
@@ -356,7 +356,7 @@ inline void check_no_requires_grad(
 }
 
 inline void check_no_requires_grad(
-    const xsigma::List<std::optional<xsigma::Tensor>>& tensors,
+    const quarisma::List<std::optional<quarisma::Tensor>>& tensors,
     const char*                                        name,
     const char*                                        fn_name = "")
 {
@@ -365,7 +365,7 @@ inline void check_no_requires_grad(
     {
         return;
     }
-    for (std::optional<xsigma::Tensor> tensor : tensors)
+    for (std::optional<quarisma::Tensor> tensor : tensors)
     {
         if (tensor.has_value())
         {
@@ -376,21 +376,21 @@ inline void check_no_requires_grad(
 
 // Assumed that saved tensor lists are never inplace outputs
 inline std::vector<SavedVariable> make_saved_variable_list(
-    xsigma::ITensorListRef tensors, const bool is_output = false)
+    quarisma::ITensorListRef tensors, const bool is_output = false)
 {
     return fmap(
         tensors,
-        [&is_output](const xsigma::Tensor& tensor) -> SavedVariable
+        [&is_output](const quarisma::Tensor& tensor) -> SavedVariable
         { return SavedVariable{tensor, is_output /* is output */}; });
 }
 
 // Assumed that saved tensor lists are never inplace outputs
 inline std::vector<SavedVariable> make_saved_variable_list(
-    const xsigma::List<std::optional<xsigma::Tensor>>& tensors, const bool is_output = false)
+    const quarisma::List<std::optional<quarisma::Tensor>>& tensors, const bool is_output = false)
 {
     return fmap(
         tensors,
-        [&is_output](const std::optional<xsigma::Tensor>& tensor) -> SavedVariable
+        [&is_output](const std::optional<quarisma::Tensor>& tensor) -> SavedVariable
         {
             if (tensor.has_value())
             {
@@ -398,12 +398,12 @@ inline std::vector<SavedVariable> make_saved_variable_list(
             }
             else
             {
-                return SavedVariable{xsigma::Tensor(), is_output /* is output */};
+                return SavedVariable{quarisma::Tensor(), is_output /* is output */};
             }
         });
 }
 
-inline std::vector<std::vector<int64_t>> to_args_sizes(xsigma::ITensorListRef tensors)
+inline std::vector<std::vector<int64_t>> to_args_sizes(quarisma::ITensorListRef tensors)
 {
     std::vector<std::vector<int64_t>> args_sizes(tensors.size());
     size_t                            i = 0;
@@ -414,9 +414,9 @@ inline std::vector<std::vector<int64_t>> to_args_sizes(xsigma::ITensorListRef te
     return args_sizes;
 }
 
-inline std::vector<std::vector<xsigma::SymInt>> to_args_sizes_symint(xsigma::ITensorListRef tensors)
+inline std::vector<std::vector<quarisma::SymInt>> to_args_sizes_symint(quarisma::ITensorListRef tensors)
 {
-    std::vector<std::vector<xsigma::SymInt>> args_sizes(tensors.size());
+    std::vector<std::vector<quarisma::SymInt>> args_sizes(tensors.size());
     size_t                                   i = 0;
     for (const auto& t : tensors)
     {
@@ -425,9 +425,9 @@ inline std::vector<std::vector<xsigma::SymInt>> to_args_sizes_symint(xsigma::ITe
     return args_sizes;
 }
 
-inline std::vector<xsigma::ScalarType> to_args_scalartypes(xsigma::ITensorListRef tensors)
+inline std::vector<quarisma::ScalarType> to_args_scalartypes(quarisma::ITensorListRef tensors)
 {
-    std::vector<xsigma::ScalarType> args_scalartypes(tensors.size());
+    std::vector<quarisma::ScalarType> args_scalartypes(tensors.size());
     size_t                          i = 0;
     for (const auto& t : tensors)
     {
@@ -443,16 +443,16 @@ namespace
 {
 
 // If run_jit_decomposition were not a member function, we would be able
-// to pass this as a template parameter to xsigma::Boxedkernel::makeFromFunction.
+// to pass this as a template parameter to quarisma::Boxedkernel::makeFromFunction.
 // However, member functions cannot be passed this way - instead we wrap our
-// call in this functor so it can be passed to xsigma::BoxedKernel::makeFromFunctor
-class WrapperFunctor final : public xsigma::OperatorKernel
+// call in this functor so it can be passed to quarisma::BoxedKernel::makeFromFunctor
+class WrapperFunctor final : public quarisma::OperatorKernel
 {
 public:
     WrapperFunctor(JitDecompInterface* impl) : impl_(impl) {}
 
     void operator()(
-        const xsigma::OperatorHandle& op, xsigma::DispatchKeySet ks, torch::jit::Stack* stack)
+        const quarisma::OperatorHandle& op, quarisma::DispatchKeySet ks, torch::jit::Stack* stack)
     {
         impl_->run_jit_decomposition(op, stack);
     }
@@ -464,8 +464,8 @@ public:
 template <class Return, class... Args>
 Return run_jit_decomposition_with_args_for_jvp(
     std::string_view              name,
-    const xsigma::OperatorHandle& opHandle,
-    xsigma::DispatchKeySet        dispatchKeySet,
+    const quarisma::OperatorHandle& opHandle,
+    quarisma::DispatchKeySet        dispatchKeySet,
     Args&&... args)
 {
     // see NOTE: [Jit Decomposition Interface]
@@ -476,13 +476,13 @@ Return run_jit_decomposition_with_args_for_jvp(
         "Trying to use forward AD with ",
         name,
         " that does not support it because it has not been implemented yet.\nPlease file an issue "
-        "to PyTorch xsigma "
+        "to PyTorch quarisma "
         "https://github.com/pytorch/pytorch/issues/new?template=feature-request.yml "
         "so that we can prioritize its implementation or submit a PR adding the implementation to "
         "derivatives.yaml");
 
-    return xsigma::KernelFunction::makeFromBoxedKernel(
-               xsigma::BoxedKernel::makeFromFunctor(std::make_unique<WrapperFunctor>(impl)))
+    return quarisma::KernelFunction::makeFromBoxedKernel(
+               quarisma::BoxedKernel::makeFromFunctor(std::make_unique<WrapperFunctor>(impl)))
         .call<Return, Args...>(opHandle, dispatchKeySet, std::forward<Args>(args)...);
 }
 

@@ -6,7 +6,7 @@
 
 #include "common/macros.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace gpu
 {
@@ -227,4 +227,4 @@ std::string gpu_memory_alignment::get_alignment_report(const alignment_config& c
 }
 
 }  // namespace gpu
-}  // namespace xsigma
+}  // namespace quarisma

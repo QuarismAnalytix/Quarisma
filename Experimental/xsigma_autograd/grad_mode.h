@@ -1,12 +1,12 @@
 #pragma once
 
-#include <XSigma/core/grad_mode.h>
+#include <Quarisma/core/grad_mode.h>
 #include <torch/csrc/Export.h>
 
 namespace torch::autograd
 {
 
-using GradMode     = xsigma::GradMode;
-using AutoGradMode = xsigma::AutoGradMode;
+using GradMode     = quarisma::GradMode;
+using AutoGradMode = quarisma::AutoGradMode;
 
 }  // namespace torch::autograd

@@ -1,10 +1,10 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -14,8 +14,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include <chrono>
@@ -29,15 +29,15 @@
 #include "profiler/native/tracing/traceme.h"
 #include "profiler/native/tracing/traceme_encode.h"
 #include "profiler/native/tracing/traceme_recorder.h"
-#include "xsigmaTest.h"
+#include "baseTest.h"
 
-using namespace xsigma;
+using namespace quarisma;
 
 // ============================================================================
 // Consolidated Test 1: Basic Constructors and Move Semantics
 // ============================================================================
 
-XSIGMATEST(TracemeTest, constructors_and_move_semantics)
+QUARISMATEST(TracemeTest, constructors_and_move_semantics)
 {
     // Test basic constructor with string_view
     {
@@ -86,7 +86,7 @@ XSIGMATEST(TracemeTest, constructors_and_move_semantics)
 // Consolidated Test 2: Static API - Activity Start/End
 // ============================================================================
 
-XSIGMATEST(TracemeTest, static_activity_api)
+QUARISMATEST(TracemeTest, static_activity_api)
 {
     // Test static activity_start and activity_end with string_view
     {
@@ -140,7 +140,7 @@ XSIGMATEST(TracemeTest, static_activity_api)
 // Consolidated Test 3: Stop Method and Active State
 // ============================================================================
 
-XSIGMATEST(TracemeTest, stop_and_active_state)
+QUARISMATEST(TracemeTest, stop_and_active_state)
 {
     // Test explicit stop method
     {
@@ -196,7 +196,7 @@ XSIGMATEST(TracemeTest, stop_and_active_state)
 // Consolidated Test 4: Metadata and Encoding
 // ============================================================================
 
-XSIGMATEST(TracemeTest, metadata_and_encoding)
+QUARISMATEST(TracemeTest, metadata_and_encoding)
 {
     // Test append_metadata functionality
     {
@@ -261,7 +261,7 @@ XSIGMATEST(TracemeTest, metadata_and_encoding)
 // Consolidated Test 5: Recorder Integration and Level-based Filtering
 // ============================================================================
 
-XSIGMATEST(TracemeTest, recorder_integration_and_levels)
+QUARISMATEST(TracemeTest, recorder_integration_and_levels)
 {
     // Test traceme_recorder start/stop functionality
     {
@@ -311,7 +311,7 @@ XSIGMATEST(TracemeTest, recorder_integration_and_levels)
 // Consolidated Test 6: Threading and Concurrency
 // ============================================================================
 
-XSIGMATEST(TracemeTest, threading_and_concurrency)
+QUARISMATEST(TracemeTest, threading_and_concurrency)
 {
     // Test concurrent tracing from multiple threads
     {
@@ -351,7 +351,7 @@ XSIGMATEST(TracemeTest, threading_and_concurrency)
 // Consolidated Test 7: Stress Tests - Nested and Rapid Traces
 // ============================================================================
 
-XSIGMATEST(TracemeTest, stress_tests)
+QUARISMATEST(TracemeTest, stress_tests)
 {
     // Test many nested traces
     {
@@ -387,7 +387,7 @@ XSIGMATEST(TracemeTest, stress_tests)
 // Consolidated Test 8: Documentation Examples and Integration Tests
 // ============================================================================
 
-XSIGMATEST(TracemeTest, documentation_examples)
+QUARISMATEST(TracemeTest, documentation_examples)
 {
     // Test the basic usage example from documentation
     {
@@ -415,7 +415,7 @@ XSIGMATEST(TracemeTest, documentation_examples)
                 }
             }
         }
-        XSIGMA_CHECK(found_example, "Should have recorded example_function event");
+        QUARISMA_CHECK(found_example, "Should have recorded example_function event");
     }
 
     // Test the metadata example from documentation
@@ -449,10 +449,10 @@ XSIGMATEST(TracemeTest, documentation_examples)
                 if (event.name.find("process_data") != std::string::npos)
                 {
                     // Check that metadata is present
-                    XSIGMA_CHECK(
+                    QUARISMA_CHECK(
                         event.name.find("size=1000") != std::string::npos,
                         "Should contain size metadata");
-                    XSIGMA_CHECK(
+                    QUARISMA_CHECK(
                         event.name.find("type=vector<int>") != std::string::npos,
                         "Should contain type metadata");
                     found_process_data = true;
@@ -460,7 +460,7 @@ XSIGMATEST(TracemeTest, documentation_examples)
                 }
             }
         }
-        XSIGMA_CHECK(found_process_data, "Should have recorded process_data event");
+        QUARISMA_CHECK(found_process_data, "Should have recorded process_data event");
     }
 
     // Test the manual activity management example from documentation
@@ -489,7 +489,7 @@ XSIGMATEST(TracemeTest, documentation_examples)
                 }
             }
         }
-        XSIGMA_CHECK(found_async, "Should have recorded async_operation event");
+        QUARISMA_CHECK(found_async, "Should have recorded async_operation event");
     }
 
     END_TEST();
@@ -499,12 +499,12 @@ XSIGMATEST(TracemeTest, documentation_examples)
 // Consolidated Test 9: Edge Cases - Empty Names, Long Names, Special Characters
 // ============================================================================
 
-XSIGMATEST(TracemeTest, edge_cases_robustness)
+QUARISMATEST(TracemeTest, edge_cases_robustness)
 {
     // Test handling of empty names
     {
         bool started = traceme_recorder::start(1);
-        XSIGMA_CHECK(started, "Should be able to start tracing");
+        QUARISMA_CHECK(started, "Should be able to start tracing");
 
         {
             traceme trace("");  // Empty name
@@ -526,7 +526,7 @@ XSIGMATEST(TracemeTest, edge_cases_robustness)
                 }
             }
         }
-        XSIGMA_CHECK(found_empty, "Should handle empty names");
+        QUARISMA_CHECK(found_empty, "Should handle empty names");
     }
 
     // Test that the system can handle very long names without crashing
@@ -534,7 +534,7 @@ XSIGMATEST(TracemeTest, edge_cases_robustness)
         std::string long_name(500, 'a');  // 500 character name
 
         // Test that we can create and destroy traceme objects with long names
-        // without causing crashes - no try/catch needed per XSigma coding standards
+        // without causing crashes - no try/catch needed per Quarisma coding standards
         {
             traceme trace(long_name.c_str());
             std::this_thread::sleep_for(std::chrono::microseconds(10));
@@ -562,13 +562,13 @@ XSIGMATEST(TracemeTest, edge_cases_robustness)
         traceme::instant_activity([&long_name]() { return long_name; });
 
         // If we get here without crashing, the test passes
-        XSIGMA_CHECK(true, "Successfully handled very long names in all scenarios");
+        QUARISMA_CHECK(true, "Successfully handled very long names in all scenarios");
     }
 
     // Test metadata encoding with special characters
     {
         bool started = traceme_recorder::start(1);
-        XSIGMA_CHECK(started, "Should be able to start tracing");
+        QUARISMA_CHECK(started, "Should be able to start tracing");
 
         {
             traceme trace(
@@ -599,7 +599,7 @@ XSIGMATEST(TracemeTest, edge_cases_robustness)
                 }
             }
         }
-        XSIGMA_CHECK(found_special, "Should handle special characters in metadata");
+        QUARISMA_CHECK(found_special, "Should handle special characters in metadata");
     }
 
     END_TEST();
@@ -609,11 +609,11 @@ XSIGMATEST(TracemeTest, edge_cases_robustness)
 // Consolidated Test 10: Zero Duration Traces
 // ============================================================================
 
-XSIGMATEST(TracemeTest, zero_duration_traces)
+QUARISMATEST(TracemeTest, zero_duration_traces)
 {
     // Test traces with potentially zero duration
     bool started = traceme_recorder::start(1);
-    XSIGMA_CHECK(started, "Should be able to start tracing");
+    QUARISMA_CHECK(started, "Should be able to start tracing");
 
     for (int i = 0; i < 100; ++i)
     {
@@ -642,10 +642,10 @@ XSIGMATEST(TracemeTest, zero_duration_traces)
     }
 
     // Should have recorded at least some events
-    XSIGMA_CHECK(total_events > 0, "Should have recorded some zero_duration_test events");
+    QUARISMA_CHECK(total_events > 0, "Should have recorded some zero_duration_test events");
 
     // It's okay to have zero-duration traces
-    XSIGMA_CHECK(true, "Zero duration traces should be handled gracefully");
+    QUARISMA_CHECK(true, "Zero duration traces should be handled gracefully");
     END_TEST();
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

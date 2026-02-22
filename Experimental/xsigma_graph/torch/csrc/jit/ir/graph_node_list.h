@@ -26,7 +26,7 @@ namespace torch::jit
 // the off-by-one behavior for all standard library reverse iterators like
 // std::list.
 
-// The list is includes two sentinel nodes, one xsigma the beginning and one xsigma the
+// The list is includes two sentinel nodes, one quarisma the beginning and one quarisma the
 // end with a circular link between them. It is an error to insert nodes after
 // the end sentinel node but before the beginning node:
 

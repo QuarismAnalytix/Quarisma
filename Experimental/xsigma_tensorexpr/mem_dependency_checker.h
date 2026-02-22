@@ -5,7 +5,7 @@
 #include <torch/csrc/jit/tensorexpr/ir_simplifier.h>
 #include <torch/csrc/jit/tensorexpr/ir_visitor.h>
 #include <torch/csrc/jit/tensorexpr/stmt.h>
-#include <xsigma/core/ScalarType.h>
+#include <quarisma/core/ScalarType.h>
 
 #include <utility>
 #include <vector>

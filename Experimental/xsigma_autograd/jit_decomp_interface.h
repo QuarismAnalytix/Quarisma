@@ -1,12 +1,12 @@
 #pragma once
 
-#include <XSigma/core/Tensor.h>
-#include <XSigma/core/function_schema.h>
-#include <xsigma/macros/Export.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/core/function_schema.h>
+#include <quarisma/macros/Export.h>
 
 // NOTE: [Jit Decomposition Interface]
 //
-// For some context of why we need this xsigma all, see NOTE: [forward-mode AD
+// For some context of why we need this quarisma all, see NOTE: [forward-mode AD
 // decompositions mechanism]
 //
 // Introducing that mechanism from the NOTE is problematic because:
@@ -33,9 +33,9 @@ namespace torch::autograd::impl
 struct TORCH_API JitDecompInterface
 {
     virtual ~JitDecompInterface()                                                  = default;
-    virtual bool has_jit_decomposition(const xsigma::FunctionSchema& schema) const = 0;
+    virtual bool has_jit_decomposition(const quarisma::FunctionSchema& schema) const = 0;
     virtual void run_jit_decomposition(
-        const xsigma::OperatorHandle& op, jit::Stack* stack) const = 0;
+        const quarisma::OperatorHandle& op, jit::Stack* stack) const = 0;
 };
 
 TORCH_API void                setJitDecompImpl(JitDecompInterface* impl);

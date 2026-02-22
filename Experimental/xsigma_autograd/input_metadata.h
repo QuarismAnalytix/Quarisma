@@ -1,30 +1,30 @@
 #pragma once
 
-#include <XSigma/ExpandUtils.h>
-#include <XSigma/NestedTensorImpl.h>
-#include <XSigma/core/Tensor.h>
-#include <xsigma/core/Device.h>
-#include <xsigma/core/DeviceType.h>
-#include <xsigma/core/Stream.h>
-#include <xsigma/core/SymIntArrayRef.h>
-#include <xsigma/core/TensorImpl.h>
-#include <xsigma/core/impl/DeviceGuardImplInterface.h>
-#include <xsigma/util/DimVector.h>
-#include <xsigma/util/SmallVector.h>
+#include <Quarisma/ExpandUtils.h>
+#include <Quarisma/NestedTensorImpl.h>
+#include <Quarisma/core/Tensor.h>
+#include <quarisma/core/Device.h>
+#include <quarisma/core/DeviceType.h>
+#include <quarisma/core/Stream.h>
+#include <quarisma/core/SymIntArrayRef.h>
+#include <quarisma/core/TensorImpl.h>
+#include <quarisma/core/impl/DeviceGuardImplInterface.h>
+#include <quarisma/util/DimVector.h>
+#include <quarisma/util/SmallVector.h>
 
 #include "util/exception.h"
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/Functions.h>
+#include <Quarisma/Functions.h>
 #else
-#include <XSigma/ops/zeros.h>
+#include <Quarisma/ops/zeros.h>
 #endif
 
 namespace torch::autograd
 {
 
-using SymIntSmallVec = xsigma::SmallVector<xsigma::SymInt, xsigma::kDimVectorStaticSize>;
-using MetadataShape  = std::variant<SymIntSmallVec, xsigma::Tensor>;
+using SymIntSmallVec = quarisma::SmallVector<quarisma::SymInt, quarisma::kDimVectorStaticSize>;
+using MetadataShape  = std::variant<SymIntSmallVec, quarisma::Tensor>;
 
 /**
  * Records TensorOptions, shape of the tensor, whether or not the Python
@@ -38,40 +38,40 @@ struct TORCH_API InputMetadata
 {
     InputMetadata() = default;
     InputMetadata(
-        const xsigma::TensorOptions&      options,
+        const quarisma::TensorOptions&      options,
         MetadataShape                     input_shape,
         bool                              is_tensor_subclass,
         bool                              is_nested,
-        std::optional<xsigma::ScalarType> grad_dtype);
-    InputMetadata(const xsigma::Tensor& t);
+        std::optional<quarisma::ScalarType> grad_dtype);
+    InputMetadata(const quarisma::Tensor& t);
 
-    const xsigma::TensorOptions& options() const { return options_; }
+    const quarisma::TensorOptions& options() const { return options_; }
 
     caffe2::TypeMeta dtype() const { return options_.dtype(); }
 
-    xsigma::Device device() const { return options_.device(); }
+    quarisma::Device device() const { return options_.device(); }
 
-    xsigma::Layout layout() const { return options_.layout(); }
+    quarisma::Layout layout() const { return options_.layout(); }
 
-    xsigma::Stream stream() const { return stream_; }
+    quarisma::Stream stream() const { return stream_; }
 
     bool is_tensor_subclass() const { return is_tensor_subclass_; }
 
-    xsigma::Tensor zeros_like() const;
+    quarisma::Tensor zeros_like() const;
 
-    bool is_same_shape(const xsigma::Tensor& grad) const;
+    bool is_same_shape(const quarisma::Tensor& grad) const;
 
-    bool is_expandable_to_shape(const xsigma::Tensor& grad) const;
+    bool is_expandable_to_shape(const quarisma::Tensor& grad) const;
 
-    xsigma::Tensor reduce_grad(xsigma::Tensor& grad) const;
+    quarisma::Tensor reduce_grad(quarisma::Tensor& grad) const;
 
-    xsigma::Tensor maybe_reduce(
+    quarisma::Tensor maybe_reduce(
         const size_t                                          index,
-        xsigma::Tensor                                        grad,
+        quarisma::Tensor                                        grad,
         const std::function<std::string(const std::string&)>& format_error) const;
 
     std::stringstream incompatible_shape_error_message(
-        const size_t index, const xsigma::Tensor& grad) const;
+        const size_t index, const quarisma::Tensor& grad) const;
 
     bool was_default_constructed() const { return was_default_constructed_; }
 
@@ -79,34 +79,34 @@ struct TORCH_API InputMetadata
 
     bool is_nested_tensor() const { return is_nested_; }
 
-    xsigma::SymIntArrayRef shape_as_dim_vector() const;
+    quarisma::SymIntArrayRef shape_as_dim_vector() const;
 
     // Danger: not thread safe, caller must protect with lock
     SymIntSmallVec& mutable_shape_as_dim_vector();
 
-    std::optional<xsigma::ScalarType> grad_dtype() const
+    std::optional<quarisma::ScalarType> grad_dtype() const
     {
         TORCH_INTERNAL_ASSERT(!was_default_constructed_);
         return grad_dtype_;
     }
 
-    void set_grad_dtype(const std::optional<xsigma::ScalarType>& grad_dtype)
+    void set_grad_dtype(const std::optional<quarisma::ScalarType>& grad_dtype)
     {
         TORCH_INTERNAL_ASSERT(!was_default_constructed_);
         grad_dtype_ = grad_dtype;
     }
 
 private:
-    xsigma::Tensor shape_as_tensor() const;
-    bool           is_nestedness_same(const xsigma::Tensor& grad) const;
-    bool           maybe_expandable_to(const xsigma::Tensor& grad) const;
+    quarisma::Tensor shape_as_tensor() const;
+    bool           is_nestedness_same(const quarisma::Tensor& grad) const;
+    bool           maybe_expandable_to(const quarisma::Tensor& grad) const;
 
     // NB: The engine does not use the dtype from the options, but rather the
     //     grad_dtype_ field to validate grad_output dtype.
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-    const xsigma::TensorOptions options_;
+    const quarisma::TensorOptions options_;
     MetadataShape               shape_;
-    xsigma::Stream stream_             = xsigma::Stream(xsigma::Stream::Default::DEFAULT, device());
+    quarisma::Stream stream_             = quarisma::Stream(quarisma::Stream::Default::DEFAULT, device());
     bool           is_tensor_subclass_ = false;
     bool           is_nested_          = false;
     bool           was_default_constructed_ = true;
@@ -115,6 +115,6 @@ private:
     // When nullopt, grad_dtype_ is allowed to be any dtype.
     // This field is mutated if THPVariable_set_grad_dtype is called
     // and the AccumulateGrad has already been created.
-    std::optional<xsigma::ScalarType> grad_dtype_;
+    std::optional<quarisma::ScalarType> grad_dtype_;
 };
 }  // namespace torch::autograd

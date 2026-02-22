@@ -33,7 +33,7 @@ namespace c10
 
 // If you add a new (non-privateuse) backend here,
 // make sure to add an Autograd<Backend> fallthrough kernel
-// in aten/src/XSigma/core/VariableFallbackKernel.cpp
+// in aten/src/Quarisma/core/VariableFallbackKernel.cpp
 
 #define C10_FORALL_BACKEND_COMPONENTS(_, extra) \
     _(CPU, extra)                               \
@@ -199,7 +199,7 @@ enum class DispatchKey : uint16_t
     //     the user-defined PRNG class.
     //  2) use it as a dispatch key while registering custom kernels
     //     (templatized kernels specialized for user-defined PRNG class)
-    // intended for out of tree use; tested by aten/src/XSigma/test/rng_test.cpp
+    // intended for out of tree use; tested by aten/src/Quarisma/test/rng_test.cpp
     CustomRNGKeyId,
 
     // TODO: Make Mkldnn a functionality key, so we can give it Meta
@@ -208,7 +208,7 @@ enum class DispatchKey : uint16_t
     // based on the layout of the tensor.  Note that the sparse backends
     // are one case where ordering matters: sparse multi-dispatches with
     // the corresponding dense tensors, and must be handled before them.
-    MkldnnCPU,  // registered at build/aten/src/XSigma/RegisterMkldnnCPU.cpp
+    MkldnnCPU,  // registered at build/aten/src/Quarisma/RegisterMkldnnCPU.cpp
     // NB: not to be confused with MKLDNN, which is Caffe2 only
 
     // See [Note: Per-Backend Functionality Dispatch Keys]
@@ -268,7 +268,7 @@ enum class DispatchKey : uint16_t
     // This is implemented at a dispatch level right before any backends run
     Negative,
 
-    ZeroTensor,  // registered at build/aten/src/XSigma/RegisterZeroTensor.cpp
+    ZeroTensor,  // registered at build/aten/src/Quarisma/RegisterZeroTensor.cpp
 
     // Note [ADInplaceOrView key]
     // ADInplaceOrView key is used by inplace or view ops to register a kernel
@@ -402,7 +402,7 @@ enum class DispatchKey : uint16_t
     // Don't use it for anything real; its only acceptable use is within a single
     // process test.  Use it by creating a TensorImpl with this DispatchKey, and
     // then registering operators to operate on this type id.  See
-    // aten/src/XSigma/core/dispatch/backend_fallback_test.cpp for a usage example.
+    // aten/src/Quarisma/core/dispatch/backend_fallback_test.cpp for a usage example.
     TESTING_ONLY_GenericWrapper,
 
     // TESTING: This is intended to be a generic testing tensor type id.
@@ -410,7 +410,7 @@ enum class DispatchKey : uint16_t
     // process test.  Use it by toggling the mode on and off via
     // TESTING_ONLY_tls_generic_mode_set_enabled and then registering operators
     // to operate on this type id.  See
-    // aten/src/XSigma/core/dispatch/backend_fallback_test.cpp
+    // aten/src/Quarisma/core/dispatch/backend_fallback_test.cpp
     // for a usage example
     TESTING_ONLY_GenericMode,
 
@@ -460,23 +460,23 @@ enum class DispatchKey : uint16_t
     // See Note [Alias Dispatch Key : Autograd]
     Autograd,
     CompositeImplicitAutograd,  // registered at
-    // build/aten/src/XSigma/RegisterCompositeImplicitAutograd.cpp
+    // build/aten/src/Quarisma/RegisterCompositeImplicitAutograd.cpp
 
     // Note: The alias keyset for FuncTorchBatchedDecomposition is disjoint from
     // all
     // other alias keysets
     // and so precedence order doesn't matter
     FuncTorchBatchedDecomposition,  // registered at
-    // build/aten/src/XSigma/RegisterFuncTorchBatchedDecomposition.cpp
+    // build/aten/src/Quarisma/RegisterFuncTorchBatchedDecomposition.cpp
     // Note: The alias keyset for CompositeImplicitAutogradNestedTensor is
     // disjoint from all other alias keysets
     CompositeImplicitAutogradNestedTensor,  // registered at
-    // build/aten/src/XSigma/RegisterCompositeImplicitAutogradNestedTensor.cpp
+    // build/aten/src/Quarisma/RegisterCompositeImplicitAutogradNestedTensor.cpp
     CompositeExplicitAutograd,  // registered at
-    // build/aten/src/XSigma/RegisterCompositeExplicitAutograd.cpp
+    // build/aten/src/Quarisma/RegisterCompositeExplicitAutograd.cpp
     // See Note [CompositeExplicitAutogradNonFunctional Key]
     CompositeExplicitAutogradNonFunctional,  // registered at
-    // build/aten/src/XSigma/RegisterCompositeExplicitAutograd.cpp
+    // build/aten/src/Quarisma/RegisterCompositeExplicitAutograd.cpp
 
     // Define an alias key to represent end of alias dispatch keys.
     // If you add new alias keys after Autograd, please also update it here.

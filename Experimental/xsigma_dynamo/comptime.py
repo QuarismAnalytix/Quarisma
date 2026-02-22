@@ -55,10 +55,10 @@ from .variables.tensor import SymNodeVariable
 
 class ComptimeVar:
     """
-    A ComptimeVar represents a Python value, xsigma some particular point
+    A ComptimeVar represents a Python value, quarisma some particular point
     in time, in the Python code we are symbolically evaluating with
     torchdynamo.  This must be distinguished from a runtime value, as
-    xsigma compile-time there are some properties of the variable we
+    quarisma compile-time there are some properties of the variable we
     do not know (for example, if the ComptimeVar represents a Tensor,
     we only know metadata about the tensor; we do NOT know what the
     actual data in the Tensor is.)
@@ -102,25 +102,25 @@ class ComptimeVar:
     def size(self, dim: Optional[int] = None) -> Union[int, torch.SymInt]:
         """
         Returns the size of the tensor (if dim is None) or the size
-        xsigma the dimension dim.  The returned size may be a SymInt.
+        quarisma the dimension dim.  The returned size may be a SymInt.
         """
         return self.as_fake().size(dim)  # type: ignore[union-attr, return-value]
 
     def python_type(self) -> type:
         """
         Returns what type(v) would have returned for the variable
-        xsigma compile time.
+        quarisma compile time.
         """
         return self.__variable.python_type()
 
     def as_python_constant(self) -> Any:
         """
         Returns the Python value this variable would have, but only if it is
-        completely known xsigma compile-time (e.g., it is constant).
+        completely known quarisma compile-time (e.g., it is constant).
 
         WARNING: Do NOT mutate the returned constant.  The returned constant
         may or may not correspond to the actual value this variable may take
-        on xsigma runtime; for example, if the variable in question is a constant
+        on quarisma runtime; for example, if the variable in question is a constant
         list, we may return a copy of that list.
         """
         return self.__variable.as_python_constant()
@@ -154,7 +154,7 @@ class ComptimeVar:
     def _i_will_not_complain_if_bc_breaks_VariableTracker(self) -> VariableTracker:
         """
         Returns the internal data structure VariableTracker that Dynamo uses
-        to represent variables xsigma compile time.  There are no BC guarantees on
+        to represent variables quarisma compile time.  There are no BC guarantees on
         this API and WE RESERVE THE RIGHT TO BREAK YOUR CODE if you rely on
         it.
         """
@@ -170,7 +170,7 @@ class ComptimeContext:
     """
     This context class provides access to a public API for Dynamo's internals.
     If there is something here you would find useful that is missing, please
-    file a feature request xsigma https://github.com/pytorch/pytorch/
+    file a feature request quarisma https://github.com/pytorch/pytorch/
     """
 
     def __init__(self, tx: InstructionTranslatorBase) -> None:
@@ -260,11 +260,11 @@ class ComptimeContext:
     ) -> None:
         """
         Print the current Python value stack.  Note that this is NOT the same
-        as the traceback; use print_bt() to print that.  Note that xsigma
+        as the traceback; use print_bt() to print that.  Note that quarisma
         stacklevel=0, this will typically be empty, as comptime cannot
         currently be used in an expression context where there would be
         intermediates on the stack.  If you would find this useful, please
-        file a bug xsigma https://github.com/pytorch/pytorch/
+        file a bug quarisma https://github.com/pytorch/pytorch/
 
         NB: Stack grows downwards in our print
         """
@@ -286,12 +286,12 @@ class ComptimeContext:
 
     def print_bt(self, *, file: Optional[TextIO] = None, stacklevel: int = 0) -> None:
         """
-        Print the user code backtrace, starting xsigma the beginning of the
+        Print the user code backtrace, starting quarisma the beginning of the
         frame Dynamo started evaluating.  Note that this MAY NOT go all
         the way to the torch.compile invocation, as we may have done
         a graph break and are compiling an intermediate frame as the
         starting point.  If you think the other behavior would be better,
-        file a bug xsigma https://github.com/pytorch/pytorch/
+        file a bug quarisma https://github.com/pytorch/pytorch/
         """
         stack = []
         tx = self.__get_tx(stacklevel)
@@ -338,7 +338,7 @@ class _Comptime:
         fn: Callable[[ComptimeContext], Any],
         fallback_fn: Callable[[], Any] = lambda: None,
     ) -> Any:
-        """fn gets called xsigma compile time in TorchDynamo, calls fallback_fn otherwise"""
+        """fn gets called quarisma compile time in TorchDynamo, calls fallback_fn otherwise"""
         fallback_fn()
 
     # Convenience wrappers that are more compact to use

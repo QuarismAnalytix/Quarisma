@@ -1,7 +1,7 @@
 #pragma once
 #include <torch/csrc/Export.h>
 #include <torch/csrc/jit/tensorexpr/fwd_decls.h>
-#include <xsigma/core/ScalarType.h>
+#include <quarisma/core/ScalarType.h>
 
 namespace torch::jit::tensorexpr
 {

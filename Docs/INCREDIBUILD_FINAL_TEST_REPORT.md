@@ -33,8 +33,8 @@ python Scripts/setup.py --help | grep incredibuild
 
 #### Test 1.2: Flag Parsed Correctly
 ```python
-flags = XsigmaFlags(['incredibuild'])
-assert flags._XsigmaFlags__value.get('incredibuild') == 'ON'
+flags = QuarismaFlags(['incredibuild'])
+assert flags._QuarismaFlags__value.get('incredibuild') == 'ON'
 ```
 **Result**: ✅ PASS - Flag value is 'ON'
 
@@ -107,8 +107,8 @@ if platform.system() != "Windows":
 
 #### Test 5.1: Icecream Conflict Detection
 ```cmake
-if(XSIGMA_ENABLE_ICECC AND XSIGMA_ENABLE_INCREDIBUILD)
-  set(XSIGMA_ENABLE_ICECC OFF CACHE BOOL ... FORCE)
+if(QUARISMA_ENABLE_ICECC AND QUARISMA_ENABLE_INCREDIBUILD)
+  set(QUARISMA_ENABLE_ICECC OFF CACHE BOOL ... FORCE)
 endif()
 ```
 **Result**: ✅ PASS - Icecream auto-disabled
@@ -179,7 +179,7 @@ assert result == None  # XGE not installed
 | Naming Conventions | ✅ | snake_case throughout |
 | Error Handling | ✅ | No exceptions, proper error codes |
 | Documentation | ✅ | Comprehensive comments |
-| Code Patterns | ✅ | Follows XSigma conventions |
+| Code Patterns | ✅ | Follows Quarisma conventions |
 | Include Guards | ✅ | Proper guards in place |
 | CMake Standards | ✅ | Follows CMake best practices |
 
@@ -204,7 +204,7 @@ assert result == None  # XGE not installed
 | All Tests Pass | ✅ | 16/16 tests passed |
 | Error Handling | ✅ | Graceful failures with helpful messages |
 | Backward Compatible | ✅ | Default OFF, no impact on existing builds |
-| Code Quality | ✅ | Follows all XSigma standards |
+| Code Quality | ✅ | Follows all Quarisma standards |
 | Documentation | ✅ | Comprehensive documentation provided |
 | Platform Support | ✅ | Windows-only with proper validation |
 | Conflict Detection | ✅ | Handles Icecream and Sanitizer conflicts |

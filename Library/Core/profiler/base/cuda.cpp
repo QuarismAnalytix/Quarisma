@@ -1,7 +1,7 @@
 #include <sstream>
 #if 0
 #ifndef ROCM_ON_WINDOWS
-#ifdef XSIGMA_CUDA_USE_NVTX3
+#ifdef QUARISMA_CUDA_USE_NVTX3
 #include <nvtx3/nvtx3.hpp>
 #else
 #include <nvToolsExt.h>
@@ -9,14 +9,14 @@
 #else  // ROCM_ON_WINDOWS
 #include "util/exception.h"
 #endif  // ROCM_ON_WINDOWS
-#include <xsigma/cuda/CUDAGuard.h>
-#include <xsigma/util/ApproximateClock.h>
+#include <quarisma/cuda/CUDAGuard.h>
+#include <quarisma/util/ApproximateClock.h>
 
 #include "profiler/base/base.h"
 #include "profiler/common/util.h"
 #include "util/irange.h"
 
-namespace xsigma::profiler::impl {
+namespace quarisma::profiler::impl {
 namespace {
 
 static void cudaCheck(cudaError_t result, const char* file, int line) {
@@ -37,29 +37,29 @@ static void cudaCheck(cudaError_t result, const char* file, int line) {
     } else {
       ss << cudaGetErrorString(result);
     }
-    XSIGMA_CHECK(false, ss.str());
+    QUARISMA_CHECK(false, ss.str());
   }
 }
-#define XSIGMA_CUDA_CHECK(result) cudaCheck(result, __FILE__, __LINE__);
+#define QUARISMA_CUDA_CHECK(result) cudaCheck(result, __FILE__, __LINE__);
 
 struct CUDAMethods : public ProfilerStubs {
   void record(
-      xsigma::device_option::int_t* device,
+      quarisma::device_option::int_t* device,
       ProfilerVoidEventStub* event,
       int64_t* cpu_ns) const override {
     if (device) {
-      XSIGMA_CUDA_CHECK(xsigma::cuda::GetDevice(device));
+      QUARISMA_CUDA_CHECK(quarisma::cuda::GetDevice(device));
     }
     CUevent_st* cuda_event_ptr{nullptr};
-    XSIGMA_CUDA_CHECK(cudaEventCreate(&cuda_event_ptr));
+    QUARISMA_CUDA_CHECK(cudaEventCreate(&cuda_event_ptr));
     *event = std::shared_ptr<CUevent_st>(cuda_event_ptr, [](CUevent_st* ptr) {
-      XSIGMA_CUDA_CHECK(cudaEventDestroy(ptr));
+      QUARISMA_CUDA_CHECK(cudaEventDestroy(ptr));
     });
-    auto stream = xsigma::cuda::getCurrentCUDAStream();
+    auto stream = quarisma::cuda::getCurrentCUDAStream();
     if (cpu_ns) {
-      *cpu_ns = xsigma::getTime();
+      *cpu_ns = quarisma::getTime();
     }
-    XSIGMA_CUDA_CHECK(cudaEventRecord(cuda_event_ptr, stream));
+    QUARISMA_CUDA_CHECK(cudaEventRecord(cuda_event_ptr, stream));
   }
 
   float elapsed(
@@ -67,10 +67,10 @@ struct CUDAMethods : public ProfilerStubs {
       const ProfilerVoidEventStub* event2_) const override {
     auto event = (const ProfilerEventStub*)(event_);
     auto event2 = (const ProfilerEventStub*)(event2_);
-    XSIGMA_CUDA_CHECK(cudaEventSynchronize(event->get()));
-    XSIGMA_CUDA_CHECK(cudaEventSynchronize(event2->get()));
+    QUARISMA_CUDA_CHECK(cudaEventSynchronize(event->get()));
+    QUARISMA_CUDA_CHECK(cudaEventSynchronize(event2->get()));
     float ms = 0;
-    XSIGMA_CUDA_CHECK(cudaEventElapsedTime(&ms, event->get(), event2->get()));
+    QUARISMA_CUDA_CHECK(cudaEventElapsedTime(&ms, event->get(), event2->get()));
     // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-avoid-magic-numbers,cppcoreguidelines-narrowing-conversions)
     return ms * 1000.0;
   }
@@ -89,7 +89,7 @@ struct CUDAMethods : public ProfilerStubs {
   }
 #else  // ROCM_ON_WINDOWS
   static void printUnavailableWarning() {
-    XSIGMA_LOG_WARNING("Warning: roctracer isn't available on Windows");
+    QUARISMA_LOG_WARNING("Warning: roctracer isn't available on Windows");
   }
   void mark(const char* name) const override {
     printUnavailableWarning();
@@ -103,15 +103,15 @@ struct CUDAMethods : public ProfilerStubs {
 #endif
 
   void onEachDevice(std::function<void(int)> op) const override {
-    xsigma::cuda::OptionalCUDAGuard device_guard;
-    for (const auto i : xsigma::irange(xsigma::cuda::device_count())) {
+    quarisma::cuda::OptionalCUDAGuard device_guard;
+    for (const auto i : quarisma::irange(quarisma::cuda::device_count())) {
       device_guard.set_index(i);
       op(i);
     }
   }
 
   void synchronize() const override {
-    XSIGMA_CUDA_CHECK(cudaDeviceSynchronize());
+    QUARISMA_CUDA_CHECK(cudaDeviceSynchronize());
   }
 
   bool enabled() const override {
@@ -128,5 +128,5 @@ struct RegisterCUDAMethods {
 RegisterCUDAMethods reg;
 
 } // namespace
-} // namespace xsigma::profiler::impl
+} // namespace quarisma::profiler::impl
 #endif  // 0

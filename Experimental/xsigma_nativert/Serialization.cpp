@@ -51,7 +51,7 @@ Value* symbolicToValue(const torch::_export::Argument& arg, Graph& graph, Node* 
                 break;
             }
             default:
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     fmt::format(
                         "Unknown OptionalTensorArgument type: {}",
@@ -84,7 +84,7 @@ Value* symbolicToValue(const torch::_export::Argument& arg, Graph& graph, Node* 
                 // We convert them into a constant Value in graph. These value
                 // doesn't have producer node
                 int64_t value = listEl.get_as_int();
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     value >= std::numeric_limits<int>::min() &&
                     value <= std::numeric_limits<int>::max());
                 Value* symintValue = graph.createConstantSymIntValue(static_cast<int>(value));
@@ -92,7 +92,7 @@ Value* symbolicToValue(const torch::_export::Argument& arg, Graph& graph, Node* 
                 break;
             }
             default:
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     fmt::format(
                         "Unknown SymIntArgument type: {}",
@@ -115,7 +115,7 @@ Value* symbolicToValue(const torch::_export::Argument& arg, Graph& graph, Node* 
         return graph.getValue(arg.get_as_sym_float().get_as_name());
     }
     default:
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false,
             fmt::format(
                 "This function should only be called with symbolic arguments, got {} instead",
@@ -230,7 +230,7 @@ std::unique_ptr<Graph> jsonToSubgraph(
                 break;
             }
             default:
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     fmt::format(
                         "Unsupported symbolic graph input type: {}",
@@ -253,7 +253,7 @@ std::unique_ptr<Graph> jsonToSubgraph(
                 break;
             }
             default:
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     fmt::format(
                         "Unsupported constant graph input type: {}",
@@ -335,7 +335,7 @@ std::unique_ptr<Graph> jsonToSubgraph(
             }
             case torch::_export::Argument::Tag::AS_SYM_INTS:
             {
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     "SymInts NYI. We currently don't have ops that produce SymInts as output");
             }
@@ -347,7 +347,7 @@ std::unique_ptr<Graph> jsonToSubgraph(
             }
             case torch::_export::Argument::Tag::AS_SYM_BOOLS:
             {
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     "SymBools NYI. We currently don't have ops that produce SymBools as output");
             }
@@ -359,13 +359,13 @@ std::unique_ptr<Graph> jsonToSubgraph(
             }
             case torch::_export::Argument::Tag::AS_SYM_FLOATS:
             {
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     "SymFloats NYI. We currently doesn't have op that produces SymFloats as "
                     "output");
             }
             default:
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     fmt::format(
                         "Unsupported graph output type: {}",
@@ -392,14 +392,14 @@ std::unique_ptr<Graph> jsonToSubgraph(
             case torch::_export::Argument::Tag::AS_SYM_INT:
             {
                 const auto& asSymInt = output.get_as_sym_int();
-                XSIGMA_CHECK(asSymInt.tag() == torch::_export::SymIntArgument::Tag::AS_NAME);
+                QUARISMA_CHECK(asSymInt.tag() == torch::_export::SymIntArgument::Tag::AS_NAME);
                 const auto& name        = asSymInt.get_as_name();
                 Value*      outputValue = graph->getValue(name);
                 graph->addOutput(outputValue);
                 break;
             }
             default:
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     fmt::format(
                         "Unsupported graph output type: {}",
@@ -433,7 +433,7 @@ std::unique_ptr<Graph> jsonToSubgraph(
             }
             else
             {
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     fmt::format(
                         "Unsupported subgraph input type {}", fmt::streamed(input->type())));
@@ -458,7 +458,7 @@ std::unique_ptr<Graph> jsonToSubgraph(
             }
             else
             {
-                XSIGMA_CHECK(
+                QUARISMA_CHECK(
                     false,
                     fmt::format(
                         "Unsupported subgraph output type {}", fmt::streamed(output->type())));
@@ -486,7 +486,7 @@ std::unique_ptr<Graph> jsonToSubgraph(
         }
 
         auto it = jsonTensorValue.find(inputName);
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             it != jsonTensorValue.end(),
             "Missing tensor metadata for ",
             inputName,
@@ -590,26 +590,26 @@ Constant constantToValue(const torch::_export::Argument& jsonArg, bool loadNodeM
     case torch::_export::Argument::Tag::AS_TENSOR:
     case torch::_export::Argument::Tag::AS_TENSORS:
     case torch::_export::Argument::Tag::AS_OPTIONAL_TENSORS:
-        XSIGMA_CHECK(false, "Tensor values are symbolic, not constant.");
+        QUARISMA_CHECK(false, "Tensor values are symbolic, not constant.");
     case torch::_export::Argument::Tag::AS_SYM_INT:
     case torch::_export::Argument::Tag::AS_SYM_INTS:
     case torch::_export::Argument::Tag::AS_SYM_BOOL:
     case torch::_export::Argument::Tag::AS_SYM_BOOLS:
-        XSIGMA_CHECK(false, "Symint/Symbool Values are symbolic, not constant.");
+        QUARISMA_CHECK(false, "Symint/Symbool Values are symbolic, not constant.");
     case torch::_export::Argument::Tag::AS_CUSTOM_OBJ:
-        XSIGMA_CHECK(false, "custom obj is symbolic, not constant");
+        QUARISMA_CHECK(false, "custom obj is symbolic, not constant");
     case torch::_export::Argument::Tag::AS_OPERATOR:
         return jsonArg.get_as_operator();
     case torch::_export::Argument::Tag::AS_SYM_FLOAT:
     {
-        XSIGMA_CHECK(false, "SymFloat is not yet implemented");
+        QUARISMA_CHECK(false, "SymFloat is not yet implemented");
     }
     case torch::_export::Argument::Tag::AS_SYM_FLOATS:
     {
-        XSIGMA_CHECK(false, "SymFloats is not yet implemented");
+        QUARISMA_CHECK(false, "SymFloats is not yet implemented");
     }
     default:
-        XSIGMA_CHECK(false, "Got unknown json argument");
+        QUARISMA_CHECK(false, "Got unknown json argument");
     }
 }
 

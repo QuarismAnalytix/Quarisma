@@ -8,7 +8,7 @@
 #include "api.h"
 #include "common/export.h"
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 // Forward declarations so we don't have to include `libkineto.h` in a header.
 namespace libkineto
 {
@@ -18,12 +18,12 @@ class ActivityTraceInterface;
 }  // namespace libkineto
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 namespace profiler
 {
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 constexpr bool kKinetoAvailable{true};
 #else
 constexpr bool kKinetoAvailable{false};
@@ -42,7 +42,7 @@ struct DeviceAndResource
 };
 const DeviceAndResource kineto_ids();
 
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 using trace_t           = libkineto::CpuTraceBuffer;
 using interface_trace_t = libkineto::ActivityTraceInterface;
 using activity_t        = libkineto::GenericTraceActivity;
@@ -57,7 +57,7 @@ struct DummyTraceInterface
 using trace_t           = DummyTraceBuffer;
 using interface_trace_t = DummyTraceBuffer;
 struct activity_t;
-#endif  // XSIGMA_HAS_KINETO
+#endif  // QUARISMA_HAS_KINETO
 
 void addMetadata(activity_t* activity, const std::string& key, const std::string& value);
 
@@ -97,16 +97,16 @@ struct ActivityTraceWrapper
 
 private:
     std::unique_ptr<interface_trace_t> trace_;
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
     bool saved_ = false;  // Kineto's save is destructive
 #endif
 };
 
-using ActivitySet = std::set<xsigma::autograd::profiler::ActivityType>;
+using ActivitySet = std::set<quarisma::autograd::profiler::ActivityType>;
 void prepareTrace(
     const bool                                        cpuOnly,
     const ActivitySet&                                activities,
-    const xsigma::profiler::impl::ExperimentalConfig& config,
+    const quarisma::profiler::impl::ExperimentalConfig& config,
     const std::string&                                trace_id = "");
 
 void                 toggleCollectionDynamic(const bool enable);
@@ -131,12 +131,12 @@ void logInvariantViolation(
 
 namespace autograd::profiler
 {
-xsigma::device_enum deviceTypeFromActivity(libkineto::ActivityType activity_type);
+quarisma::device_enum deviceTypeFromActivity(libkineto::ActivityType activity_type);
 
-XSIGMA_API void addMetadataJson(const std::string& key, const std::string& value);
+QUARISMA_API void addMetadataJson(const std::string& key, const std::string& value);
 
-XSIGMA_API void profilerStep();
+QUARISMA_API void profilerStep();
 
 }  // namespace autograd::profiler
 
-}  // namespace xsigma
+}  // namespace quarisma

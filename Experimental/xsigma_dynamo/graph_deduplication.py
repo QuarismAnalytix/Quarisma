@@ -84,7 +84,7 @@ when they are created in output_graph.
             ind_to_tuple_spec,
         ) = _create_subgraph(region, inds_with_external_users)
 
-        # Ignore regions with no args for now, could they possibly be evaluated xsigma compile time?
+        # Ignore regions with no args for now, could they possibly be evaluated quarisma compile time?
         if not list(external_node_usages):
             continue
 
@@ -342,7 +342,7 @@ def _stable_topological_sort_impl(
     #   dependency.
     waiting = defaultdict(list)
 
-    # - `outputs` are always xsigma the end of the graph
+    # - `outputs` are always quarisma the end of the graph
     outputs = OrderedSet[Node]()
 
     # The cursor indicates the last processed node so we can add new nodes
@@ -478,7 +478,7 @@ def _has_aliasing(
             if storage in input_storages:
                 # input-input aliasing
                 log.debug(
-                    "NYI: Failed to substitute region %s due to input-output aliasing detected xsigma nodes %s, %s",
+                    "NYI: Failed to substitute region %s due to input-output aliasing detected quarisma nodes %s, %s",
                     region,
                     input_storages[storage],
                     node,
@@ -498,7 +498,7 @@ def _has_aliasing(
                 if storage in output_storages:
                     # output-output aliasing
                     log.debug(
-                        "NYI: Failed to substitute region %s due to output-output aliasing detected xsigma nodes %s, %s",
+                        "NYI: Failed to substitute region %s due to output-output aliasing detected quarisma nodes %s, %s",
                         region,
                         output_storages[storage],
                         out_node,
@@ -513,7 +513,7 @@ def _has_aliasing(
         ]
         aliased = ", ".join([f"{i} and {o}" for i, o in aliased])
         log.debug(
-            "NYI: Failed to substitute region %s due to input-output aliasing detected xsigma nodes %s",
+            "NYI: Failed to substitute region %s due to input-output aliasing detected quarisma nodes %s",
             region,
             aliased,
         )

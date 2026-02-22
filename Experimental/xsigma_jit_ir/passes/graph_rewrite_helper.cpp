@@ -27,7 +27,7 @@ Value* getValue(
     const std::unordered_map<const Value*, Value*>& match_vmap,
     const std::unordered_map<std::string, Value*>&  vmap)
 {
-    return match_vmap.xsigma(vmap.xsigma(name));
+    return match_vmap.quarisma(vmap.quarisma(name));
 }
 
 std::optional<IValue> getIValue(
@@ -38,10 +38,10 @@ std::optional<IValue> getIValue(
     return toIValue(getValue(name, match_vmap, vmap));
 }
 
-static std::unordered_map<std::string, xsigma::IValue> getConvParams(
+static std::unordered_map<std::string, quarisma::IValue> getConvParams(
     const Match& match, const std::unordered_map<std::string, Value*>& vmap)
 {
-    std::unordered_map<std::string, xsigma::IValue> calc_values;
+    std::unordered_map<std::string, quarisma::IValue> calc_values;
     const auto&                                     match_vmap = match.values_map;
     auto transposed_value         = getIValue("transposed", match_vmap, vmap).value();
     calc_values["transposed"]     = transposed_value;
@@ -271,7 +271,7 @@ void replaceConvolutionWithAtenConv(std::shared_ptr<Graph>& graph)
 bool isClampFusable(const Match& match, const std::unordered_map<std::string, Value*>& vmap)
 {
     const auto& match_vmap = match.values_map;
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         vmap.find("dummy_min_max") != vmap.end(),
         "Expected to find dummy_min_max Value in the subgraph to be replaced.");
     auto dummy_min_max = graph_rewrite_helper::getIValue("dummy_min_max", match_vmap, vmap);
@@ -286,7 +286,7 @@ bool isClampFusable(const Match& match, const std::unordered_map<std::string, Va
     {
         // aten::relu pattern does not have output_min/output_max.
         // aten::hardtanh/_ does.
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             vmap.find("output_max") != vmap.end(),
             "Expected to find output_max as well given "
             "output_min exist in pattern graph.");

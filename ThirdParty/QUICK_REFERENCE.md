@@ -21,7 +21,7 @@ add_third_party_library(fmt)
 ### With Condition
 ```cmake
 add_third_party_library(loguru
-    CONDITION XSIGMA_USE_LOGURU
+    CONDITION QUARISMA_USE_LOGURU
     LIBRARY_TYPE STATIC
 )
 ```
@@ -50,7 +50,7 @@ add_third_party_library(fmt
 ### Complete Example
 ```cmake
 add_third_party_library(mimalloc
-    CONDITION XSIGMA_ENABLE_MIMALLOC
+    CONDITION QUARISMA_ENABLE_MIMALLOC
     LIBRARY_TYPE STATIC
     LIBRARY_TYPE_VAR MI_BUILD_STATIC
     FILTER_FLAGS "-fno-exceptions" "-Werror"
@@ -64,7 +64,7 @@ add_third_party_library(mimalloc
 |-----------|------|-------------|---------|
 | `name` | Required | Library name | - |
 | `CONDITION` | Optional | CMake variable to check | - |
-| `LIBRARY_TYPE` | Optional | STATIC/SHARED/DEFAULT | `XSIGMA_THIRDPARTY_TYPE` |
+| `LIBRARY_TYPE` | Optional | STATIC/SHARED/DEFAULT | `QUARISMA_THIRDPARTY_TYPE` |
 | `LIBRARY_TYPE_VAR` | Optional | Library-specific variable | - |
 | `FILTER_FLAGS` | Optional | Flags to remove | - |
 | `ALIASES` | Optional | Alias names to create | - |
@@ -126,7 +126,7 @@ set(_saved_build_shared_libs ${BUILD_SHARED_LIBS})
 string(REPLACE "-fno-exceptions" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(BUILD_SHARED_LIBS OFF)
 
-if(XSIGMA_ENABLE_MY_LIB)
+if(QUARISMA_ENABLE_MY_LIB)
     add_third_party_library(my_lib)
     
     if(TARGET my_lib)
@@ -145,7 +145,7 @@ set(CMAKE_CXX_FLAGS ${_saved_cxx_flags})
 ```cmake
 # 5 lines, clean and declarative
 add_third_party_library(my_lib
-    CONDITION XSIGMA_ENABLE_MY_LIB
+    CONDITION QUARISMA_ENABLE_MY_LIB
     LIBRARY_TYPE STATIC
     FILTER_FLAGS "-fno-exceptions"
 )
@@ -180,7 +180,7 @@ add_third_party_library(lib
 ### 3. Conditional Library
 ```cmake
 add_third_party_library(lib
-    CONDITION XSIGMA_ENABLE_LIB
+    CONDITION QUARISMA_ENABLE_LIB
 )
 ```
 

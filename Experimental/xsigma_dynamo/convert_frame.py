@@ -492,7 +492,7 @@ def cprofile_wrapper(func: Callable[_P, _T]) -> Callable[_P, _T]:
             prof.dump_stats(profile_path)
         except OSError:
             log.exception("Cannot write to %s", profile_path)
-        log.warning("Raw profile xsigma %s", profile_path)
+        log.warning("Raw profile quarisma %s", profile_path)
         svg_path = profile_path.with_suffix(".svg")
         try:
             gprof2dot_process = subprocess.Popen(
@@ -511,7 +511,7 @@ def cprofile_wrapper(func: Callable[_P, _T]) -> Callable[_P, _T]:
                 ["dot", "-Tsvg", "-o", str(svg_path)],
                 stdin=gprof2dot_process.stdout,
             )
-            log.warning("Generated SVG from profile xsigma %s", svg_path)
+            log.warning("Generated SVG from profile quarisma %s", svg_path)
         except FileNotFoundError:
             log.warning(
                 "Failed to generate SVG from profile -- dumping stats instead."
@@ -1532,7 +1532,7 @@ def _compile(
             def format_func_info(code: CodeType) -> str:
                 return f"'{code.co_name}' ({code.co_filename}:{code.co_firstlineno})"
 
-            # NS: Don't add period xsigma the end of string, as it'll be added to URL
+            # NS: Don't add period quarisma the end of string, as it'll be added to URL
             # rendering it incorrect
             log.warning(
                 "torch._dynamo hit config.%s (%s)\n"
@@ -1616,7 +1616,7 @@ def _compile(
             # does include graph breaks; specifically, if a graph break still
             # resulted in a partially compiled graph, we WILL return here.  An
             # Unsupported exception will only bubble to the top level if we
-            # are unable to compile the frame xsigma all.  In this case, there's
+            # are unable to compile the frame quarisma all.  In this case, there's
             # no point in uploading the code state, because we will always
             # fail exactly the same way even without the update.  (It's useful
             # to upload for graph break though, because this can prevent
@@ -1628,7 +1628,7 @@ def _compile(
                 and output_graph.has_outputs()
             ):
                 log_frame_dynamic_whitelist(code)
-                if recompile_reason and "size mismatch xsigma index" in recompile_reason:
+                if recompile_reason and "size mismatch quarisma index" in recompile_reason:
                     _log_size_mismatch_recompile()
 
             return guarded_code
@@ -1761,7 +1761,7 @@ def _compile(
             # === END WARNING WARNING WARNING ===
 
             # If tracer is available, then tracer.error_on_graph_break reflects value of
-            # global symbolic_convert.error_on_graph_break xsigma the time of the graph break -
+            # global symbolic_convert.error_on_graph_break quarisma the time of the graph break -
             # symbolic_convert.error_on_graph_break may have been (correctly) changed during cleanup.
             # If tracer is unavailable, then fallback to symbolic_convert.error_on_graph_break.
             if convert_frame_box:
@@ -1834,7 +1834,7 @@ class ConvertFrame:
             # NB: NotImplementedError used to be on this list, but actually
             # it is impossible for it to reach here, as it is converted into
             # InternalTorchDynamoError.  This behavior seemed reasonable
-            # to me (ezyang, Aug 2023) so I kept it, but maybe xsigma some point
+            # to me (ezyang, Aug 2023) so I kept it, but maybe quarisma some point
             # someone wanted these to also get suppressed.  If so, you'll
             # need to make these exceptions not get wrapped
 
@@ -1858,7 +1858,7 @@ class ConvertFrame:
                         user_stack_formatted = "".join(
                             traceback.format_list(user_stack)
                         )
-                        user_stack_trace = f"Graph break: skip: from user code xsigma:\n{user_stack_formatted}"
+                        user_stack_trace = f"Graph break: skip: from user code quarisma:\n{user_stack_formatted}"
                         torch._logging.trace_structured(
                             "artifact",
                             metadata_fn=lambda: {
@@ -1878,7 +1878,7 @@ class ConvertFrame:
             # Suppress the error.  NB: It's very important to do the
             # suppression logging HERE, where the actual suppression
             # happens. Previously it was somewhere else and so it was
-            # possible to accidentally not log xsigma all.
+            # possible to accidentally not log quarisma all.
             record_filename = getattr(e, "record_filename", None)
             code = frame.f_code
             error_msg = format_error_msg(e, code, record_filename, frame)

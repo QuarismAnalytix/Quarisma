@@ -1,5 +1,5 @@
 # =============================================================================
-# XSigma Enzyme Automatic Differentiation Integration Module
+# Quarisma Enzyme Automatic Differentiation Integration Module
 # =============================================================================
 # This module integrates Enzyme AD (https://enzyme.mit.edu/) for automatic
 # differentiation. Enzyme works by loading as an LLVM plugin and requires
@@ -25,14 +25,14 @@ include_guard(GLOBAL)
 # Controls whether Enzyme automatic differentiation is enabled.
 # When enabled, Enzyme provides high-performance AD capabilities.
 # Note: Already defined in main CMakeLists.txt, just documenting here
-if(NOT DEFINED XSIGMA_ENABLE_ENZYME)
-  option(XSIGMA_ENABLE_ENZYME "Enable Enzyme automatic differentiation support" OFF)
-  mark_as_advanced(XSIGMA_ENABLE_ENZYME)
+if(NOT DEFINED QUARISMA_ENABLE_ENZYME)
+  option(QUARISMA_ENABLE_ENZYME "Enable Enzyme automatic differentiation support" OFF)
+  mark_as_advanced(QUARISMA_ENABLE_ENZYME)
 endif()
 
 # Only proceed if Enzyme is enabled
-if(NOT XSIGMA_ENABLE_ENZYME)
-  message(STATUS "Enzyme automatic differentiation support is disabled (XSIGMA_ENABLE_ENZYME=OFF)")
+if(NOT QUARISMA_ENABLE_ENZYME)
+  message(STATUS "Enzyme automatic differentiation support is disabled (QUARISMA_ENABLE_ENZYME=OFF)")
   return()
 endif()
 
@@ -63,7 +63,7 @@ if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     "Disabling Enzyme support.\n"
     "================================================================================\n"
   )
-  set(XSIGMA_ENABLE_ENZYME OFF CACHE BOOL "Enable Enzyme automatic differentiation support" FORCE)
+  set(QUARISMA_ENABLE_ENZYME OFF CACHE BOOL "Enable Enzyme automatic differentiation support" FORCE)
   return()
 endif()
 
@@ -263,7 +263,7 @@ if(NOT ENZYME_PLUGIN_FOUND)
       "================================================================================\n"
     )
   endif()
-  set(XSIGMA_ENABLE_ENZYME OFF CACHE BOOL "Enable Enzyme automatic differentiation support" FORCE)
+  set(QUARISMA_ENABLE_ENZYME OFF CACHE BOOL "Enable Enzyme automatic differentiation support" FORCE)
   return()
 endif()
 
@@ -281,7 +281,7 @@ set(ENZYME_COMPILER_FLAGS
 
 # Option to enable Enzyme optimization flags
 # NOTE: -fno-exceptions and -fno-rtti are disabled by default because they
-# conflict with code that uses exceptions and RTTI (which XSigma does).
+# conflict with code that uses exceptions and RTTI (which Quarisma does).
 # Enzyme can work with exceptions and RTTI enabled, though it may have
 # slightly lower performance.
 option(ENZYME_ENABLE_OPTIMIZATIONS "Enable Enzyme-specific optimizations (disables exceptions/RTTI)" OFF)
@@ -301,24 +301,24 @@ set(ENZYME_COMPILE_OPTIONS ${ENZYME_COMPILER_FLAGS} CACHE STRING "Enzyme compile
 message(STATUS "Enzyme compiler flags: ${ENZYME_COMPILE_OPTIONS}")
 
 # =============================================================================
-# Step 4: Create XSigma::enzyme interface target
+# Step 4: Create Quarisma::enzyme interface target
 # =============================================================================
 # Create an interface library that other targets can link against
 
-if(NOT TARGET XSigma::enzyme)
-  add_library(XSigma::enzyme INTERFACE IMPORTED GLOBAL)
+if(NOT TARGET Quarisma::enzyme)
+  add_library(Quarisma::enzyme INTERFACE IMPORTED GLOBAL)
 
   # Add Enzyme compiler flags to the interface
-  target_compile_options(XSigma::enzyme INTERFACE ${ENZYME_COMPILE_OPTIONS})
+  target_compile_options(Quarisma::enzyme INTERFACE ${ENZYME_COMPILE_OPTIONS})
 
   # Add Enzyme linker flags to the interface
   # The plugin must be loaded at link time as well to provide the __enzyme_* symbols
-  target_link_options(XSigma::enzyme INTERFACE ${ENZYME_COMPILE_OPTIONS})
+  target_link_options(Quarisma::enzyme INTERFACE ${ENZYME_COMPILE_OPTIONS})
 
   # Add Enzyme compile definition
-  target_compile_definitions(XSigma::enzyme INTERFACE XSIGMA_HAS_ENZYME=1)
+  target_compile_definitions(Quarisma::enzyme INTERFACE QUARISMA_HAS_ENZYME=1)
 
-  message(STATUS "✅ Created XSigma::enzyme interface target")
+  message(STATUS "✅ Created Quarisma::enzyme interface target")
 endif()
 
 # =============================================================================

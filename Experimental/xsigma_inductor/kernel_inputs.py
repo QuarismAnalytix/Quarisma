@@ -41,7 +41,7 @@ class KernelInputs(ABC):
         self._device_name: Optional[str] = None
         self._scalars = scalars if scalars is not None else {}
         self._out_dtype = out_dtype
-        assert len(input_nodes) > 0, "Expected xsigma least one input node"
+        assert len(input_nodes) > 0, "Expected quarisma least one input node"
 
     def nodes(self, reorder: Optional[Sequence[int]] = None) -> list[Any]:
         """
@@ -228,10 +228,10 @@ class MMKernelInputs(KernelInputs):
         the caller can adjust when necessary
         """
         super().__init__(input_nodes, scalars, out_dtype)
-        # for mm, we need xsigma least 2 nodes, and we need to know which nodes
+        # for mm, we need quarisma least 2 nodes, and we need to know which nodes
         # are the main matrixes e.g. addmm is (bias, mat1, mat2) whereas others
         # might be (mat1, mat2, scale), etc.
-        assert len(self._input_nodes) >= 2, "Expected xsigma least 2 input nodes"
+        assert len(self._input_nodes) >= 2, "Expected quarisma least 2 input nodes"
 
         # Adjust assertions to handle negative indices
         m1_idx, m2_idx = mat1_idx, mat2_idx

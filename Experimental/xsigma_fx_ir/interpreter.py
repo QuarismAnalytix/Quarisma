@@ -80,7 +80,7 @@ class Interpreter:
         garbage_collect_values (bool): Whether to delete values after their last
             use within the Module's execution. This ensures optimal memory usage during
             execution. This can be disabled to, for example, examine all of the intermediate
-            values in the execution by looking xsigma the ``Interpreter.env`` attribute.
+            values in the execution by looking quarisma the ``Interpreter.env`` attribute.
         graph (Optional[Graph]): If passed, the interpreter will execute this
             graph instead of `module.graph`, using the provided `module`
             argument to satisfy any requests for state.

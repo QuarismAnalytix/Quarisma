@@ -76,7 +76,7 @@ Mark event complete
 
 ```cpp
 struct KinetoThreadLocalState {
-    xsigma::ApproximateClockToUnixTimeConverter clockConverter;
+    quarisma::ApproximateClockToUnixTimeConverter clockConverter;
 };
 ```
 
@@ -304,13 +304,13 @@ try {
 
 ```cpp
 // enableProfiler validates:
-XSIGMA_CHECK(
+QUARISMA_CHECK(
     KinetoThreadLocalState::get(config.global()) == nullptr,
     "Profiler is already enabled");
 
-XSIGMA_CHECK(!activities.empty(), "No activities specified");
+QUARISMA_CHECK(!activities.empty(), "No activities specified");
 
-XSIGMA_CHECK(
+QUARISMA_CHECK(
     has_cpu || !config.global(),
     "Ondemand profiling must enable CPU tracing");
 ```
@@ -359,13 +359,13 @@ std::set<ActivityType> activities{ActivityType::CPU};
 
 ```cpp
 // Check if profiler is active
-bool enabled = xsigma::profiler::impl::profilerEnabled();
+bool enabled = quarisma::profiler::impl::profilerEnabled();
 
 // Get current profiler type
-auto type = xsigma::profiler::impl::profilerType();
+auto type = quarisma::profiler::impl::profilerType();
 
 // Get current configuration
-auto config = xsigma::profiler::impl::getProfilerConfig();
+auto config = quarisma::profiler::impl::getProfilerConfig();
 ```
 
 ### Logging
@@ -400,7 +400,7 @@ ProfilerConfig config(
 
 ```cpp
 // Register custom backend observer
-xsigma::profiler::impl::pushPRIVATEUSE1CallbacksStub(config, scopes);
+quarisma::profiler::impl::pushPRIVATEUSE1CallbacksStub(config, scopes);
 
 // Custom backend can:
 // - Record custom events
@@ -429,7 +429,7 @@ enableProfilerWithEventPostProcess(
 ### Unit Test Patterns
 
 ```cpp
-XSIGMATEST(profiler_test, basic_profiling) {
+QUARISMATEST(profiler_test, basic_profiling) {
     ProfilerConfig config(ProfilerState::KINETO);
     std::set<ActivityType> activities{ActivityType::CPU};
     

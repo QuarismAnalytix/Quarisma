@@ -1,11 +1,11 @@
 #ifdef TORCH_ENABLE_LLVM
 
-#include <XSigma/NativeFunctions.h>
-#include <XSigma/Parallel.h>
+#include <Quarisma/NativeFunctions.h>
+#include <Quarisma/Parallel.h>
 #include <torch/csrc/jit/tensorexpr/analysis.h>
 #include <torch/csrc/jit/tensorexpr/llvm_codegen.h>
 #include <torch/csrc/jit/tensorexpr/llvm_jit.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include "util/exception.h"
 
@@ -22,9 +22,9 @@
 #include <llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h>
 #include <llvm/ExecutionEngine/Orc/ThreadSafeModule.h>
 // Fixes compilation warnings when gcc-11 is used
-XSIGMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED("-Wmismatched-new-delete")
+QUARISMA_DIAGNOSTIC_PUSH_AND_IGNORED_IF_DEFINED("-Wmismatched-new-delete")
 #include <llvm/IR/IRBuilder.h>
-XSIGMA_DIAGNOSTIC_POP()
+QUARISMA_DIAGNOSTIC_POP()
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/MDBuilder.h>
 #include <llvm/IR/PassManager.h>
@@ -78,7 +78,7 @@ XSIGMA_DIAGNOSTIC_POP()
 
 using namespace torch::jit::tensorexpr;
 
-XSIGMA_DEFINE_bool(
+QUARISMA_DEFINE_bool(
     torch_jit_llvm_use_fast_intrinsics,
     false,
     "Use fast (but slightly less accurate) implementations of tanh and sigmoid")
@@ -130,13 +130,13 @@ XSIGMA_DEFINE_bool(
         case CompareSelectOperation::kNE:
             return llvm::ICmpInst::ICMP_NE;
         case CompareSelectOperation::kGT:
-            return xsigma::isSignedType(type) ? llvm::ICmpInst::ICMP_SGT : llvm::ICmpInst::ICMP_UGT;
+            return quarisma::isSignedType(type) ? llvm::ICmpInst::ICMP_SGT : llvm::ICmpInst::ICMP_UGT;
         case CompareSelectOperation::kGE:
-            return xsigma::isSignedType(type) ? llvm::ICmpInst::ICMP_SGE : llvm::ICmpInst::ICMP_UGE;
+            return quarisma::isSignedType(type) ? llvm::ICmpInst::ICMP_SGE : llvm::ICmpInst::ICMP_UGE;
         case CompareSelectOperation::kLT:
-            return xsigma::isSignedType(type) ? llvm::ICmpInst::ICMP_SLT : llvm::ICmpInst::ICMP_ULT;
+            return quarisma::isSignedType(type) ? llvm::ICmpInst::ICMP_SLT : llvm::ICmpInst::ICMP_ULT;
         case CompareSelectOperation::kLE:
-            return xsigma::isSignedType(type) ? llvm::ICmpInst::ICMP_SLE : llvm::ICmpInst::ICMP_ULE;
+            return quarisma::isSignedType(type) ? llvm::ICmpInst::ICMP_SLE : llvm::ICmpInst::ICMP_ULE;
         default:
             // TODO: change to a proper error report
             throw std::runtime_error("invalid operator type");
@@ -302,7 +302,7 @@ XSIGMA_DEFINE_bool(
         LLVMCodeGenImpl(
             StmtPtr                                stmt,
             const std::vector<CodeGen::BufferArg>& args,
-            xsigma::Device                         device,
+            quarisma::Device                         device,
             Dtype                                  dtype,
             std::string                            kernel_func_name,
             std::optional<std::string>             triple,
@@ -385,7 +385,7 @@ LLVMCodeGen::LLVMCodeGen(StmtPtr stmt) : LLVMCodeGen(stmt, std::vector<CodeGen::
 LLVMCodeGen::LLVMCodeGen(
     StmtPtr                       stmt,
     const std::vector<BufferArg>& args,
-    xsigma::Device                device,
+    quarisma::Device                device,
     const std::string&            kernel_func_name,
     Dtype                         dtype,
     std::optional<std::string>    triple,
@@ -423,7 +423,7 @@ void LLVMCodeGen::call(const std::vector<CallArg>& args)
     }
 
     constexpr unsigned                nargs = 8;
-    xsigma::SmallVector<void*, nargs> argv;
+    quarisma::SmallVector<void*, nargs> argv;
     argv.resize(buf_args.size());
     for (size_t i = 0, e = buf_args.size(); i < e; i++)
     {
@@ -434,15 +434,15 @@ void LLVMCodeGen::call(const std::vector<CallArg>& args)
     value<float>(argv.data());
 }
 
-xsigma::Tensor LLVMCodeGen::empty_strided(
-    xsigma::IntArrayRef               size,
-    xsigma::IntArrayRef               stride,
-    std::optional<xsigma::ScalarType> dtype_opt,
-    std::optional<xsigma::Layout>     layout_opt,
-    std::optional<xsigma::Device>     device_opt,
+quarisma::Tensor LLVMCodeGen::empty_strided(
+    quarisma::IntArrayRef               size,
+    quarisma::IntArrayRef               stride,
+    std::optional<quarisma::ScalarType> dtype_opt,
+    std::optional<quarisma::Layout>     layout_opt,
+    std::optional<quarisma::Device>     device_opt,
     std::optional<bool>               pin_memory_opt)
 {
-    return xsigma::native::empty_strided_cpu(
+    return quarisma::native::empty_strided_cpu(
         size, stride, dtype_opt, layout_opt, device_opt, pin_memory_opt);
 }
 
@@ -455,7 +455,7 @@ std::string LLVMCodeGen::getCodeText(const std::string& attr /*=""*/)
 {
     TORCH_INTERNAL_ASSERT(
         impl_.get(),
-        "LLVMCodeGen memory has been cleaned up. So, code text is not available xsigma this point");
+        "LLVMCodeGen memory has been cleaned up. So, code text is not available quarisma this point");
     if (attr == "asm")
     {
         return impl_->getASMCodeText();
@@ -486,7 +486,7 @@ static std::mutex llvmInitMutex;
 LLVMCodeGenImpl::LLVMCodeGenImpl(
     StmtPtr                                stmt,
     const std::vector<CodeGen::BufferArg>& args,
-    xsigma::Device                         device,
+    quarisma::Device                         device,
     Dtype                                  dtype,
     std::string                            kernel_func_name,
     std::optional<std::string>             triple,
@@ -555,7 +555,7 @@ LLVMCodeGenImpl::LLVMCodeGenImpl(
     // Emit prototype and bind argument Vars to parameter indices.
     llvm::Type*              retTy = dtypeToLLVM(dtype);
     std::vector<llvm::Type*> params;
-    for (const auto i : xsigma::irange(args.size()))
+    for (const auto i : quarisma::irange(args.size()))
     {
         auto const& arg = args[i];
         if (arg.isVar())
@@ -571,7 +571,7 @@ LLVMCodeGenImpl::LLVMCodeGenImpl(
     llvm::FunctionType* fntype = llvm::FunctionType::get(retTy, params, false);
     fn_ = llvm::Function::Create(fntype, llvm::Function::PrivateLinkage, "pytorch", module_.get());
     fn_->addFnAttr(llvm::Attribute::AlwaysInline);
-    for (const auto i : xsigma::irange(args.size()))
+    for (const auto i : quarisma::irange(args.size()))
     {
         if (!args[i].isVar())
         {
@@ -649,7 +649,7 @@ void LLVMCodeGenImpl::emitWrapper(const std::vector<llvm::Type*>& params)
 
     {
         // Work around UBSAN crashes which reads 8 byte in front of every function.
-        // Otherwise, if the function was placed xsigma the beginning of a page, reading
+        // Otherwise, if the function was placed quarisma the beginning of a page, reading
         // 8B before the page could trigger a wild-addr-read ASAN failure if the
         // page before this function was not mapped.
         // - https://reviews.llvm.org/D148665
@@ -665,7 +665,7 @@ void LLVMCodeGenImpl::emitWrapper(const std::vector<llvm::Type*>& params)
     auto wrapBB = llvm::BasicBlock::Create(getContext(), "wrapBB", wrapper);
     irb_.SetInsertPoint(wrapBB);
     llvm::SmallVector<llvm::Value*, 6> wrappedArgs;
-    for (const auto i : xsigma::irange(params.size()))
+    for (const auto i : quarisma::irange(params.size()))
     {
 #if LLVM_VERSION_MAJOR >= 15
         auto argp = irb_.CreateGEP(
@@ -1080,11 +1080,11 @@ void LLVMCodeGenImpl::visit(const CompareSelectPtr& v)
         llvm::Value*           cmp_;
         CompareSelectOperation cmp_op_ = v->compare_select_op();
 
-        if (xsigma::isIntegralType(type_used, true))
+        if (quarisma::isIntegralType(type_used, true))
         {
             cmp_ = irb_.CreateICmp(llvm_comparison_predicate(cmp_op_, type_used), lhs, rhs);
         }
-        else if (xsigma::isFloatingType(type_used))
+        else if (quarisma::isFloatingType(type_used))
         {
             cmp_ = irb_.CreateFCmp(llvm_fp_comparison_predicate(cmp_op_), lhs, rhs);
         }
@@ -1107,11 +1107,11 @@ void LLVMCodeGenImpl::visit(const CompareSelectPtr& v)
         auto         cmp_op   = v->compare_select_op();
         llvm::Value* cmp;
 
-        if (xsigma::isIntegralType(cmp_type, true))
+        if (quarisma::isIntegralType(cmp_type, true))
         {
             cmp = irb_.CreateICmp(llvm_comparison_predicate(cmp_op, cmp_type), lhs, rhs);
         }
-        else if (xsigma::isFloatingType(cmp_type))
+        else if (quarisma::isFloatingType(cmp_type))
         {
             cmp = irb_.CreateFCmp(llvm_fp_comparison_predicate(cmp_op), lhs, rhs);
         }
@@ -1216,16 +1216,16 @@ void LLVMCodeGenImpl::visit(const CastPtr& v)
 
     auto dst_type      = v->dtype().scalar_type();
     auto src_type      = v->src_value()->dtype().scalar_type();
-    bool is_to_bf16    = (dst_type == xsigma::kBFloat16);
-    bool is_to_float   = (dst_type == xsigma::kFloat);
-    bool is_from_bf16  = (src_type == xsigma::kBFloat16);
-    bool is_from_float = (src_type == xsigma::kFloat);
+    bool is_to_bf16    = (dst_type == quarisma::kBFloat16);
+    bool is_to_float   = (dst_type == quarisma::kFloat);
+    bool is_from_bf16  = (src_type == quarisma::kBFloat16);
+    bool is_from_float = (src_type == quarisma::kFloat);
 
     bool cast_from_bf16_to_fp32 = is_from_bf16 && is_to_float;
     bool cast_from_fp32_to_bf16 = is_from_float && is_to_bf16;
     bool non_bf16_cast          = (!is_to_bf16) && (!is_from_bf16);
     bool valid_bf16_cast        = cast_from_bf16_to_fp32 || cast_from_fp32_to_bf16;
-    XSIGMA_CHECK(
+    QUARISMA_CHECK(
         valid_bf16_cast || non_bf16_cast,
         "Cast is not implemented for the conversion between ",
         src_type,
@@ -1392,7 +1392,7 @@ void LLVMCodeGenImpl::visit(const BitCastPtr& v)
         return;
     }
 
-    XSIGMA_CHECK(llvm::CastInst::isBitCastable(srcType->getScalarType(), dstType->getScalarType()));
+    QUARISMA_CHECK(llvm::CastInst::isBitCastable(srcType->getScalarType(), dstType->getScalarType()));
     value_ = irb_.CreateBitOrPointerCast(value_, dstType);
 }
 
@@ -1407,11 +1407,11 @@ llvm::Value* LLVMCodeGenImpl::varToValue(VarPtr v)
     // In that case, varToVal_ takes precedence.
     if (varToVal_.count(v))
     {
-        return varToVal_.xsigma(v);
+        return varToVal_.quarisma(v);
     }
     else if (varToArg_.count(v))
     {
-        auto idx = varToArg_.xsigma(v);
+        auto idx = varToArg_.quarisma(v);
         auto arg = fn_->arg_begin() + idx;
         return arg;
     }
@@ -1421,8 +1421,8 @@ llvm::Value* LLVMCodeGenImpl::varToValue(VarPtr v)
 void LLVMCodeGenImpl::replaceVarMapping(
     const std::vector<VarPtr>& vars, const std::vector<llvm::Value*>& vals)
 {
-    XSIGMA_CHECK(vars.size() == vals.size());
-    for (const auto i : xsigma::irange(vars.size()))
+    QUARISMA_CHECK(vars.size() == vals.size());
+    for (const auto i : quarisma::irange(vars.size()))
     {
         VarPtr       var = vars[i];
         llvm::Value* val = vals[i];
@@ -1629,7 +1629,7 @@ TypedPointer LLVMCodeGenImpl::packFuncArgs(const std::vector<llvm::Value*>& func
         return TypedPointer(VoidPtrType, llvm::ConstantPointerNull::get(VoidPtrType));
     }
     std::vector<llvm::Type*> arg_types(func_args.size());
-    for (const auto i : xsigma::irange(func_args.size()))
+    for (const auto i : quarisma::irange(func_args.size()))
     {
         arg_types[i] = func_args[i]->getType();
     }
@@ -1637,7 +1637,7 @@ TypedPointer LLVMCodeGenImpl::packFuncArgs(const std::vector<llvm::Value*>& func
     llvm::Value*      zero        = llvm::ConstantInt::get(IntTy_, 0);
     llvm::Value*      one         = llvm::ConstantInt::get(IntTy_, 1);
     llvm::Value*      packed      = irb_.CreateAlloca(packed_type, one);
-    for (const auto i : xsigma::irange(func_args.size()))
+    for (const auto i : quarisma::irange(func_args.size()))
     {
         llvm::Value* dst_ptr =
             irb_.CreateInBoundsGEP(packed_type, packed, {zero, llvm::ConstantInt::get(IntTy_, i)});
@@ -1652,7 +1652,7 @@ std::vector<llvm::Value*> LLVMCodeGenImpl::unpackFuncArgs(TypedPointer packed, i
     // TODO: extract arg_count from packed.
     std::vector<llvm::Value*> func_args(arg_count);
     llvm::Value*              zero = llvm::ConstantInt::get(IntTy_, 0);
-    for (const auto i : xsigma::irange(arg_count))
+    for (const auto i : quarisma::irange(arg_count))
     {
         llvm::Type*  feild_type = packed.type->getStructElementType(i);
         llvm::Value* feild_addr = irb_.CreateInBoundsGEP(
@@ -1672,7 +1672,7 @@ llvm::Value* LLVMCodeGenImpl::packFuncArgs(const std::vector<llvm::Value*>& func
         return NullPtr;
     }
     std::vector<llvm::Type*> arg_types(func_args.size());
-    for (const auto i : xsigma::irange(func_args.size()))
+    for (const auto i : quarisma::irange(func_args.size()))
     {
         arg_types[i] = func_args[i]->getType();
     }
@@ -1680,7 +1680,7 @@ llvm::Value* LLVMCodeGenImpl::packFuncArgs(const std::vector<llvm::Value*>& func
     llvm::Value*      zero        = llvm::ConstantInt::get(IntTy_, 0);
     llvm::Value*      one         = llvm::ConstantInt::get(IntTy_, 1);
     llvm::Value*      packed      = irb_.CreateAlloca(packed_type, one);
-    for (const auto i : xsigma::irange(func_args.size()))
+    for (const auto i : quarisma::irange(func_args.size()))
     {
         llvm::Value* dst_ptr =
             irb_.CreateInBoundsGEP(packed_type, packed, {zero, llvm::ConstantInt::get(IntTy_, i)});
@@ -1695,7 +1695,7 @@ std::vector<llvm::Value*> LLVMCodeGenImpl::unpackFuncArgs(llvm::Value* packed, i
     // TODO: extract arg_count from packed.
     std::vector<llvm::Value*> func_args(arg_count);
     llvm::Value*              zero = llvm::ConstantInt::get(IntTy_, 0);
-    for (const auto i : xsigma::irange(arg_count))
+    for (const auto i : quarisma::irange(arg_count))
     {
         llvm::Type*  packed_type = packed->getType()->getPointerElementType();
         llvm::Value* dst_ptr =
@@ -1766,7 +1766,7 @@ void LLVMCodeGenImpl::processParallelFor(ForPtr v)
         irb_.CreatePointerCast(packed_func_args_raw, packed_caller_args->getType());
 
     // Unpack the arguments from the opaque buffer.
-    if (v->var()->dtype().scalar_type() != xsigma::kLong)
+    if (v->var()->dtype().scalar_type() != quarisma::kLong)
     {
         index = irb_.CreateIntCast(
             index, dtypeToLLVM(v->var()->dtype()), v->var()->dtype().is_signed());
@@ -2376,7 +2376,7 @@ void LLVMCodeGenImpl::visit(const IntrinsicsPtr& v)
 
 void LLVMCodeGenImpl::handleBufReuse(BufPtr buf, BufPtr buf_to_reuse)
 {
-    llvm::Value* ptr = varToVal_.xsigma(buf_to_reuse->base_handle());
+    llvm::Value* ptr = varToVal_.quarisma(buf_to_reuse->base_handle());
     if (buf_to_reuse->dtype().scalar_type() != buf->dtype().scalar_type())
     {
         ptr = irb_.CreatePointerCast(ptr, dtypeToLLVMPtr(buf->dtype()));
@@ -2454,7 +2454,7 @@ void LLVMCodeGenImpl::visit(const ExternalCallPtr& v)
         irb_.CreateStore(llvm::ConstantInt::getSigned(LongTy_, b->dims().size()), gep);
 
         // Store dims of the buf
-        for (const auto dim : xsigma::irange(b->dims().size()))
+        for (const auto dim : quarisma::irange(b->dims().size()))
         {
             gep = irb_.CreateInBoundsGEP(
                 LongTy_, buf_dims, llvm::ConstantInt::getSigned(IntTy_, dim_idx));
@@ -2465,7 +2465,7 @@ void LLVMCodeGenImpl::visit(const ExternalCallPtr& v)
         }
 
         // Store strides of the buf
-        for (const auto dim : xsigma::irange(b->dims().size()))
+        for (const auto dim : quarisma::irange(b->dims().size()))
         {
             gep = irb_.CreateInBoundsGEP(
                 LongTy_, buf_strides, llvm::ConstantInt::getSigned(IntTy_, stride_idx));
@@ -2624,7 +2624,7 @@ void LLVMCodeGenImpl::visit(const ExternalCallWithAllocPtr& v)
         irb_.CreateStore(llvm::ConstantInt::getSigned(LongTy_, b->dims().size()), gep);
 
         // Store dims of the buf
-        for (const auto dim : xsigma::irange(b->dims().size()))
+        for (const auto dim : quarisma::irange(b->dims().size()))
         {
             gep = irb_.CreateInBoundsGEP(
                 LongTy_, buf_dims, llvm::ConstantInt::getSigned(IntTy_, dim_idx));
@@ -2635,7 +2635,7 @@ void LLVMCodeGenImpl::visit(const ExternalCallWithAllocPtr& v)
         }
 
         // Store strides of the buf
-        for (const auto dim : xsigma::irange(b->dims().size()))
+        for (const auto dim : quarisma::irange(b->dims().size()))
         {
             gep = irb_.CreateInBoundsGEP(
                 LongTy_, buf_strides, llvm::ConstantInt::getSigned(IntTy_, stride_idx));
@@ -2710,7 +2710,7 @@ void LLVMCodeGenImpl::visit(const ExternalCallWithAllocPtr& v)
          extra_args});
 
     // @lint-ignore CLANGTIDY
-    for (const auto i : xsigma::irange(bufs_out_size))
+    for (const auto i : quarisma::irange(bufs_out_size))
     {
         const auto& buf_out = bufs_out[i];
 #if LLVM_VERSION_MAJOR >= 15
@@ -2809,8 +2809,8 @@ void LLVMCodeGenImpl::visit(const FreePtr& v)
     value_ = llvm::ConstantInt::get(IntTy_, 0);
 
     llvm::Value* ptr = bufsExtToFreeVal_.count(v->buffer_var())
-                           ? bufsExtToFreeVal_.xsigma(v->buffer_var())
-                           : varToVal_.xsigma(v->buffer_var());
+                           ? bufsExtToFreeVal_.quarisma(v->buffer_var())
+                           : varToVal_.quarisma(v->buffer_var());
 
     if (!llvm::isa<llvm::AllocaInst>(ptr))
     {
@@ -2836,7 +2836,7 @@ void LLVMCodeGenImpl::visit(const FreeExtPtr& v)
         irb_.CreateAlloca(Int8PtrTy_, llvm::ConstantInt::getSigned(IntTy_, bufs_num));
 #endif
 
-    for (const auto i : xsigma::irange(bufs_num))
+    for (const auto i : quarisma::irange(bufs_num))
     {
         const auto& buf = bufs[i];
 #if LLVM_VERSION_MAJOR >= 15
@@ -2956,7 +2956,7 @@ void LLVMCodeGenImpl::optimize(llvm::Module& M)
     llvm::ModuleAnalysisManager   MAM;
 
     // Create the new pass manager builder.
-    // Take a look xsigma the PassBuilder constructor parameters for more
+    // Take a look quarisma the PassBuilder constructor parameters for more
     // customization, e.g. specifying a TargetMachine or various debugging
     // options.
     llvm::PassBuilder PB(&TM);

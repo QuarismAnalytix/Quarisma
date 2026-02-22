@@ -1,19 +1,19 @@
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
-#include <XSigma/NamedTensorUtils.h>
-#include <XSigma/TensorSubclassLikeUtils.h>
-#include <XSigma/core/Tensor.h>
-#include <XSigma/native/Resize.h>
-#include <XSigma/native/ResizeCommon.h>
+#include <Quarisma/NamedTensorUtils.h>
+#include <Quarisma/TensorSubclassLikeUtils.h>
+#include <Quarisma/core/Tensor.h>
+#include <Quarisma/native/Resize.h>
+#include <Quarisma/native/ResizeCommon.h>
 
 #ifndef AT_PER_OPERATOR_HEADERS
-#include <XSigma/NativeFunctions.h>
+#include <Quarisma/NativeFunctions.h>
 #else
-#include <XSigma/ops/_resize_output.h>
-#include <XSigma/ops/_resize_output_native.h>
-#include <XSigma/ops/resize.h>
-#include <XSigma/ops/resize_as_native.h>
-#include <XSigma/ops/resize_as_sparse_native.h>
-#include <XSigma/ops/resize_native.h>
+#include <Quarisma/ops/_resize_output.h>
+#include <Quarisma/ops/_resize_output_native.h>
+#include <Quarisma/ops/resize.h>
+#include <Quarisma/ops/resize_as_native.h>
+#include <Quarisma/ops/resize_as_sparse_native.h>
+#include <Quarisma/ops/resize_native.h>
 #endif
 
 #include <c10/util/overflows.h>

@@ -26,7 +26,7 @@ Successfully identified and fixed a **memory visibility bug** in the `ThreadPool
 ### Original Test Code (Flaky)
 
 ```cpp
-XSIGMATEST(ThreadPool, task_execution)
+QUARISMATEST(ThreadPool, task_execution)
 {
     thread_pool             pool(4);
     std::atomic<int>        completed{0};
@@ -111,7 +111,7 @@ The test had **two critical bugs**:
 ### Fixed Test Code
 
 ```cpp
-XSIGMATEST(ThreadPool, task_execution)
+QUARISMATEST(ThreadPool, task_execution)
 {
     thread_pool                    pool(4);
     std::atomic<int>               completed{0};

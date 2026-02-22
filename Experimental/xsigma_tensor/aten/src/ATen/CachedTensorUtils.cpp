@@ -1,5 +1,5 @@
-#include <XSigma/CachedTensorUtils.h>
-#include <XSigma/XSigma.h>
+#include <Quarisma/CachedTensorUtils.h>
+#include <Quarisma/Quarisma.h>
 
 #include "util/flat_hash_map.h"
 
@@ -12,7 +12,7 @@ static bool cached_tensorimpls_enabled = false;
 
 // Like `cached_casts` in autocast_mode, we hash on the TensorImpl*
 //  and keep the pointer alive with a weakref value.
-static xsigma::flat_hash_map<TensorImpl*, weakref_type> cached_tensorimpls;
+static quarisma::flat_hash_map<TensorImpl*, weakref_type> cached_tensorimpls;
 static std::mutex                                       cached_tensorimpl_mutex;
 
 bool is_cached_tensor(const at::Tensor& t)

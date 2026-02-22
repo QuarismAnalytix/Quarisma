@@ -1,10 +1,10 @@
-#if XSIGMA_HAS_NATIVE_PROFILER
+#if QUARISMA_HAS_NATIVE_PROFILER
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -14,8 +14,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /**
@@ -29,9 +29,9 @@
  * - Statistical analysis and reporting
  * - Thread safety and concurrent operations
  * - Performance overhead measurements
- * - Integration with XSigma components
+ * - Integration with Quarisma components
  *
- * @author XSigma Development Team
+ * @author Quarisma Development Team
  * @version 1.0
  * @date 2024
  */
@@ -54,14 +54,14 @@
 #include <utility>        // for max, pair
 #include <vector>         // for vector, _Vector_const_iterator, _Vector_iterato
 
-#include "logging/logger.h"                                 // for XSIGMA_LOG_INFO, XSIGMA_LOG_IF
+#include "logging/logger.h"                                 // for QUARISMA_LOG_INFO, QUARISMA_LOG_IF
 #include "profiler/native/analysis/statistical_analyzer.h"  // for statistical_analyzer, statistical_metrics, time_seri...
 #include "profiler/native/memory/memory_tracker.h"  // for memory_tracker
 #include "profiler/native/session/profiler.h"  // for profiler_session, profiler_session_builder, profiler...
 #include "profiler/native/session/profiler_report.h"  // for profiler_report
-#include "xsigmaTest.h"                               // for END_TEST, XSIGMATEST
+#include "baseTest.h"                               // for END_TEST, QUARISMATEST
 
-using namespace xsigma;
+using namespace quarisma;
 
 namespace
 {
@@ -128,7 +128,7 @@ bool test_basic_functionality()
 
     // Test basic profiling
     {
-        XSIGMA_PROFILE_SCOPE("test_basic_scope");
+        QUARISMA_PROFILE_SCOPE("test_basic_scope");
         simulate_work(10);
     }
 
@@ -177,15 +177,15 @@ bool test_hierarchical_profiling()
 
         // Test nested scopes
         {
-            XSIGMA_PROFILE_SCOPE("level_1");
+            QUARISMA_PROFILE_SCOPE("level_1");
             simulate_work(5);
 
             {
-                XSIGMA_PROFILE_SCOPE("level_2");
+                QUARISMA_PROFILE_SCOPE("level_2");
                 simulate_work(3);
 
                 {
-                    XSIGMA_PROFILE_SCOPE("level_3");
+                    QUARISMA_PROFILE_SCOPE("level_3");
                     simulate_work(2);
                 }
 
@@ -197,7 +197,7 @@ bool test_hierarchical_profiling()
 
         // Test function profiling
         {
-            XSIGMA_PROFILE_FUNCTION();
+            QUARISMA_PROFILE_FUNCTION();
             simulate_work(5);
         }
 
@@ -507,13 +507,13 @@ bool test_thread_safety()
                     for (int i = 0; i < operations_per_thread; ++i)
                     {
                         {
-                            XSIGMA_PROFILE_SCOPE(
+                            QUARISMA_PROFILE_SCOPE(
                                 "thread_" + std::to_string(t) + "_operation_" + std::to_string(i));
                             simulate_work(1);  // 1ms work
 
                             // Test nested scopes in concurrent environment
                             {
-                                XSIGMA_PROFILE_SCOPE("nested_operation");
+                                QUARISMA_PROFILE_SCOPE("nested_operation");
                                 auto memory = allocate_memory(100);
                                 simulate_work(1);
                             }
@@ -592,7 +592,7 @@ bool test_performance_overhead()
         auto start_profiled = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < num_iterations; ++i)
         {
-            XSIGMA_PROFILE_SCOPE("overhead_test");
+            QUARISMA_PROFILE_SCOPE("overhead_test");
             simulate_work(0);  // Minimal work to measure overhead
         }
         auto end_profiled = std::chrono::high_resolution_clock::now();
@@ -641,16 +641,16 @@ bool test_report_generation()
 
         // Generate some profiling data
         {
-            XSIGMA_PROFILE_SCOPE("report_test_scope");
+            QUARISMA_PROFILE_SCOPE("report_test_scope");
             simulate_work(10);
 
             {
-                XSIGMA_PROFILE_SCOPE("nested_scope_1");
+                QUARISMA_PROFILE_SCOPE("nested_scope_1");
                 simulate_work(5);
             }
 
             {
-                XSIGMA_PROFILE_SCOPE("nested_scope_2");
+                QUARISMA_PROFILE_SCOPE("nested_scope_2");
                 simulate_work(3);
             }
         }
@@ -780,7 +780,7 @@ bool test_edge_cases()
 
             for (int i = 0; i < 13; ++i)
             {
-                XSIGMA_PROFILE_SCOPE("very_short_scope");
+                QUARISMA_PROFILE_SCOPE("very_short_scope");
                 // No work - test very short execution times
             }
 
@@ -803,15 +803,15 @@ bool test_edge_cases()
 
             // Create deeply nested scopes
             {
-                XSIGMA_PROFILE_SCOPE("level_1");
+                QUARISMA_PROFILE_SCOPE("level_1");
                 {
-                    XSIGMA_PROFILE_SCOPE("level_2");
+                    QUARISMA_PROFILE_SCOPE("level_2");
                     {
-                        XSIGMA_PROFILE_SCOPE("level_3");
+                        QUARISMA_PROFILE_SCOPE("level_3");
                         {
-                            XSIGMA_PROFILE_SCOPE("level_4");
+                            QUARISMA_PROFILE_SCOPE("level_4");
                             {
-                                XSIGMA_PROFILE_SCOPE("level_5");
+                                QUARISMA_PROFILE_SCOPE("level_5");
                                 simulate_work(1);
                             }
                         }
@@ -920,7 +920,7 @@ bool test_edge_cases()
 
             session->start();
             {
-                XSIGMA_PROFILE_SCOPE("full_options_test");
+                QUARISMA_PROFILE_SCOPE("full_options_test");
                 simulate_work(5);
             }
             session->stop();
@@ -944,7 +944,7 @@ bool test_integration()
         session->start();
 
         {
-            XSIGMA_PROFILE_SCOPE("integration_test");
+            QUARISMA_PROFILE_SCOPE("integration_test");
             simulate_work(10);
 
             // Simulate some work that might use other profiling tools
@@ -1019,7 +1019,7 @@ bool test_comprehensive_error_handling()
 
             for (int i = 0; i < 5; ++i)
             {
-                XSIGMA_PROFILE_SCOPE("microsecond_scope");
+                QUARISMA_PROFILE_SCOPE("microsecond_scope");
                 // Extremely short scope - tests nanosecond precision
             }
 
@@ -1157,7 +1157,7 @@ bool test_high_concurrency()
                     for (int i = 0; i < operations_per_thread; ++i)
                     {
                         {
-                            XSIGMA_PROFILE_SCOPE("high_concurrency_scope_" + std::to_string(t));
+                            QUARISMA_PROFILE_SCOPE("high_concurrency_scope_" + std::to_string(t));
 
                             // Simulate mixed workload
                             simulate_cpu_intensive_work();
@@ -1195,7 +1195,7 @@ bool test_high_concurrency()
 }  // namespace
 
 // Main test function
-XSIGMATEST(Profiler, enhanced_profiler_comprehensive_test)
+QUARISMATEST(Profiler, enhanced_profiler_comprehensive_test)
 {
     std::cout << "=== Enhanced Profiler Comprehensive Test Suite ===" << std::endl;
     std::cout << "Running comprehensive tests for Enhanced Profiler..." << std::endl;
@@ -1241,18 +1241,18 @@ XSIGMATEST(Profiler, enhanced_profiler_comprehensive_test)
 
     if (passed_tests == total_tests)
     {
-        XSIGMA_LOG_INFO("All Enhanced Profiler tests PASSED!");
-        XSIGMA_LOG_INFO("Enhanced Profiler is ready for production use.");
+        QUARISMA_LOG_INFO("All Enhanced Profiler tests PASSED!");
+        QUARISMA_LOG_INFO("Enhanced Profiler is ready for production use.");
     }
     else
     {
-        XSIGMA_LOG_INFO(" {} test(s) FAILED!", total_tests - passed_tests);
+        QUARISMA_LOG_INFO(" {} test(s) FAILED!", total_tests - passed_tests);
     }
-    XSIGMA_LOG_IF(
+    QUARISMA_LOG_IF(
         ERROR,
         passed_tests != total_tests,
         "Some Enhanced Profiler tests FAILED. Please check the logs for details.");
 
     END_TEST();
 }
-#endif  // XSIGMA_HAS_NATIVE_PROFILER
+#endif  // QUARISMA_HAS_NATIVE_PROFILER

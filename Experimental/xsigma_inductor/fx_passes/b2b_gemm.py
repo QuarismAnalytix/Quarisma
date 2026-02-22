@@ -669,7 +669,7 @@ def b2b_gemm_handler(match: Match, mat1: torch.fx.Node, mat2: torch.fx.Node) -> 
     if not (len(inner_mm.all_input_nodes) == 2 and len(f_node.users) == 1):
         return
 
-    # xsigma this point, the nodes between inner_mm and f_node (both included)
+    # quarisma this point, the nodes between inner_mm and f_node (both included)
     # are all used internally inside (A @ subgraph(B @ C))
     # i.e. they neither have other users nor have other inputs
 

@@ -1,9 +1,9 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
- * This file is part of XSigma and is licensed under a dual-license model:
+ * This file is part of Quarisma and is licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -13,8 +13,8 @@
  *       A commercial license is required for proprietary, closed-source,
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 /* Copyright 2024 The TensorFlow Authors. All Rights Reserved.
@@ -33,7 +33,7 @@ limitations under the License.
 ==============================================================================*/
 #pragma once
 
-#ifndef __XSIGMA_WRAP__
+#ifndef __QUARISMA_WRAP__
 
 #include <stddef.h>
 
@@ -48,7 +48,7 @@ limitations under the License.
 #include "util/exception.h"
 #include "util/no_init.h"
 
-namespace xsigma
+namespace quarisma
 {
 namespace QueueBaseInternal
 {
@@ -143,7 +143,7 @@ public:
         clear();
         if (!empty())
         {
-            XSIGMA_LOG_WARNING("Queue is not empty in destructor");
+            QUARISMA_LOG_WARNING("Queue is not empty in destructor");
         }
         delete end_block_;
     }
@@ -154,7 +154,7 @@ public:
         size_t end  = get_end();
         auto&  slot = end_block_->slots[end++ - end_block_->start];
         slot.emplace(std::move(element));
-        if XSIGMA_LIKELY (end - end_block_->start == Block::kNumSlots)
+        if QUARISMA_LIKELY (end - end_block_->start == Block::kNumSlots)
         {
             auto* new_block = new Block{/*start=*/end, /*next=*/nullptr, /*slots=*/{}};
             end_block_      = (end_block_->next = new_block);
@@ -196,18 +196,18 @@ protected:
     // REQUIRES: The queue must not be empty.
     T pop_impl()
     {
-        XSIGMA_CHECK_DEBUG(!empty(), "Queue is empty in pop_impl");
+        QUARISMA_CHECK_DEBUG(!empty(), "Queue is empty in pop_impl");
 
         // Move the next element into the output.
         auto& slot    = start_block_->slots[start_++ - start_block_->start];
         T     element = std::move(slot).consume();
         // If we reach the end of a block, we own it and should delete it.
         // The next block is present: end_ always points to something.
-        if XSIGMA_UNLIKELY (start_ - start_block_->start == Block::kNumSlots)
+        if QUARISMA_UNLIKELY (start_ - start_block_->start == Block::kNumSlots)
         {
             auto* old_block = std::exchange(start_block_, start_block_->next);
             delete old_block;
-            XSIGMA_CHECK_DEBUG(
+            QUARISMA_CHECK_DEBUG(
                 start_ == start_block_->start, "start_ is not equal to start_block_->start");
         }
         return element;
@@ -259,19 +259,19 @@ public:
 
         T& operator*() const
         {
-            XSIGMA_CHECK_DEBUG(block_ != nullptr, "block_ is nullptr");
-            XSIGMA_CHECK_DEBUG(
+            QUARISMA_CHECK_DEBUG(block_ != nullptr, "block_ is nullptr");
+            QUARISMA_CHECK_DEBUG(
                 index_ >= block_->start,
                 "index_ {} is less than block_->start {}",
                 index_,
                 block_->start);
-            XSIGMA_CHECK_DEBUG(
+            QUARISMA_CHECK_DEBUG(
                 index_ < block_->start + Block::kNumSlots,
                 "index_ {} is greater than block_->start{} + Block::kNumSlots{}",
                 index_,
                 block_->start,
                 Block::kNumSlots);
-            XSIGMA_CHECK_DEBUG(
+            QUARISMA_CHECK_DEBUG(
                 index_ < queue_->End(),
                 "index_={} is greater than queue_->End()={}",
                 index_,
@@ -283,13 +283,13 @@ public:
 
         Iterator& operator++()
         {
-            XSIGMA_CHECK_DEBUG(queue_ != nullptr, "queue_ is nullptr");
-            XSIGMA_CHECK_DEBUG(block_ != nullptr, "block_ is nullptr");
+            QUARISMA_CHECK_DEBUG(queue_ != nullptr, "queue_ is nullptr");
+            QUARISMA_CHECK_DEBUG(block_ != nullptr, "block_ is nullptr");
             if (index_ < queue_->End())
             {
                 ++index_;
                 auto next_block_start = block_->start + Block::kNumSlots;
-                XSIGMA_CHECK_DEBUG(
+                QUARISMA_CHECK_DEBUG(
                     index_ < next_block_start,
                     "index_ {} is greater than next_block_start {}",
                     index_,
@@ -297,7 +297,7 @@ public:
                 if (index_ == next_block_start)
                 {
                     block_ = block_->next;
-                    XSIGMA_CHECK_DEBUG(block_ != nullptr, "block_ is nullptr");
+                    QUARISMA_CHECK_DEBUG(block_ != nullptr, "block_ is nullptr");
                 }
             }
             return (*this);
@@ -379,5 +379,5 @@ public:
     }
 };
 
-}  // namespace xsigma
+}  // namespace quarisma
 #endif

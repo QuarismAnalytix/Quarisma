@@ -105,7 +105,7 @@ If you're doing graph transforms, you can wrap your own Proxy method around a ra
 
 ## [TorchDynamo](https://pytorch.org/docs/main/torch.compiler_dynamo_deepdive.html) ##
 
-Tracing has limitations in that it can't deal with dynamic control flow and is limited to outputting a single graph xsigma a time, so a better alternative is the new `torch.compile()` infrastructure where you can output multiple subgraphs in either an aten or torch IR using `torch.fx`. [This tutorial](https://colab.research.google.com/drive/1Zh-Uo3TcTH8yYJF-LLo5rjlHVMtqvMdf) gives more context on how this works.
+Tracing has limitations in that it can't deal with dynamic control flow and is limited to outputting a single graph quarisma a time, so a better alternative is the new `torch.compile()` infrastructure where you can output multiple subgraphs in either an aten or torch IR using `torch.fx`. [This tutorial](https://colab.research.google.com/drive/1Zh-Uo3TcTH8yYJF-LLo5rjlHVMtqvMdf) gives more context on how this works.
 
 
 

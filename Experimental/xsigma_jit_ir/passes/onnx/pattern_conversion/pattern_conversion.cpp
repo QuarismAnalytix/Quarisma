@@ -1,10 +1,10 @@
-#include <XSigma/ScalarOps.h>
+#include <Quarisma/ScalarOps.h>
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
 #include <torch/csrc/jit/passes/erase_number_types.h>
 #include <torch/csrc/jit/passes/onnx.h>
 #include <torch/csrc/jit/passes/onnx/pattern_conversion/common.h>
 #include <torch/csrc/jit/passes/onnx/pattern_conversion/pattern_conversion.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 #include <iostream>
 
@@ -43,11 +43,11 @@ Value* ConvertSliceToIndex(Node* slice, Value* size, Node* insertBefore)
     auto start          = slice->inputs()[2];
     auto end            = slice->inputs()[3];
     auto step           = slice->inputs()[4];
-    auto index          = graph->insert(aten::arange, {size}, {NamedValue("dtype", xsigma::kLong)});
+    auto index          = graph->insert(aten::arange, {size}, {NamedValue("dtype", quarisma::kLong)});
     auto sliced_index_n = graph->create(
         aten::slice,
         {index,
-         graph->insertConstant(scalar_to_tensor(xsigma::Scalar(0)), std::nullopt, slice->scope()),
+         graph->insertConstant(scalar_to_tensor(quarisma::Scalar(0)), std::nullopt, slice->scope()),
          start,
          end,
          step});
@@ -59,13 +59,13 @@ Value* ConvertSliceToIndex(Node* slice, Value* size, Node* insertBefore)
 
 struct ConvertedIndex
 {
-    ConvertedIndex(Value* index, xsigma::Symbol orig_node_kind)
+    ConvertedIndex(Value* index, quarisma::Symbol orig_node_kind)
         : index(index), orig_node_kind(orig_node_kind)
     {
     }
 
     Value*         index = nullptr;
-    xsigma::Symbol orig_node_kind;
+    quarisma::Symbol orig_node_kind;
 };
 
 std::unordered_map<int64_t, ConvertedIndex> MergeSliceAndSelectToIndices(
@@ -88,11 +88,11 @@ std::unordered_map<int64_t, ConvertedIndex> MergeSliceAndSelectToIndices(
         // select does not keep dims,
         // this creates offset for latter slice and select nodes.
         // NOTE: Cannot rely on get(attr::dim), because op no longer match schema.
-        int64_t dim = node->inputs().xsigma(1)->node()->t(attr::value).item().toLong();
+        int64_t dim = node->inputs().quarisma(1)->node()->t(attr::value).item().toLong();
 
         if (dim < 0)
         {
-            // auto input_type = env.xsigma(orig_data)->type()->expect<TensorType>();
+            // auto input_type = env.quarisma(orig_data)->type()->expect<TensorType>();
             auto   py_value   = env[py::cast(orig_data)];
             Value* value      = py_value.cast<Value*>();
             auto   input_type = value->type()->expect<TensorType>();
@@ -126,7 +126,7 @@ std::unordered_map<int64_t, ConvertedIndex> MergeSliceAndSelectToIndices(
                 auto            size = CreateSizeOfDim(orig_data, cur_dim, index_put_node);
                 WithInsertPoint guard(index_put_node);
                 auto            index_tensor =
-                    graph->insert(aten::arange, {size}, {NamedValue("dtype", xsigma::kLong)});
+                    graph->insert(aten::arange, {size}, {NamedValue("dtype", quarisma::kLong)});
                 dim_index_map.emplace(
                     std::piecewise_construct,
                     std::forward_as_tuple(cur_dim),
@@ -163,7 +163,7 @@ std::unordered_map<int64_t, ConvertedIndex> MergeSliceAndSelectToIndices(
         }
         else
         {
-            XSIGMA_CHECK(
+            QUARISMA_CHECK(
                 false, node->kind().toDisplayString(), " Expected aten::slice or aten::select.");
         }
 
@@ -202,7 +202,7 @@ std::vector<Value*> ReshapeToAdvancedIndexingFormat(
     size_t min_index_dim    = dim_index_map.size();
     size_t max_index_dim    = 0;
     size_t tensor_ind_count = 0;
-    for (const auto i : xsigma::irange(dim_index_map.size()))
+    for (const auto i : quarisma::irange(dim_index_map.size()))
     {
         auto index_i = dim_index_map.find(i);
         TORCH_INTERNAL_ASSERT(index_i != dim_index_map.end());
@@ -218,7 +218,7 @@ std::vector<Value*> ReshapeToAdvancedIndexingFormat(
 
     if (((max_index_dim - min_index_dim + 1) != tensor_ind_count) && tensor_ind_count != 0)
     {
-        XSIGMA_CHECK(
+        QUARISMA_CHECK(
             false,
             "Only consecutive 1-d tensor indices are supported in exporting aten::index_put to "
             "ONNX.",
@@ -227,7 +227,7 @@ std::vector<Value*> ReshapeToAdvancedIndexingFormat(
 
     size_t          tensor_ind_offset = tensor_ind_count == 0 ? 0 : tensor_ind_count - 1;
     WithInsertPoint guard(index_put_node);
-    for (const auto i : xsigma::irange(dim_index_map.size()))
+    for (const auto i : quarisma::irange(dim_index_map.size()))
     {
         size_t ind_size = 0;
         auto   index_i  = dim_index_map.find(i);
@@ -255,7 +255,7 @@ std::vector<Value*> ReshapeToAdvancedIndexingFormat(
             break;
         }
         default:
-            XSIGMA_CHECK(false, "Unexpected node kind ", index_i->second.orig_node_kind);
+            QUARISMA_CHECK(false, "Unexpected node kind ", index_i->second.orig_node_kind);
         }
 
         if (ind_size != 1)
@@ -355,7 +355,7 @@ std::vector<Value*> ConvertIndexPutToONNX(
     EliminateDeadCode(subblock, true, DCESideEffectPolicy::ALLOW_DELETING_NODES_WITH_SIDE_EFFECTS);
 
     // Convert all the new aten nodes that were just created to onnx.
-    // New onnx nodes are appended xsigma the end of new_block.
+    // New onnx nodes are appended quarisma the end of new_block.
     for (auto at_n : subblock->nodes())
     {
         if (at_n == subblock->param_node() || at_n == subblock->return_node())

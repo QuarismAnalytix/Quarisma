@@ -1,4 +1,4 @@
-#include <XSigma/TensorIndexing.h>
+#include <Quarisma/TensorIndexing.h>
 #include <c10/util/Exception.h>
 #include <c10/util/irange.h>
 

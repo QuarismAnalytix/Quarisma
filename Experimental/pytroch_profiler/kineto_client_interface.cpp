@@ -1,7 +1,7 @@
-#if XSIGMA_HAS_KINETO
+#if QUARISMA_HAS_KINETO
 #include "kineto_client_interface.h"
 
-//#include <XSigma/Context.h>
+//#include <Quarisma/Context.h>
 #include <libkineto.h>
 
 #include <chrono>
@@ -16,7 +16,7 @@
 #define ENABLE_GLOBAL_OBSERVER (1)
 #endif
 
-namespace xsigma
+namespace quarisma
 {
 
 namespace profiler::impl
@@ -25,12 +25,12 @@ namespace profiler::impl
 namespace
 {
 
-using namespace xsigma::autograd::profiler;
+using namespace quarisma::autograd::profiler;
 
-class XSIGMA_VISIBILITY LibKinetoClient : public libkineto::ClientInterface
+class QUARISMA_VISIBILITY LibKinetoClient : public libkineto::ClientInterface
 {
 public:
-    void init() override { ::xsigma::mtia::initMemoryProfiler(); }
+    void init() override { ::quarisma::mtia::initMemoryProfiler(); }
 
     void prepare(
         bool report_input_shapes = false,
@@ -56,10 +56,10 @@ public:
             /*with_flops=*/withFlops_,
             /*with_modules=*/withModules_};
         std::set<ActivityType>                  activities{ActivityType::CPU};
-        std::unordered_set<xsigma::RecordScope> scopes;
-        scopes.insert(xsigma::RecordScope::FUNCTION);
-        scopes.insert(xsigma::RecordScope::USER_SCOPE);
-        scopes.insert(xsigma::RecordScope::BACKWARD_FUNCTION);
+        std::unordered_set<quarisma::RecordScope> scopes;
+        scopes.insert(quarisma::RecordScope::FUNCTION);
+        scopes.insert(quarisma::RecordScope::USER_SCOPE);
+        scopes.insert(quarisma::RecordScope::BACKWARD_FUNCTION);
         enableProfiler(cfg, activities, scopes);
     }
 
@@ -96,10 +96,10 @@ private:
 void global_kineto_init()
 {
 #if ENABLE_GLOBAL_OBSERVER
-    if (xsigma::utils::get_env("KINETO_USE_DAEMON").has_value())
+    if (quarisma::utils::get_env("KINETO_USE_DAEMON").has_value())
     {
         libkineto_init(
-            /*cpuOnly=*/!(xsigma::hasCUDA() || xsigma::hasXPU() || xsigma::hasMTIA()),
+            /*cpuOnly=*/!(quarisma::hasCUDA() || quarisma::hasXPU() || quarisma::hasMTIA()),
             /*logOnError=*/true);
         libkineto::api().suppressLogMessages();
     }
@@ -110,7 +110,7 @@ void global_kineto_init()
 namespace
 {
 
-class XSIGMA_VISIBILITY RegisterLibKinetoClient
+class QUARISMA_VISIBILITY RegisterLibKinetoClient
 {
     RegisterLibKinetoClient()
     {
@@ -122,5 +122,5 @@ class XSIGMA_VISIBILITY RegisterLibKinetoClient
 }  // namespace
 #endif
 
-}  // namespace xsigma
-#endif  // XSIGMA_HAS_KINETO
+}  // namespace quarisma
+#endif  // QUARISMA_HAS_KINETO

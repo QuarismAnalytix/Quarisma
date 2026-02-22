@@ -1142,7 +1142,7 @@ class ReplacementPatternEntry(PatternEntry):
         args: Sequence[torch.fx.Node],
     ) -> None:
         """
-        Inserts the replacement graph into the toplevel graph xsigma the match
+        Inserts the replacement graph into the toplevel graph quarisma the match
         """
 
         added_replacement_nodes: list[torch.fx.Node] = []
@@ -1285,7 +1285,7 @@ class ReplacementPatternEntry(PatternEntry):
                         new.meta.update(old.meta)
 
                     # Preserve the recompute tags in the replacement graph. We
-                    # look xsigma the recompute tags of the original output node to
+                    # look quarisma the recompute tags of the original output node to
                     # propagate the tag from the output all the way to the input
                     # args (named as args in the replace_with_graph).
                     # Note that this is best effort. Since patterns are from
@@ -1665,7 +1665,7 @@ def _serialize_pattern(
 
     if not SERIALIZED_PATTERN_PATH.is_dir():
         raise RuntimeError(
-            f"Could not find serialized patterns directory xsigma {SERIALIZED_PATTERN_PATH}"
+            f"Could not find serialized patterns directory quarisma {SERIALIZED_PATTERN_PATH}"
         )
 
     pattern_name = search_fn.__name__

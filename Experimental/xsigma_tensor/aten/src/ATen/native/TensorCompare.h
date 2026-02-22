@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XSigma/native/DispatchStub.h>
+#include <Quarisma/native/DispatchStub.h>
 
 namespace c10
 {

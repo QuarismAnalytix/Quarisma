@@ -1,13 +1,13 @@
 /*
- * XSigma: High-Performance Quantitative Library
+ * Quarisma: High-Performance Quantitative Library
  *
  * Original work Copyright 2015 The TensorFlow Authors
- * Modified work Copyright 2025 XSigma Contributors
+ * Modified work Copyright 2025 Quarisma Contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  *
  * This file contains code modified from TensorFlow (Apache 2.0 licensed)
- * and is part of XSigma, licensed under a dual-license model:
+ * and is part of Quarisma, licensed under a dual-license model:
  *
  *   - Open-source License (GPLv3):
  *       Free for personal, academic, and research use under the terms of
@@ -18,14 +18,14 @@
  *       or SaaS usage. Contact us to obtain a commercial agreement.
  *
  * MODIFICATIONS FROM ORIGINAL:
- * - Adapted for XSigma quantitative computing requirements
+ * - Adapted for Quarisma quantitative computing requirements
  * - Added high-performance memory allocation optimizations
  * - Integrated NUMA-aware allocation strategies
  * - Unified platform-specific implementations using conditional compilation
  * - Separated compression functionality to dedicated module
  *
- * Contact: licensing@xsigma.co.uk
- * Website: https://www.xsigma.co.uk
+ * Contact: licensing@quarisma.co.uk
+ * Website: https://www.quarisma.co.uk
  */
 
 #include "memory/helper/memory_info.h"
@@ -68,16 +68,16 @@
 #include <thread>
 #endif
 
-#if XSIGMA_HAS_NUMA
+#if QUARISMA_HAS_NUMA
 #include "hwloc.h"  // from @hwloc
 #endif
 
-#if XSIGMA_HAS_CXA_DEMANGLE
+#if QUARISMA_HAS_CXA_DEMANGLE
 #include <cxxabi.h>
 #endif
 #endif  // _WIN32
 
-namespace xsigma
+namespace quarisma
 {
 namespace port
 {
@@ -114,4 +114,4 @@ memory_bandwidth_info GetMemoryBandwidthInfo()
 }
 
 }  // namespace port
-}  // namespace xsigma
+}  // namespace quarisma

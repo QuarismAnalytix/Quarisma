@@ -1,6 +1,6 @@
 /*
- * XSigma: High-Performance Quantitative Library
- * Copyright 2025 XSigma Contributors
+ * Quarisma: High-Performance Quantitative Library
+ * Copyright 2025 Quarisma Contributors
  * SPDX-License-Identifier: GPL-3.0-or-later OR Commercial
  */
 #if 1
@@ -16,16 +16,16 @@
 #include <thread>
 #include <vector>
 
-#include "Testing/xsigmaTest.h"
+#include "Testing/baseTest.h"
 #include "memory/gpu/allocator_gpu.h"
 #include "memory/gpu/cuda_caching_allocator.h"
 
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
 #include <cuda_runtime.h>
 #endif
 
-using namespace xsigma;
-using namespace xsigma::gpu;
+using namespace quarisma;
+using namespace quarisma::gpu;
 
 namespace
 {
@@ -70,7 +70,7 @@ class gpu_timer
 public:
     gpu_timer()
     {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         cudaEventCreate(&start_event_);
         cudaEventCreate(&stop_event_);
 #endif
@@ -78,7 +78,7 @@ public:
 
     ~gpu_timer()
     {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         cudaEventDestroy(start_event_);
         cudaEventDestroy(stop_event_);
 #endif
@@ -86,7 +86,7 @@ public:
 
     void start()
     {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         cudaEventRecord(start_event_);
 #endif
         cpu_start_ = std::chrono::high_resolution_clock::now();
@@ -95,7 +95,7 @@ public:
     void stop()
     {
         cpu_end_ = std::chrono::high_resolution_clock::now();
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         cudaEventRecord(stop_event_);
         cudaEventSynchronize(stop_event_);
 #endif
@@ -103,7 +103,7 @@ public:
 
     double elapsed_ms() const
     {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         float gpu_time_ms = 0.0f;
         cudaEventElapsedTime(&gpu_time_ms, start_event_, stop_event_);
         return static_cast<double>(gpu_time_ms);
@@ -116,7 +116,7 @@ public:
     double elapsed_ns() const { return elapsed_ms() * 1000000.0; }
 
 private:
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     cudaEvent_t start_event_;
     cudaEvent_t stop_event_;
 #endif
@@ -317,7 +317,7 @@ class direct_cuda_allocator_wrapper : public gpu_allocator_interface
 public:
     void* allocate(size_t size) override
     {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         void*       ptr   = nullptr;
         cudaError_t error = cudaMalloc(&ptr, size);
         return (error == cudaSuccess) ? ptr : nullptr;
@@ -330,7 +330,7 @@ public:
     void deallocate(void* ptr, size_t size) override
     {
         (void)size;
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
         if (ptr != nullptr)
         {
             cudaFree(ptr);
@@ -505,7 +505,7 @@ void print_gpu_benchmark_results(const std::vector<gpu_benchmark_results>& resul
 
 int get_cuda_device_count()
 {
-#if XSIGMA_HAS_CUDA
+#if QUARISMA_HAS_CUDA
     int         device_count = 0;
     cudaError_t error        = cudaGetDeviceCount(&device_count);
     return (error == cudaSuccess) ? device_count : 0;
@@ -529,7 +529,7 @@ void generate_benchmark_report(const std::vector<gpu_benchmark_results>& results
         return;
     }
 
-    report << "=== XSigma GPU Memory Allocator Benchmark Report ===\n";
+    report << "=== Quarisma GPU Memory Allocator Benchmark Report ===\n";
     report << "Generated: " << std::chrono::system_clock::now().time_since_epoch().count()
            << "\n\n";
 
@@ -609,7 +609,7 @@ void generate_benchmark_report(const std::vector<gpu_benchmark_results>& results
 /**
  * @brief Comprehensive GPU allocator benchmark comparing all strategies
  */
-XSIGMATEST(GpuAllocatorBenchmark, ComprehensiveBenchmark)
+QUARISMATEST(GpuAllocatorBenchmark, ComprehensiveBenchmark)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -697,7 +697,7 @@ XSIGMATEST(GpuAllocatorBenchmark, ComprehensiveBenchmark)
 /**
  * @brief Allocation method comparison test (requires different builds)
  */
-XSIGMATEST(GpuAllocatorBenchmark, AllocationMethodComparison)
+QUARISMATEST(GpuAllocatorBenchmark, AllocationMethodComparison)
 {
     int device_count = get_cuda_device_count();
     if (device_count == 0)
@@ -712,11 +712,11 @@ XSIGMATEST(GpuAllocatorBenchmark, AllocationMethodComparison)
 
     // Display current allocation method
     std::cout << "Current allocation method: ";
-#if defined(XSIGMA_CUDA_ALLOC_SYNC) || defined(XSIGMA_HIP_ALLOC_SYNC)
+#if defined(QUARISMA_CUDA_ALLOC_SYNC) || defined(QUARISMA_HIP_ALLOC_SYNC)
     std::cout << "SYNC (cuMemAlloc/cuMemFree or hipMalloc/hipFree)\n";
-#elif defined(XSIGMA_CUDA_ALLOC_ASYNC) || defined(XSIGMA_HIP_ALLOC_ASYNC)
+#elif defined(QUARISMA_CUDA_ALLOC_ASYNC) || defined(QUARISMA_HIP_ALLOC_ASYNC)
     std::cout << "ASYNC (cuMemAllocAsync/cuMemFreeAsync or hipMallocAsync/hipFreeAsync)\n";
-#elif defined(XSIGMA_CUDA_ALLOC_POOL_ASYNC) || defined(XSIGMA_HIP_ALLOC_POOL_ASYNC)
+#elif defined(QUARISMA_CUDA_ALLOC_POOL_ASYNC) || defined(QUARISMA_HIP_ALLOC_POOL_ASYNC)
     std::cout << "POOL_ASYNC (cuMemAllocFromPoolAsync or hipMallocFromPoolAsync)\n";
 #else
     std::cout << "DEFAULT (SYNC fallback)\n";
@@ -738,9 +738,9 @@ XSIGMATEST(GpuAllocatorBenchmark, AllocationMethodComparison)
     std::cout << "  Allocation Failures: " << results.allocation_failures << "\n\n";
 
     std::cout << "Note: To test different allocation methods, rebuild with:\n";
-    std::cout << "  -DXSIGMA_CUDA_ALLOC=SYNC     (for synchronous allocation)\n";
-    std::cout << "  -DXSIGMA_CUDA_ALLOC=ASYNC    (for asynchronous allocation)\n";
-    std::cout << "  -DXSIGMA_CUDA_ALLOC=POOL_ASYNC (for pool-based async allocation)\n\n";
+    std::cout << "  -DQUARISMA_CUDA_ALLOC=SYNC     (for synchronous allocation)\n";
+    std::cout << "  -DQUARISMA_CUDA_ALLOC=ASYNC    (for asynchronous allocation)\n";
+    std::cout << "  -DQUARISMA_CUDA_ALLOC=POOL_ASYNC (for pool-based async allocation)\n\n";
 
     // Validation
     EXPECT_GT(results.total_allocations, 0);

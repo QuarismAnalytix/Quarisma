@@ -14,7 +14,7 @@ class MPSDeviceOpOverrides(DeviceOpOverrides):
 
     def kernel_driver(self) -> str:
         return """
-            #include <XSigma/native/mps/MetalShaderLibrary.h>
+            #include <Quarisma/native/mps/MetalShaderLibrary.h>
         """
 
     def cpp_kernel_type(self) -> str:

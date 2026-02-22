@@ -1,7 +1,7 @@
-# PyTorch-Style Profiler Table Format for XSigma Non-Naive Profiler
+# PyTorch-Style Profiler Table Format for Quarisma Non-Naive Profiler
 
 ## Overview
-This document outlines what's needed for the XSigma Non-Naive Profiler to generate output similar to PyTorch's profiler table format shown in the reference example.
+This document outlines what's needed for the Quarisma Non-Naive Profiler to generate output similar to PyTorch's profiler table format shown in the reference example.
 
 ## Reference PyTorch Output Format
 ```
@@ -10,7 +10,7 @@ This document outlines what's needed for the XSigma Non-Naive Profiler to genera
           aten::linear         8.35%       6.962ms        83.19%      69.327ms      34.664ms       6.406ms         7.68%      69.510ms      34.755ms             2  
 ```
 
-## Current XSigma Profiler Capabilities
+## Current Quarisma Profiler Capabilities
 
 ### Available Data
 - ✅ Scope names (hierarchical)

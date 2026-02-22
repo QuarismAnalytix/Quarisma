@@ -1,20 +1,20 @@
 #include <torch/csrc/jit/jit_log.h>
 #include <torch/csrc/jit/passes/onnx/deduplicate_initializers.h>
 #include <torch/csrc/jit/passes/onnx/helper.h>
-#include <xsigma/util/irange.h>
+#include <quarisma/util/irange.h>
 
 namespace torch::jit
 {
 
 namespace onnx
 {
-using namespace ::xsigma::onnx;
+using namespace ::quarisma::onnx;
 }
 
 static void DeduplicateInitializers(
     std::shared_ptr<Graph>& g,
     ValueToParamPairMap&    valsToParamsMap,
-    bool (*comp)(xsigma::Tensor&, xsigma::Tensor&))
+    bool (*comp)(quarisma::Tensor&, quarisma::Tensor&))
 {
     auto is_same_tensor_as = [&valsToParamsMap, comp](Value* v1)
     {
@@ -40,9 +40,9 @@ static void DeduplicateInitializers(
     std::vector<size_t> inputsIndicesToRemove;
     auto                b = g->block();
 
-    for (auto i : xsigma::irange(b->inputs().size()))
+    for (auto i : quarisma::irange(b->inputs().size()))
     {
-        auto v = g->inputs().xsigma(i);
+        auto v = g->inputs().quarisma(i);
         if (valsToParamsMap.find(v) == valsToParamsMap.end())
         {
             // Skip model inputs
@@ -66,18 +66,18 @@ static void DeduplicateInitializers(
     }
     for (auto it = inputsIndicesToRemove.rbegin(); it != inputsIndicesToRemove.rend(); ++it)
     {
-        valsToParamsMap.erase(g->inputs().xsigma(*it));
+        valsToParamsMap.erase(g->inputs().quarisma(*it));
         g->eraseInput(*it);
     }
 }
 
-static bool DeduplicateInitializersByDataPtr(xsigma::Tensor& t1, xsigma::Tensor& t2)
+static bool DeduplicateInitializersByDataPtr(quarisma::Tensor& t1, quarisma::Tensor& t2)
 {
     return t1.sizes().equals(t2.sizes()) && t1.strides().equals(t2.strides()) &&
            (t1.has_storage() && t2.has_storage() && t1.data_ptr() == t2.data_ptr());
 }
 
-static bool DeduplicateInitializersByValue(xsigma::Tensor& t1, xsigma::Tensor& t2)
+static bool DeduplicateInitializersByValue(quarisma::Tensor& t1, quarisma::Tensor& t2)
 {
     if (t1.dtype() != t2.dtype() || !t1.sizes().equals(t2.sizes()) ||
         !t1.strides().equals(t2.strides()))

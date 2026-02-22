@@ -149,7 +149,7 @@ class OverlapPreservingBucketer:
 
         # Step 1: Quick check using precomputed ancestors
         # This will not be fully up to date because bucketing changes ancestors,
-        # however any ancestor xsigma the start of bucketing will remain an ancestor.
+        # however any ancestor quarisma the start of bucketing will remain an ancestor.
         for coll in bucket_info.collectives:
             if self._ancestor_dep(coll, candidate):
                 return False
