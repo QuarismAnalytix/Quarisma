@@ -4,7 +4,6 @@
 
 #include "common/export.h"                  // for QUARISMA_API
 #include "common/macros.h"                  // for QUARISMA_DELETE_COPY_AND_MOVE
-#include "common/wrapping_hints.h"          // for QUARISMA_FILEPATH
 #include "fmt/format.h"                     // for FMT_STRING
 #include "logging/logger_verbosity_enum.h"  // for logger_verbosity_enum
 
@@ -204,26 +203,26 @@ public:
    */
     QUARISMA_API static void Log(
         logger_verbosity_enum       verbosity,
-        QUARISMA_FILEPATH const char* fname,
+        const char* fname,
         unsigned int                lineno,
         const char*                 txt);
     QUARISMA_API static void StartScope(
         logger_verbosity_enum       verbosity,
         const char*                 id,
-        QUARISMA_FILEPATH const char* fname,
+        const char* fname,
         unsigned int                lineno);
     QUARISMA_API static void EndScope(const char* id);
 #if !defined(__WRAP__)
     QUARISMA_API static void LogF(
         logger_verbosity_enum       verbosity,
-        QUARISMA_FILEPATH const char* fname,
+        const char* fname,
         unsigned int                lineno,
         QUARISMA_FORMAT_STRING_TYPE   format,
         ...) QUARISMA_PRINTF_LIKE(4, 5);
     QUARISMA_API static void StartScopeF(
         logger_verbosity_enum       verbosity,
         const char*                 id,
-        QUARISMA_FILEPATH const char* fname,
+        const char* fname,
         unsigned int                lineno,
         QUARISMA_FORMAT_STRING_TYPE   format,
         ...) QUARISMA_PRINTF_LIKE(5, 6);
