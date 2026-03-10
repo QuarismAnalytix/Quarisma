@@ -55,7 +55,12 @@
       "Bash(if [ -f .vscode/launch.json ])",
       "Bash(if [ -f .claude/settings.local.json ])",
       "Bash(if [ -f /Users/toufikbellaj/Pictures/teste.cpp ])",
-      "Bash(else echo \"teste.cpp not found\")"
+      "Bash(else echo \"teste.cpp not found\")",
+      "Bash(pip3 show:*)",
+      "Bash(lintrunner:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
