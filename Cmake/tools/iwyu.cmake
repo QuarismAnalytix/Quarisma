@@ -53,6 +53,29 @@ else()
     set(IWYU_MAPPING_FILE "")
   endif()
 
+  # Locate IWYU's built-in mapping files (ship alongside the executable)
+  get_filename_component(_iwyu_bin_dir "${QUARISMA_IWYU_EXECUTABLE}" DIRECTORY)
+  get_filename_component(_iwyu_prefix "${_iwyu_bin_dir}" DIRECTORY)
+  set(_iwyu_share "${_iwyu_prefix}/share/include-what-you-use")
+  # Also try the libexec layout used by Homebrew (bin is a symlink into libexec/bin)
+  if(NOT EXISTS "${_iwyu_share}")
+    get_filename_component(_iwyu_real_exec "${QUARISMA_IWYU_EXECUTABLE}" REALPATH)
+    get_filename_component(_iwyu_real_bin "${_iwyu_real_exec}" DIRECTORY)
+    get_filename_component(_iwyu_real_prefix "${_iwyu_real_bin}" DIRECTORY)
+    set(_iwyu_share "${_iwyu_real_prefix}/share/include-what-you-use")
+  endif()
+
+  # Load libcxx.imp for libc++ internal __<module>/ header redirects.
+  # stl.c.headers.imp is intentionally excluded: it marks C headers (e.g. <stdint.h>) as
+  # "public", which conflicts with our "private" mappings that redirect them to <cstdint> etc.
+  set(IWYU_BUILTIN_MAPPING_FILES "")
+  foreach(_builtin_map IN ITEMS libcxx.imp)
+    if(EXISTS "${_iwyu_share}/${_builtin_map}")
+      list(APPEND IWYU_BUILTIN_MAPPING_FILES "${_iwyu_share}/${_builtin_map}")
+      message(STATUS "IWYU built-in mapping: ${_iwyu_share}/${_builtin_map}")
+    endif()
+  endforeach()
+
   # Create IWYU log directory
   set(IWYU_LOG_DIR "${CMAKE_BINARY_DIR}/iwyu_logs")
   file(MAKE_DIRECTORY "${IWYU_LOG_DIR}")
@@ -96,6 +119,11 @@ else()
     list(PREPEND QUARISMA_IWYU_ARGS "-Xiwyu" "--mapping_file=${IWYU_MAPPING_FILE}")
   endif()
 
+  # Prepend built-in mapping files so the custom file's rules take precedence
+  foreach(_builtin_map IN LISTS IWYU_BUILTIN_MAPPING_FILES)
+    list(PREPEND QUARISMA_IWYU_ARGS "-Xiwyu" "--mapping_file=${_builtin_map}")
+  endforeach()
+
   # Create configure detector script path
   set(CONFIGURE_DETECTOR_SCRIPT "${CMAKE_SOURCE_DIR}/Scripts/iwyu/iwyu_configure_detector.py")
 
@@ -131,58 +159,58 @@ else()
   endif()
 endif()
 
-# Function to create IWYU wrapper script for enhanced logging
-function(quarisma_create_iwyu_wrapper target_name)
-  set(WRAPPER_SCRIPT "${CMAKE_BINARY_DIR}/iwyu_wrapper_${target_name}.cmake")
+# Function to create IWYU wrapper script for enhanced logging.
+# Optional ARGN items are extra flags appended to IWYU args (e.g. per-language -D defines).
+function(quarisma_create_iwyu_wrapper target_name lang)
+  set(WRAPPER_SCRIPT "${CMAKE_BINARY_DIR}/iwyu_wrapper_${target_name}_${lang}.cmake")
+
+  # Build per-item list(APPEND) calls to safely embed all IWYU args in the generated script
+  set(IWYU_ARGS_INIT_CODE "set(IWYU_EXTRA_ARGS)\n")
+  foreach(arg IN LISTS QUARISMA_IWYU_ARGS)
+    string(APPEND IWYU_ARGS_INIT_CODE "list(APPEND IWYU_EXTRA_ARGS \"${arg}\")\n")
+  endforeach()
+  foreach(arg IN LISTS ARGN)
+    string(APPEND IWYU_ARGS_INIT_CODE "list(APPEND IWYU_EXTRA_ARGS \"${arg}\")\n")
+  endforeach()
 
   # Create wrapper script that logs IWYU output
   file(
     WRITE "${WRAPPER_SCRIPT}"
     "
-# IWYU Wrapper Script for ${target_name}
-# This script captures IWYU output and appends it to the main log file
+# IWYU Wrapper Script for ${target_name} (${lang})
+# Invoked by CMake as: cmake -P <this_script> <source_file> [compile_flags...]
+# IWYU writes its include suggestions to stderr, which we capture to iwyu.log.
 
 set(IWYU_EXECUTABLE \"${QUARISMA_IWYU_EXECUTABLE}\")
 set(IWYU_LOG_FILE \"${IWYU_LOG_FILE}\")
-set(TARGET_NAME \"${target_name}\")
 
-# Get the source file being analyzed
-set(SOURCE_FILE \"\${CMAKE_ARGV3}\")
+# Embed IWYU-specific flags (generated at configure time)
+${IWYU_ARGS_INIT_CODE}
+# Collect source file and compile flags passed by CMake (start at argv3)
+set(COMPILE_ARGS)
+set(_i 3)
+while(_i LESS CMAKE_ARGC)
+  list(APPEND COMPILE_ARGS \"\${CMAKE_ARGV\${_i}}\")
+  math(EXPR _i \"\${_i} + 1\")
+endwhile()
 
-# Log header for this analysis
-file(APPEND \"\${IWYU_LOG_FILE}\" \"\\n=== IWYU Analysis for \${TARGET_NAME}: \${SOURCE_FILE} ===\\n\")
-file(APPEND \"\${IWYU_LOG_FILE}\" \"Timestamp: \")
-string(TIMESTAMP CURRENT_TIME \"%Y-%m-%d %H:%M:%S\")
-file(APPEND \"\${IWYU_LOG_FILE}\" \"\${CURRENT_TIME}\\n\")
-
-# Execute IWYU and capture output
+# Execute IWYU — suggestions are written to stderr
 execute_process(
-    COMMAND \"\${IWYU_EXECUTABLE}\" \${CMAKE_ARGV3} \${CMAKE_ARGV4} \${CMAKE_ARGV5} \${CMAKE_ARGV6} \${CMAKE_ARGV7} \${CMAKE_ARGV8} \${CMAKE_ARGV9}
-    OUTPUT_VARIABLE IWYU_OUTPUT
-    ERROR_VARIABLE IWYU_ERROR
-    RESULT_VARIABLE IWYU_RESULT
+  COMMAND \"\${IWYU_EXECUTABLE}\" \${IWYU_EXTRA_ARGS} \${COMPILE_ARGS}
+  OUTPUT_VARIABLE IWYU_OUTPUT
+  ERROR_VARIABLE IWYU_SUGGESTIONS
+  RESULT_VARIABLE IWYU_RESULT
 )
 
-# Log the output
+# Append suggestions to iwyu.log
+if(IWYU_SUGGESTIONS)
+  file(APPEND \"\${IWYU_LOG_FILE}\" \"\${IWYU_SUGGESTIONS}\")
+endif()
 if(IWYU_OUTPUT)
-    file(APPEND \"\${IWYU_LOG_FILE}\" \"IWYU Output:\\n\${IWYU_OUTPUT}\\n\")
-endif()
-
-if(IWYU_ERROR)
-    file(APPEND \"\${IWYU_LOG_FILE}\" \"IWYU Errors/Warnings:\\n\${IWYU_ERROR}\\n\")
-endif()
-
-file(APPEND \"\${IWYU_LOG_FILE}\" \"IWYU Exit Code: \${IWYU_RESULT}\\n\")
-file(APPEND \"\${IWYU_LOG_FILE}\" \"=== End Analysis ===\\n\\n\")
-
-# Return the same exit code as IWYU
-if(IWYU_RESULT)
-    message(FATAL_ERROR \"IWYU failed with exit code \${IWYU_RESULT}\")
+  file(APPEND \"\${IWYU_LOG_FILE}\" \"\${IWYU_OUTPUT}\")
 endif()
 "
   )
-
-  return()
 endfunction()
 
 # Function to apply IWYU to a target
@@ -210,15 +238,22 @@ function(quarisma_apply_iwyu target_name)
     file(APPEND "${IWYU_LOG_FILE}" "\n")
   endif()
 
-  # Apply IWYU to the target with crash-resistant settings
+  # Generate per-target, per-language wrapper scripts that capture IWYU output to iwyu.log
+  quarisma_create_iwyu_wrapper(
+    ${target_name} CXX "-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH"
+    "-D_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING"
+  )
+  quarisma_create_iwyu_wrapper(${target_name} C "-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH")
+
+  # Apply IWYU via the logging wrapper (cmake -P; IWYU suggestions go to iwyu.log via stderr)
   set_target_properties(
     ${target_name}
     PROPERTIES
       CXX_INCLUDE_WHAT_YOU_USE
-      "${QUARISMA_IWYU_EXECUTABLE};${QUARISMA_IWYU_ARGS};-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH;-D_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING"
+      "${CMAKE_COMMAND};-P;${CMAKE_BINARY_DIR}/iwyu_wrapper_${target_name}_CXX.cmake"
       C_INCLUDE_WHAT_YOU_USE
-      "${QUARISMA_IWYU_EXECUTABLE};${QUARISMA_IWYU_ARGS};-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH"
+      "${CMAKE_COMMAND};-P;${CMAKE_BINARY_DIR}/iwyu_wrapper_${target_name}_C.cmake"
   )
 
-  message(STATUS "Applied IWYU to target: ${target_name}")
+  message(STATUS "Applied IWYU to target: ${target_name} (logging to ${IWYU_LOG_FILE})")
 endfunction()

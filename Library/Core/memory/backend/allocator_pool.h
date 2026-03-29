@@ -377,7 +377,7 @@ private:
     };
 
     // Remove "pr" from the double-linked LRU list.
-    void RemoveFromList(PtrRecord* pr) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+    void RemoveFromList(PtrRecord* ptr) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
     // Add "pr" to the head of the double-linked LRU list.
     void AddToList(PtrRecord* pr) QUARISMA_EXCLUSIVE_LOCKS_REQUIRED(mutex_);

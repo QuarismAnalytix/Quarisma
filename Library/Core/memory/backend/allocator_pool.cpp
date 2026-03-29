@@ -239,29 +239,25 @@ void allocator_pool::Clear()
     }
 }
 
-void allocator_pool::RemoveFromList(PtrRecord* pr)
+void allocator_pool::RemoveFromList(PtrRecord* ptr)
 {
-    if (pr->prev == nullptr)
+    if (ptr->prev == nullptr)
     {
-        QUARISMA_CHECK(lru_head_ == pr);
-        lru_head_ = nullptr;
+        QUARISMA_CHECK(lru_head_ == ptr);
+        lru_head_ = ptr->next;
     }
     else
     {
-        pr->prev->next = pr->next;
+        ptr->prev->next = ptr->next;
     }
-    if (pr->next == nullptr)
+    if (ptr->next == nullptr)
     {
-        QUARISMA_CHECK(lru_tail_ == pr);
-        lru_tail_ = pr->prev;
+        QUARISMA_CHECK(lru_tail_ == ptr);
+        lru_tail_ = ptr->prev;
     }
     else
     {
-        pr->next->prev = pr->prev;
-        if (lru_head_ == nullptr)
-        {
-            lru_head_ = pr->next;
-        }
+        ptr->next->prev = ptr->prev;
     }
 }
 
@@ -287,12 +283,11 @@ void allocator_pool::EvictOne()
     QUARISMA_CHECK(lru_tail_ != nullptr);
     PtrRecord* prec = lru_tail_;
     RemoveFromList(prec);
-    auto iter = pool_.find(prec->num_bytes);
-    while (iter->second != prec)
-    {
-        ++iter;
-        QUARISMA_CHECK(iter != pool_.end());
-    }
+    auto range = pool_.equal_range(prec->num_bytes);
+    auto iter  = std::find_if(range.first, range.second, [prec](const auto& p) {
+        return p.second == prec;
+    });
+    QUARISMA_CHECK(iter != range.second);
     pool_.erase(iter);
     allocator_->Free(prec->ptr, prec->num_bytes);
     delete prec;

@@ -338,7 +338,7 @@ auto InputOutputEncoder::getIValueGenerator(const IOType& io_type)
 }
 #else
 // Stub implementation when IValue methods are not available
-auto InputOutputEncoder::getIValueGenerator(const IOType& /*io_type*/)
+auto InputOutputEncoder::getIValueGenerator(const IOType& /*io_type*/)//NOLINT
 {
     return []() mutable { return std::nullopt; };
 }

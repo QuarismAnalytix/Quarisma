@@ -22,6 +22,64 @@
   { include: ["\"quarisma_features.h\"", "private", "\"common/configure.h\"", "public"] },
 
   # ============================================================================
+  # macOS / Apple libc++ Internal Headers -> Standard C++ Headers
+  # ============================================================================
+  # libc++ on macOS exposes implementation details through headers in sub-directories
+  # named __<module>/ (e.g. <__math/traits.h>, <__ostream/basic_ostream.h>).
+  # The IWYU-shipped libcxx.imp doesn't cover all of them, so we add them here.
+  # BSD/Darwin also has private C runtime headers prefixed with a single underscore
+  # (e.g. <_ctype.h>, <_stdlib.h>); map those to the portable C++ equivalents too.
+
+  # libc++ internal sub-directory headers  →  standard C++ headers
+  # (the IWYU-shipped libcxx.imp covers many __<module>/ dirs but misses __math, __new, __ostream, __vector)
+  { include: ["@<__math/.*>",   "private", "<cmath>",     "public"] },
+  { include: ["@<__new/.*>",    "private", "<new>",       "public"] },
+  { include: ["@<__ostream/.*>","private", "<ostream>",   "public"] },
+  { include: ["@<__vector/.*>", "private", "<vector>",    "public"] },
+  { include: ["@<__locale/.*>", "private", "<locale>",    "public"] },
+  { include: ["@<__print/.*>",  "private", "<print>",     "public"] },
+  { include: ["@<__span/.*>",   "private", "<span>",      "public"] },
+
+  # <__config> is a libc++ implementation detail for version/feature macros
+  { include: ["<__config>", "private", "<version>", "public"] },
+
+  # macOS private pthread sub-headers  →  POSIX public header
+  { include: ["@<sys/_pthread/.*>", "private", "<pthread.h>", "public"] },
+
+  # BSD/Darwin private C runtime headers  →  portable C++ equivalents
+  { include: ["<_ctype.h>",  "private", "<cctype>",  "public"] },
+  { include: ["<_stdlib.h>", "private", "<cstdlib>", "public"] },
+  { include: ["<_stdio.h>",  "private", "<cstdio>",  "public"] },
+  { include: ["<_string.h>", "private", "<cstring>", "public"] },
+  { include: ["<_math.h>",   "private", "<cmath>",   "public"] },
+  { include: ["<_wchar.h>",  "private", "<cwchar>",  "public"] },
+  { include: ["<_time.h>",   "private", "<ctime>",   "public"] },
+
+  # Symbol mappings for functions commonly suggested via Apple internal headers
+  { symbol: ["isfinite",  "private", "<cmath>",   "public"] },
+  { symbol: ["isnan",     "private", "<cmath>",   "public"] },
+  { symbol: ["isinf",     "private", "<cmath>",   "public"] },
+  { symbol: ["isalnum",   "private", "<cctype>",  "public"] },
+  { symbol: ["isalpha",   "private", "<cctype>",  "public"] },
+  { symbol: ["isdigit",   "private", "<cctype>",  "public"] },
+  { symbol: ["isspace",   "private", "<cctype>",  "public"] },
+  { symbol: ["isupper",   "private", "<cctype>",  "public"] },
+  { symbol: ["islower",   "private", "<cctype>",  "public"] },
+  { symbol: ["toupper",   "private", "<cctype>",  "public"] },
+  { symbol: ["tolower",   "private", "<cctype>",  "public"] },
+  { symbol: ["strtol",    "private", "<cstdlib>", "public"] },
+  { symbol: ["strtoul",   "private", "<cstdlib>", "public"] },
+  { symbol: ["strtod",    "private", "<cstdlib>", "public"] },
+  { symbol: ["strtof",    "private", "<cstdlib>", "public"] },
+  { symbol: ["strtoll",   "private", "<cstdlib>", "public"] },
+  { symbol: ["strtoull",  "private", "<cstdlib>", "public"] },
+  { symbol: ["localtime", "private", "<ctime>",   "public"] },
+  { symbol: ["gmtime",    "private", "<ctime>",   "public"] },
+  { symbol: ["mktime",    "private", "<ctime>",   "public"] },
+  { symbol: ["time",      "private", "<ctime>",   "public"] },
+  { symbol: ["getpid",    "private", "<unistd.h>","public"] },
+
+  # ============================================================================
   # MSVC-Specific Internal Headers -> Standard C++ Headers
   # ============================================================================
 
@@ -68,38 +126,41 @@
   # Legacy C Headers -> Modern C++ Headers
   # ============================================================================
 
-  # Standard C headers that should prefer C++ equivalents
-  { include: ["<stdint.h>", "public", "<cstdint>", "public"] },
-  { include: ["<stddef.h>", "public", "<cstddef>", "public"] },
-  { include: ["<stdlib.h>", "public", "<cstdlib>", "public"] },
-  { include: ["<stdio.h>", "public", "<cstdio>", "public"] },
-  { include: ["<string.h>", "public", "<cstring>", "public"] },
-  { include: ["<math.h>", "public", "<cmath>", "public"] },
-  { include: ["<time.h>", "public", "<ctime>", "public"] },
-  { include: ["<assert.h>", "public", "<cassert>", "public"] },
-  { include: ["<errno.h>", "public", "<cerrno>", "public"] },
-  { include: ["<float.h>", "public", "<cfloat>", "public"] },
-  { include: ["<limits.h>", "public", "<climits>", "public"] },
-  { include: ["<locale.h>", "public", "<clocale>", "public"] },
-  { include: ["<setjmp.h>", "public", "<csetjmp>", "public"] },
-  { include: ["<signal.h>", "public", "<csignal>", "public"] },
-  { include: ["<stdarg.h>", "public", "<cstdarg>", "public"] },
-  { include: ["<wchar.h>", "public", "<cwchar>", "public"] },
-  { include: ["<wctype.h>", "public", "<cwctype>", "public"] },
+  # Standard C headers — marked "private" so IWYU redirects to the C++ <c*> wrappers.
+  # Using "public" for both sides only declares equivalence; "private" source forces the redirect.
+  { include: ["<stdint.h>",  "public", "<cstdint>",  "public"] },
+  { include: ["<stddef.h>",  "public", "<cstddef>",  "public"] },
+  { include: ["<stdlib.h>",  "public", "<cstdlib>",  "public"] },
+  { include: ["<stdio.h>",   "public", "<cstdio>",   "public"] },
+  { include: ["<string.h>",  "public", "<cstring>",  "public"] },
+  { include: ["<math.h>",    "public", "<cmath>",    "public"] },
+  { include: ["<time.h>",    "public", "<ctime>",    "public"] },
+  { include: ["<assert.h>",  "public", "<cassert>",  "public"] },
+  { include: ["<errno.h>",   "public", "<cerrno>",   "public"] },
+  { include: ["<float.h>",   "public", "<cfloat>",   "public"] },
+  { include: ["<limits.h>",  "public", "<climits>",  "public"] },
+  { include: ["<locale.h>",  "public", "<clocale>",  "public"] },
+  { include: ["<setjmp.h>",  "public", "<csetjmp>",  "public"] },
+  { include: ["<signal.h>",  "public", "<csignal>",  "public"] },
+  { include: ["<stdarg.h>",  "public", "<cstdarg>",  "public"] },
+  { include: ["<wchar.h>",   "public", "<cwchar>",   "public"] },
+  { include: ["<wctype.h>",  "public", "<cwctype>",  "public"] },
+  { include: ["<ctype.h>",   "public", "<cctype>",   "public"] },
+  { include: ["<inttypes.h>","public", "<cinttypes>","public"] },
 
-  # MSVC-specific runtime headers
-  { include: ["<vcruntime_string.h>", "private", "<cstring>", "public"] },
-  { include: ["<corecrt_io.h>", "private", "<cstdio>", "public"] },
-  { include: ["<corecrt_wstdio.h>", "private", "<cstdio>", "public"] },
-  { include: ["<corecrt_stdio_config.h>", "private", "<cstdio>", "public"] },
-  { include: ["<corecrt_memory.h>", "private", "<cstring>", "public"] },
-  { include: ["<corecrt_memcpy_s.h>", "private", "<cstring>", "public"] },
-  { include: ["<corecrt_wconio.h>", "private", "<cstdio>", "public"] },
-  { include: ["<corecrt_wstring.h>", "private", "<cwchar>", "public"] },
-  { include: ["<corecrt_wtime.h>", "private", "<ctime>", "public"] },
-  { include: ["<vcruntime_exception.h>", "private", "<exception>", "public"] },
-  { include: ["<vcruntime_new.h>", "private", "<new>", "public"] },
-  { include: ["<vcruntime_typeinfo.h>", "private", "<typeinfo>", "public"] },
+  # MSVC-specific runtime headers — all private, redirect to standard C++ headers
+  { include: ["<vcruntime_string.h>",      "private", "<cstring>",   "public"] },
+  { include: ["<corecrt_io.h>",            "private", "<cstdio>",    "public"] },
+  { include: ["<corecrt_wstdio.h>",        "private", "<cstdio>",    "public"] },
+  { include: ["<corecrt_stdio_config.h>",  "private", "<cstdio>",    "public"] },
+  { include: ["<corecrt_memory.h>",        "private", "<cstring>",   "public"] },
+  { include: ["<corecrt_memcpy_s.h>",      "private", "<cstring>",   "public"] },
+  { include: ["<corecrt_wconio.h>",        "private", "<cstdio>",    "public"] },
+  { include: ["<corecrt_wstring.h>",       "private", "<cwchar>",    "public"] },
+  { include: ["<corecrt_wtime.h>",         "private", "<ctime>",     "public"] },
+  { include: ["<vcruntime_exception.h>",   "private", "<exception>", "public"] },
+  { include: ["<vcruntime_new.h>",         "private", "<new>",       "public"] },
+  { include: ["<vcruntime_typeinfo.h>",    "private", "<typeinfo>",  "public"] },
 
   # ============================================================================
   # Windows-Specific Headers -> Cross-Platform Alternatives
