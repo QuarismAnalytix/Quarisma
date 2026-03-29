@@ -6,6 +6,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <memory>
@@ -88,25 +89,15 @@ class benchmark_stats
 public:
     void record_allocation(double time_ns, size_t size)
     {
-        // Use compare_exchange_weak for atomic double operations
-        double current_time = total_alloc_time_.load();
-        while (!total_alloc_time_.compare_exchange_weak(current_time, current_time + time_ns))
-        {
-            // Retry until successful
-        }
-        total_allocations_.fetch_add(1);
-        total_bytes_allocated_.fetch_add(size);
+        total_alloc_time_.fetch_add(static_cast<int64_t>(time_ns), std::memory_order_relaxed);
+        total_allocations_.fetch_add(1, std::memory_order_relaxed);
+        total_bytes_allocated_.fetch_add(size, std::memory_order_relaxed);
     }
 
     void record_deallocation(double time_ns)
     {
-        // Use compare_exchange_weak for atomic double operations
-        double current_time = total_dealloc_time_.load();
-        while (!total_dealloc_time_.compare_exchange_weak(current_time, current_time + time_ns))
-        {
-            // Retry until successful
-        }
-        total_deallocations_.fetch_add(1);
+        total_dealloc_time_.fetch_add(static_cast<int64_t>(time_ns), std::memory_order_relaxed);
+        total_deallocations_.fetch_add(1, std::memory_order_relaxed);
     }
 
     benchmark_results get_results() const
@@ -117,12 +108,14 @@ public:
 
         if (results.total_allocations > 0)
         {
-            results.avg_alloc_time_ns = total_alloc_time_.load() / results.total_allocations;
+            results.avg_alloc_time_ns =
+                static_cast<double>(total_alloc_time_.load()) / results.total_allocations;
         }
 
         if (results.total_deallocations > 0)
         {
-            results.avg_dealloc_time_ns = total_dealloc_time_.load() / results.total_deallocations;
+            results.avg_dealloc_time_ns =
+                static_cast<double>(total_dealloc_time_.load()) / results.total_deallocations;
         }
 
         size_t total_bytes = total_bytes_allocated_.load();
@@ -138,8 +131,8 @@ public:
     void set_total_time(double time_ms) { total_time_ms_ = time_ms; }
 
 private:
-    std::atomic<double> total_alloc_time_{0.0};
-    std::atomic<double> total_dealloc_time_{0.0};
+    std::atomic<int64_t> total_alloc_time_{0};
+    std::atomic<int64_t> total_dealloc_time_{0};
     std::atomic<size_t> total_allocations_{0};
     std::atomic<size_t> total_deallocations_{0};
     std::atomic<size_t> total_bytes_allocated_{0};
