@@ -126,7 +126,7 @@ static std::string getScalarValue(const quarisma::IValue& val)
 }
 #else
 // Stub implementation
-static std::string getScalarValue(const quarisma::IValue& /*val*/)
+[[maybe_unused]] static std::string getScalarValue(const quarisma::IValue& /*val*/)
 {
     return "";
 #endif
@@ -523,7 +523,7 @@ static void finalizeExecutionTraceOutput(ExecutionTraceObserver& ob)
 #endif
 }
 
-static ExecutionTraceObserver::ID getObjectID(ExecutionTraceObserver& ob, const void* t)
+[[maybe_unused]] static ExecutionTraceObserver::ID getObjectID(ExecutionTraceObserver& ob, const void* t)
 {
     const std::scoped_lock lock(ob.gMutex);
 
@@ -538,7 +538,7 @@ static ExecutionTraceObserver::ID getObjectID(ExecutionTraceObserver& ob, const 
     return iter->second;
 }
 
-static void dumpTensorData2File(std::string& tensor_dump_file_name, quarisma::Tensor& tensor_on_host)
+[[maybe_unused]] static void dumpTensorData2File(std::string& tensor_dump_file_name, quarisma::Tensor& tensor_on_host)
 {
     std::fstream fs;
     fs.open(tensor_dump_file_name, std::fstream::out | std::fstream::binary);

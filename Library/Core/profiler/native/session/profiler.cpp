@@ -763,8 +763,8 @@ void profiler_session::register_scope_end(const quarisma::profiler_scope* scope)
 //=============================================================================
 
 profiler_scope::profiler_scope(const std::string& name, quarisma::profiler_session* session)
-    : session_((session != nullptr) ? session : quarisma::profiler_session::current_session()),
-      data_(std::make_unique<quarisma::profiler_scope_data>())
+    : data_(std::make_unique<quarisma::profiler_scope_data>()),
+      session_((session != nullptr) ? session : quarisma::profiler_session::current_session())
 {
     data_->name_      = name;
     data_->thread_id_ = std::this_thread::get_id();

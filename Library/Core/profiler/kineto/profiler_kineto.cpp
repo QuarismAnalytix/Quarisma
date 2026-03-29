@@ -756,12 +756,7 @@ static void toggleTorchOpCollectionDynamic(bool enable)
 
 // Set this function to be unused as profiler implementation needs more
 // refactoring to support Python ops collection dynamic toggling
-#ifdef _MSC_VER
-#define UNUSED
-#else
-#define UNUSED __attribute__((unused))
-#endif
-static UNUSED void togglePythonCollectionDynamic(bool enable)
+[[maybe_unused]] static void togglePythonCollectionDynamic(bool enable)
 {
     auto* state_ptr = ProfilerStateBase::get();
     if (state_ptr != nullptr)

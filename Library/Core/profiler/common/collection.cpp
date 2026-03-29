@@ -97,7 +97,7 @@ constexpr bool allTagsMapped(int idx = 0)
 }
 static_assert(allTagsMapped(), "tag_map is out of order");
 
-constexpr InputOutputEncoder::IOType tagToIOType(InputOutputEncoder::Tag tag)
+[[maybe_unused]] constexpr InputOutputEncoder::IOType tagToIOType(InputOutputEncoder::Tag tag)
 {
     return tag_map[(int)tag].io_type;
 }
@@ -340,7 +340,7 @@ auto InputOutputEncoder::getIValueGenerator(const IOType& io_type)
 // Stub implementation when IValue methods are not available
 auto InputOutputEncoder::getIValueGenerator(const IOType& /*io_type*/)
 {
-    return [this]() mutable { return std::nullopt; };
+    return []() mutable { return std::nullopt; };
 }
 #endif
 
@@ -530,7 +530,7 @@ struct StealOrDefault
 };
 }  // namespace
 
-static constexpr std::string_view profilerStepString = "ProfilerStep#";
+[[maybe_unused]] static constexpr std::string_view profilerStepString = "ProfilerStep#";
 
 void ThreadLocalSubqueue::TorchOpStorage::materialize(
     std::vector<std::shared_ptr<Result>>& /*out*/,
@@ -695,7 +695,7 @@ std::string toString(const ExtraFields<EventType::PyCall>& e)
 }
 #else
 // Stub implementation
-std::string toString(const ExtraFields<EventType::PyCall>& /*e*/)
+[[maybe_unused]] std::string toString(const ExtraFields<EventType::PyCall>& /*e*/)
 {
     return "";
 }

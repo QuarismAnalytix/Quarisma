@@ -214,7 +214,7 @@ static std::vector<std::vector<int64_t>> flattenList(const quarisma::IValue& lis
 }
 #else
 // Stub implementation
-static std::vector<std::vector<int64_t>> flattenList(const quarisma::IValue& /*list*/)
+[[maybe_unused]] static std::vector<std::vector<int64_t>> flattenList(const quarisma::IValue& /*list*/)
 {
     return {};
 }
@@ -1169,7 +1169,7 @@ uint64_t computeFlops(
 }
 #else
 // Stub implementations when IValue methods are not available.
-static std::vector<quarisma::IntArrayRef> getInputSizes(
+[[maybe_unused]] static std::vector<quarisma::IntArrayRef> getInputSizes(
     const std::string& /*op_name*/,
     size_t /*min_size*/,
     quarisma::array_ref<const quarisma::IValue> /*inputs*/,

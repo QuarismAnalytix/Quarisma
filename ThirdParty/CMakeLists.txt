@@ -1034,6 +1034,18 @@ if(QUARISMA_ENABLE_KINETO)
   if(CMAKE_GENERATOR STREQUAL "Xcode" AND TARGET kineto_base AND TARGET kineto_api)
     list(APPEND QUARISMA_DEPENDENCY_LIBS kineto_base kineto_api)
   endif()
+
+  # Disable LLVM coverage instrumentation on Kineto targets — clang-cl ICEs on
+  # some Kineto translation units (e.g. ActivityProfilerProxy.cpp) when
+  # -fprofile-instr-generate / -fcoverage-mapping are active.
+  if(QUARISMA_ENABLE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    foreach(_kineto_tgt kineto kineto_base kineto_api)
+      if(TARGET ${_kineto_tgt})
+        target_compile_options(${_kineto_tgt} PRIVATE
+          -fno-profile-instr-generate -fno-coverage-mapping)
+      endif()
+    endforeach()
+  endif()
 endif()
 
 # -----------------------------------------------------------------------------

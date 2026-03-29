@@ -95,7 +95,7 @@ private:
    * This class wraps the returned value and gives access to it.
    */
     template <class ReturnT, bool IsLValueReference = std::is_lvalue_reference<ReturnT>::value>
-    class return_value_wrapper;
+    struct return_value_wrapper;
 
 public:
     QUARISMA_API virtual ~threaded_callback_queue();
@@ -110,7 +110,7 @@ public:
     {
     public:
         shared_future_base()
-            : number_of_prior_shared_futures_remaining_(0), invoker_index_(0), status_(CONSTRUCTING)
+            : status_(CONSTRUCTING), number_of_prior_shared_futures_remaining_(0), invoker_index_(0)
         {
         }
 

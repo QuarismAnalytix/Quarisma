@@ -452,7 +452,7 @@ const MegaScaleStatTypeStrMap& GetMegaScaleStatTypeStrMap()
     return *stat_type_str_map;
 }
 
-const LineIdTypeStrMap& GetLineIdTypeStrMap()
+[[maybe_unused]] const LineIdTypeStrMap& GetLineIdTypeStrMap()
 {
     static auto* line_id_type_str_map =
         new LineIdTypeStrMap(ReverseMap<LineIdTypeStrMap>(GetLineIdTypeMap()));

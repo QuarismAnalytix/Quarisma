@@ -22,9 +22,8 @@ class QUARISMA_VISIBILITY OperatorHandle;
 
 namespace quarisma
 {
-class IValue
+struct IValue
 {
-public:
     IValue() = default;
 };
 class FunctionSchema
