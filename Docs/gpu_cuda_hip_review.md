@@ -228,8 +228,9 @@ and none of the benefit is realized.
    path is elementwise-only. For a quantitative library this is the largest
    functional hole.
 3. **`to_host_vector()` allocates on every call**, costing ~2.3 ms at 4M
-   elements — more than ten times the kernel. No non-allocating
-   `copy_to_host(ptr)` overload is exposed; `copy_logical_to_host` is private.
+   elements — more than ten times the kernel. **Addressed 2026-09-07:** public
+   `copy_to_host(ptr)` / `copy_to_host(ptr, count)` reuse the private gather
+   path without allocating. `to_host_vector()` remains the allocating convenience.
 
 ### Usability and distribution
 
@@ -243,13 +244,16 @@ and none of the benefit is realized.
    downstream consumer needs the same trick.
 5. **`run_gpu` / `fill_gpu` never check launch errors.** No `cudaGetLastError()`
    after the launch, so an invalid launch configuration silently yields wrong
-   results instead of failing.
+   results instead of failing. **Addressed 2026-09-07:** both launchers check
+   `cudaGetLastError` / `hipGetLastError` and reject a wrapped 32-bit grid.
 
 ### Allocator maturity vs. the PyTorch semantics it targets
 
 6. **No environment-variable configuration** (`PYTORCH_CUDA_ALLOC_CONF`
-   analogue): no `max_split_size`, no `garbage_collection_threshold`, and no
-   way to disable the VM path from §3.6.
+   analogue): no `max_split_size`, no `garbage_collection_threshold`.
+   **Addressed 2026-09-07 (VM path only):** `set_expandable_segments` defaults
+   off so cache misses use `cudaMalloc`. Remaining AllocConf knobs are still
+   unported.
 7. **No CUDA graph capture support** (no private pools for captured graphs) and
    **no `cudaMallocAsync` / mempool backend option**.
 8. **`trim_cache_locked` is O(blocks) per eviction** — it rescans both pools in
@@ -281,7 +285,8 @@ and none of the benefit is realized.
 13. **No multi-GPU collectives** — no NCCL/RCCL. Peer-to-peer `cudaMemcpyPeer`
     in `allocator.h` is the whole story.
 14. **HIP `all` architecture list includes `gfx803`**, dropped in ROCm 6
-    (`Library/Memory/Cmake/hip.cmake`).
+    (`Library/Memory/Cmake/hip.cmake`). **Addressed 2026-09-07:** `gfx803`
+    removed from `STRINGS` and from `all`.
 
 ---
 
@@ -290,15 +295,13 @@ and none of the benefit is realized.
 Ranked by measured payoff per unit of effort. None of it requires kernel work —
 §3.1 shows the kernels are already at the roofline.
 
-1. **Gate or delete the VM segment path** (gap 6 / §3.6). Recovers 1.25–1.66×
-   on every cache miss for near-zero effort and no behavior change.
-2. **Add a pinned host allocator plus chunked `copy_from_host` /
+**Phase 0 (2026-09-07):** VM path default-off, `copy_to_host(ptr)`, launch-error
+checks, `gfx803` dropped, `device_guard` on `allocator<T>::copy`, allocator
+churn hardening (identity pool erase, skip event poll when idle). Remaining:
+
+1. **Add a pinned host allocator plus chunked `copy_from_host` /
    `copy_to_host` pipelining** (gap 1). This is where the 30× in §3.3 lives.
-3. **Add a non-allocating `copy_to_host(ptr)` overload** (gap 3). Small change,
-   removes a cost larger than the kernel itself.
-4. **Add `cudaGetLastError()` after every launch** in `run_gpu` / `fill_gpu`
-   (gap 5). Correctness, not performance.
-5. **Get one self-hosted GPU runner into CI** (gap 10), or the CUDA and HIP
+2. **Get one self-hosted GPU runner into CI** (gap 10), or the CUDA and HIP
    paths remain verified by nothing but a developer workstation.
 
 Beyond that, GPU reductions (gap 2) are the largest *functional* addition and

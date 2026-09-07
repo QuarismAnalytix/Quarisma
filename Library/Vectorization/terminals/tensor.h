@@ -808,12 +808,27 @@ public:
     }
 
     // Download all elements to a host std::vector.  Blocks until complete.
+    // Allocates the vector; prefer copy_to_host(ptr) when the buffer exists.
     std::vector<value_t> to_host_vector() const
     {
         const size_t         total = size();
         std::vector<value_t> h(total);
         copy_logical_to_host(h.data());
         return h;
+    }
+
+    // Download logical elements into a caller-owned host buffer. Blocks until
+    // complete. Does not allocate. dst must have room for size() elements.
+    // Non-contiguous sources are gathered in C-order (same as to_host_vector).
+    void copy_to_host(value_t* dst) const
+    {
+        copy_logical_to_host(dst);
+    }
+
+    void copy_to_host(value_t* dst, size_type count) const
+    {
+        VECTORIZATION_CHECK_DEBUG(count == size(), "copy_to_host: element count mismatch");
+        copy_logical_to_host(dst);
     }
 
     // Not noexcept: VECTORIZATION_CHECK_DEBUG throws in debug (MSVC C4297 /WX).

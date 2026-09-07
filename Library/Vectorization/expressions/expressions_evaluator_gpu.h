@@ -98,13 +98,25 @@ void run_gpu(E const& expr, T* data, size_t n, gpu_stream_t stream = nullptr)
     if (n == 0)
         return;
     constexpr unsigned block_size = 256;
-    const unsigned     grid_size  = static_cast<unsigned>((n + block_size - 1) / block_size);
+    size_t const       blocks =
+        (n + static_cast<size_t>(block_size) - 1) / static_cast<size_t>(block_size);
+    // CUDA/HIP grid.x is a 32-bit dim; wrapping would launch an invalid config
+    // that previously completed without checking cudaGetLastError.
+    VECTORIZATION_CHECK(
+        blocks > 0 && blocks <= static_cast<size_t>(0x7fffffff),
+        "run_gpu grid overflow for n={}",
+        n);
+    const unsigned grid_size = static_cast<unsigned>(blocks);
 
 #if VECTORIZATION_HAS_CUDA && defined(__CUDACC__)
     gpu_eval_kernel<E, T><<<dim3(grid_size), dim3(block_size), 0, stream>>>(expr, data, n);
+    cudaError_t const err = cudaGetLastError();
+    VECTORIZATION_CHECK(err == cudaSuccess, "run_gpu launch failed: {}", cudaGetErrorString(err));
 #else
     hipLaunchKernelGGL(
         (gpu_eval_kernel<E, T>), dim3(grid_size), dim3(block_size), 0, stream, expr, data, n);
+    hipError_t const err = hipGetLastError();
+    VECTORIZATION_CHECK(err == hipSuccess, "run_gpu launch failed: {}", hipGetErrorString(err));
 #endif
 }
 
@@ -114,13 +126,23 @@ void fill_gpu(T* data, T value, size_t n, gpu_stream_t stream = nullptr)
     if (n == 0)
         return;
     constexpr unsigned block_size = 256;
-    const unsigned     grid_size  = static_cast<unsigned>((n + block_size - 1) / block_size);
+    size_t const       blocks =
+        (n + static_cast<size_t>(block_size) - 1) / static_cast<size_t>(block_size);
+    VECTORIZATION_CHECK(
+        blocks > 0 && blocks <= static_cast<size_t>(0x7fffffff),
+        "fill_gpu grid overflow for n={}",
+        n);
+    const unsigned grid_size = static_cast<unsigned>(blocks);
 
 #if VECTORIZATION_HAS_CUDA && defined(__CUDACC__)
     gpu_fill_kernel<T><<<dim3(grid_size), dim3(block_size), 0, stream>>>(data, value, n);
+    cudaError_t const err = cudaGetLastError();
+    VECTORIZATION_CHECK(err == cudaSuccess, "fill_gpu launch failed: {}", cudaGetErrorString(err));
 #else
     hipLaunchKernelGGL(
         (gpu_fill_kernel<T>), dim3(grid_size), dim3(block_size), 0, stream, data, value, n);
+    hipError_t const err = hipGetLastError();
+    VECTORIZATION_CHECK(err == hipSuccess, "fill_gpu launch failed: {}", hipGetErrorString(err));
 #endif
 }
 

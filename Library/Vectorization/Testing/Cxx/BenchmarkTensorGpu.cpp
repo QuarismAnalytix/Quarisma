@@ -69,27 +69,11 @@
  * driver to ramp clocks/link before the timed samples are taken. CPU_* cases
  * keep the short default since host clocks aren't gated the same way.
  *
- * GPU_TensorAllocFree<T> is currently disabled (SkipWithError) rather than
- * measured. In principle it isolates same-size device tensor construct/
- * destroy cost, which XSigma's CUDA caching allocator
- * (Library/Memory/gpu/cuda_caching_allocator.cpp) should serve from a
- * per-size-class free list after the first ("cache miss") iteration warms it
- * — see its cache_hits/cache_misses counters around allocate() — making
- * near-identical timing across sizes the *expected* result, not a benchmark
- * artifact, once the following defect is fixed:
- *
- * KNOWN ISSUE blocking this benchmark: this same-size construct/destroy loop
- * reproducibly crashes inside Memory.dll (cuda_caching_allocator), confirmed
- * via Windows Error Reporting (exception 0xc0000005). Bisection with
- * ->Iterations(N) in isolation found it clean through 500,000 iterations and
- * a deterministic SIGSEGV at 2,000,000 in one sequence, but a later run
- * crashed again under 100,000 iterations — i.e. not a clean "too many
- * iterations" capacity limit; the trigger is inconsistent across runs, which
- * points to a genuine race or resource-tracking bug in the allocator (or the
- * tensor<T>/data_ptr<T> construction path it backs) rather than something a
- * smaller timing window can reliably dodge — a smaller window was tried
- * first and still crashed. Re-enable this benchmark only after that defect
- * is root-caused and fixed.
+ * GPU_TensorAllocFree<T> isolates same-size device tensor construct/destroy
+ * cost. After the first ("cache miss") iteration the CUDA/HIP caching
+ * allocator should serve from a per-size-class free list — see cache_hits /
+ * cache_misses around allocate() — so near-identical timing across sizes is
+ * the expected result, not a benchmark artifact.
  *
  * This file is compiled as a CUDA or HIP translation unit (CMake sets
  * LANGUAGE CUDA/HIP on it, mirroring TestTensorGpu.cpp) so run_gpu/fill_gpu
@@ -712,22 +696,19 @@ static void GPU_TensorAllocFree(benchmark::State& state)
 {
     if (skip_if_unsupported<T>(state))
         return;
-    // KNOWN ISSUE — do not remove this skip without first fixing the underlying
-    // defect (see the file header): this same-size construct/destroy loop
-    // reproducibly crashes inside Memory.dll (cuda_caching_allocator), confirmed
-    // via Windows Error Reporting (exception 0xc0000005). Bisection with
-    // ->Iterations(N) found it clean through 500,000 iterations and a
-    // deterministic SIGSEGV at 2,000,000 in one sequence, but a later run
-    // crashed again at under 100,000 iterations — i.e. this is not a clean
-    // "too many iterations" capacity limit, the trigger condition is
-    // inconsistent across runs, which points to a genuine race or
-    // resource-tracking bug rather than something a smaller timing window can
-    // reliably dodge. Skipping rather than tuning MinTime down: a smaller
-    // window was tried first and still crashed.
-    state.SkipWithError(
-        "GPU_TensorAllocFree disabled: known crash in cuda_caching_allocator under "
-        "sustained same-size alloc/free churn (see file header) -- fix the allocator "
-        "before re-enabling this benchmark");
+    const int64_t n = state.range(0);
+    {
+        tensor<T> warm(static_cast<size_t>(n), kActiveGpuDevice);
+        benchmark::DoNotOptimize(warm.data());
+    }
+    gpuDeviceSynchronize();
+    for (auto _ : state)
+    {
+        tensor<T> t(static_cast<size_t>(n), kActiveGpuDevice);
+        benchmark::DoNotOptimize(t.data());
+    }
+    gpuDeviceSynchronize();
+    state.SetItemsProcessed(state.iterations() * n);
 }
 BENCHMARK_TEMPLATE(GPU_TensorAllocFree, float) GPU_BENCH_SIZES;
 BENCHMARK_TEMPLATE(GPU_TensorAllocFree, double) GPU_BENCH_SIZES;

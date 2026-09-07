@@ -191,14 +191,13 @@ A request is only ever served from its own pool.
 
 ### Expandable segments
 
-`malloc_segment` tries a virtual-memory mapping first, then falls back to
-`cudaMalloc` / `hipMalloc`:
-
-- CUDA: `cuMemCreate` + `cuMemMap` + `cuMemSetAccess`
-- HIP: `hipMem*` (ROCm ≥ 5.6)
-
-There is no client toggle (PyTorch's `expandable_segments` AllocConf knob is
-not ported). Failure is silent; the next attempt is a plain driver malloc.
+`malloc_segment` uses `cudaMalloc` / `hipMalloc` by default. An optional
+virtual-memory mapping (`cuMemCreate` + `cuMemMap` / HIP `hipMem*`, ROCm ≥ 5.6)
+is available via `set_expandable_segments(true)` but is **off by default**:
+the previous always-on path reserved a VA range sized exactly to the segment
+and never expanded it, paying 1.25–1.66× vs `cudaMalloc` with none of
+PyTorch's fragmentation win. Failure of the opt-in VM path is still silent;
+the next attempt is a plain driver malloc.
 
 ### Block lifecycle
 
@@ -435,7 +434,8 @@ HIP runtime coverage is the CUDA test file compiled against `hip*`.
 
 - PyTorch-style 512 B / 2 MiB / 20 MiB segment cache on **CUDA, HIP, and
   Metal**; HIP is the CUDA TU via `gpu/gpu_runtime.h`.
-- Expandable VM segments (`cuMemMap` / HIP ≥ 5.6) with silent fallback to
+- Expandable VM segments (`cuMemMap` / HIP ≥ 5.6) **opt-in** via
+  `set_expandable_segments` (default off); silent fallback to
   `cudaMalloc` / `hipMalloc`.
 - Allocator mutex **released** around the driver malloc.
 - OOM: free-memory callbacks → fraction flush → driver alloc → full cache
@@ -467,10 +467,11 @@ Client / product gaps vs PyTorch (not missing size classes):
    cannot replay a captured graph through this allocator.
 3. **Pinned host caching allocator.** H2D of market data and MC gather still
    uses caller-managed host buffers (`cudaHostAlloc` / pageable).
-4. **`PYTORCH_CUDA_ALLOC_CONF` knobs.** `max_split_size_mb`,
-   `roundup_power2_divisions`, `garbage_collection_threshold`, and an
-   expandable-segments toggle are not ported. Mixed-tenor MC books must
-   bucket sizes in the engine. Watch `inactive_split_bytes`.
+4. **`PYTORCH_CUDA_ALLOC_CONF` knobs.** `expandable_segments` is now a
+   runtime toggle (`set_expandable_segments`, default off). `max_split_size_mb`,
+   `roundup_power2_divisions`, and `garbage_collection_threshold` are not
+   ported. Mixed-tenor MC books must bucket sizes in the engine. Watch
+   `inactive_split_bytes`.
 5. **OOM forensics stacks.** Segment snapshot and the allocation-history
    ring are ported (`gpu::memory_snapshot` / `record_memory_history`).
    GatheredContext / Python-C++ stack capture is not. Overnight debugging

@@ -410,6 +410,26 @@ VECTORIZATIONTEST(TensorGpu, StoresDeviceIndex)
     EXPECT_EQ(0, t.device_index());
     END_TEST();
 }
+
+VECTORIZATIONTEST(TensorGpu, CopyToHostWritesCallerBuffer)
+{
+    int ndev = 0;
+    gpuGetDeviceCount(&ndev);
+    if (ndev == 0)
+        GTEST_SKIP() << "No GPU device";
+
+    constexpr size_t N    = 256;
+    constexpr float  kVal = 1.25f;
+    tensor<float>    ga(N, kActiveGpuDevice);
+    ga = kVal;
+    std::vector<float> host(N, 0.f);
+    ga.copy_to_host(host.data());
+    for (size_t i = 0; i < N; ++i)
+        EXPECT_NEAR(host[i], kVal, 5e-6f) << " at i=" << i;
+    ga.copy_to_host(host.data(), N);
+    EXPECT_NEAR(host[0], kVal, 5e-6f);
+    END_TEST();
+}
 VECTORIZATIONTEST(TensorGpu, CopyClonesIndependentStorage)
 {
     int ndev = 0;
@@ -752,6 +772,11 @@ VECTORIZATIONTEST(TensorGpu, FillFloat)
     END_TEST();
 }
 VECTORIZATIONTEST(TensorGpu, StoresDeviceIndex)
+{
+    GTEST_SKIP() << "Test disabled: no GPU backend (CUDA/HIP/Metal) is enabled";
+    END_TEST();
+}
+VECTORIZATIONTEST(TensorGpu, CopyToHostWritesCallerBuffer)
 {
     GTEST_SKIP() << "Test disabled: no GPU backend (CUDA/HIP/Metal) is enabled";
     END_TEST();
