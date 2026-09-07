@@ -23,6 +23,8 @@ when a new option is added.
   allocator status.
 - [Vectorization backends](vectorization_backends.md) - CPU, CUDA, HIP, and
   Metal evaluator contracts.
+- [GPU backend review](gpu_cuda_hip_review.md) - CUDA/HIP current state,
+  measured performance, and ranked gaps.
 - [Profiler guide](profiler/profiler.md) - Native, Kineto, and ITT profiling.
 - [Vectorization SIMD guide](readme/vectorization.md) - CPU backend selection.
 - [Project dependencies](PROJECT_DEPENDENCIES.md) - Library dependency graph.
