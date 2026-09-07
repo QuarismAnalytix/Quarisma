@@ -747,9 +747,10 @@ if(VECTORIZATION_ENABLE_BENCHMARK)
         # the detailed comment there for what was actually re-tested on this
         # machine before keeping -O1).
         if(WIN32)
+          # Keep the frontend option paired with -Xclang when CMake de-duplicates
+          # target options: the CRT flags above also contain -Xclang.
           target_compile_options(
-            ${target_name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xclang
-                                   -fno-cuda-host-device-constexpr>
+            ${target_name} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xclang -fno-cuda-host-device-constexpr>"
                                    $<$<COMPILE_LANGUAGE:CUDA>:-O1>
           )
         else()

@@ -2180,6 +2180,8 @@ jobs:
           # driver-less runner. This still catches real compile/link
           # regressions (e.g. windows.h macro pollution via NVTX headers,
           # missing CUPTI runtime DLL staging) without a flaky test step.
+          # Build Vectorization benchmarks too, so Clang CUDA benchmark
+          # compiler options are checked even though execution is skipped.
           - backend: cuda
             os: windows-latest
             extra_cmake: "-DMEMORY_GPU_BACKEND=cuda -DVECTORIZATION_GPU_BACKEND=cuda"
@@ -2258,7 +2260,7 @@ jobs:
           -DCORE_ENABLE_BENCHMARK=OFF \
           -DMEMORY_ENABLE_BENCHMARK=OFF \
           -DLOGGING_ENABLE_BENCHMARK=OFF \
-          -DVECTORIZATION_ENABLE_BENCHMARK=OFF \
+          -DVECTORIZATION_ENABLE_BENCHMARK=${{ runner.os == 'Windows' && matrix.backend == 'cuda' && 'ON' || 'OFF' }} \
           -DPARALLEL_ENABLE_BENCHMARK=OFF \
           -DPROFILER_ENABLE_BENCHMARK=OFF \
           $tbb_flags \
