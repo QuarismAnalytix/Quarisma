@@ -244,6 +244,11 @@ build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain
 # Enable HIP support
 build:hip --define=memory_enable_hip=true
 build:hip --define=vectorization_enable_hip=true
+# libamdhip64 DT_NEEDED includes librocprofiler-register (and friends) that
+# live in $ROCM_PATH/lib. Inherit the client's LD_LIBRARY_PATH so sandboxed
+# tests can load them (CMake HIP CI sets this only at test time; do not put
+# /opt/rocm/lib on the job-wide path — it breaks Ubuntu sccache).
+build:hip --test_env=LD_LIBRARY_PATH
 
 # Enable Metal support (Apple platforms only)
 build:metal --define=memory_enable_metal=true

@@ -2415,6 +2415,12 @@ jobs:
 
     - name: Bazel build + test (HIP)
       working-directory: Scripts
+      env:
+        # install-hip-ubuntu.sh no longer exports LD_LIBRARY_PATH via
+        # GITHUB_ENV (that broke CMake HIP sccache). Tests still need
+        # /opt/rocm/lib to load librocprofiler-register.so.0 and other
+        # libamdhip64 DT_NEEDED deps (exit 127 without it).
+        LD_LIBRARY_PATH: ${{ env.ROCM_PATH }}/lib:${{ env.ROCM_PATH }}/lib64:${{ env.HIP_PATH }}/lib:${{ env.LD_LIBRARY_PATH }}
       run: python3 setup_bazel.py config.build.test.hip
 
   # ============================================================================

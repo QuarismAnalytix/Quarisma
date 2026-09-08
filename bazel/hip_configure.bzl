@@ -93,14 +93,23 @@ cc_library(
 _FOUND_BUILD_TEMPLATE = """\
 package(default_visibility = ["//visibility:public"])
 
+# libamdhip64 DT_NEEDED (ROCm 6.x) includes librocprofiler-register,
+# libhsa-runtime64, libamd_comgr, and libhsakmt. Keep them next to
+# libamdhip64 so $ORIGIN rpath works when LD_LIBRARY_PATH is unset.
 cc_library(
     name = "hip",
     srcs = glob([
         "rocm/lib/libamdhip64.so*",
         "rocm/lib/libroctx64.so*",
         "rocm/lib/libroctracer64.so*",
+        "rocm/lib/librocprofiler-register.so*",
+        "rocm/lib/libhsa-runtime64.so*",
+        "rocm/lib/libamd_comgr.so*",
+        "rocm/lib/libhsakmt.so*",
         "rocm/lib64/libamdhip64.so*",
         "rocm/lib64/libroctx64.so*",
+        "rocm/lib64/librocprofiler-register.so*",
+        "rocm/lib64/libhsa-runtime64.so*",
         "rocm/hip/lib/libamdhip64.so*",
     ], allow_empty = True),
     hdrs = glob([
