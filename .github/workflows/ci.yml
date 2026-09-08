@@ -2166,6 +2166,12 @@ jobs:
   cmake-gpu-backend-tests:
     name: "CMake GPU - ${{ matrix.backend }} — ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
+    # Keep the sccache daemon alive across the long CUDA/HIP toolkit install
+    # and CMake HIP compiler probe. Default idle timeout is 10 minutes, but
+    # a dead/never-started daemon fails the first CXX object with
+    # "Connection refused" (HIP ubuntu, run 34146182881).
+    env:
+      SCCACHE_IDLE_TIMEOUT: "0"
 
     strategy:
       fail-fast: false
@@ -2238,6 +2244,16 @@ jobs:
         echo "CPPFLAGS=-I/opt/homebrew/opt/llvm/include" >> $GITHUB_ENV
         echo "/opt/homebrew/opt/llvm/bin" >> $GITHUB_PATH
 
+    - name: Start sccache
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        # Spawn the daemon before CMake/Ninja so -j2 does not race two
+        # clients into a half-started server (ECONNREFUSED after 5s).
+        sccache --stop-server >/dev/null 2>&1 || true
+        sccache --start-server
+        sccache --show-stats || true
+
     - name: Configure (CMake ${{ matrix.backend }})
       shell: bash
       run: |
@@ -2265,6 +2281,14 @@ jobs:
           -DPROFILER_ENABLE_BENCHMARK=OFF \
           $tbb_flags \
           ${{ matrix.extra_cmake }}
+
+    - name: Restart sccache after configure
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        # Re-start if enable_language(HIP) or a compiler probe killed the
+        # daemon during configure. --start-server is a no-op if it is up.
+        sccache --start-server >/dev/null 2>&1 || true
 
     - name: Build
       run: cmake --build build -j 2
@@ -2311,6 +2335,8 @@ jobs:
         path: |
           build/Testing/Temporary/LastTest.log
           build/**/*.log
+          build/CMakeFiles/CMakeError.log
+          build/CMakeFiles/CMakeOutput.log
 
   # ============================================================================
   # Bazel CUDA / HIP (compile + test; device tests skip without a GPU)

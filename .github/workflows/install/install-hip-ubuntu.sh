@@ -102,8 +102,14 @@ fi
 if [ -d "${rocm_root}/lib64" ]; then
     _rocm_libs="${rocm_root}/lib64${_rocm_libs:+:${_rocm_libs}}"
 fi
+# Keep ROCm libs on LD_LIBRARY_PATH only inside this install script (hipcc
+# --version below). Do not write them to GITHUB_ENV: putting /opt/rocm/lib
+# first for every later step makes host tools such as Ubuntu's dynamically
+# linked sccache load ROCm copies of libstdc++/LLVM and die with
+# "Connection refused" on the first compile (CMake GPU HIP CI). CMake links
+# through imported hip:: targets; the test step in ci.yml prepends ROCm libs
+# when it actually needs to run HIP-linked binaries.
 if [ -n "${_rocm_libs}" ]; then
-    echo "LD_LIBRARY_PATH=${_rocm_libs}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> "${GITHUB_ENV:-/dev/null}"
     export LD_LIBRARY_PATH="${_rocm_libs}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 fi
 unset _rocm_libs
