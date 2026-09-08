@@ -27,3 +27,26 @@ cc_test(
         "@com_google_googletest//:gtest",
     ],
 )
+
+# =============================================================================
+# Benchmark Targets
+# One cc_binary per Benchmark*.cpp file, named benchmark_<suffix_lowercased> —
+# mirrors the per-file foreach in Testing/Cxx/CMakeLists.txt (bench_sources loop).
+# Build with: bazel build //Library/Graph/Testing/Cxx:benchmark_<suffix>
+# =============================================================================
+
+[
+    cc_binary(
+        name = "benchmark_" + _src[len("Benchmark"):-len(".cpp")].lower(),
+        srcs = [_src],
+        copts = graph_copts(),
+        defines = graph_defines(),
+        linkopts = graph_linkopts(),
+        deps = [
+            "//Library/Graph:Graph",
+            "@com_google_benchmark//:benchmark",
+            "@com_google_benchmark//:benchmark_main",
+        ],
+    )
+    for _src in glob(["Benchmark*.cpp"], allow_empty = True)
+]

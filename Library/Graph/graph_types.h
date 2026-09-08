@@ -83,7 +83,8 @@ private:
 enum class graph_execution_status_code
 {
     ok,
-    node_failed
+    node_failed,
+    cancelled
 };
 
 /**
@@ -108,6 +109,12 @@ public:
     {
         return graph_execution_status(
             graph_execution_status_code::node_failed, failed_node, std::move(message));
+    }
+
+    static graph_execution_status cancelled(std::string message)
+    {
+        return graph_execution_status(
+            graph_execution_status_code::cancelled, 0, std::move(message));
     }
 
     bool                        ok() const { return code_ == graph_execution_status_code::ok; }

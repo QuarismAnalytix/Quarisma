@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -47,6 +48,23 @@ public:
     /// Registers a node and returns the id used to reference it in depends_on().
     GRAPH_API node_id add_node(std::string name, node_work work);
 
+    /**
+     * @brief Stamps a previously added node with a version for incremental
+     * re-run.
+     *
+     * graph_executor::run_incremental() recomputes a node whose version
+     * differs from the caller's baseline, plus everything downstream of it;
+     * nodes whose version matches return their cached results. Unstamped
+     * nodes keep version 0. Returns false (and does nothing) if `node` is
+     * out of range. Must be called before build() -- build() copies the
+     * stamps into the frozen graph, so stamping afterwards is a no-op on the
+     * built graph.
+     */
+    GRAPH_API bool with_node_version(node_id node, std::uint64_t version);
+
+    /// Current version stamp of a node (0 if out of range or unstamped).
+    GRAPH_API std::uint64_t node_version(node_id node) const;
+
     /// Declares that `node` must run after `dependency` has completed, and that
     /// `dependency`'s result is passed as one of `node`'s work inputs, in the
     /// order depends_on() was called for `node`.
@@ -65,8 +83,9 @@ public:
 private:
     struct pending_node
     {
-        std::string name_;
-        node_work   work_;
+        std::string   name_;
+        node_work     work_;
+        std::uint64_t version_ = 0;
     };
 
     // (node, dependency) pairs, recorded as-is. node/dependency ids are only

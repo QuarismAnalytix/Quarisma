@@ -19,9 +19,12 @@
 
 #include <any>
 #include <atomic>
+#include <chrono>
+#include <future>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <unordered_map>
 
 #include "GraphTest.h"
@@ -231,4 +234,67 @@ TEST(GraphExecutor, dependent_of_failed_node_is_skipped)
     EXPECT_EQ(dependent_run_count.load(), 0);
     // Both nodes still get an entry (empty) in the results map.
     ASSERT_EQ(results.size(), 2U);
+}
+
+// A slow source node gives cancel() time to land; nodes not yet started are
+// skipped and the status reports cancelled.
+TEST(GraphExecutor, cancel_skips_unstarted_nodes)
+{
+    graph_builder builder;
+
+    std::atomic<int> started{0};
+    const node_id    slow = builder.add_node(
+        "slow",
+        [&started](const std::vector<std::any>&) -> std::any
+        {
+            ++started;
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            return 1;
+        });
+    const node_id dependent = builder.add_node(
+        "dependent",
+        [&started](const std::vector<std::any>&) -> std::any
+        {
+            ++started;
+            return 2;
+        });
+    builder.depends_on(dependent, slow);
+
+    std::shared_ptr<dependency_graph> g;
+    ASSERT_TRUE(builder.build(g).ok());
+
+    graph_executor                        executor(graph_executor_options{/*number_of_threads=*/2});
+    std::unordered_map<node_id, std::any> results;
+    std::future<graph_execution_status>   future = executor.run_async(*g, results);
+
+    // Let the slow node start, then cancel before it finishes so the
+    // dependent is still unstarted.
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    executor.cancel();
+
+    const graph_execution_status status = future.get();
+    ASSERT_FALSE(status.ok());
+    EXPECT_EQ(status.code(), graph_execution_status_code::cancelled);
+    // The slow node ran; the dependent was skipped.
+    EXPECT_EQ(started.load(), 1);
+}
+
+// run_async returns immediately and the blocking wait happens on the future.
+TEST(GraphExecutor, run_async_completes_with_results)
+{
+    graph_builder builder;
+    const node_id a =
+        builder.add_node("A", [](const std::vector<std::any>&) -> std::any { return 42; });
+
+    std::shared_ptr<dependency_graph> g;
+    ASSERT_TRUE(builder.build(g).ok());
+
+    graph_executor                        executor;
+    std::unordered_map<node_id, std::any> results;
+    std::future<graph_execution_status>   future = executor.run_async(*g, results);
+
+    const graph_execution_status status = future.get();
+    ASSERT_TRUE(status.ok());
+    ASSERT_EQ(results.size(), 1U);
+    EXPECT_EQ(std::any_cast<int>(results.at(a)), 42);
 }

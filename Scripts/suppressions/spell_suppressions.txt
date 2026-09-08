@@ -38,6 +38,8 @@ nout
 NowNs
 numer
 oH
+ois
+OIS
 optins
 ot
 overrideable

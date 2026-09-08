@@ -144,6 +144,40 @@ public:
      */
     graph_status build(std::shared_ptr<dependency_graph>& out) const { return builder_.build(out); }
 
+    /**
+     * @brief Stamps the node `key` resolved to with a version for
+     * incremental re-run.
+     *
+     * Callers version their input keys (e.g. a market quote's "as-of"
+     * counter); graph_executor::run_incremental() then recomputes exactly
+     * the nodes whose key version moved since a baseline, plus everything
+     * downstream of them, and serves the rest from cache. Derived keys
+     * (curves, prices) are typically left unstamped -- they recompute
+     * whenever an input they depend on is dirty, which is the correct
+     * default. Returns false if `key` has not been resolved yet. Must be
+     * called before build() -- build() copies the stamps into the frozen
+     * graph, so stamping afterwards is a no-op on the built graph.
+     */
+    bool with_key_version(const Key& key, std::uint64_t version)
+    {
+        const auto it = resolved_.find(key);
+        if (it == resolved_.end())
+        {
+            return false;
+        }
+        return builder_.with_node_version(it->second, version);
+    }
+
+    /// Current version stamp of the node `key` resolved to, or 0 if the key
+    /// is unresolved or was never stamped. Lets a caller snapshot the stamps
+    /// it set (its baseline for the next run_incremental) without tracking
+    /// them separately.
+    std::uint64_t key_version(const Key& key) const
+    {
+        const auto it = resolved_.find(key);
+        return it == resolved_.end() ? 0 : builder_.node_version(it->second);
+    }
+
     /// True once `key` has a memoized node_id -- the read-only query
     /// discover_fn uses to tell "still needed" apart from "already have it",
     /// the same role market.contains() plays in the pretorian-style pattern
@@ -212,9 +246,12 @@ public:
     graph_status resolve_with_discovery(
         const Key& key, const resolver_provider& provider, node_id& out)
     {
-        const auto [discover, build] = provider(key);
+        const std::pair<discover_fn, build_fn> fns = provider(key);
 
-        const resolver_fn synthesized = [&discover, &build, &provider](
+        // Named locals (not structured bindings) so the lambda can capture
+        // them under C++17 -- capturing a structured binding is a C++20
+        // extension.
+        const resolver_fn synthesized = [&discover = fns.first, &build = fns.second, &provider](
                                             const Key&           k,
                                             keyed_graph_builder& ctx,
                                             std::string&         out_name,
